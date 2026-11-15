@@ -4,12 +4,15 @@ import { useCallback, useEffect, useMemo, useState, type PropsWithChildren } fro
 
 import { apiClient } from '@/shared/api/ApiClient';
 import { ApiError } from '@/shared/api/errors';
+import { I18nContext } from '@/shared/i18n/I18nContext';
 import { pickBestLocale, translate } from '@/shared/i18n/locale';
 import { APP_LOCALES, DEFAULT_LOCALE } from '@/shared/i18n/messages';
 import { localeService } from '@/shared/services/LocaleService';
 
 import { AuthContext } from '../context/AuthContext';
-import { authService } from '../services/AuthService';
+import { loginService } from '../services/LoginService';
+import { logoutService } from '../services/LogoutService';
+import { profileService } from '../services/ProfileService';
 import type { AuthContextValue, LoginCredentials, User } from '../types';
 import { deviceName } from '../utils/device-name';
 import { clearToken, readToken, saveToken } from '../utils/token-storage';
@@ -48,7 +51,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const meQuery = useQuery({
     queryKey: [...ME_KEY, token],
-    queryFn: () => authService.me(),
+    queryFn: () => profileService.get(),
     enabled: typeof token === 'string',
     retry: (failureCount, error) => !(error instanceof ApiError && error.rejectsToken) && failureCount < 2,
   });
@@ -68,7 +71,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signIn = useCallback(
     async (credentials: LoginCredentials) => {
-      const { user: signedIn, token: newToken } = await authService.login(credentials, deviceName());
+      const { user: signedIn, token: newToken } = await loginService.login(credentials, deviceName());
       await saveToken(newToken);
       queryClient.setQueryData([...ME_KEY, newToken], signedIn);
       applyToken(newToken);
@@ -79,7 +82,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const signOut = useCallback(async () => {
     if (typeof token === 'string') {
       // La révocation côté serveur est souhaitée, pas nécessaire : le jeton local est oublié quoi qu'il arrive.
-      await authService.logout().catch(() => undefined);
+      await logoutService.logout().catch(() => undefined);
     }
     await clearToken();
     queryClient.removeQueries({ queryKey: ME_KEY });
@@ -104,5 +107,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [locale, localesQuery.isPending, meQuery.isPending, setUser, signIn, signOut, token, user],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const i18n = useMemo(() => ({ locale: value.locale, t: value.t }), [value.locale, value.t]);
+
+  return (
+    <AuthContext.Provider value={value}>
+      <I18nContext.Provider value={i18n}>{children}</I18nContext.Provider>
+    </AuthContext.Provider>
+  );
 }

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { Spacing } from '@/shared/theme/theme';
 
+import { ProfileLink } from '../components/ProfileLink';
 import { SignOutButton } from '../components/SignOutButton';
 import { UserSummary } from '../components/UserSummary';
 import { useAuth } from '../hooks/useAuth';
@@ -21,6 +22,7 @@ export function HomeScreen() {
       <SafeAreaView style={styles.safeArea}>
         <UserSummary user={user} />
         <ThemedView style={styles.actions}>
+          <ProfileLink />
           <SignOutButton />
         </ThemedView>
       </SafeAreaView>
