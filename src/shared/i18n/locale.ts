@@ -1,0 +1,32 @@
+import { APP_LOCALES, DEFAULT_LOCALE, messages, type Locale, type MessageKey } from './messages';
+
+export function isLocale(value: string | null | undefined): value is Locale {
+  return APP_LOCALES.includes(value as Locale);
+}
+
+/**
+ * Meilleure langue disponible pour un appareil : la première de ses langues
+ * préférées, **dans leur ordre**, que l'app sait afficher et que l'API propose.
+ * Une langue régionale vaut sa langue (`fr-CH` → `fr`). Aucune ne correspond →
+ * la langue par défaut.
+ *
+ * @param preferred langues préférées de l'appareil, de la plus à la moins souhaitée (`de-CH`, `en-GB`…)
+ * @param available langues proposées par l'API (`GET /api/v1/locales`)
+ */
+export function pickBestLocale(preferred: readonly string[], available: readonly string[], fallback: string = DEFAULT_LOCALE): Locale {
+  const offered = available.filter(isLocale);
+
+  for (const tag of preferred) {
+    const language = tag.toLowerCase().split(/[-_]/)[0];
+
+    if ((offered as string[]).includes(language)) {
+      return language as Locale;
+    }
+  }
+
+  return isLocale(fallback) ? fallback : DEFAULT_LOCALE;
+}
+
+export function translate(locale: Locale, key: MessageKey, params: Record<string, string> = {}): string {
+  return messages[locale][key].replace(/\{(\w+)\}/g, (match, name: string) => params[name] ?? match);
+}

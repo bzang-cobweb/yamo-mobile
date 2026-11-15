@@ -4,7 +4,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
-import { AuthProvider, useAuth } from '@/auth/auth-provider';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { AuthProvider } from '@/features/auth/providers/AuthProvider';
 
 SplashScreen.preventAutoHideAsync();
 

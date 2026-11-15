@@ -1,15 +1,15 @@
 {
-    "extraKnownMarketplaces": {
-        "bza": {
-            "source": {
-                "source": "directory",
-                "path": "/Users/bertrandzang/home/private/ai"
-            }
-        }
-    },
-    "enabledPlugins": {
-        "bza@bza": true,
-        "bza-dev@bza": true,
-        "expo@claude-plugins-official": true
+  "extraKnownMarketplaces": {
+    "bza": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/bertrandzang/home/private/ai"
+      }
     }
+  },
+  "enabledPlugins": {
+    "bza@bza": true,
+    "bza-dev@bza": true,
+    "expo@claude-plugins-official": true
+  }
 }
