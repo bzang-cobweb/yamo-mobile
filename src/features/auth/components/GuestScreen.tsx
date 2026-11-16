@@ -16,7 +16,8 @@ type Props = PropsWithChildren<{
 export function GuestScreen({ title, children }: Props) {
   const content = (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      {/* Connexion (sans en-tête) : contenu centré verticalement ; sinon, en haut. */}
+      <ScrollView contentContainerStyle={[styles.content, title === undefined && styles.centered]} keyboardShouldPersistTaps="handled">
         {children}
       </ScrollView>
     </KeyboardAvoidingView>
@@ -40,6 +41,7 @@ export function GuestScreen({ title, children }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  centered: { justifyContent: 'center' },
   content: {
     flexGrow: 1,
     width: '100%',
