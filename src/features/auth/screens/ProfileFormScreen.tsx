@@ -6,10 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormLoader } from '@/features/form/components/FormLoader';
 import type { FormValues } from '@/features/form/types';
 import { BackHeader } from '@/shared/components/BackHeader';
+import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-import { useAuth } from '../hooks/useAuth';
 
 /** Confirmation affichée par le profil au retour d'un formulaire enregistré. */
 export type ProfileNotice = 'saved' | 'password' | 'email' | 'phone';
@@ -20,27 +20,29 @@ export function backToProfile(notice: ProfileNotice) {
 }
 
 /**
- * Mise en page d'un écran du profil : en-tête « ← Profil » fixé en haut, contenu qui
- * défile dessous, au-dessus du clavier.
+ * Mise en page d'un écran du profil : en-tête fixé en haut (flèche de retour, titre de
+ * l'écran au centre), contenu qui défile dessous, au-dessus du clavier.
  */
-export function ProfileScreenShell({ children }: PropsWithChildren) {
-  const { t } = useAuth();
-
+export function ProfileScreenShell({ title, children }: PropsWithChildren<{ title: string }>) {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-        <BackHeader label={t('profile.title')} />
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            {children}
-          </ScrollView>
-        </KeyboardAvoidingView>
+        <BackStackProvider>
+          <BackHeader title={title} />
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
+            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+              {children}
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
   );
 }
 
 type Props = {
+  /** Titre de l'écran, au centre de l'en-tête (le formulaire n'affiche plus le sien). */
+  title: string;
   /** Nom du formulaire dans l'API (`auth.profile.personal`…). */
   form: string;
   /** Envoi par le service du formulaire ; une erreur de l'API reste affichée dans le formulaire. */
@@ -52,15 +54,15 @@ type Props = {
  * Écran d'un formulaire du profil : retour, formulaire décrit par l'API (titre
  * compris). Enregistré, il revient au profil avec une confirmation.
  */
-export function ProfileFormScreen({ form, onSubmit, notice }: Props) {
+export function ProfileFormScreen({ title, form, onSubmit, notice }: Props) {
   async function submit(values: FormValues) {
     await onSubmit(values);
     backToProfile(notice);
   }
 
   return (
-    <ProfileScreenShell>
-      <FormLoader name={form} onSubmit={submit} />
+    <ProfileScreenShell title={title}>
+      <FormLoader name={form} onSubmit={submit} hideTitle />
     </ProfileScreenShell>
   );
 }

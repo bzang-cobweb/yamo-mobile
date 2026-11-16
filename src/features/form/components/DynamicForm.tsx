@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { useI18n } from '@/shared/i18n/I18nContext';
+import { useBackStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
@@ -16,6 +17,8 @@ type DynamicFormProps = {
   definition: FormDefinition;
   /** Envoie les valeurs ; une `ApiError` 422 est affichée sous les champs concernés. */
   onSubmit: (values: FormValues) => Promise<void>;
+  /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
+  hideTitle?: boolean;
 };
 
 /**
@@ -24,13 +27,14 @@ type DynamicFormProps = {
  * de l'API, qui applique les règles déclarées avec le formulaire.
  *
  * Formulaire à étapes (`steps`) : une étape à la fois, « Étape 2 sur 3 ». « Suivant »
- * fait valider l'étape par l'API avant d'afficher la suivante ; « Précédent » revient
- * sans rien perdre ; à la dernière étape, le bouton d'envoi envoie tout.
+ * fait valider l'étape par l'API avant d'afficher la suivante ; à la dernière étape,
+ * le bouton d'envoi envoie tout. Le retour à l'étape précédente, sans rien perdre, est
+ * la flèche de l'en-tête de l'écran ; sans en-tête, un lien « Précédent ».
  *
  * Pour repartir des valeurs par défaut (autre formulaire, autre langue), le
  * monter avec une `key` différente.
  */
-export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
+export function DynamicForm({ definition, onSubmit, hideTitle = false }: DynamicFormProps) {
   const { t } = useI18n();
   const [values, setValues] = useState<FormValues>(() => initialValues(definition));
   const [errors, setErrors] = useState<FormErrors>({});
@@ -43,6 +47,15 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
   const visibleFields = currentStep
     ? definition.fields.filter((field) => currentStep.fields.includes(field.name))
     : definition.fields;
+
+  function previousStep() {
+    setErrors({});
+    setMessage(null);
+    setStep((current) => Math.max(0, current - 1));
+  }
+
+  // Avec un en-tête de retour, sa flèche revient à l'étape précédente (à partir de l'étape 2).
+  const hasBackHeader = useBackStep(step > 0, previousStep);
 
   /** Noms envoyés pour des champs (un téléphone envoie aussi son pays). */
   function namesOf(fields: FormFieldDefinition[]): string[] {
@@ -112,9 +125,9 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
 
   return (
     <View style={styles.form} testID={`form-${definition.name}`}>
-      {(definition.title !== null || definition.subtitle !== null) && (
+      {((!hideTitle && definition.title !== null) || definition.subtitle !== null) && (
         <View style={styles.header}>
-          {definition.title !== null && (
+          {!hideTitle && definition.title !== null && (
             <ThemedText type="subtitle" accessibilityRole="header" testID="form-title">
               {definition.title}
             </ThemedText>
@@ -172,16 +185,8 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
         </ThemedText>
       </Pressable>
 
-      {step > 0 && (
-        <Pressable
-          testID="form-previous"
-          accessibilityRole="button"
-          disabled={submitting}
-          onPress={() => {
-            setErrors({});
-            setMessage(null);
-            setStep(step - 1);
-          }}>
+      {step > 0 && !hasBackHeader && (
+        <Pressable testID="form-previous" accessibilityRole="button" disabled={submitting} onPress={previousStep}>
           <ThemedText type="linkPrimary">← {t('form.previous')}</ThemedText>
         </Pressable>
       )}

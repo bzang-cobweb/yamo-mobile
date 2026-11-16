@@ -9,11 +9,12 @@ import { backToProfile, ProfileScreenShell } from './ProfileFormScreen';
  * adresse. Elle n'est enregistrée qu'une fois le code validé.
  */
 export function EmailChangeScreen() {
-  const { setUser } = useAuth();
+  const { setUser, t, user } = useAuth();
 
   return (
-    <ProfileScreenShell>
+    <ProfileScreenShell title={user?.email ? t('profile.changeEmail') : t('profile.addEmail')}>
       <ChallengeFlow
+        hideFormTitle
         form="auth.profile.email"
         start={(values) => emailChangeService.start(values)}
         onVerified={async (result) => {

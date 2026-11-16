@@ -9,11 +9,12 @@ import { backToProfile, ProfileScreenShell } from './ProfileFormScreen';
  * par SMS. Le numéro n'est enregistré qu'une fois le code validé.
  */
 export function PhoneChangeScreen() {
-  const { setUser } = useAuth();
+  const { setUser, t, user } = useAuth();
 
   return (
-    <ProfileScreenShell>
+    <ProfileScreenShell title={user?.phone ? t('profile.changePhone') : t('profile.addPhone')}>
       <ChallengeFlow
+        hideFormTitle
         form="auth.profile.phone"
         start={(values) => phoneChangeService.start(values)}
         onVerified={async (result) => {

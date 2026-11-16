@@ -3,25 +3,36 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackHeader } from '@/shared/components/BackHeader';
+import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 type Props = PropsWithChildren<{
-  /** En-tête de retour fixé en haut (« ← Se connecter ») ; aucun pour la connexion. */
-  back?: { label: string; onPress?: () => void };
+  /** Titre de l'en-tête fixe (flèche de retour, titre centré) ; aucun en-tête pour la connexion. */
+  title?: string;
 }>;
 
 /** Mise en page des écrans d'invité (connexion, inscription, mot de passe oublié). */
-export function GuestScreen({ back, children }: Props) {
+export function GuestScreen({ title, children }: Props) {
+  const content = (
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        {children}
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container}>
-        {back && <BackHeader label={back.label} onPress={back.onPress} />}
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            {children}
-          </ScrollView>
-        </KeyboardAvoidingView>
+        {title === undefined ? (
+          content
+        ) : (
+          <BackStackProvider>
+            <BackHeader title={title} />
+            {content}
+          </BackStackProvider>
+        )}
       </SafeAreaView>
     </ThemedView>
   );

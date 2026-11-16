@@ -29,6 +29,8 @@ export const TEST_MESSAGES: Messages = {
   'auth.resend': 'Renvoyer le code',
   'auth.resent': 'Nouveau code envoyé.',
   'auth.forgotPassword': 'Mot de passe oublié ?',
+  'auth.forgotPasswordTitle': 'Mot de passe oublié',
+  'nav.back': 'Retour',
   'auth.passwordReset': 'Mot de passe modifié, connectez-vous.',
   'auth.previousStep': 'Étape précédente',
   'auth.signIn': 'Se connecter',

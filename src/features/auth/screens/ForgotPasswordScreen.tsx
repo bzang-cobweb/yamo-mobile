@@ -18,9 +18,10 @@ export function ForgotPasswordScreen() {
   const [challenge, setChallenge] = useState<string | null>(null);
 
   return (
-    <GuestScreen back={{ label: t('auth.signIn') }}>
+    <GuestScreen title={t('auth.forgotPasswordTitle')}>
       {challenge === null ? (
         <ChallengeFlow
+          hideFormTitle
           form="auth.password.forgot"
           start={(values) => passwordResetService.forgot(values)}
           onVerified={async (result) => {

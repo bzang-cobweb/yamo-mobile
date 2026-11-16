@@ -17,8 +17,9 @@ export function SignUpScreen() {
   const { signIn, t } = useAuth();
 
   return (
-    <GuestScreen back={{ label: t('auth.signIn') }}>
+    <GuestScreen title={t('auth.createAccount')}>
       <ChallengeFlow
+        hideFormTitle
         form="auth.register"
         start={(values) => registerService.register(values)}
         onVerified={async (result) => {

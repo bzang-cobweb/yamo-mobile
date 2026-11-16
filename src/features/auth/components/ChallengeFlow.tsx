@@ -5,6 +5,7 @@ import { FormLoader } from '@/features/form/components/FormLoader';
 import type { FormValues } from '@/features/form/types';
 import { ApiError } from '@/shared/api/errors';
 import { useI18n } from '@/shared/i18n/I18nContext';
+import { useBackStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
@@ -19,6 +20,8 @@ type Props = {
   start: (values: FormValues) => Promise<Challenge>;
   /** Dernier code validé : session ouverte ou compte modifié. */
   onVerified: (result: Exclude<VerifyResult, { kind: 'pending' }>) => Promise<void>;
+  /** Le titre du premier formulaire est affiché par l'en-tête de l'écran. */
+  hideFormTitle?: boolean;
 };
 
 /**
@@ -26,29 +29,34 @@ type Props = {
  * `auth.code` pour chaque code envoyé (« Code envoyé à … », renvoi possible).
  * Rien n'est acquis avant que l'API ait validé le dernier code.
  */
-export function ChallengeFlow({ form, start, onVerified }: Props) {
+export function ChallengeFlow({ form, start, onVerified, hideFormTitle = false }: Props) {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
 
-  if (challenge === null) {
-    return <FormLoader name={form} onSubmit={async (values) => setChallenge(await start(values))} />;
-  }
-
   return (
-    <CodeStep
-      // Un nouveau code (inscription : e-mail puis téléphone) repart d'un champ vide.
-      key={`${challenge.challenge}-${challenge.channel}`}
-      challenge={challenge}
-      onBack={() => setChallenge(null)}
-      onSubmit={async (values) => {
-        const result = await verificationService.verify(challenge, String(values.code ?? ''), deviceName());
+    <>
+      {/* Le formulaire reste monté pendant l'étape de code : en y revenant, on retrouve
+          son étape et ses valeurs. */}
+      <View style={challenge === null ? undefined : styles.hidden}>
+        <FormLoader name={form} hideTitle={hideFormTitle} onSubmit={async (values) => setChallenge(await start(values))} />
+      </View>
+      {challenge !== null && (
+        <CodeStep
+          // Un nouveau code (inscription : e-mail puis téléphone) repart d'un champ vide.
+          key={`${challenge.challenge}-${challenge.channel}`}
+          challenge={challenge}
+          onBack={() => setChallenge(null)}
+          onSubmit={async (values) => {
+            const result = await verificationService.verify(challenge, String(values.code ?? ''), deviceName());
 
-        if (result.kind === 'pending') {
-          setChallenge(result.challenge);
-        } else {
-          await onVerified(result);
-        }
-      }}
-    />
+            if (result.kind === 'pending') {
+              setChallenge(result.challenge);
+            } else {
+              await onVerified(result);
+            }
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -61,6 +69,8 @@ type CodeStepProps = {
 function CodeStep({ challenge, onBack, onSubmit }: CodeStepProps) {
   const { t } = useI18n();
   const [notice, setNotice] = useState<string | null>(null);
+  // Avec un en-tête de retour, sa flèche revient au formulaire ; sinon, un lien dans l'étape.
+  const hasBackHeader = useBackStep(true, onBack);
 
   async function resend() {
     try {
@@ -82,9 +92,11 @@ function CodeStep({ challenge, onBack, onSubmit }: CodeStepProps) {
         <Pressable accessibilityRole="button" testID="code-resend" onPress={resend}>
           <ThemedText type="linkPrimary">{t('auth.resend')}</ThemedText>
         </Pressable>
-        <Pressable accessibilityRole="button" testID="code-back" onPress={onBack}>
-          <ThemedText type="linkPrimary">← {t('auth.previousStep')}</ThemedText>
-        </Pressable>
+        {!hasBackHeader && (
+          <Pressable accessibilityRole="button" testID="code-back" onPress={onBack}>
+            <ThemedText type="linkPrimary">← {t('auth.previousStep')}</ThemedText>
+          </Pressable>
+        )}
       </View>
       {notice && (
         <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="code-notice">
@@ -98,4 +110,5 @@ function CodeStep({ challenge, onBack, onSubmit }: CodeStepProps) {
 const styles = StyleSheet.create({
   step: { gap: Spacing.three },
   links: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three },
+  hidden: { display: 'none' },
 });

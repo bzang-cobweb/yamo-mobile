@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { router } from 'expo-router';
 
 import type { FormValues } from '@/features/form/types';
+import { I18nContext } from '@/shared/i18n/I18nContext';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { AuthContext } from '../context/AuthContext';
@@ -12,6 +13,7 @@ import type { AuthContextValue } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn() } }));
+jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('../utils/device-name', () => ({ deviceName: () => 'iPhone' }));
 jest.mock('../services/VerificationService', () => ({ verificationService: { verify: jest.fn(), resend: jest.fn() } }));
 jest.mock('../services/PasswordResetService', () => ({ passwordResetService: { forgot: jest.fn(), reset: jest.fn() } }));
@@ -48,16 +50,25 @@ describe('ForgotPasswordScreen', () => {
     jest.mocked(passwordResetService.reset).mockResolvedValue(undefined);
 
     await render(
-      <AuthContext.Provider value={{ t: TEST_I18N.t } as AuthContextValue}>
-        <ForgotPasswordScreen />
-      </AuthContext.Provider>,
+      <I18nContext.Provider value={TEST_I18N}>
+        <AuthContext.Provider value={{ t: TEST_I18N.t } as AuthContextValue}>
+          <ForgotPasswordScreen />
+        </AuthContext.Provider>
+      </I18nContext.Provider>,
     );
 
-    expect(screen.getByTestId('back-header-link')).toHaveTextContent('← Se connecter');
+    expect(screen.getByTestId('back-header-title')).toHaveTextContent('Mot de passe oublié');
 
     await fireEvent.press(screen.getByTestId('submit-auth.password.forgot'));
     expect(passwordResetService.forgot).toHaveBeenCalledWith({ identifier: 'jeanne@example.com' });
 
+    // Dans l'étape de code, la flèche de l'en-tête revient au formulaire, puis à l'écran précédent.
+    await fireEvent.press(screen.getByTestId('back-header-link'));
+    expect(screen.queryByTestId('submit-auth.code')).toBeNull();
+    await fireEvent.press(screen.getByTestId('back-header-link'));
+    expect(router.back).toHaveBeenCalledTimes(1);
+
+    await fireEvent.press(screen.getByTestId('submit-auth.password.forgot'));
     await fireEvent.press(screen.getByTestId('submit-auth.code'));
     await waitFor(() => expect(screen.getByTestId('submit-auth.password.reset')).toBeOnTheScreen());
 

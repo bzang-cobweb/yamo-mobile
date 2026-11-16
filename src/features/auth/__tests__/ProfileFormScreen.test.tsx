@@ -27,7 +27,7 @@ jest.mock('@/features/form/components/FormLoader', () => {
 async function renderScreen(onSubmit: (values: FormValues) => Promise<void>, notice: 'saved' | 'password') {
   await render(
     <AuthContext.Provider value={{ t: TEST_I18N.t } as AuthContextValue}>
-      <ProfileFormScreen form="auth.profile.personal" notice={notice} onSubmit={onSubmit} />
+      <ProfileFormScreen title="Informations personnelles" form="auth.profile.personal" notice={notice} onSubmit={onSubmit} />
     </AuthContext.Provider>,
   );
 }

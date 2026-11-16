@@ -54,6 +54,8 @@ export type ApiMessageKey =
   | 'auth.resend'
   | 'auth.resent'
   | 'auth.forgotPassword'
+  | 'auth.forgotPasswordTitle'
+  | 'nav.back'
   | 'auth.passwordReset'
   | 'auth.previousStep'
   | 'auth.signIn'
