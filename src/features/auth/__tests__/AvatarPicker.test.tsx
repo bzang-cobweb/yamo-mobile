@@ -5,7 +5,6 @@ import { ApiError } from '@/shared/api/errors';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { AvatarPicker } from '../components/AvatarPicker';
-import { initialsOf } from '../components/Avatar';
 import { AuthContext } from '../context/AuthContext';
 import type { AuthContextValue, AvatarFile, User } from '../types';
 
@@ -17,6 +16,10 @@ const jeanne: User = {
   name: 'jeanne',
   first_name: 'Jeanne',
   last_name: 'Dupont',
+  full_name: 'Jeanne Dupont',
+  initials: 'JD',
+  gender: 'female',
+  birth_date: null,
   email: 'jeanne@example.com',
   locale: 'fr',
   avatar_url: null,
@@ -123,9 +126,3 @@ describe('AvatarPicker', () => {
   });
 });
 
-describe('initialsOf', () => {
-  it('prend le prénom et le nom, sinon le pseudonyme', () => {
-    expect(initialsOf(jeanne)).toBe('JD');
-    expect(initialsOf({ ...jeanne, first_name: '', last_name: '' })).toBe('J');
-  });
-});

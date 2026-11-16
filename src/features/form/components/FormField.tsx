@@ -1,6 +1,7 @@
 import type { FieldProps, FieldValue } from '../types';
 import { CheckboxField } from './fields/CheckboxField';
 import { CheckboxGroupField } from './fields/CheckboxGroupField';
+import { DateField } from './fields/DateField';
 import { NumberField } from './fields/NumberField';
 import { RadioField } from './fields/RadioField';
 import { SelectField } from './fields/SelectField';
@@ -37,6 +38,8 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
       return <CheckboxField {...common} value={asBoolean} onChange={onChange} />;
     case 'checkbox_group':
       return <CheckboxGroupField {...common} value={asList} onChange={onChange} />;
+    case 'date':
+      return <DateField {...common} value={asText} onChange={onChange} />;
     case 'switch':
       return <SwitchField {...common} value={asBoolean} onChange={onChange} />;
     default: {

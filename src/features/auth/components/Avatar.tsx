@@ -8,19 +8,12 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import type { User } from '../types';
 
 type Props = {
-  user: Pick<User, 'name' | 'first_name' | 'last_name' | 'avatar_url'>;
+  user: Pick<User, 'initials' | 'avatar_url'>;
   /** Diamètre, en points. */
   size?: number;
 };
 
-/** Initiales du prénom et du nom, sinon du pseudonyme. */
-export function initialsOf(user: Props['user']): string {
-  const initials = `${user.first_name.trim().charAt(0)}${user.last_name.trim().charAt(0)}`;
-
-  return (initials || user.name.charAt(0)).toUpperCase();
-}
-
-/** Photo de profil ronde ; les initiales tant qu'il n'y en a pas. */
+/** Photo de profil ronde ; sans photo, les initiales calculées par l'API. */
 export function Avatar({ user, size = 72 }: Props) {
   const { t } = useI18n();
   const theme = useTheme();
@@ -44,7 +37,7 @@ export function Avatar({ user, size = 72 }: Props) {
       testID="avatar-initials"
       accessibilityLabel={t('avatar.label')}
       style={[styles.initials, shape, { backgroundColor: theme.backgroundSelected }]}>
-      <ThemedText style={{ fontSize: size * 0.36, lineHeight: size * 0.44 }}>{initialsOf(user)}</ThemedText>
+      <ThemedText style={{ fontSize: size * 0.36, lineHeight: size * 0.44 }}>{user.initials}</ThemedText>
     </View>
   );
 }

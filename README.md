@@ -80,7 +80,12 @@ L'app affiche ce que l'API décrit : libellés (déjà traduits), type, options,
 défaut, obligatoire ; les erreurs de validation (422) s'affichent sous chaque champ. Les
 règles vivent côté serveur, dans la déclaration du formulaire (module Laravel `Form`).
 Types pris en charge : `text`, `hidden`, `email`, `password` (servis par `TextField`),
-`number`, `textarea`, `select`, `radio`, `checkbox`, `checkbox_group`, `switch`. Ajouter
+`number`, `textarea`, `select`, `radio`, `checkbox`, `checkbox_group`, `switch`, `date`
+(`DateField` : sélecteur natif `@react-native-community/datetimepicker`, valeur
+`AAAA-MM-JJ` en heure locale, « Effacer » pour une date facultative). Chaque champ porte
+`required` (astérisque, et règle `required`/`nullable` côté API). Une définition de
+formulaire n'est pas gardée en mémoire une fois le formulaire fermé : rouvert, il montre
+les valeurs à jour du compte. Ajouter
 un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`.
 
 ### Navigation
@@ -93,6 +98,9 @@ trois liens vers des formulaires décrits par l'API : Informations personnelles
 avec une confirmation (`ProfileFormScreen`). Changer le mot de passe déconnecte les autres
 appareils. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
 typées avant `npm run typecheck`.
+
+Nom complet et initiales (avatar) viennent de l'API (`full_name`, `initials`) : l'app ne
+les recalcule pas.
 
 ### Photo de profil
 

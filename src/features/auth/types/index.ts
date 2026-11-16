@@ -6,6 +6,13 @@ export type User = {
   name: string;
   first_name: string;
   last_name: string;
+  /** « Prénom Nom », calculé par l'API. */
+  full_name: string;
+  /** Initiales en majuscules sans accent, calculées par l'API (« EA »). */
+  initials: string;
+  gender: 'male' | 'female' | null;
+  /** `AAAA-MM-JJ` ou `null`. */
+  birth_date: string | null;
   email: string;
   locale: Locale;
   /** Vignette carrée de la photo de profil, ou `null` sans photo. */

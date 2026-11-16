@@ -14,7 +14,9 @@ export type FieldType =
   | 'radio'
   | 'checkbox'
   | 'checkbox_group'
-  | 'switch';
+  | 'switch'
+  /** Date seule, valeur `AAAA-MM-JJ` (vide : pas de date). */
+  | 'date';
 
 export type FieldOption = { value: string; label: string };
 

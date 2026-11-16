@@ -38,7 +38,7 @@ export function ProfileScreen() {
           <AvatarPicker />
           <View style={styles.identity}>
             <ThemedText type="smallBold" testID="profile-full-name">
-              {`${user.first_name} ${user.last_name}`.trim()}
+              {user.full_name}
             </ThemedText>
             <ThemedText themeColor="textSecondary" testID="profile-email">
               {user.email}

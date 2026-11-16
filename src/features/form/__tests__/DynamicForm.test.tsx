@@ -7,6 +7,8 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { DynamicForm as BareDynamicForm } from '../components/DynamicForm';
 import type { FormDefinition, FormFieldDefinition } from '../types';
 
+jest.mock('@react-native-community/datetimepicker', () => ({ __esModule: true, default: () => null, DateTimePickerAndroid: { open: jest.fn() } }));
+
 function field(overrides: Partial<FormFieldDefinition> & Pick<FormFieldDefinition, 'name' | 'type'>): FormFieldDefinition {
   return { label: overrides.name, placeholder: null, help: null, required: false, default: null, options: [], ...overrides };
 }
@@ -34,6 +36,7 @@ const everyType: FormDefinition = {
     field({ name: 'terms', type: 'checkbox', label: "J'accepte" }),
     field({ name: 'tags', type: 'checkbox_group', label: 'Intérêts', options }),
     field({ name: 'newsletter', type: 'switch', label: 'Newsletter', default: true }),
+    field({ name: 'birthday', type: 'date', label: 'Anniversaire', default: '1990-04-12' }),
   ],
 };
 
@@ -50,7 +53,7 @@ describe('DynamicForm', () => {
   it('affiche un composant par type de champ, sauf le champ caché', async () => {
     await render(<DynamicForm definition={everyType} onSubmit={jest.fn()} />);
 
-    for (const name of ['nickname', 'email', 'password', 'age', 'bio', 'city', 'terms', 'newsletter']) {
+    for (const name of ['nickname', 'email', 'password', 'age', 'bio', 'city', 'terms', 'newsletter', 'birthday']) {
       expect(screen.getByTestId(`field-${name}`)).toBeOnTheScreen();
     }
     expect(screen.getByTestId('field-size-option-m')).toBeOnTheScreen();
@@ -96,6 +99,7 @@ describe('DynamicForm', () => {
       terms: true,
       tags: ['vd', 'ge'],
       newsletter: true,
+      birthday: '1990-04-12',
     });
   });
 
