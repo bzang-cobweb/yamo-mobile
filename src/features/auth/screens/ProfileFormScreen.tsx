@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import type { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormLoader } from '@/features/form/components/FormLoader';
 import type { FormValues } from '@/features/form/types';
-import { ThemedText } from '@/shared/theme/components/themed-text';
+import { BackHeader } from '@/shared/components/BackHeader';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
@@ -19,18 +19,19 @@ export function backToProfile(notice: ProfileNotice) {
   router.dismissTo({ pathname: '/profile', params: { notice } });
 }
 
-/** Mise en page d'un écran du profil : lien de retour, contenu défilant au-dessus du clavier. */
+/**
+ * Mise en page d'un écran du profil : en-tête « ← Profil » fixé en haut, contenu qui
+ * défile dessous, au-dessus du clavier.
+ */
 export function ProfileScreenShell({ children }: PropsWithChildren) {
   const { t } = useAuth();
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+        <BackHeader label={t('profile.title')} />
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <Pressable accessibilityRole="link" testID="profile-form-back" onPress={() => router.back()}>
-              <ThemedText type="linkPrimary">← {t('profile.back')}</ThemedText>
-            </Pressable>
             {children}
           </ScrollView>
         </KeyboardAvoidingView>

@@ -7,6 +7,7 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { DynamicForm } from '../components/DynamicForm';
 import type { FormDefinition, FormFieldDefinition } from '../types';
 
+jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('@react-native-community/datetimepicker', () => ({ __esModule: true, default: () => null, DateTimePickerAndroid: { open: jest.fn() } }));
 
 function field(overrides: Partial<FormFieldDefinition> & Pick<FormFieldDefinition, 'name' | 'type'>): FormFieldDefinition {

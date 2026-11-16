@@ -2,14 +2,21 @@ import type { PropsWithChildren } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackHeader } from '@/shared/components/BackHeader';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-/** Mise en page des écrans d'invité (connexion, inscription) : centrée, au-dessus du clavier. */
-export function GuestScreen({ children }: PropsWithChildren) {
+type Props = PropsWithChildren<{
+  /** En-tête de retour fixé en haut (« ← Se connecter ») ; aucun pour la connexion. */
+  back?: { label: string; onPress?: () => void };
+}>;
+
+/** Mise en page des écrans d'invité (connexion, inscription, mot de passe oublié). */
+export function GuestScreen({ back, children }: Props) {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container}>
+        {back && <BackHeader label={back.label} onPress={back.onPress} />}
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             {children}

@@ -53,8 +53,13 @@ export type FormDefinition = {
   /** Sous-titre affiché sous le titre, ou `null`. */
   subtitle: string | null;
   fields: FormFieldDefinition[];
+  /** Étapes, dans l'ordre ; vide (ou absent) pour un formulaire d'un seul tenant. */
+  steps?: FormStep[];
   submit: { label: string };
 };
+
+/** Une étape : titre facultatif et noms des champs qu'elle affiche. */
+export type FormStep = { title: string | null; fields: string[] };
 
 export type FormResponse = { data: FormDefinition };
 

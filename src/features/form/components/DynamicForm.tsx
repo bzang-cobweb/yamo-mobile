@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
+import { formService } from '../services/FormService';
 import type { FieldValue, FormDefinition, FormErrors, FormFieldDefinition, FormValues } from '../types';
 import { countryKey, fieldError, initialValues, submittedValues } from '../utils/values';
 import { ERROR_COLOR } from './FieldShell';
@@ -22,6 +23,10 @@ type DynamicFormProps = {
  * saisies, bouton d'envoi. Il ne valide rien lui-même : les erreurs viennent
  * de l'API, qui applique les règles déclarées avec le formulaire.
  *
+ * Formulaire à étapes (`steps`) : une étape à la fois, « Étape 2 sur 3 ». « Suivant »
+ * fait valider l'étape par l'API avant d'afficher la suivante ; « Précédent » revient
+ * sans rien perdre ; à la dernière étape, le bouton d'envoi envoie tout.
+ *
  * Pour repartir des valeurs par défaut (autre formulaire, autre langue), le
  * monter avec une `key` différente.
  */
@@ -31,6 +36,18 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const steps = definition.steps ?? [];
+  const [step, setStep] = useState(0);
+  const isLastStep = steps.length === 0 || step === steps.length - 1;
+  const currentStep = steps[step];
+  const visibleFields = currentStep
+    ? definition.fields.filter((field) => currentStep.fields.includes(field.name))
+    : definition.fields;
+
+  /** Noms envoyés pour des champs (un téléphone envoie aussi son pays). */
+  function namesOf(fields: FormFieldDefinition[]): string[] {
+    return fields.flatMap((field) => (field.type === 'phone' ? [field.name, countryKey(field.name)] : [field.name]));
+  }
 
   function change(name: string, value: FieldValue) {
     // Liste dépendante : changer le parent vide ses enfants (ex. le pays vide la région).
@@ -66,10 +83,19 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
     setMessage(null);
 
     try {
-      await onSubmit(submittedValues(definition, values));
+      const all = submittedValues(definition, values);
+
+      if (isLastStep) {
+        await onSubmit(all);
+      } else {
+        // Étape intermédiaire : l'API valide ses seuls champs, puis l'étape suivante s'affiche.
+        const names = new Set(namesOf(visibleFields));
+        await formService.validateStep(definition.name, step + 1, Object.fromEntries(Object.entries(all).filter(([name]) => names.has(name))));
+        setStep(step + 1);
+      }
     } catch (error) {
       if (error instanceof ApiError) {
-        const fieldNames = definition.fields.flatMap((field) => (field.type === 'phone' ? [field.name, countryKey(field.name)] : [field.name]));
+        const fieldNames = namesOf(visibleFields);
         setErrors(error.errors);
         // Erreur qui ne vise aucun champ affiché (trop d'essais, champ ajouté par l'app…) : message général.
         const onFields = Object.keys(error.errors).some((key) => fieldNames.includes(key.split('.')[0]));
@@ -101,7 +127,20 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
         </View>
       )}
 
-      {definition.fields.map((field) => (
+      {currentStep && (
+        <View style={styles.header}>
+          <ThemedText type="small" themeColor="textSecondary" testID="form-step-progress">
+            {t('form.stepOf', { current: String(step + 1), total: String(steps.length) })}
+          </ThemedText>
+          {currentStep.title !== null && (
+            <ThemedText type="smallBold" testID="form-step-title">
+              {currentStep.title}
+            </ThemedText>
+          )}
+        </View>
+      )}
+
+      {visibleFields.map((field) => (
         <FormField
           key={field.name}
           field={shown(field)}
@@ -128,8 +167,24 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
         disabled={submitting}
         style={({ pressed }) => [styles.button, submitting && styles.disabled, pressed && styles.pressed]}>
         {submitting && <ActivityIndicator color="#fff" />}
-        <ThemedText style={styles.buttonText}>{submitting ? t('form.submitting') : definition.submit.label}</ThemedText>
+        <ThemedText style={styles.buttonText}>
+          {submitting ? t('form.submitting') : isLastStep ? definition.submit.label : t('form.next')}
+        </ThemedText>
       </Pressable>
+
+      {step > 0 && (
+        <Pressable
+          testID="form-previous"
+          accessibilityRole="button"
+          disabled={submitting}
+          onPress={() => {
+            setErrors({});
+            setMessage(null);
+            setStep(step - 1);
+          }}>
+          <ThemedText type="linkPrimary">← {t('form.previous')}</ThemedText>
+        </Pressable>
+      )}
     </View>
   );
 }

@@ -2,6 +2,7 @@ import type { ApiClient } from '@/shared/api/ApiClient';
 
 import { EmailChangeService } from '../services/EmailChangeService';
 import { LoginService } from '../services/LoginService';
+import { PasswordResetService } from '../services/PasswordResetService';
 import { PhoneChangeService } from '../services/PhoneChangeService';
 import { RegisterService } from '../services/RegisterService';
 import { VerificationService } from '../services/VerificationService';
@@ -20,6 +21,7 @@ describe('services des opérations vérifiées par code (une méthode par appel)
     ['LoginService.login', '/v1/auth/login', (c: ApiClient) => new LoginService(c).login({ identifier: 'a@b.c', password: 'x' })],
     ['RegisterService.register', '/v1/auth/register', (c: ApiClient) => new RegisterService(c).register({ name: 'marie' })],
     ['EmailChangeService.start', '/v1/auth/me/email', (c: ApiClient) => new EmailChangeService(c).start({ email: 'a@b.c' })],
+    ['PasswordResetService.forgot', '/v1/auth/password/forgot', (c: ApiClient) => new PasswordResetService(c).forgot({ identifier: 'a@b.c' })],
     ['PhoneChangeService.start', '/v1/auth/me/phone', (c: ApiClient) => new PhoneChangeService(c).start({ phone: '079', phone_country: 'CH' })],
   ])('%s : POST %s, renvoie le défi', async (_name, path, call) => {
     const fake = client(challenge);
@@ -48,6 +50,15 @@ describe('services des opérations vérifiées par code (une méthode par appel)
     await expect(verify(next)).resolves.toEqual({ kind: 'pending', challenge: next });
     await expect(verify({ data: { id: 1 }, token: 't' })).resolves.toEqual({ kind: 'session', session: { user: { id: 1 }, token: 't' } });
     await expect(verify({ data: { id: 1 } })).resolves.toEqual({ kind: 'user', user: { id: 1 } });
+    await expect(verify({ next: 'password', challenge: 'abc' })).resolves.toEqual({ kind: 'password', challenge: 'abc' });
+  });
+
+  it('PasswordResetService.reset : POST /v1/auth/password/reset avec le défi', async () => {
+    const fake = client(undefined);
+
+    await new PasswordResetService(fake as unknown as ApiClient).reset('abc', { password: 'x', password_confirmation: 'x' });
+
+    expect(fake.post).toHaveBeenCalledWith('/v1/auth/password/reset', { password: 'x', password_confirmation: 'x', challenge: 'abc' });
   });
 
   it('VerificationService.resend : POST /v1/auth/codes/resend', async () => {

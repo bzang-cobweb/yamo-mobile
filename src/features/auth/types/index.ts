@@ -46,7 +46,11 @@ export type Challenge = {
 export type Session = { user: User; token: string };
 
 /** `POST /api/v1/auth/codes/verify`, réponse brute de l'API. */
-export type VerifyResponse = Challenge | { data: User; token: string } | { data: User };
+export type VerifyResponse =
+  | Challenge
+  | { data: User; token: string }
+  | { data: User }
+  | { next: 'password'; challenge: string };
 
 /** Résultat d'un code validé. */
 export type VerifyResult =
@@ -55,7 +59,9 @@ export type VerifyResult =
   /** Connexion ou inscription achevée. */
   | { kind: 'session'; session: Session }
   /** Changement d'e-mail ou de téléphone enregistré. */
-  | { kind: 'user'; user: User };
+  | { kind: 'user'; user: User }
+  /** Mot de passe oublié : code validé, le nouveau mot de passe peut être choisi. */
+  | { kind: 'password'; challenge: string };
 
 /** `GET /api/v1/auth/me`. */
 export type UserResponse = { data: User };

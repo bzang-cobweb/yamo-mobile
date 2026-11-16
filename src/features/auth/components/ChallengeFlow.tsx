@@ -83,7 +83,7 @@ function CodeStep({ challenge, onBack, onSubmit }: CodeStepProps) {
           <ThemedText type="linkPrimary">{t('auth.resend')}</ThemedText>
         </Pressable>
         <Pressable accessibilityRole="button" testID="code-back" onPress={onBack}>
-          <ThemedText type="linkPrimary">← {t('profile.back')}</ThemedText>
+          <ThemedText type="linkPrimary">← {t('auth.previousStep')}</ThemedText>
         </Pressable>
       </View>
       {notice && (

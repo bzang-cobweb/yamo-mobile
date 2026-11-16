@@ -8,7 +8,8 @@ export class VerificationService {
 
   /**
    * `POST /api/v1/auth/codes/verify` — valide le code attendu du défi. Selon
-   * l'opération : un autre code attendu, une session ouverte, ou le compte modifié.
+   * l'opération : un autre code attendu, une session ouverte, le compte modifié, ou
+   * (mot de passe oublié) le choix du nouveau mot de passe.
    */
   async verify(challenge: Challenge, code: string, deviceName: string): Promise<VerifyResult> {
     const response = await this.client.post<VerifyResponse>('/v1/auth/codes/verify', {
@@ -17,6 +18,10 @@ export class VerificationService {
       code,
       device_name: deviceName,
     });
+
+    if ('next' in response) {
+      return { kind: 'password', challenge: response.challenge };
+    }
 
     if ('challenge' in response) {
       return { kind: 'pending', challenge: response };

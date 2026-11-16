@@ -9,15 +9,15 @@ import { useAuth } from '../hooks/useAuth';
 import { registerService } from '../services/RegisterService';
 
 /**
- * Créer un compte : pseudonyme, prénom, nom, e-mail et/ou téléphone, mot de passe
- * (formulaire `auth.register`), puis un code par identifiant saisi. Le compte
+ * Créer un compte en trois étapes (formulaire `auth.register` : qui, comment joindre,
+ * mot de passe), puis un code par identifiant saisi. Le compte
  * n'existe qu'une fois tous les codes validés ; l'app est alors connectée.
  */
 export function SignUpScreen() {
   const { signIn, t } = useAuth();
 
   return (
-    <GuestScreen>
+    <GuestScreen back={{ label: t('auth.signIn') }}>
       <ChallengeFlow
         form="auth.register"
         start={(values) => registerService.register(values)}
