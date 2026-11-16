@@ -11,7 +11,7 @@ import { DynamicForm } from './DynamicForm';
 import { ERROR_COLOR } from './FieldShell';
 
 type FormLoaderProps = {
-  /** Nom du formulaire dans l'API (`auth.login`, `auth.profile.locale`…). */
+  /** Nom du formulaire dans l'API (`auth.login`, `auth.profile.preferences`…). */
   name: string;
   onSubmit: (values: FormValues) => Promise<void>;
 };

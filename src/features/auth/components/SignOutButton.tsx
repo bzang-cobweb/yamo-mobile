@@ -6,7 +6,7 @@ import { Spacing } from '@/shared/theme/theme';
 
 import { useAuth } from '../hooks/useAuth';
 
-/** Déconnecte l'appareil : révoque son jeton et revient à l'écran de connexion. */
+/** Déconnecte l'appareil (bas du profil) : révoque son jeton et revient à l'écran de connexion. */
 export function SignOutButton() {
   const { signOut, t } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
@@ -21,12 +21,12 @@ export function SignOutButton() {
         signOut();
       }}
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
-      <ThemedText type="linkPrimary">{t('home.signOut')}</ThemedText>
+      <ThemedText type="linkPrimary">{t('profile.signOut')}</ThemedText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: { padding: Spacing.two },
+  button: { padding: Spacing.two, alignSelf: 'center' },
   pressed: { opacity: 0.6 },
 });

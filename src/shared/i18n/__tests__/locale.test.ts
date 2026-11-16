@@ -1,3 +1,4 @@
+import type { MessageKey } from '../messages';
 import { pickBestLocale, translate } from '../locale';
 
 describe('pickBestLocale', () => {
@@ -31,12 +32,12 @@ describe('pickBestLocale', () => {
 });
 
 describe('translate', () => {
-  const fr = { 'home.greeting': 'Bonjour :name', 'home.signedInAs': 'Connecté en tant que :fullName', 'home.email': 'E-mail : :email' };
+  const fr = { 'home.greeting': 'Bonjour :name', 'a.fullName': 'Connecté en tant que :fullName', 'a.email': 'E-mail : :email' };
 
   it("prend le texte servi par l'API et remplace les variables au format Laravel", () => {
     expect(translate(fr, 'fr', 'home.greeting', { name: 'jeanne' })).toBe('Bonjour jeanne');
-    expect(translate(fr, 'fr', 'home.signedInAs', { fullName: 'Jeanne Dupont' })).toBe('Connecté en tant que Jeanne Dupont');
-    expect(translate(fr, 'fr', 'home.email', { email: 'j@x.ch' })).toBe('E-mail : j@x.ch');
+    expect(translate(fr, 'fr', 'a.fullName' as MessageKey, { fullName: 'Jeanne Dupont' })).toBe('Connecté en tant que Jeanne Dupont');
+    expect(translate(fr, 'fr', 'a.email' as MessageKey, { email: 'j@x.ch' })).toBe('E-mail : j@x.ch');
   });
 
   it("affiche la clé quand l'API ne l'a pas envoyée", () => {

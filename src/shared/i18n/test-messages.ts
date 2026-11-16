@@ -7,13 +7,16 @@ import type { Messages } from './messages';
  * `lang/fr/mobile.php` côté Laravel). Jamais importé par l'app.
  */
 export const TEST_MESSAGES: Messages = {
+  'tabs.home': 'Accueil',
+  'tabs.profile': 'Profil',
   'home.greeting': 'Bonjour :name',
-  'home.signedInAs': 'Connecté en tant que :fullName',
-  'home.email': 'E-mail : :email',
-  'home.signOut': 'Se déconnecter',
-  'home.profile': 'Mon profil',
   'profile.title': 'Profil',
+  'profile.personalInfo': 'Informations personnelles',
+  'profile.password': 'Changer le mot de passe',
+  'profile.preferences': 'Préférences',
   'profile.saved': 'Modifications enregistrées.',
+  'profile.passwordSaved': 'Mot de passe modifié.',
+  'profile.signOut': 'Se déconnecter',
   'profile.back': 'Retour',
   'form.loading': 'Chargement du formulaire…',
   'form.submitting': 'Envoi…',

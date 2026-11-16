@@ -32,13 +32,16 @@ export type OfflineKey = keyof (typeof OFFLINE_MESSAGES)['fr'];
 
 /** Clés des textes servis par l'API, telles qu'on les utilise dans l'app. */
 export type ApiMessageKey =
+  | 'tabs.home'
+  | 'tabs.profile'
   | 'home.greeting'
-  | 'home.signedInAs'
-  | 'home.email'
-  | 'home.signOut'
-  | 'home.profile'
   | 'profile.title'
+  | 'profile.personalInfo'
+  | 'profile.password'
+  | 'profile.preferences'
   | 'profile.saved'
+  | 'profile.passwordSaved'
+  | 'profile.signOut'
   | 'profile.back'
   | 'form.loading'
   | 'form.submitting'

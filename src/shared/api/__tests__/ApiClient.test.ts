@@ -21,10 +21,10 @@ describe('ApiClient', () => {
     client.setToken('abc');
     client.setLocale('fr');
 
-    await client.patch('/v1/auth/me', { locale: 'en' });
+    await client.patch('/v1/auth/me/preferences', { locale: 'en' });
 
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('http://api.test/v1/auth/me');
+    expect(url).toBe('http://api.test/v1/auth/me/preferences');
     expect(init.body).toBe('{"locale":"en"}');
     expect(init.headers).toEqual({
       Accept: 'application/json',

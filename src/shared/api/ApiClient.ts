@@ -41,6 +41,10 @@ export class ApiClient {
     return this.request<T>(path, { method: 'PATCH', body });
   }
 
+  put<T>(path: string, body?: unknown): Promise<T> {
+    return this.request<T>(path, { method: 'PUT', body });
+  }
+
   /**
    * Envoi multipart (fichiers). `fetch` pose lui-même l'en-tête `Content-Type` et
    * sa frontière : ne jamais le forcer.

@@ -67,7 +67,7 @@ Une feature = un dossier dans `src/features/<feature>/`, avec selon ses besoins 
 | Dossier | Contenu |
 |---|---|
 | `src/app/` | Routes Expo Router uniquement : elles importent les écrans des features |
-| `src/features/auth/` | Session et profil : `LoginService`, `LogoutService`, `ProfileService`, `AuthProvider`, `useAuth()`, écrans Connexion, Accueil, Profil |
+| `src/features/auth/` | Session et profil : `LoginService`, `LogoutService`, `ProfileService` (consultation, photo), `PersonalInfoService`, `PasswordService`, `PreferencesService` (un par formulaire), `AuthProvider`, `useAuth()`, écrans Connexion, Accueil, Profil et ses formulaires |
 | `src/features/form/` | Formulaires décrits par l'API (`GET /api/v1/forms/{nom}`) : `FormService`, `FormLoader`, `DynamicForm`, un composant par type de champ dans `components/fields/` |
 | `src/shared/api/` | `ApiClient` (URL, jeton, langue, erreurs) |
 | `src/shared/i18n/` | Textes de l'interface (fr, en), choix de la meilleure langue de l'appareil, `useI18n()` |
@@ -82,6 +82,17 @@ règles vivent côté serveur, dans la déclaration du formulaire (module Larave
 Types pris en charge : `text`, `hidden`, `email`, `password` (servis par `TextField`),
 `number`, `textarea`, `select`, `radio`, `checkbox`, `checkbox_group`, `switch`. Ajouter
 un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`.
+
+### Navigation
+
+Connecté : menu fixe en bas, deux icônes — Accueil (écran par défaut, `src/app/(tabs)/index.tsx`)
+et Profil (pile `src/app/(tabs)/profile/`). Le profil affiche la photo, le nom, l'e-mail et
+trois liens vers des formulaires décrits par l'API : Informations personnelles
+(`/profile/personal`), Changer le mot de passe (`/profile/password`), Préférences
+(`/profile/preferences`), puis « Se déconnecter ». Un formulaire enregistré revient au profil
+avec une confirmation (`ProfileFormScreen`). Changer le mot de passe déconnecte les autres
+appareils. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
+typées avant `npm run typecheck`.
 
 ### Photo de profil
 
