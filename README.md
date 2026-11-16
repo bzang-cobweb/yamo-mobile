@@ -29,6 +29,23 @@ On se ya mo — application mobile (iOS, Android) compagnon du site yamo.
 
 Un compte se crée côté API : `ddev artisan auth:create-user` (dépôt `yamo-web`).
 
+### Clavier du simulateur iOS (Mac en suisse romand)
+
+Le simulateur lit les touches du Mac avec la disposition de **son** clavier actif, en
+anglais américain par défaut : les lettres passent, pas les caractères spéciaux (`-`
+devient `'`, `@` devient `"`). Un mot de passe tapé semble juste mais arrive faux à l'API
+(« identifiants incorrects »). Fixer une fois pour toutes la disposition physique sur
+« Swiss French », simulateur démarré :
+
+```bash
+xcrun simctl spawn booted defaults write .GlobalPreferences AppleKeyboards -array "fr_CH@sw=QWERTZ-Accents;hw=Swiss French" "en_US@sw=QWERTY;hw=Swiss French" "emoji@sw=Emoji"
+```
+
+puis redémarrer le simulateur (Device → Restart). En dépannage : coller (⌘V, le
+presse-papiers du Mac est partagé) ou utiliser le clavier à l'écran (I/O → Keyboard →
+décocher Connect Hardware Keyboard). L'œil du champ mot de passe permet de vérifier la
+saisie.
+
 ## Vérifier
 
 ```bash

@@ -113,4 +113,24 @@ describe('DynamicForm', () => {
 
     expect(await screen.findByTestId('form-message')).toHaveTextContent('Too Many Attempts.');
   });
+  it('affiche puis masque le mot de passe, sans changer la valeur envoyée', async () => {
+    const onSubmit = jest.fn().mockResolvedValue(undefined);
+    await render(<DynamicForm definition={everyType} onSubmit={onSubmit} />);
+
+    await fireEvent.changeText(screen.getByTestId('field-password'), 's3cr€t-@');
+    const toggle = screen.getByTestId('field-password-toggle');
+    expect(screen.getByTestId('field-password').props.secureTextEntry).toBe(true);
+    expect(toggle).toHaveProp('accessibilityLabel', 'Afficher le mot de passe');
+
+    await fireEvent.press(toggle);
+    expect(screen.getByTestId('field-password').props.secureTextEntry).toBe(false);
+    expect(screen.getByTestId('field-password-toggle')).toHaveProp('accessibilityLabel', 'Masquer le mot de passe');
+
+    await fireEvent.press(screen.getByTestId('field-password-toggle'));
+    expect(screen.getByTestId('field-password').props.secureTextEntry).toBe(true);
+
+    await fireEvent.press(screen.getByTestId('form-submit'));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(onSubmit.mock.calls[0][0].password).toBe('s3cr€t-@');
+  });
 });
