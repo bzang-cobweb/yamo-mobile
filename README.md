@@ -108,9 +108,13 @@ injoignable, l'API ne peut pas les fournir.
   **fr et en** dans le `mobile.php` du module concerné côté Laravel. Une clé que
   l'API n'envoie pas s'affiche telle quelle (`home.greeting`) : l'oubli se voit.
 - Variables au format Laravel : `:name` (`t('home.greeting', { name })`).
-- Démarrage : l'app charge les langues, le compte, puis les textes. Si l'un d'eux
-  échoue (pas de réseau, serveur arrêté), elle affiche l'écran hors ligne avec
-  Réessayer ; un jeton refusé renvoie à la connexion.
+- **Écran hors ligne** (`ConnectivityGate`) : l'écran courant ne s'affiche que si
+  l'app peut fonctionner. Sans internet, à tout moment (`expo-network`), l'écran hors
+  ligne le recouvre sans le démonter : au retour de la connexion, on retrouve son
+  écran et sa saisie, et les chargements en attente reprennent d'eux-mêmes. Même
+  écran si le démarrage échoue avec internet (serveur arrêté) ; un jeton refusé
+  renvoie à la connexion.
+- Tester la coupure : couper le Wi-Fi du Mac (le simulateur suit sa connexion).
 - Formulaires : titre et sous-titre facultatifs (`title`, `subtitle`) ; l'aide d'un
   champ (`help`) reste affichée sous le champ, l'erreur s'ajoute en dessous, en rouge.
 - Exception native : le texte de la demande d'accès aux photos d'iOS est figé au

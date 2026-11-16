@@ -6,9 +6,11 @@ import { useColorScheme } from 'react-native';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { AuthProvider } from '@/features/auth/providers/AuthProvider';
-import { OfflineScreen } from '@/shared/components/OfflineScreen';
+import { ConnectivityGate } from '@/shared/components/ConnectivityGate';
+import { bindQueriesToNetwork, useIsOnline } from '@/shared/network/connectivity';
 
 SplashScreen.preventAutoHideAsync();
+bindQueriesToNetwork();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -27,11 +29,13 @@ export default function RootLayout() {
 
 /**
  * Écrans accessibles selon l'état de connexion. L'écran de démarrage (sans texte)
- * reste affiché pendant le chargement ; sans réseau au démarrage, l'écran hors
- * ligne le remplace.
+ * reste affiché pendant le chargement. L'écran courant ne s'affiche que si l'app
+ * peut fonctionner : sans internet, à tout moment, ou si le démarrage a échoué,
+ * l'écran hors ligne le recouvre (décision 2026-11-16-ecran-hors-ligne-permanent).
  */
 function RootNavigator() {
-  const { isLoading, offline, isRetrying, retry, user } = useAuth();
+  const { isLoading, offline: failedToStart, isRetrying, retry, user } = useAuth();
+  const offline = !useIsOnline() || failedToStart;
 
   useEffect(() => {
     if (!isLoading || offline) {
@@ -39,23 +43,19 @@ function RootNavigator() {
     }
   }, [isLoading, offline]);
 
-  if (offline) {
-    return <OfflineScreen onRetry={retry} retrying={isRetrying} />;
-  }
-
-  if (isLoading) {
-    return null;
-  }
-
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={user !== null}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="profile" />
-      </Stack.Protected>
-      <Stack.Protected guard={user === null}>
-        <Stack.Screen name="sign-in" />
-      </Stack.Protected>
-    </Stack>
+    <ConnectivityGate offline={offline} onRetry={retry} retrying={isRetrying}>
+      {!isLoading && (
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Protected guard={user !== null}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="profile" />
+          </Stack.Protected>
+          <Stack.Protected guard={user === null}>
+            <Stack.Screen name="sign-in" />
+          </Stack.Protected>
+        </Stack>
+      )}
+    </ConnectivityGate>
   );
 }
