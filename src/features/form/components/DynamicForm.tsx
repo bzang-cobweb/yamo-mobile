@@ -142,11 +142,11 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
 
       {currentStep && (
         <View style={styles.header}>
-          <ThemedText type="small" themeColor="textSecondary" testID="form-step-progress">
+          <ThemedText type="small" themeColor="textSecondary" style={styles.progress} testID="form-step-progress">
             {t('form.stepOf', { current: String(step + 1), total: String(steps.length) })}
           </ThemedText>
           {currentStep.title !== null && (
-            <ThemedText type="smallBold" testID="form-step-title">
+            <ThemedText type="subtitle" accessibilityRole="header" testID="form-step-title">
               {currentStep.title}
             </ThemedText>
           )}
@@ -197,6 +197,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
 const styles = StyleSheet.create({
   form: { gap: Spacing.three },
   header: { gap: Spacing.one },
+  progress: { textAlign: 'center' },
   message: { color: ERROR_COLOR },
   button: {
     flexDirection: 'row',

@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: {
     flexGrow: 1,
-    justifyContent: 'center',
     width: '100%',
     maxWidth: MaxContentWidth / 2,
     alignSelf: 'center',
