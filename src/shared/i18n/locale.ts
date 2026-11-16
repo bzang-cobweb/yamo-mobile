@@ -1,4 +1,4 @@
-import { APP_LOCALES, DEFAULT_LOCALE, messages, type Locale, type MessageKey } from './messages';
+import { APP_LOCALES, DEFAULT_LOCALE, OFFLINE_MESSAGES, type Locale, type MessageKey, type Messages } from './messages';
 
 export function isLocale(value: string | null | undefined): value is Locale {
   return APP_LOCALES.includes(value as Locale);
@@ -27,6 +27,19 @@ export function pickBestLocale(preferred: readonly string[], available: readonly
   return isLocale(fallback) ? fallback : DEFAULT_LOCALE;
 }
 
-export function translate(locale: Locale, key: MessageKey, params: Record<string, string> = {}): string {
-  return messages[locale][key].replace(/\{(\w+)\}/g, (match, name: string) => params[name] ?? match);
+/**
+ * Texte d'une clé : celui de l'absence de réseau est local, tous les autres
+ * viennent de l'API. Une clé que l'API n'a pas envoyée s'affiche telle quelle,
+ * pour que l'oubli se voie. Variables au format Laravel (`:name`).
+ */
+export function translate(
+  messages: Messages,
+  locale: Locale,
+  key: MessageKey,
+  params: Record<string, string> = {},
+): string {
+  const local: Record<string, string> = OFFLINE_MESSAGES[locale];
+  const text = local[key] ?? messages[key] ?? key;
+
+  return text.replace(/:([A-Za-z]\w*)/g, (match, name: string) => params[name] ?? match);
 }

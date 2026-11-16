@@ -1,64 +1,60 @@
 /**
- * Textes de l'interface de l'app (ce que l'API n'envoie pas : boutons, titres,
- * erreurs réseau). Les libellés des formulaires, eux, arrivent traduits de l'API.
+ * Textes de l'interface de l'app.
+ *
+ * Tous viennent de l'API (`GET /api/v1/messages`, fichiers `mobile.php` de
+ * Laravel), sauf ceux de l'absence de réseau : sans réseau, l'API ne peut pas les
+ * fournir (décision 2026-11-16-contrat-textes-servis-par-api).
  */
 
-/** Langues dont l'app a les textes. Une langue proposée par l'API sans entrée ici n'est pas retenue. */
+/** Langues que l'app sait choisir. Une langue proposée par l'API hors de cette liste n'est pas retenue. */
 export const APP_LOCALES = ['fr', 'en'] as const;
 export type Locale = (typeof APP_LOCALES)[number];
 
 /** Langue par défaut si l'API est injoignable : celle de l'API (`config('app.default_locale')`). */
 export const DEFAULT_LOCALE: Locale = 'fr';
 
-export const messages = {
+/**
+ * Les seuls textes écrits dans l'app : message et bouton de l'absence de réseau
+ * (ou d'un serveur injoignable — dans les deux cas, l'API ne peut pas les fournir).
+ */
+export const OFFLINE_MESSAGES = {
   fr: {
-    'signIn.title': 'Connexion',
-    'home.greeting': 'Bonjour {name}',
-    'home.signedInAs': 'Connecté en tant que {fullName}',
-    'home.email': 'E-mail : {email}',
-    'home.signOut': 'Se déconnecter',
-    'home.profile': 'Mon profil',
-    'profile.title': 'Profil',
-    'profile.saved': 'Modifications enregistrées.',
-    'profile.back': 'Retour',
-    'form.loading': 'Chargement du formulaire…',
-    'form.submitting': 'Envoi…',
-    'form.selectPlaceholder': 'Choisir…',
-    'form.showPassword': 'Afficher le mot de passe',
-    'form.hidePassword': 'Masquer le mot de passe',
-    'avatar.label': 'Photo de profil',
-    'avatar.change': 'Modifier la photo',
-    'avatar.choose': 'Choisir une photo',
-    'avatar.remove': 'Retirer la photo',
-    'avatar.cancel': 'Annuler',
-    'avatar.uploading': 'Envoi de la photo…',
-    'error.network': 'Le serveur est injoignable. Vérifiez votre connexion.',
-    'error.unknown': 'Une erreur est survenue. Réessayez.',
+    'offline.message': 'Connexion impossible. Vérifiez votre connexion internet, puis réessayez.',
+    'offline.retry': 'Réessayer',
   },
   en: {
-    'signIn.title': 'Sign in',
-    'home.greeting': 'Hello {name}',
-    'home.signedInAs': 'Signed in as {fullName}',
-    'home.email': 'Email: {email}',
-    'home.signOut': 'Sign out',
-    'home.profile': 'My profile',
-    'profile.title': 'Profile',
-    'profile.saved': 'Changes saved.',
-    'profile.back': 'Back',
-    'form.loading': 'Loading form…',
-    'form.submitting': 'Sending…',
-    'form.selectPlaceholder': 'Choose…',
-    'form.showPassword': 'Show password',
-    'form.hidePassword': 'Hide password',
-    'avatar.label': 'Profile photo',
-    'avatar.change': 'Change photo',
-    'avatar.choose': 'Choose a photo',
-    'avatar.remove': 'Remove photo',
-    'avatar.cancel': 'Cancel',
-    'avatar.uploading': 'Uploading photo…',
-    'error.network': 'The server cannot be reached. Check your connection.',
-    'error.unknown': 'Something went wrong. Please try again.',
+    'offline.message': "Can't connect. Check your internet connection, then try again.",
+    'offline.retry': 'Try again',
   },
-} satisfies Record<Locale, Record<string, string>>;
+} as const satisfies Record<Locale, Record<string, string>>;
 
-export type MessageKey = keyof (typeof messages)['fr'];
+export type OfflineKey = keyof (typeof OFFLINE_MESSAGES)['fr'];
+
+/** Clés des textes servis par l'API, telles qu'on les utilise dans l'app. */
+export type ApiMessageKey =
+  | 'home.greeting'
+  | 'home.signedInAs'
+  | 'home.email'
+  | 'home.signOut'
+  | 'home.profile'
+  | 'profile.title'
+  | 'profile.saved'
+  | 'profile.back'
+  | 'form.loading'
+  | 'form.submitting'
+  | 'form.selectPlaceholder'
+  | 'form.showPassword'
+  | 'form.hidePassword'
+  | 'form.retry'
+  | 'avatar.label'
+  | 'avatar.change'
+  | 'avatar.choose'
+  | 'avatar.remove'
+  | 'avatar.cancel'
+  | 'avatar.uploading'
+  | 'error.unknown';
+
+export type MessageKey = ApiMessageKey | OfflineKey;
+
+/** Textes reçus de l'API, par clé. */
+export type Messages = Readonly<Record<string, string>>;

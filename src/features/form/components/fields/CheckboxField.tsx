@@ -29,11 +29,6 @@ export function CheckboxField({ field, value, onChange, error, disabled }: Field
           {field.required && <ThemedText style={styles.required}> *</ThemedText>}
         </ThemedText>
       </Pressable>
-      {field.help !== null && !error && (
-        <ThemedText type="small" themeColor="textSecondary">
-          {field.help}
-        </ThemedText>
-      )}
     </FieldShell>
   );
 }

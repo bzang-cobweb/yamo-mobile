@@ -6,6 +6,7 @@ import { useColorScheme } from 'react-native';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { AuthProvider } from '@/features/auth/providers/AuthProvider';
+import { OfflineScreen } from '@/shared/components/OfflineScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,15 +25,23 @@ export default function RootLayout() {
   );
 }
 
-/** Écrans accessibles selon l'état de connexion ; l'écran de démarrage reste affiché pendant le chargement. */
+/**
+ * Écrans accessibles selon l'état de connexion. L'écran de démarrage (sans texte)
+ * reste affiché pendant le chargement ; sans réseau au démarrage, l'écran hors
+ * ligne le remplace.
+ */
 function RootNavigator() {
-  const { isLoading, user } = useAuth();
+  const { isLoading, offline, isRetrying, retry, user } = useAuth();
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading || offline) {
       SplashScreen.hideAsync();
     }
-  }, [isLoading]);
+  }, [isLoading, offline]);
+
+  if (offline) {
+    return <OfflineScreen onRetry={retry} retrying={isRetrying} />;
+  }
 
   if (isLoading) {
     return null;

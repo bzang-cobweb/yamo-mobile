@@ -31,6 +31,10 @@ export type FormFieldDefinition = {
 
 export type FormDefinition = {
   name: string;
+  /** Titre affiché au-dessus du formulaire, ou `null`. */
+  title: string | null;
+  /** Sous-titre affiché sous le titre, ou `null`. */
+  subtitle: string | null;
   fields: FormFieldDefinition[];
   submit: { label: string };
 };

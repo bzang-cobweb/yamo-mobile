@@ -33,13 +33,16 @@ export function FormLoader({ name, onSubmit }: FormLoaderProps) {
   }
 
   if (query.isError) {
+    // Sans réseau, message et bouton locaux : l'API ne peut pas fournir leurs textes.
+    const offline = query.error instanceof NetworkError;
+
     return (
       <View style={styles.center}>
         <ThemedText style={styles.error} accessibilityRole="alert">
-          {query.error instanceof NetworkError ? t('error.network') : t('error.unknown')}
+          {offline ? t('offline.message') : t('error.unknown')}
         </ThemedText>
-        <Pressable accessibilityRole="button" onPress={() => query.refetch()}>
-          <ThemedText type="linkPrimary">↻</ThemedText>
+        <Pressable accessibilityRole="button" testID="form-retry" onPress={() => query.refetch()}>
+          <ThemedText type="linkPrimary">{offline ? t('offline.retry') : t('form.retry')}</ThemedText>
         </Pressable>
       </View>
     );

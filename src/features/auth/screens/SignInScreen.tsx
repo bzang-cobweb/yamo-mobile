@@ -2,24 +2,22 @@ import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormLoader } from '@/features/form/components/FormLoader';
-import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { useAuth } from '../hooks/useAuth';
 
 /**
- * Connexion : les champs sont ceux du formulaire `auth.login` envoyé par l'API
- * (libellés traduits) ; le nom de l'appareil est ajouté par `LoginService`.
+ * Connexion : titre, sous-titre et champs sont ceux du formulaire `auth.login`
+ * envoyé par l'API (traduits) ; le nom de l'appareil est ajouté par `LoginService`.
  */
 export function SignInScreen() {
-  const { signIn, t } = useAuth();
+  const { signIn } = useAuth();
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.form}>
-          <ThemedText type="subtitle">{t('signIn.title')}</ThemedText>
           <FormLoader name="auth.login" onSubmit={signIn} />
         </KeyboardAvoidingView>
       </SafeAreaView>

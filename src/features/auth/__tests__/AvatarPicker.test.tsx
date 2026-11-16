@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { Alert, type AlertButton } from 'react-native';
 
 import { ApiError } from '@/shared/api/errors';
-import { translate } from '@/shared/i18n/locale';
+import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { AvatarPicker } from '../components/AvatarPicker';
 import { initialsOf } from '../components/Avatar';
@@ -30,9 +30,12 @@ async function renderPicker(user: User, overrides: Partial<Parameters<typeof Ava
   const pick = jest.fn().mockResolvedValue(file);
   const auth = {
     isLoading: false,
+    offline: false,
+    isRetrying: false,
+    retry: jest.fn(),
     user,
     locale: 'fr',
-    t: (key, params) => translate('fr', key, params),
+    t: TEST_I18N.t,
     signIn: jest.fn(),
     signOut: jest.fn(),
     setUser,

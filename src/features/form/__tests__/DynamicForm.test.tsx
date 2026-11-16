@@ -1,8 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { ApiError } from '@/shared/api/errors';
+import { I18nContext } from '@/shared/i18n/I18nContext';
+import { TEST_I18N } from '@/shared/i18n/test-messages';
 
-import { DynamicForm } from '../components/DynamicForm';
+import { DynamicForm as BareDynamicForm } from '../components/DynamicForm';
 import type { FormDefinition, FormFieldDefinition } from '../types';
 
 function field(overrides: Partial<FormFieldDefinition> & Pick<FormFieldDefinition, 'name' | 'type'>): FormFieldDefinition {
@@ -17,6 +19,8 @@ const options = [
 /** Un formulaire avec un champ de chaque type, tel que l'API pourrait l'envoyer. */
 const everyType: FormDefinition = {
   name: 'test.all',
+  title: null,
+  subtitle: null,
   submit: { label: 'Envoyer' },
   fields: [
     field({ name: 'nickname', type: 'text', label: 'Pseudonyme', required: true, help: 'Visible par tous' }),
@@ -32,6 +36,15 @@ const everyType: FormDefinition = {
     field({ name: 'newsletter', type: 'switch', label: 'Newsletter', default: true }),
   ],
 };
+
+/** Le formulaire avec les textes de l'API (en français, `TEST_MESSAGES`). */
+function DynamicForm(props: Parameters<typeof BareDynamicForm>[0]) {
+  return (
+    <I18nContext.Provider value={TEST_I18N}>
+      <BareDynamicForm {...props} />
+    </I18nContext.Provider>
+  );
+}
 
 describe('DynamicForm', () => {
   it('affiche un composant par type de champ, sauf le champ caché', async () => {
@@ -132,5 +145,50 @@ describe('DynamicForm', () => {
     await fireEvent.press(screen.getByTestId('form-submit'));
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     expect(onSubmit.mock.calls[0][0].password).toBe('s3cr€t-@');
+  });
+
+  it('affiche le titre puis le sous-titre envoyés par l’API', async () => {
+    await render(
+      <DynamicForm
+        definition={{ ...everyType, title: 'Se connecter', subtitle: 'Accédez à votre compte yamo.' }}
+        onSubmit={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId('form-title')).toHaveTextContent('Se connecter');
+    expect(screen.getByTestId('form-subtitle')).toHaveTextContent('Accédez à votre compte yamo.');
+  });
+
+  it('sans titre ni sous-titre, n’affiche aucun en-tête', async () => {
+    await render(<DynamicForm definition={everyType} onSubmit={jest.fn()} />);
+
+    expect(screen.queryByTestId('form-title')).toBeNull();
+    expect(screen.queryByTestId('form-subtitle')).toBeNull();
+  });
+
+  it("garde l'aide sous le champ et affiche l'erreur en plus, distincte", async () => {
+    const onSubmit = jest.fn().mockRejectedValue(new ApiError(422, 'Invalide', { nickname: ['Pseudonyme déjà pris.'] }));
+    await render(<DynamicForm definition={everyType} onSubmit={onSubmit} />);
+
+    expect(screen.getByTestId('nickname-help')).toHaveTextContent('Visible par tous');
+    await fireEvent.press(screen.getByTestId('form-submit'));
+
+    expect(await screen.findByTestId('nickname-error')).toHaveTextContent('Pseudonyme déjà pris.');
+    expect(screen.getByTestId('nickname-help')).toHaveTextContent('Visible par tous');
+    expect(screen.getByTestId('nickname-error')).toHaveProp('accessibilityRole', 'alert');
+  });
+
+  it('affiche une seule fois l’aide d’une case à cocher et d’un interrupteur', async () => {
+    const withHelp: FormDefinition = {
+      ...everyType,
+      fields: [
+        field({ name: 'terms', type: 'checkbox', label: "J'accepte", help: 'Conditions générales' }),
+        field({ name: 'newsletter', type: 'switch', label: 'Newsletter', help: 'Un e-mail par mois' }),
+      ],
+    };
+    await render(<DynamicForm definition={withHelp} onSubmit={jest.fn()} />);
+
+    expect(screen.getAllByText('Conditions générales')).toHaveLength(1);
+    expect(screen.getAllByText('Un e-mail par mois')).toHaveLength(1);
   });
 });

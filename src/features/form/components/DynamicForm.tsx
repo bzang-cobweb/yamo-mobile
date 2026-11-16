@@ -52,7 +52,7 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
         const onFields = Object.keys(error.errors).some((key) => fieldNames.includes(key.split('.')[0]));
         setMessage(onFields ? null : (Object.values(error.errors)[0]?.[0] ?? error.message));
       } else if (error instanceof NetworkError) {
-        setMessage(t('error.network'));
+        setMessage(t('offline.message'));
       } else {
         setMessage(t('error.unknown'));
       }
@@ -63,6 +63,21 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
 
   return (
     <View style={styles.form} testID={`form-${definition.name}`}>
+      {(definition.title !== null || definition.subtitle !== null) && (
+        <View style={styles.header}>
+          {definition.title !== null && (
+            <ThemedText type="subtitle" accessibilityRole="header" testID="form-title">
+              {definition.title}
+            </ThemedText>
+          )}
+          {definition.subtitle !== null && (
+            <ThemedText themeColor="textSecondary" testID="form-subtitle">
+              {definition.subtitle}
+            </ThemedText>
+          )}
+        </View>
+      )}
+
       {definition.fields.map((field) => (
         <FormField
           key={field.name}
@@ -96,6 +111,7 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
 
 const styles = StyleSheet.create({
   form: { gap: Spacing.three },
+  header: { gap: Spacing.one },
   message: { color: ERROR_COLOR },
   button: {
     flexDirection: 'row',

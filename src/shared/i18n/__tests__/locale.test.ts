@@ -31,8 +31,21 @@ describe('pickBestLocale', () => {
 });
 
 describe('translate', () => {
-  it('remplace les paramètres', () => {
-    expect(translate('fr', 'home.greeting', { name: 'jeanne' })).toBe('Bonjour jeanne');
-    expect(translate('en', 'home.greeting', { name: 'jeanne' })).toBe('Hello jeanne');
+  const fr = { 'home.greeting': 'Bonjour :name', 'home.signedInAs': 'Connecté en tant que :fullName', 'home.email': 'E-mail : :email' };
+
+  it("prend le texte servi par l'API et remplace les variables au format Laravel", () => {
+    expect(translate(fr, 'fr', 'home.greeting', { name: 'jeanne' })).toBe('Bonjour jeanne');
+    expect(translate(fr, 'fr', 'home.signedInAs', { fullName: 'Jeanne Dupont' })).toBe('Connecté en tant que Jeanne Dupont');
+    expect(translate(fr, 'fr', 'home.email', { email: 'j@x.ch' })).toBe('E-mail : j@x.ch');
+  });
+
+  it("affiche la clé quand l'API ne l'a pas envoyée", () => {
+    expect(translate({}, 'fr', 'profile.title')).toBe('profile.title');
+  });
+
+  it("garde en local les seuls textes de l'absence de réseau, dans la langue demandée", () => {
+    expect(translate({}, 'fr', 'offline.message')).toMatch(/^Connexion impossible/);
+    expect(translate({}, 'en', 'offline.retry')).toBe('Try again');
+    expect(translate({ 'offline.retry': 'venu de l’API' }, 'fr', 'offline.retry')).toBe('Réessayer');
   });
 });

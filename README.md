@@ -96,6 +96,26 @@ avant d'atteindre le serveur, « serveur injoignable »). Joindre un fichier ave
 `appendFile` / `formFileFromBase64` (`src/shared/api/form-file.ts`) et l'envoyer par
 `apiClient.postForm`, qui ne force pas l'en-tête `Content-Type`.
 
+### Textes de l'interface
+
+**Tous les textes viennent de l'API** (`GET /api/v1/messages`, fichiers
+`lang/<langue>/mobile.php` du dépôt `yamo-web`), dans la langue de l'app. Seuls le
+message et le bouton de l'écran hors ligne sont écrits dans l'app
+(`OFFLINE_MESSAGES`, `src/shared/i18n/messages.ts`) : sans réseau ou serveur
+injoignable, l'API ne peut pas les fournir.
+
+- Ajouter un texte : sa clé dans `ApiMessageKey` (`messages.ts`), et son texte en
+  **fr et en** dans le `mobile.php` du module concerné côté Laravel. Une clé que
+  l'API n'envoie pas s'affiche telle quelle (`home.greeting`) : l'oubli se voit.
+- Variables au format Laravel : `:name` (`t('home.greeting', { name })`).
+- Démarrage : l'app charge les langues, le compte, puis les textes. Si l'un d'eux
+  échoue (pas de réseau, serveur arrêté), elle affiche l'écran hors ligne avec
+  Réessayer ; un jeton refusé renvoie à la connexion.
+- Formulaires : titre et sous-titre facultatifs (`title`, `subtitle`) ; l'aide d'un
+  champ (`help`) reste affichée sous le champ, l'erreur s'ajoute en dessous, en rouge.
+- Exception native : le texte de la demande d'accès aux photos d'iOS est figé au
+  build (`photosPermission`, `app.json`) et ne peut pas venir de l'API.
+
 ### Langue
 
 Connecté : la langue du compte (modifiable dans Profil). Non connecté : la première des

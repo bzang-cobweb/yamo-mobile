@@ -42,7 +42,7 @@ export function AvatarPicker({ service = profileService, pick = pickAvatar }: Pr
       if (caught instanceof ApiError) {
         setError(caught.errors.avatar?.[0] ?? caught.message);
       } else if (caught instanceof NetworkError) {
-        setError(t('error.network'));
+        setError(t('offline.message'));
       } else {
         setError(t('error.unknown'));
       }

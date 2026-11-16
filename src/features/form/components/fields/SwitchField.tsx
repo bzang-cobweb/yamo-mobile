@@ -23,11 +23,6 @@ export function SwitchField({ field, value, onChange, error, disabled }: FieldPr
           disabled={disabled}
         />
       </View>
-      {field.help !== null && !error && (
-        <ThemedText type="small" themeColor="textSecondary">
-          {field.help}
-        </ThemedText>
-      )}
     </FieldShell>
   );
 }

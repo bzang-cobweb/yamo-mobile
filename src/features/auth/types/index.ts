@@ -28,8 +28,14 @@ export type LoginResponse = { data: User; token: string };
 export type UserResponse = { data: User };
 
 export type AuthContextValue = {
-  /** `true` tant que le jeton enregistré, l'utilisateur et les langues ne sont pas chargés. */
+  /** `true` tant que le jeton enregistré, l'utilisateur, les langues et les textes ne sont pas chargés. */
   isLoading: boolean;
+  /** Démarrage impossible (pas de réseau, serveur injoignable) : l'app affiche l'écran hors ligne (textes locaux). */
+  offline: boolean;
+  /** Une nouvelle tentative est en cours. */
+  isRetrying: boolean;
+  /** Relance les chargements qui ont échoué. */
+  retry: () => void;
   user: User | null;
   /** Langue de l'app : celle du compte, sinon la meilleure langue de l'appareil. */
   locale: Locale;

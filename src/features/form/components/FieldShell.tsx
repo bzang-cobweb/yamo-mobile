@@ -8,7 +8,11 @@ import type { FormFieldDefinition } from '../types';
 
 export const ERROR_COLOR = '#d93025';
 
-/** Cadre commun d'un champ : libellé (et marque d'obligation), aide, erreur de l'API. */
+/**
+ * Cadre commun d'un champ : libellé (et marque d'obligation), le champ, puis
+ * l'aide et l'erreur de l'API, distinctes : l'aide reste toujours affichée, en
+ * gris ; l'erreur s'ajoute en dessous, en rouge, annoncée comme une alerte.
+ */
 export function FieldShell({ field, error, children }: PropsWithChildren<{ field: FormFieldDefinition; error?: string }>) {
   return (
     <View style={styles.container}>
@@ -19,8 +23,8 @@ export function FieldShell({ field, error, children }: PropsWithChildren<{ field
         </ThemedText>
       )}
       {children}
-      {field.help !== null && !error && (
-        <ThemedText type="small" themeColor="textSecondary">
+      {field.help !== null && (
+        <ThemedText type="small" themeColor="textSecondary" testID={`${field.name}-help`}>
           {field.help}
         </ThemedText>
       )}
