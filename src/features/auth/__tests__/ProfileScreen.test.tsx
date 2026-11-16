@@ -25,7 +25,13 @@ const jeanne: User = {
   initials: 'JD',
   gender: 'female',
   birth_date: null,
+  country: null,
+  region: null,
   email: 'jeanne@example.com',
+  phone: null,
+  phone_country: null,
+  last_seen_at: null,
+  is_online: true,
   locale: 'fr',
   avatar_url: null,
 };

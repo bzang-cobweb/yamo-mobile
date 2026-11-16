@@ -13,8 +13,41 @@ export function initialValue(field: FormFieldDefinition): FieldValue {
   }
 }
 
+/** Clé du pays d'un champ téléphone. */
+export function countryKey(name: string): string {
+  return `${name}_country`;
+}
+
 export function initialValues(definition: FormDefinition): FormValues {
-  return Object.fromEntries(definition.fields.map((field) => [field.name, initialValue(field)]));
+  return Object.fromEntries(
+    definition.fields.flatMap((field): [string, FieldValue][] => {
+      if (field.type === 'phone') {
+        // Valeur par défaut d'un téléphone : `{ country, number }`.
+        const phone = (field.default ?? {}) as { country?: string | null; number?: string | null };
+
+        return [
+          [field.name, phone.number ?? ''],
+          [countryKey(field.name), phone.country ?? ''],
+        ];
+      }
+
+      return [[field.name, initialValue(field)]];
+    }),
+  );
+}
+
+/**
+ * Ce qui part à l'API : tout sauf les champs en lecture seule (le téléphone en
+ * lecture seule ne part pas non plus avec son pays).
+ */
+export function submittedValues(definition: FormDefinition, values: FormValues): FormValues {
+  const skipped = new Set(
+    definition.fields
+      .filter((field) => field.readonly)
+      .flatMap((field) => (field.type === 'phone' ? [field.name, countryKey(field.name)] : [field.name])),
+  );
+
+  return Object.fromEntries(Object.entries(values).filter(([name]) => !skipped.has(name)));
 }
 
 /** Premier message d'erreur de l'API pour un champ (un groupe de cases reçoit aussi `tags.1`…). */

@@ -25,6 +25,7 @@ export const TEST_MESSAGES: Messages = {
   'form.hidePassword': 'Masquer le mot de passe',
   'form.retry': 'Réessayer',
   'form.clearDate': 'Effacer',
+  'form.search': 'Rechercher…',
   'avatar.label': 'Photo de profil',
   'avatar.change': 'Modifier la photo',
   'avatar.choose': 'Choisir une photo',

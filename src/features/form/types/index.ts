@@ -16,9 +16,20 @@ export type FieldType =
   | 'checkbox_group'
   | 'switch'
   /** Date seule, valeur `AAAA-MM-JJ` (vide : pas de date). */
-  | 'date';
+  | 'date'
+  /** Pays (indicatif) + numéro ; valeurs `<nom>` et `<nom>_country`. */
+  | 'phone'
+  /** Code de vérification à 6 chiffres. */
+  | 'code';
 
-export type FieldOption = { value: string; label: string };
+export type FieldOption = {
+  value: string;
+  label: string;
+  /** Complément affiché (ex. l'indicatif d'un pays). */
+  hint?: string | null;
+  /** Liste dépendante : valeur du champ parent à laquelle l'option appartient. */
+  parent?: string | null;
+};
 
 export type FormFieldDefinition = {
   name: string;
@@ -27,6 +38,10 @@ export type FormFieldDefinition = {
   placeholder: string | null;
   help: string | null;
   required: boolean;
+  /** Affiché, non modifiable, jamais envoyé. */
+  readonly?: boolean;
+  /** Liste dépendante : nom du champ parent. */
+  depends_on?: string | null;
   default: unknown;
   options: FieldOption[];
 };
@@ -60,4 +75,7 @@ export type FieldProps<V extends FieldValue = FieldValue> = {
   disabled?: boolean;
   /** Touche « Entrée » / « OK » du clavier dans un champ texte : envoie le formulaire. */
   onSubmitEditing?: () => void;
+  /** Champ téléphone : pays choisi (code ISO) et son changement. */
+  country?: string;
+  onCountryChange?: (country: string) => void;
 };

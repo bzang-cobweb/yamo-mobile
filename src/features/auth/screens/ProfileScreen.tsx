@@ -40,9 +40,16 @@ export function ProfileScreen() {
             <ThemedText type="smallBold" testID="profile-full-name">
               {user.full_name}
             </ThemedText>
-            <ThemedText themeColor="textSecondary" testID="profile-email">
-              {user.email}
-            </ThemedText>
+            {user.email && (
+              <ThemedText themeColor="textSecondary" testID="profile-email">
+                {user.email}
+              </ThemedText>
+            )}
+            {user.phone && (
+              <ThemedText themeColor="textSecondary" testID="profile-phone">
+                {user.phone}
+              </ThemedText>
+            )}
           </View>
           {message && (
             <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="profile-notice">

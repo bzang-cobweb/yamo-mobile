@@ -13,7 +13,16 @@ export type User = {
   gender: 'male' | 'female' | null;
   /** `AAAA-MM-JJ` ou `null`. */
   birth_date: string | null;
-  email: string;
+  country: { code: string; name: string; dial_code: string } | null;
+  region: { id: number; name: string } | null;
+  /** Un compte a un e-mail et/ou un téléphone. */
+  email: string | null;
+  /** E.164 (`+41791234567`), ou `null`. */
+  phone: string | null;
+  /** Code ISO du pays de l'indicatif du téléphone. */
+  phone_country: string | null;
+  last_seen_at: string | null;
+  is_online: boolean;
   locale: Locale;
   /** Vignette carrée de la photo de profil, ou `null` sans photo. */
   avatar_url: string | null;

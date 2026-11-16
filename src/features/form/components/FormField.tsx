@@ -1,8 +1,10 @@
 import type { FieldProps, FieldValue } from '../types';
 import { CheckboxField } from './fields/CheckboxField';
 import { CheckboxGroupField } from './fields/CheckboxGroupField';
+import { CodeField } from './fields/CodeField';
 import { DateField } from './fields/DateField';
 import { NumberField } from './fields/NumberField';
+import { PhoneField } from './fields/PhoneField';
 import { RadioField } from './fields/RadioField';
 import { SelectField } from './fields/SelectField';
 import { SwitchField } from './fields/SwitchField';
@@ -14,7 +16,7 @@ import { TextField } from './fields/TextField';
  * (décision 2026-11-15-contrat-mobile-features-formulaires). Ajouter un type :
  * un cas ici et son composant dans `fields/`.
  */
-export function FormField({ field, value, onChange, error, disabled, onSubmitEditing }: FieldProps<FieldValue>) {
+export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange }: FieldProps<FieldValue>) {
   const common = { field, error, disabled };
   const asText = typeof value === 'string' ? value : '';
   const asBoolean = value === true;
@@ -38,6 +40,10 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
       return <CheckboxField {...common} value={asBoolean} onChange={onChange} />;
     case 'checkbox_group':
       return <CheckboxGroupField {...common} value={asList} onChange={onChange} />;
+    case 'phone':
+      return <PhoneField {...common} value={asText} onChange={onChange} country={country} onCountryChange={onCountryChange} />;
+    case 'code':
+      return <CodeField {...common} value={asText} onChange={onChange} onSubmitEditing={onSubmitEditing} />;
     case 'date':
       return <DateField {...common} value={asText} onChange={onChange} />;
     case 'switch':

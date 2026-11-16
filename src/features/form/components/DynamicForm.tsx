@@ -6,8 +6,8 @@ import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
-import type { FieldValue, FormDefinition, FormErrors, FormValues } from '../types';
-import { fieldError, initialValues } from '../utils/values';
+import type { FieldValue, FormDefinition, FormErrors, FormFieldDefinition, FormValues } from '../types';
+import { countryKey, fieldError, initialValues, submittedValues } from '../utils/values';
 import { ERROR_COLOR } from './FieldShell';
 import { FormField } from './FormField';
 
@@ -33,8 +33,31 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
   const [submitting, setSubmitting] = useState(false);
 
   function change(name: string, value: FieldValue) {
-    setValues((current) => ({ ...current, [name]: value }));
+    // Liste dépendante : changer le parent vide ses enfants (ex. le pays vide la région).
+    const children = definition.fields.filter((field) => field.depends_on === name).map((field) => field.name);
+
+    setValues((current) => ({ ...current, [name]: value, ...Object.fromEntries(children.map((child) => [child, ''])) }));
     setErrors(({ [name]: _cleared, ...rest }) => rest);
+  }
+
+  /** Le champ tel qu'affiché : options filtrées par le parent, lecture seule. */
+  function shown(field: FormFieldDefinition): FormFieldDefinition {
+    if (!field.depends_on) {
+      return field;
+    }
+
+    const parent = values[field.depends_on];
+
+    return { ...field, options: field.options.filter((option) => option.parent === parent) };
+  }
+
+  function isDisabled(field: FormFieldDefinition): boolean {
+    return submitting || Boolean(field.readonly) || (Boolean(field.depends_on) && !values[field.depends_on ?? '']);
+  }
+
+  /** Erreur d'un champ ; celle du pays d'un téléphone s'affiche sous le téléphone. */
+  function errorOf(field: FormFieldDefinition): string | undefined {
+    return fieldError(errors, field.name) ?? (field.type === 'phone' ? fieldError(errors, countryKey(field.name)) : undefined);
   }
 
   async function submit() {
@@ -43,10 +66,10 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
     setMessage(null);
 
     try {
-      await onSubmit(values);
+      await onSubmit(submittedValues(definition, values));
     } catch (error) {
       if (error instanceof ApiError) {
-        const fieldNames = definition.fields.map((field) => field.name);
+        const fieldNames = definition.fields.flatMap((field) => (field.type === 'phone' ? [field.name, countryKey(field.name)] : [field.name]));
         setErrors(error.errors);
         // Erreur qui ne vise aucun champ affiché (trop d'essais, champ ajouté par l'app…) : message général.
         const onFields = Object.keys(error.errors).some((key) => fieldNames.includes(key.split('.')[0]));
@@ -81,12 +104,14 @@ export function DynamicForm({ definition, onSubmit }: DynamicFormProps) {
       {definition.fields.map((field) => (
         <FormField
           key={field.name}
-          field={field}
+          field={shown(field)}
           value={values[field.name]}
           onChange={(value) => change(field.name, value)}
-          error={fieldError(errors, field.name)}
-          disabled={submitting}
+          error={errorOf(field)}
+          disabled={isDisabled(field)}
           onSubmitEditing={submit}
+          country={field.type === 'phone' ? String(values[countryKey(field.name)] ?? '') : undefined}
+          onCountryChange={field.type === 'phone' ? (country) => change(countryKey(field.name), country) : undefined}
         />
       ))}
 

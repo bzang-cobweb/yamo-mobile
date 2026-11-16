@@ -50,6 +50,7 @@ export type ApiMessageKey =
   | 'form.hidePassword'
   | 'form.retry'
   | 'form.clearDate'
+  | 'form.search'
   | 'avatar.label'
   | 'avatar.change'
   | 'avatar.choose'
