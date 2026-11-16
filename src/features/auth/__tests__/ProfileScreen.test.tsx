@@ -36,13 +36,13 @@ const jeanne: User = {
   avatar_url: null,
 };
 
-async function renderProfile() {
+async function renderProfile(user: User = jeanne) {
   const auth = {
     isLoading: false,
     offline: false,
     isRetrying: false,
     retry: jest.fn(),
-    user: jeanne,
+    user,
     locale: 'fr',
     t: TEST_I18N.t,
     signIn: jest.fn(),
@@ -80,5 +80,25 @@ describe('ProfileScreen', () => {
     await renderProfile();
 
     expect(screen.getByTestId('profile-notice')).toHaveTextContent('Mot de passe modifié.');
+  });
+
+  it('propose de changer l’e-mail présent et d’ajouter le numéro absent, et inversement', async () => {
+    await renderProfile();
+
+    expect(screen.getByTestId('profile-link-email')).toHaveTextContent("Changer d'adresse e-mail");
+    expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Ajouter un numéro');
+
+    await renderProfile({ ...jeanne, email: null, phone: '+41791234567', phone_country: 'CH' });
+
+    expect(screen.getByTestId('profile-link-email')).toHaveTextContent('Ajouter une adresse e-mail');
+    expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Changer de numéro');
+    expect(screen.getByTestId('profile-phone')).toHaveTextContent('+41791234567');
+  });
+
+  it('au retour d’un changement d’e-mail ou de numéro, le confirme', async () => {
+    mockParams.notice = 'phone';
+    await renderProfile();
+
+    expect(screen.getByTestId('profile-notice')).toHaveTextContent('Numéro enregistré.');
   });
 });

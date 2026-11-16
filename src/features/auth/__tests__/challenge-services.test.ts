@@ -1,0 +1,60 @@
+import type { ApiClient } from '@/shared/api/ApiClient';
+
+import { EmailChangeService } from '../services/EmailChangeService';
+import { LoginService } from '../services/LoginService';
+import { PhoneChangeService } from '../services/PhoneChangeService';
+import { RegisterService } from '../services/RegisterService';
+import { VerificationService } from '../services/VerificationService';
+import type { Challenge } from '../types';
+
+jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
+
+const challenge: Challenge = { challenge: 'abc', channel: 'email', destination: 'j•••@example.com' };
+
+function client(response: unknown) {
+  return { post: jest.fn().mockResolvedValue(response) };
+}
+
+describe('services des opérations vérifiées par code (une méthode par appel)', () => {
+  it.each([
+    ['LoginService.login', '/v1/auth/login', (c: ApiClient) => new LoginService(c).login({ identifier: 'a@b.c', password: 'x' })],
+    ['RegisterService.register', '/v1/auth/register', (c: ApiClient) => new RegisterService(c).register({ name: 'marie' })],
+    ['EmailChangeService.start', '/v1/auth/me/email', (c: ApiClient) => new EmailChangeService(c).start({ email: 'a@b.c' })],
+    ['PhoneChangeService.start', '/v1/auth/me/phone', (c: ApiClient) => new PhoneChangeService(c).start({ phone: '079', phone_country: 'CH' })],
+  ])('%s : POST %s, renvoie le défi', async (_name, path, call) => {
+    const fake = client(challenge);
+
+    await expect(call(fake as unknown as ApiClient)).resolves.toBe(challenge);
+    expect(fake.post).toHaveBeenCalledWith(path, expect.any(Object));
+  });
+
+  it('VerificationService.verify : envoie défi, canal, code et appareil', async () => {
+    const fake = client({ data: { id: 1 } });
+
+    await new VerificationService(fake as unknown as ApiClient).verify(challenge, '123456', 'iPhone');
+
+    expect(fake.post).toHaveBeenCalledWith('/v1/auth/codes/verify', {
+      challenge: 'abc',
+      channel: 'email',
+      code: '123456',
+      device_name: 'iPhone',
+    });
+  });
+
+  it('VerificationService.verify : distingue code suivant, session et compte modifié', async () => {
+    const next = { challenge: 'abc', channel: 'sms', destination: '+41 ••• 67' };
+    const verify = (response: unknown) => new VerificationService(client(response) as unknown as ApiClient).verify(challenge, '1', 'x');
+
+    await expect(verify(next)).resolves.toEqual({ kind: 'pending', challenge: next });
+    await expect(verify({ data: { id: 1 }, token: 't' })).resolves.toEqual({ kind: 'session', session: { user: { id: 1 }, token: 't' } });
+    await expect(verify({ data: { id: 1 } })).resolves.toEqual({ kind: 'user', user: { id: 1 } });
+  });
+
+  it('VerificationService.resend : POST /v1/auth/codes/resend', async () => {
+    const fake = client(undefined);
+
+    await new VerificationService(fake as unknown as ApiClient).resend(challenge);
+
+    expect(fake.post).toHaveBeenCalledWith('/v1/auth/codes/resend', { challenge: 'abc' });
+  });
+});

@@ -11,11 +11,9 @@ import { localeService } from '@/shared/services/LocaleService';
 import { messageService } from '@/shared/services/MessageService';
 
 import { AuthContext } from '../context/AuthContext';
-import { loginService } from '../services/LoginService';
 import { logoutService } from '../services/LogoutService';
 import { profileService } from '../services/ProfileService';
-import type { AuthContextValue, LoginCredentials, User } from '../types';
-import { deviceName } from '../utils/device-name';
+import type { AuthContextValue, Session, User } from '../types';
 import { clearToken, readToken, saveToken } from '../utils/token-storage';
 
 const ME_KEY = ['auth', 'me'] as const;
@@ -113,8 +111,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [localesQuery, meQuery, messagesQuery, token]);
 
   const signIn = useCallback(
-    async (credentials: LoginCredentials) => {
-      const { user: signedIn, token: newToken } = await loginService.login(credentials, deviceName());
+    async ({ user: signedIn, token: newToken }: Session) => {
       await saveToken(newToken);
       queryClient.setQueryData([...ME_KEY, newToken], signedIn);
       applyToken(newToken);

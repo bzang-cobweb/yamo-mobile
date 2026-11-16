@@ -14,14 +14,20 @@ import { useAuth } from '../hooks/useAuth';
 import type { ProfileNotice } from './ProfileFormScreen';
 
 /**
- * Profil (onglet) : photo modifiable, prénom et nom, e-mail, liens vers les trois
- * formulaires, déconnexion. Un formulaire enregistré revient ici avec `notice`,
+ * Profil (onglet) : photo modifiable, prénom et nom, e-mail et téléphone, liens
+ * vers ses formulaires (dont ajouter ou changer l'e-mail et le numéro), déconnexion. Un formulaire enregistré revient ici avec `notice`,
  * qui affiche une confirmation.
  */
 export function ProfileScreen() {
   const { user, t } = useAuth();
   const { notice } = useLocalSearchParams<{ notice?: ProfileNotice }>();
-  const message = notice === 'password' ? t('profile.passwordSaved') : notice === 'saved' ? t('profile.saved') : null;
+  const notices = {
+    saved: t('profile.saved'),
+    password: t('profile.passwordSaved'),
+    email: t('profile.emailSaved'),
+    phone: t('profile.phoneSaved'),
+  } as const;
+  const message = notice && notice in notices ? notices[notice] : null;
 
   // En quittant le profil (vers un formulaire, un autre onglet), la confirmation s'efface.
   useFocusEffect(useCallback(() => () => router.setParams({ notice: undefined }), []));
@@ -58,6 +64,16 @@ export function ProfileScreen() {
           )}
           <View style={styles.links}>
             <ProfileMenuLink href="/profile/personal" label={t('profile.personalInfo')} testID="profile-link-personal" />
+            <ProfileMenuLink
+              href="/profile/email"
+              label={user.email ? t('profile.changeEmail') : t('profile.addEmail')}
+              testID="profile-link-email"
+            />
+            <ProfileMenuLink
+              href="/profile/phone"
+              label={user.phone ? t('profile.changePhone') : t('profile.addPhone')}
+              testID="profile-link-phone"
+            />
             <ProfileMenuLink href="/profile/password" label={t('profile.password')} testID="profile-link-password" />
             <ProfileMenuLink href="/profile/preferences" label={t('profile.preferences')} testID="profile-link-preferences" />
           </View>

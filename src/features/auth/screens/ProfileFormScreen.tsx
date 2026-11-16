@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import type { PropsWithChildren } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +12,32 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { useAuth } from '../hooks/useAuth';
 
 /** Confirmation affichée par le profil au retour d'un formulaire enregistré. */
-export type ProfileNotice = 'saved' | 'password';
+export type ProfileNotice = 'saved' | 'password' | 'email' | 'phone';
+
+/** Revient au profil, qui affiche la confirmation `notice`. */
+export function backToProfile(notice: ProfileNotice) {
+  router.dismissTo({ pathname: '/profile', params: { notice } });
+}
+
+/** Mise en page d'un écran du profil : lien de retour, contenu défilant au-dessus du clavier. */
+export function ProfileScreenShell({ children }: PropsWithChildren) {
+  const { t } = useAuth();
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            <Pressable accessibilityRole="link" testID="profile-form-back" onPress={() => router.back()}>
+              <ThemedText type="linkPrimary">← {t('profile.back')}</ThemedText>
+            </Pressable>
+            {children}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
 
 type Props = {
   /** Nom du formulaire dans l'API (`auth.profile.personal`…). */
@@ -26,26 +52,15 @@ type Props = {
  * compris). Enregistré, il revient au profil avec une confirmation.
  */
 export function ProfileFormScreen({ form, onSubmit, notice }: Props) {
-  const { t } = useAuth();
-
   async function submit(values: FormValues) {
     await onSubmit(values);
-    router.dismissTo({ pathname: '/profile', params: { notice } });
+    backToProfile(notice);
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <Pressable accessibilityRole="link" testID="profile-form-back" onPress={() => router.back()}>
-              <ThemedText type="linkPrimary">← {t('profile.back')}</ThemedText>
-            </Pressable>
-            <FormLoader name={form} onSubmit={submit} />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ThemedView>
+    <ProfileScreenShell>
+      <FormLoader name={form} onSubmit={submit} />
+    </ProfileScreenShell>
   );
 }
 

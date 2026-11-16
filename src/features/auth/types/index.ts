@@ -31,14 +31,31 @@ export type User = {
 /** Image choisie sur l'appareil, prête à l'envoi : son contenu JPEG en Base64. */
 export type AvatarFile = { name: string; type: string; base64: string };
 
-/** Champs saisis à la connexion (formulaire `auth.login`). */
-export type LoginCredentials = Record<string, unknown> & {
-  email?: string;
-  password?: string;
+/**
+ * Défi en cours : un code a été envoyé (`POST /auth/login`, `/auth/register`,
+ * `/auth/me/email`, `/auth/me/phone`, ou code d'inscription suivant).
+ */
+export type Challenge = {
+  challenge: string;
+  channel: 'email' | 'sms';
+  /** E-mail ou numéro masqué (`j•••@example.com`, `+41 ••• 67`). */
+  destination: string;
 };
 
-/** `POST /api/v1/auth/login`. */
-export type LoginResponse = { data: User; token: string };
+/** Session ouverte : l'utilisateur et le jeton de l'appareil. */
+export type Session = { user: User; token: string };
+
+/** `POST /api/v1/auth/codes/verify`, réponse brute de l'API. */
+export type VerifyResponse = Challenge | { data: User; token: string } | { data: User };
+
+/** Résultat d'un code validé. */
+export type VerifyResult =
+  /** Un autre code est attendu (inscription avec e-mail et téléphone). */
+  | { kind: 'pending'; challenge: Challenge }
+  /** Connexion ou inscription achevée. */
+  | { kind: 'session'; session: Session }
+  /** Changement d'e-mail ou de téléphone enregistré. */
+  | { kind: 'user'; user: User };
 
 /** `GET /api/v1/auth/me`. */
 export type UserResponse = { data: User };
@@ -56,7 +73,8 @@ export type AuthContextValue = {
   /** Langue de l'app : celle du compte, sinon la meilleure langue de l'appareil. */
   locale: Locale;
   t: (key: MessageKey, params?: Record<string, string>) => string;
-  signIn: (credentials: LoginCredentials) => Promise<void>;
+  /** Ouvre la session une fois le code validé (connexion, inscription). */
+  signIn: (session: Session) => Promise<void>;
   signOut: () => Promise<void>;
   /** Remplace l'utilisateur connecté après une modification de son compte (langue…). */
   setUser: (user: User) => void;

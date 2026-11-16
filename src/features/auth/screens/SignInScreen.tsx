@@ -1,32 +1,35 @@
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { Pressable } from 'react-native';
 
-import { FormLoader } from '@/features/form/components/FormLoader';
-import { ThemedView } from '@/shared/theme/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
+import { ThemedText } from '@/shared/theme/components/themed-text';
 
+import { ChallengeFlow } from '../components/ChallengeFlow';
+import { GuestScreen } from '../components/GuestScreen';
 import { useAuth } from '../hooks/useAuth';
+import { loginService } from '../services/LoginService';
 
 /**
- * Connexion : titre, sous-titre et champs sont ceux du formulaire `auth.login`
- * envoyé par l'API (traduits) ; le nom de l'appareil est ajouté par `LoginService`.
+ * Connexion en deux étapes : e-mail ou téléphone et mot de passe (formulaire
+ * `auth.login`), puis le code reçu (formulaire `auth.code`). L'app n'entre qu'une
+ * fois le code validé. Lien vers la création de compte.
  */
 export function SignInScreen() {
-  const { signIn } = useAuth();
+  const { signIn, t } = useAuth();
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.form}>
-          <FormLoader name="auth.login" onSubmit={signIn} />
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ThemedView>
+    <GuestScreen>
+      <ChallengeFlow
+        form="auth.login"
+        start={(values) => loginService.login(values)}
+        onVerified={async (result) => {
+          if (result.kind === 'session') {
+            await signIn(result.session);
+          }
+        }}
+      />
+      <Pressable accessibilityRole="link" testID="sign-in-register" onPress={() => router.push('/sign-up')}>
+        <ThemedText type="linkPrimary">{t('auth.createAccount')}</ThemedText>
+      </Pressable>
+    </GuestScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safeArea: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.four },
-  form: { width: '100%', maxWidth: MaxContentWidth / 2, gap: Spacing.three },
-});
