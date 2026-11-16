@@ -83,6 +83,19 @@ Types pris en charge : `text`, `hidden`, `email`, `password` (servis par `TextFi
 `number`, `textarea`, `select`, `radio`, `checkbox`, `checkbox_group`, `switch`. Ajouter
 un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`.
 
+### Photo de profil
+
+Profil → toucher la photo : **Choisir une photo** (galerie seulement, recadrage carré,
+compression JPEG sur le téléphone) ou **Retirer la photo**. Envoi par
+`ProfileService.uploadAvatar` (`POST /api/v1/auth/me/avatar`) ; le serveur réduit et
+réencode l'image avant de l'enregistrer. Sans photo, `Avatar` affiche les initiales.
+
+**Envoyer un fichier** : le `fetch` global est celui d'Expo (`expo/fetch`), qui **ne lit
+pas** la forme React Native `{ uri, name, type }` dans un `FormData` (la requête échoue
+avant d'atteindre le serveur, « serveur injoignable »). Joindre un fichier avec
+`appendFile` / `formFileFromBase64` (`src/shared/api/form-file.ts`) et l'envoyer par
+`apiClient.postForm`, qui ne force pas l'en-tête `Content-Type`.
+
 ### Langue
 
 Connecté : la langue du compte (modifiable dans Profil). Non connecté : la première des

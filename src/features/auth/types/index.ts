@@ -8,7 +8,12 @@ export type User = {
   last_name: string;
   email: string;
   locale: Locale;
+  /** Vignette carrée de la photo de profil, ou `null` sans photo. */
+  avatar_url: string | null;
 };
+
+/** Image choisie sur l'appareil, prête à l'envoi : son contenu JPEG en Base64. */
+export type AvatarFile = { name: string; type: string; base64: string };
 
 /** Champs saisis à la connexion (formulaire `auth.login`). */
 export type LoginCredentials = Record<string, unknown> & {

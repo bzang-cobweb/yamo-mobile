@@ -9,13 +9,15 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
+import { AvatarPicker } from '../components/AvatarPicker';
 import { useAuth } from '../hooks/useAuth';
 import { profileService } from '../services/ProfileService';
 
 /**
- * Profil : changement de langue par le formulaire `auth.profile.locale` de
- * l'API. L'enregistrement met à jour le compte ; l'app bascule aussitôt dans la
- * nouvelle langue (formulaires de l'API compris).
+ * Profil : photo (galerie ou retrait, `AvatarPicker`) et changement de langue
+ * par le formulaire `auth.profile.locale` de l'API. L'enregistrement met à jour
+ * le compte ; l'app bascule aussitôt dans la nouvelle langue (formulaires de
+ * l'API compris).
  */
 export function ProfileScreen() {
   const { setUser, t } = useAuth();
@@ -35,6 +37,7 @@ export function ProfileScreen() {
             <ThemedText type="linkPrimary">← {t('profile.back')}</ThemedText>
           </Pressable>
           <ThemedText type="subtitle">{t('profile.title')}</ThemedText>
+          <AvatarPicker />
           <FormLoader name="auth.profile.locale" onSubmit={save} />
           {saved && (
             <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="profile-saved">

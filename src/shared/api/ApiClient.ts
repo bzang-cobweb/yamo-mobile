@@ -6,6 +6,7 @@ type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 type RequestOptions = {
   method?: HttpMethod;
+  /** Envoyé en JSON, sauf un `FormData`, envoyé tel quel (multipart). */
   body?: unknown;
 };
 
@@ -40,7 +41,20 @@ export class ApiClient {
     return this.request<T>(path, { method: 'PATCH', body });
   }
 
+  /**
+   * Envoi multipart (fichiers). `fetch` pose lui-même l'en-tête `Content-Type` et
+   * sa frontière : ne jamais le forcer.
+   */
+  postForm<T>(path: string, form: FormData): Promise<T> {
+    return this.request<T>(path, { method: 'POST', body: form });
+  }
+
+  delete<T>(path: string): Promise<T> {
+    return this.request<T>(path, { method: 'DELETE' });
+  }
+
   async request<T>(path: string, { method = 'GET', body }: RequestOptions = {}): Promise<T> {
+    const isForm = body instanceof FormData;
     let response: Response;
 
     try {
@@ -49,10 +63,10 @@ export class ApiClient {
         headers: {
           Accept: 'application/json',
           ...(this.locale && { 'Accept-Language': this.locale }),
-          ...(body !== undefined && { 'Content-Type': 'application/json' }),
+          ...(body !== undefined && !isForm && { 'Content-Type': 'application/json' }),
           ...(this.token && { Authorization: `Bearer ${this.token}` }),
         },
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
       });
     } catch (error) {
       throw new NetworkError(error);
