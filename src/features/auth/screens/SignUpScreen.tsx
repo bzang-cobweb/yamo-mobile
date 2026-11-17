@@ -28,7 +28,7 @@ export function SignUpScreen() {
           }
         }}
       />
-      <Pressable accessibilityRole="link" testID="sign-up-sign-in" onPress={() => (router.canGoBack() ? router.back() : router.replace('/sign-in'))}>
+      <Pressable accessibilityRole="link" testID="sign-up-sign-in" onPress={() => router.replace('/sign-in')}>
         <ThemedText type="linkPrimary">{t('auth.haveAccount')}</ThemedText>
       </Pressable>
     </GuestScreen>

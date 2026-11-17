@@ -42,6 +42,8 @@ export type FormFieldDefinition = {
   readonly?: boolean;
   /** Liste dépendante : nom du champ parent. */
   depends_on?: string | null;
+  /** Nombre maximal de caractères (textarea : 1 000 par défaut), ou `null`. */
+  max_length?: number | null;
   default: unknown;
   options: FieldOption[];
 };

@@ -15,6 +15,8 @@ export type User = {
   birth_date: string | null;
   country: { code: string; name: string; dial_code: string } | null;
   region: { id: number; name: string } | null;
+  /** Description libre, non traduite, ou `null`. */
+  description: string | null;
   /** Un compte a un e-mail et/ou un téléphone. */
   email: string | null;
   /** E.164 (`+41791234567`), ou `null`. */

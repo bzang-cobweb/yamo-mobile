@@ -22,6 +22,7 @@ const jeanne: User = {
   birth_date: null,
   country: null,
   region: null,
+  description: null,
   email: 'jeanne@example.com',
   phone: null,
   phone_country: null,

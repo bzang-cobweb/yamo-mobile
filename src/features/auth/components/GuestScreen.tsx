@@ -8,7 +8,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 type Props = PropsWithChildren<{
-  /** Titre de l'en-tête fixe (flèche de retour, titre centré) ; aucun en-tête pour la connexion. */
+  /** Titre de l'en-tête fixe (flèche de retour, titre centré) ; sans titre, aucun en-tête. */
   title?: string;
 }>;
 
@@ -16,8 +16,7 @@ type Props = PropsWithChildren<{
 export function GuestScreen({ title, children }: Props) {
   const content = (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
-      {/* Connexion (sans en-tête) : contenu centré verticalement ; sinon, en haut. */}
-      <ScrollView contentContainerStyle={[styles.content, title === undefined && styles.centered]} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {children}
       </ScrollView>
     </KeyboardAvoidingView>
@@ -41,7 +40,6 @@ export function GuestScreen({ title, children }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  centered: { justifyContent: 'center' },
   content: {
     flexGrow: 1,
     width: '100%',

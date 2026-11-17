@@ -9,6 +9,12 @@ import { AuthProvider } from '@/features/auth/providers/AuthProvider';
 import { ConnectivityGate } from '@/shared/components/ConnectivityGate';
 import { bindQueriesToNetwork, useIsOnline } from '@/shared/network/connectivity';
 
+/**
+ * Écran de départ de la pile racine pour un invité : l'accueil. Connecté, l'accueil
+ * est protégé et la pile part du menu (`(tabs)`).
+ */
+export const unstable_settings = { anchor: 'welcome' };
+
 SplashScreen.preventAutoHideAsync();
 bindQueriesToNetwork();
 
@@ -50,7 +56,9 @@ function RootNavigator() {
           <Stack.Protected guard={user !== null}>
             <Stack.Screen name="(tabs)" />
           </Stack.Protected>
+          {/* Invité : l'accueil d'abord (ancre de la pile), d'où partent la connexion et l'inscription. */}
           <Stack.Protected guard={user === null}>
+            <Stack.Screen name="welcome" />
             <Stack.Screen name="sign-in" />
             <Stack.Screen name="sign-up" />
             <Stack.Screen name="forgot-password" />
