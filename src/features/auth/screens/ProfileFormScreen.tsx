@@ -26,7 +26,7 @@ export function backToProfile(notice: ProfileNotice) {
 export function ProfileScreenShell({ title, children }: PropsWithChildren<{ title: string }>) {
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <BackStackProvider>
           <BackHeader title={title} />
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
