@@ -8,6 +8,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { AvatarPicker } from '../components/AvatarPicker';
+import { DeleteAccountLink } from '../components/DeleteAccountLink';
 import { ProfileMenuLink } from '../components/ProfileMenuLink';
 import { SignOutButton } from '../components/SignOutButton';
 import { useAuth } from '../hooks/useAuth';
@@ -16,7 +17,7 @@ import type { ProfileNotice } from './ProfileFormScreen';
 /**
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
  * téléphone (format international), liens vers ses formulaires (dont ajouter ou
- * changer l'e-mail et le numéro), déconnexion. Un formulaire enregistré revient
+ * changer l'e-mail et le numéro), déconnexion, suppression du compte. Un formulaire enregistré revient
  * ici avec `notice`, qui affiche une confirmation.
  */
 export function ProfileScreen() {
@@ -78,6 +79,7 @@ export function ProfileScreen() {
             <ProfileMenuLink href="/profile/preferences" label={t('profile.preferences')} testID="profile-link-preferences" />
           </View>
           <SignOutButton />
+          <DeleteAccountLink />
         </ScrollView>
       </SafeAreaView>
     </ThemedView>

@@ -19,6 +19,8 @@ type DynamicFormProps = {
   onSubmit: (values: FormValues) => Promise<void>;
   /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
   hideTitle?: boolean;
+  /** Action irréversible (supprimer son compte…) : bouton d'envoi rouge. */
+  destructive?: boolean;
 };
 
 /**
@@ -34,7 +36,7 @@ type DynamicFormProps = {
  * Pour repartir des valeurs par défaut (autre formulaire, autre langue), le
  * monter avec une `key` différente.
  */
-export function DynamicForm({ definition, onSubmit, hideTitle = false }: DynamicFormProps) {
+export function DynamicForm({ definition, onSubmit, hideTitle = false, destructive = false }: DynamicFormProps) {
   const { t } = useI18n();
   const [values, setValues] = useState<FormValues>(() => initialValues(definition));
   const [errors, setErrors] = useState<FormErrors>({});
@@ -178,7 +180,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
         accessibilityRole="button"
         onPress={submit}
         disabled={submitting}
-        style={({ pressed }) => [styles.button, submitting && styles.disabled, pressed && styles.pressed]}>
+        style={({ pressed }) => [styles.button, destructive && styles.destructive, submitting && styles.disabled, pressed && styles.pressed]}>
         {submitting && <ActivityIndicator color="#fff" />}
         <ThemedText style={styles.buttonText}>
           {submitting ? t('form.submitting') : isLastStep ? definition.submit.label : t('form.next')}
@@ -207,6 +209,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: Spacing.three,
   },
+  destructive: { backgroundColor: ERROR_COLOR },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.8 },
   buttonText: { color: '#fff' },

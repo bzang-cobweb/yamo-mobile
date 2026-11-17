@@ -16,13 +16,15 @@ type FormLoaderProps = {
   onSubmit: (values: FormValues) => Promise<void>;
   /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
   hideTitle?: boolean;
+  /** Action irréversible : bouton d'envoi rouge. */
+  destructive?: boolean;
 };
 
 /**
  * Charge la définition d'un formulaire depuis l'API et l'affiche. Une nouvelle
  * définition (autre langue) repart de ses valeurs par défaut.
  */
-export function FormLoader({ name, onSubmit, hideTitle = false }: FormLoaderProps) {
+export function FormLoader({ name, onSubmit, hideTitle = false, destructive = false }: FormLoaderProps) {
   const { t, locale } = useI18n();
   const query = useFormDefinition(name);
 
@@ -50,7 +52,7 @@ export function FormLoader({ name, onSubmit, hideTitle = false }: FormLoaderProp
     );
   }
 
-  return <DynamicForm key={`${name}-${locale}`} definition={query.data} onSubmit={onSubmit} hideTitle={hideTitle} />;
+  return <DynamicForm key={`${name}-${locale}`} definition={query.data} onSubmit={onSubmit} hideTitle={hideTitle} destructive={destructive} />;
 }
 
 const styles = StyleSheet.create({

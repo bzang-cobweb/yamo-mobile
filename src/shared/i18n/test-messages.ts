@@ -44,6 +44,8 @@ export const TEST_MESSAGES: Messages = {
   'form.retry': 'Réessayer',
   'form.clearDate': 'Effacer',
   'form.search': 'Rechercher…',
+  'profile.deleteAccount': 'Supprimer mon compte',
+  'auth.accountDeleted': 'Votre compte a été supprimé.',
   'avatar.label': 'Photo de profil',
   'avatar.change': 'Modifier la photo',
   'avatar.choose': 'Choisir une photo',

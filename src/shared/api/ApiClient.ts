@@ -53,8 +53,8 @@ export class ApiClient {
     return this.request<T>(path, { method: 'POST', body: form });
   }
 
-  delete<T>(path: string): Promise<T> {
-    return this.request<T>(path, { method: 'DELETE' });
+  delete<T>(path: string, body?: unknown): Promise<T> {
+    return this.request<T>(path, { method: 'DELETE', body });
   }
 
   async request<T>(path: string, { method = 'GET', body }: RequestOptions = {}): Promise<T> {

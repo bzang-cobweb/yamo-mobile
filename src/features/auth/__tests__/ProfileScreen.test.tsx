@@ -74,6 +74,7 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-link-password')).toHaveTextContent('Changer le mot de passe');
     expect(screen.getByTestId('profile-link-preferences')).toHaveTextContent('Préférences');
     expect(screen.getByTestId('sign-out')).toHaveTextContent('Se déconnecter');
+    expect(screen.getByTestId('profile-delete-account')).toHaveTextContent('Supprimer mon compte');
     expect(screen.queryByTestId('profile-notice')).toBeNull();
     expect(screen.queryByText('Profil')).toBeNull();
     expect(screen.queryByTestId('profile-phone')).toBeNull();
