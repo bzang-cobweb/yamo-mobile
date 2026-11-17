@@ -73,6 +73,15 @@ export type VerifyResult =
 /** `GET /api/v1/auth/me`. */
 export type UserResponse = { data: User };
 
+/** Écrans du profil que le menu sait ouvrir (`key` servie par l'API). */
+export type ProfileMenuKey = 'personal' | 'email' | 'phone' | 'password' | 'preferences';
+
+/**
+ * Lien du menu du profil, réglé dans le back-office. `key` reste une chaîne : un
+ * écran ajouté côté serveur et inconnu de cette version de l'app est ignoré.
+ */
+export type ProfileMenuItem = { key: string; label: string };
+
 export type AuthContextValue = {
   /** `true` tant que le jeton enregistré, l'utilisateur, les langues et les textes ne sont pas chargés. */
   isLoading: boolean;

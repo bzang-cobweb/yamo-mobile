@@ -3,6 +3,7 @@ import type { ApiClient } from '@/shared/api/ApiClient';
 import { PasswordService } from '../services/PasswordService';
 import { PersonalInfoService } from '../services/PersonalInfoService';
 import { PreferencesService } from '../services/PreferencesService';
+import { ProfileMenuService } from '../services/ProfileMenuService';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 
@@ -38,5 +39,13 @@ describe('services des formulaires du profil (une méthode par appel)', () => {
 
     await expect(new PreferencesService(client as unknown as ApiClient).update({ locale: 'en' })).resolves.toBe(client.user);
     expect(client.patch).toHaveBeenCalledWith('/v1/auth/me/preferences', { locale: 'en' });
+  });
+
+  it('ProfileMenuService.list : GET /v1/auth/me/menu, renvoie les liens', async () => {
+    const items = [{ key: 'personal', label: 'Informations personnelles' }];
+    const client = { get: jest.fn().mockResolvedValue({ data: items }) };
+
+    await expect(new ProfileMenuService(client as unknown as ApiClient).list()).resolves.toBe(items);
+    expect(client.get).toHaveBeenCalledWith('/v1/auth/me/menu');
   });
 });

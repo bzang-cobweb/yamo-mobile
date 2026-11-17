@@ -1,4 +1,4 @@
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,18 +13,38 @@ import { DeleteAccountLink } from '../components/DeleteAccountLink';
 import { ProfileMenuLink } from '../components/ProfileMenuLink';
 import { SignOutButton } from '../components/SignOutButton';
 import { useAuth } from '../hooks/useAuth';
+import { useProfileMenu } from '../hooks/useProfileMenu';
+import type { ProfileMenuKey } from '../types';
 import type { ProfileNotice } from './ProfileFormScreen';
+
+/** Écran ouvert par chaque lien du menu ; une clé absente d'ici est ignorée. */
+const MENU_ROUTES: Record<ProfileMenuKey, Href> = {
+  personal: '/profile/personal',
+  email: '/profile/email',
+  phone: '/profile/phone',
+  password: '/profile/password',
+  preferences: '/profile/preferences',
+};
+
+function isMenuKey(key: string): key is ProfileMenuKey {
+  return Object.hasOwn(MENU_ROUTES, key);
+}
 
 /**
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
- * téléphone (format international) selon les canaux de l'application, liens vers ses formulaires (dont ajouter ou
- * changer l'e-mail et le numéro), déconnexion, suppression du compte. Un formulaire enregistré revient
- * ici avec `notice`, qui affiche une confirmation.
+ * téléphone (format international) selon les canaux de l'application, menu de
+ * ses formulaires, déconnexion, suppression du compte. Le menu (liens, ordre,
+ * libellés) est servi par l'API et réglé dans le back-office ; il se recharge à
+ * chaque retour sur le profil. Un formulaire enregistré revient ici avec
+ * `notice`, qui affiche une confirmation.
  */
 export function ProfileScreen() {
   const { user, t } = useAuth();
   // Canaux de compte de l'application ; tant qu'ils ne sont pas connus, les deux.
   const channels = useApplication().data?.channels ?? { email: true, phone: true };
+  const menu = useProfileMenu();
+  const { refetch } = menu;
+  const hasUser = user !== null;
   const { notice } = useLocalSearchParams<{ notice?: ProfileNotice }>();
   const notices = {
     saved: t('profile.saved'),
@@ -34,8 +54,17 @@ export function ProfileScreen() {
   } as const;
   const message = notice && notice in notices ? notices[notice] : null;
 
-  // En quittant le profil (vers un formulaire, un autre onglet), la confirmation s'efface.
-  useFocusEffect(useCallback(() => () => router.setParams({ notice: undefined }), []));
+  // En revenant sur le profil, le menu se recharge ; en le quittant (vers un
+  // formulaire, un autre onglet), la confirmation s'efface.
+  useFocusEffect(
+    useCallback(() => {
+      if (hasUser) {
+        void refetch();
+      }
+
+      return () => router.setParams({ notice: undefined });
+    }, [hasUser, refetch]),
+  );
 
   if (!user) {
     return null;
@@ -67,23 +96,11 @@ export function ProfileScreen() {
             </ThemedText>
           )}
           <View style={styles.links}>
-            <ProfileMenuLink href="/profile/personal" label={t('profile.personalInfo')} testID="profile-link-personal" />
-            {channels.email && (
-              <ProfileMenuLink
-                href="/profile/email"
-                label={user.email ? t('profile.changeEmail') : t('profile.addEmail')}
-                testID="profile-link-email"
-              />
+            {(menu.data ?? []).map(({ key, label }) =>
+              isMenuKey(key) ? (
+                <ProfileMenuLink key={key} href={MENU_ROUTES[key]} label={label} testID={`profile-link-${key}`} />
+              ) : null,
             )}
-            {channels.phone && (
-              <ProfileMenuLink
-                href="/profile/phone"
-                label={user.phone ? t('profile.changePhone') : t('profile.addPhone')}
-                testID="profile-link-phone"
-              />
-            )}
-            <ProfileMenuLink href="/profile/password" label={t('profile.password')} testID="profile-link-password" />
-            <ProfileMenuLink href="/profile/preferences" label={t('profile.preferences')} testID="profile-link-preferences" />
           </View>
           <SignOutButton />
           <DeleteAccountLink />

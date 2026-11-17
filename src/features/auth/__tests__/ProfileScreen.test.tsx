@@ -14,6 +14,19 @@ jest.mock('@/features/welcome/hooks/useApplication', () => ({
   useApplication: () => ({ data: { name: 'Ya Mo', description: null, channels: mockChannels } }),
 }));
 
+const DEFAULT_MENU = [
+  { key: 'personal', label: 'Informations personnelles' },
+  { key: 'email', label: "Changer d'adresse e-mail" },
+  { key: 'phone', label: 'Ajouter un numéro' },
+  { key: 'password', label: 'Changer le mot de passe' },
+  { key: 'preferences', label: 'Préférences' },
+];
+let mockMenu: { key: string; label: string }[] | undefined = DEFAULT_MENU;
+const mockRefetch = jest.fn();
+jest.mock('../hooks/useProfileMenu', () => ({
+  useProfileMenu: () => ({ data: mockMenu, refetch: mockRefetch }),
+}));
+
 const mockParams: { notice?: string } = {};
 jest.mock('expo-router', () => ({
   router: { setParams: jest.fn(), back: jest.fn(), push: jest.fn() },
@@ -67,6 +80,7 @@ async function renderProfile(user: User = jeanne) {
 describe('ProfileScreen', () => {
   beforeEach(() => {
     delete mockParams.notice;
+    mockMenu = DEFAULT_MENU;
   });
 
   it('affiche la photo, le nom complet, l’e-mail, les trois liens et la déconnexion', async () => {
@@ -92,16 +106,42 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-notice')).toHaveTextContent('Mot de passe modifié.');
   });
 
-  it('propose de changer l’e-mail présent et d’ajouter le numéro absent, et inversement', async () => {
+  it('affiche le menu servi par l’API, dans son ordre et avec ses libellés', async () => {
+    mockMenu = [
+      { key: 'preferences', label: 'Préférences' },
+      { key: 'email', label: 'Ajouter une adresse e-mail' },
+    ];
     await renderProfile();
 
-    expect(screen.getByTestId('profile-link-email')).toHaveTextContent("Changer d'adresse e-mail");
-    expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Ajouter un numéro');
+    const menuLinks = screen.getAllByTestId(/^profile-link-/);
+    expect(menuLinks.map((link) => link.props.testID)).toEqual(['profile-link-preferences', 'profile-link-email']);
+    expect(screen.getByTestId('profile-link-email')).toHaveTextContent('Ajouter une adresse e-mail');
+    expect(screen.queryByTestId('profile-link-personal')).toBeNull();
+  });
 
+  it('ignore un lien dont l’app ne connaît pas l’écran', async () => {
+    mockMenu = [
+      { key: 'billing', label: 'Facturation' },
+      { key: 'password', label: 'Changer le mot de passe' },
+    ];
+    await renderProfile();
+
+    expect(screen.queryByText('Facturation')).toBeNull();
+    expect(screen.getByTestId('profile-link-password')).toBeTruthy();
+  });
+
+  it('sans menu (chargement, erreur) : aucun lien, mais déconnexion et suppression restent', async () => {
+    mockMenu = undefined;
+    await renderProfile();
+
+    expect(screen.queryAllByTestId(/^profile-link-/)).toHaveLength(0);
+    expect(screen.getByTestId('sign-out')).toBeTruthy();
+    expect(screen.getByTestId('profile-delete-account')).toBeTruthy();
+  });
+
+  it('affiche le numéro au format international', async () => {
     await renderProfile({ ...jeanne, email: null, phone: '+41791234567', phone_international: '+41 79 123 45 67', phone_country: 'CH' });
 
-    expect(screen.getByTestId('profile-link-email')).toHaveTextContent('Ajouter une adresse e-mail');
-    expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Changer de numéro');
     expect(screen.getByTestId('profile-phone')).toHaveTextContent('+41 79 123 45 67');
   });
 
@@ -117,24 +157,21 @@ describe('ProfileScreen', () => {
       mockChannels = { email: true, phone: true };
     });
 
-    it("sans téléphone : ni numéro ni lien, même si le compte en a un", async () => {
+    it("sans téléphone : pas de numéro, même si le compte en a un", async () => {
       mockChannels = { email: true, phone: false };
 
       await renderProfile({ ...jeanne, phone: '+41791234567', phone_international: '+41 79 123 45 67', phone_country: 'CH' });
 
       expect(screen.queryByTestId('profile-phone')).toBeNull();
-      expect(screen.queryByTestId('profile-link-phone')).toBeNull();
-      expect(screen.getByTestId('profile-link-email')).toBeTruthy();
+      expect(screen.getByTestId('profile-email')).toBeTruthy();
     });
 
-    it("sans e-mail : ni adresse ni lien", async () => {
+    it("sans e-mail : pas d'adresse", async () => {
       mockChannels = { email: false, phone: true };
 
       await renderProfile();
 
       expect(screen.queryByTestId('profile-email')).toBeNull();
-      expect(screen.queryByTestId('profile-link-email')).toBeNull();
-      expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Ajouter un numéro');
     });
   });
 });
