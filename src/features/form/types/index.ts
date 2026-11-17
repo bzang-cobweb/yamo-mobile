@@ -67,7 +67,12 @@ export type FormDefinition = {
 };
 
 /** Une étape : titre facultatif et noms des champs qu'elle affiche. */
-export type FormStep = { title: string | null; fields: string[] };
+export type FormStep = {
+  title: string | null;
+  /** Texte sous le titre de l'étape, ou `null`. */
+  subtitle?: string | null;
+  fields: string[];
+};
 
 export type FormResponse = { data: FormDefinition };
 

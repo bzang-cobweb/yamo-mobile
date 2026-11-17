@@ -155,6 +155,11 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, destructi
               {currentStep.title}
             </ThemedText>
           )}
+          {currentStep.subtitle && (
+            <ThemedText themeColor="textSecondary" testID="form-step-subtitle">
+              {currentStep.subtitle}
+            </ThemedText>
+          )}
         </View>
       )}
 

@@ -29,7 +29,7 @@ const register: FormDefinition = {
   ],
   steps: [
     { title: 'Vous', fields: ['name', 'gender'] },
-    { title: 'Vous joindre', fields: ['email'] },
+    { title: 'Vous joindre', subtitle: 'Un e-mail, un téléphone ou les deux.', fields: ['email'] },
     { title: null, fields: ['password'] },
   ],
 };
@@ -52,6 +52,7 @@ describe('DynamicForm à étapes', () => {
 
     expect(screen.getByTestId('form-step-progress')).toHaveTextContent('Étape 1 sur 3');
     expect(screen.getByTestId('form-step-title')).toHaveTextContent('Vous');
+    expect(screen.queryByTestId('form-step-subtitle')).toBeNull();
     expect(screen.getByTestId('field-name')).toBeOnTheScreen();
     expect(screen.queryByTestId('field-email')).toBeNull();
     expect(screen.getByTestId('form-submit')).toHaveTextContent('Suivant');
@@ -68,6 +69,7 @@ describe('DynamicForm à étapes', () => {
     await waitFor(() => expect(screen.getByTestId('form-step-progress')).toHaveTextContent('Étape 2 sur 3'));
     expect(formService.validateStep).toHaveBeenCalledWith('auth.register', 1, { name: 'marie', gender: '' });
     expect(screen.getByTestId('field-email')).toBeOnTheScreen();
+    expect(screen.getByTestId('form-step-subtitle')).toHaveTextContent('Un e-mail, un téléphone ou les deux.');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
