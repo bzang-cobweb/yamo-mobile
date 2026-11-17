@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { OptionsModal } from '@/features/form/components/fields/OptionsModal';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -16,7 +16,7 @@ import { Spacing } from '@/shared/theme/theme';
  * par l'API, chacune écrite dans sa propre langue. Masquée s'il n'y a qu'une
  * langue.
  */
-export function LocaleSwitcher() {
+export function LocaleSwitcher({ style }: { style?: StyleProp<ViewStyle> }) {
   const { locale, chooseLocale } = useI18n();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export function LocaleSwitcher() {
         accessibilityLabel={current?.label ?? locale}
         onPress={() => setOpen(true)}
         hitSlop={8}
-        style={({ pressed }) => [styles.trigger, { borderColor: theme.textSecondary }, pressed && styles.pressed]}>
+        style={({ pressed }) => [styles.trigger, { borderColor: theme.textSecondary }, style, pressed && styles.pressed]}>
         <SymbolView name={{ ios: 'globe', android: 'language', web: 'language' }} size={16} tintColor={theme.textSecondary} />
         <ThemedText type="small">{current?.label ?? locale}</ThemedText>
         <SymbolView

@@ -27,7 +27,7 @@ export function WelcomeScreen() {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.presentation}>
-            <LocaleSwitcher />
+            <LocaleSwitcher style={styles.localeSwitcher} />
             <BrandLogo variant="vertical" height={LOGO_HEIGHT} testID="welcome-logo" />
             {isPending && <ActivityIndicator testID="welcome-loading" />}
             {application?.description && (
@@ -62,6 +62,8 @@ const PRIMARY = '#208AEF';
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  // Un peu d'air entre le choix de la langue et le logo.
+  localeSwitcher: { marginBottom: Spacing.four },
   content: {
     flexGrow: 1,
     width: '100%',

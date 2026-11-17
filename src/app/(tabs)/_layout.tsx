@@ -6,9 +6,8 @@ import { AppTopBar } from '@/features/welcome/components/AppTopBar';
 import { useI18n } from '@/shared/i18n/I18nContext';
 
 /**
- * Pour un utilisateur connecté : barre fixe en haut (logo de l'application)
- * seulement sur l'écran racine du Profil, ni sur l'Accueil ni sur les
- * formulaires du profil ; menu fixe en bas, Accueil (écran par défaut) et
+ * Pour un utilisateur connecté : barre fixe en haut (logo de l'application) sur
+ * l'écran racine de chaque onglet, pas sur les formulaires du profil ; menu fixe en bas, Accueil (écran par défaut) et
  * Profil. Icônes seules ; leur nom, servi par l'API, est annoncé aux lecteurs
  * d'écran. Le menu reste visible sur les formulaires du profil (pile `profile/`).
  */
@@ -24,7 +23,6 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
-          headerShown: false,
           tabBarAccessibilityLabel: t('tabs.home'),
           tabBarButtonTestID: 'tab-home',
           tabBarIcon: ({ color, size, focused }) => (
