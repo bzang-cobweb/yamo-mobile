@@ -5,6 +5,7 @@ import { ApiError, NetworkError } from '@/shared/api/errors';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useBackStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
+import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
 
 import { formService } from '../services/FormService';
@@ -38,6 +39,7 @@ type DynamicFormProps = {
  */
 export function DynamicForm({ definition, onSubmit, hideTitle = false, destructive = false }: DynamicFormProps) {
   const { t } = useI18n();
+  const theme = useTheme();
   const [values, setValues] = useState<FormValues>(() => initialValues(definition));
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -189,9 +191,14 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, destructi
         accessibilityRole="button"
         onPress={submit}
         disabled={submitting}
-        style={({ pressed }) => [styles.button, destructive && styles.destructive, submitting && styles.disabled, pressed && styles.pressed]}>
-        {submitting && <ActivityIndicator color="#fff" />}
-        <ThemedText style={styles.buttonText}>
+        style={({ pressed }) => [
+          styles.button,
+          { backgroundColor: destructive ? ERROR_COLOR : theme.primary },
+          submitting && styles.disabled,
+          pressed && styles.pressed,
+        ]}>
+        {submitting && <ActivityIndicator color={theme.onPrimary} />}
+        <ThemedText style={{ color: theme.onPrimary }}>
           {submitting ? t('form.submitting') : isLastStep ? definition.submit.label : t('form.next')}
         </ThemedText>
       </Pressable>
@@ -214,12 +221,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: Spacing.two,
-    backgroundColor: '#208AEF',
     borderRadius: 8,
     paddingVertical: Spacing.three,
   },
-  destructive: { backgroundColor: ERROR_COLOR },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.8 },
-  buttonText: { color: '#fff' },
 });

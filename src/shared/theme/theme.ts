@@ -1,6 +1,9 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
+ * Couleurs de l'app, en mode clair et sombre. Les couleurs de marque viennent du
+ * logo YaMo (`public/images/logo` de l'app Laravel) : violet pour l'action
+ * principale (boutons, liens, sélection), rose en accent ; leurs variantes plus
+ * claires du logo « inverse » en mode sombre. Les erreurs restent rouges, pour ne
+ * pas se confondre avec le rose.
  */
 
 import '@/shared/theme/global.css';
@@ -14,6 +17,12 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    /** Violet du logo : boutons, liens, sélection. */
+    primary: '#7B5CFA',
+    /** Texte et icônes posés sur `primary`. */
+    onPrimary: '#ffffff',
+    /** Rose du logo, en accent. */
+    accent: '#FF5A7A',
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +30,9 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    primary: '#9C82FF',
+    onPrimary: '#ffffff',
+    accent: '#FF7A93',
   },
 } as const;
 

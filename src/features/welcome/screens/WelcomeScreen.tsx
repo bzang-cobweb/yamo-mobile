@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BrandLogo } from '@/shared/brand/BrandLogo';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
+import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
@@ -21,6 +22,7 @@ const LOGO_HEIGHT = 160;
 export function WelcomeScreen() {
   const { t } = useI18n();
   const { data: application, isPending } = useApplication();
+  const theme = useTheme();
 
   return (
     <ThemedView style={styles.container}>
@@ -41,15 +43,15 @@ export function WelcomeScreen() {
               testID="welcome-sign-in"
               accessibilityRole="button"
               onPress={() => router.push('/sign-in')}
-              style={({ pressed }) => [styles.button, styles.primary, pressed && styles.pressed]}>
-              <ThemedText style={styles.primaryText}>{t('auth.signIn')}</ThemedText>
+              style={({ pressed }) => [styles.button, { backgroundColor: theme.primary, borderColor: theme.primary }, pressed && styles.pressed]}>
+              <ThemedText style={{ color: theme.onPrimary }}>{t('auth.signIn')}</ThemedText>
             </Pressable>
             <Pressable
               testID="welcome-sign-up"
               accessibilityRole="button"
               onPress={() => router.push('/sign-up')}
-              style={({ pressed }) => [styles.button, styles.secondary, pressed && styles.pressed]}>
-              <ThemedText style={styles.secondaryText}>{t('auth.createAccount')}</ThemedText>
+              style={({ pressed }) => [styles.button, styles.secondary, { borderColor: theme.primary }, pressed && styles.pressed]}>
+              <ThemedText style={{ color: theme.primary }}>{t('auth.createAccount')}</ThemedText>
             </Pressable>
           </View>
         </ScrollView>
@@ -57,8 +59,6 @@ export function WelcomeScreen() {
     </ThemedView>
   );
 }
-
-const PRIMARY = '#208AEF';
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -76,10 +76,7 @@ const styles = StyleSheet.create({
   presentation: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three },
   centered: { textAlign: 'center' },
   actions: { gap: Spacing.two },
-  button: { alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.three, borderWidth: 1, borderColor: PRIMARY },
-  primary: { backgroundColor: PRIMARY },
+  button: { alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.three, borderWidth: 1 },
   secondary: { backgroundColor: 'transparent' },
-  primaryText: { color: '#fff' },
-  secondaryText: { color: PRIMARY },
   pressed: { opacity: 0.8 },
 });

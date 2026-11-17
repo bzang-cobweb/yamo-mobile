@@ -4,6 +4,7 @@ import { SymbolView } from 'expo-symbols';
 
 import { AppTopBar } from '@/features/welcome/components/AppTopBar';
 import { useI18n } from '@/shared/i18n/I18nContext';
+import { useTheme } from '@/shared/theme/hooks/use-theme';
 
 /**
  * Pour un utilisateur connecté : barre fixe en haut (logo de l'application) sur
@@ -13,12 +14,13 @@ import { useI18n } from '@/shared/i18n/I18nContext';
  */
 export default function TabsLayout() {
   const { t } = useI18n();
+  const theme = useTheme();
   // `(tabs)/profile/personal` : un formulaire du profil, sans barre du haut ; il
   // affiche son propre en-tête avec le bouton retour.
   const inSubPage = useSegments().length > 2;
 
   return (
-    <Tabs screenOptions={{ header: () => <AppTopBar />, tabBarShowLabel: false }}>
+    <Tabs screenOptions={{ header: () => <AppTopBar />, tabBarShowLabel: false, tabBarActiveTintColor: theme.primary }}>
       <Tabs.Screen
         name="index"
         options={{

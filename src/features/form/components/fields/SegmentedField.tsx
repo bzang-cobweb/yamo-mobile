@@ -7,8 +7,6 @@ import { Spacing } from '@/shared/theme/theme';
 import type { FieldProps } from '../../types';
 import { FieldShell } from '../FieldShell';
 
-const PRIMARY = '#208AEF';
-
 /**
  * Choix parmi quelques options, en boutons côte à côte, une seule active
  * (ex. « E-mail | Téléphone » pour l'identifiant de connexion).
@@ -33,8 +31,8 @@ export function SegmentedField({ field, value, onChange, error, disabled }: Fiel
               accessibilityState={{ selected, disabled }}
               disabled={disabled}
               onPress={() => onChange(option.value)}
-              style={[styles.segment, selected && styles.selected]}>
-              <ThemedText type="smallBold" style={selected ? styles.selectedText : undefined}>
+              style={[styles.segment, selected && { backgroundColor: theme.primary }]}>
+              <ThemedText type="smallBold" style={selected ? { color: theme.onPrimary } : undefined}>
                 {option.label}
               </ThemedText>
             </Pressable>
@@ -48,6 +46,4 @@ export function SegmentedField({ field, value, onChange, error, disabled }: Fiel
 const styles = StyleSheet.create({
   group: { flexDirection: 'row', borderRadius: 8, padding: Spacing.half },
   segment: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, borderRadius: 6 },
-  selected: { backgroundColor: PRIMARY },
-  selectedText: { color: '#fff' },
 });
