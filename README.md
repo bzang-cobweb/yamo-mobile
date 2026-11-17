@@ -67,7 +67,7 @@ Une feature = un dossier dans `src/features/<feature>/`, avec selon ses besoins 
 | Dossier | Contenu |
 |---|---|
 | `src/app/` | Routes Expo Router uniquement : elles importent les écrans des features |
-| `src/features/auth/` | Session et profil : `LoginService`, `LogoutService`, `ProfileService` (consultation, photo), `PersonalInfoService`, `PasswordService`, `PreferencesService` (un par formulaire), `AuthProvider`, `useAuth()`, écrans Connexion, Accueil, Profil et ses formulaires |
+| `src/features/auth/` | Session et profil : `LoginService`, `LogoutService`, `ProfileService` (consultation, photo), `ProfileMenuService` (menu du profil), `ProfileFormService` (envoi de tout formulaire du profil, décrit par l'API), `AuthProvider`, `useAuth()`, écrans Connexion, Accueil, Profil et ses formulaires |
 | `src/features/form/` | Formulaires décrits par l'API (`GET /api/v1/forms/{nom}`) : `FormService`, `FormLoader`, `DynamicForm`, un composant par type de champ dans `components/fields/` |
 | `src/shared/api/` | `ApiClient` (URL, jeton, langue, erreurs) |
 | `src/shared/i18n/` | Textes de l'interface (fr, en), choix de la meilleure langue de l'appareil, `useI18n()` |
@@ -91,12 +91,13 @@ un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`
 ### Navigation
 
 Connecté : menu fixe en bas, deux icônes — Accueil (écran par défaut, `src/app/(tabs)/index.tsx`)
-et Profil (pile `src/app/(tabs)/profile/`). Le profil affiche la photo, le nom, l'e-mail et
-trois liens vers des formulaires décrits par l'API : Informations personnelles
-(`/profile/personal`), Changer le mot de passe (`/profile/password`), Préférences
-(`/profile/preferences`), puis « Se déconnecter ». Un formulaire enregistré revient au profil
-avec une confirmation (`ProfileFormScreen`). Changer le mot de passe déconnecte les autres
-appareils. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
+et Profil (pile `src/app/(tabs)/profile/`). Le profil affiche la photo, le nom, l'e-mail, le
+menu servi par l'API (`GET /api/v1/auth/me/menu` : libellé et nom du formulaire de chaque
+lien), « Se déconnecter » et le lien rouge « Supprimer mon compte ». Chaque lien ouvre
+`/profile/[form]` (`ProfileFormScreen`), qui affiche et envoie le formulaire selon sa
+définition : méthode et point d'API (`/v1/…` seulement), étape du code si l'API en demande
+un, compte mis à jour, puis retour au profil avec le message de l'API ou déconnexion. Ajouter
+un lien au menu ne demande donc aucune modification de l'app. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
 typées avant `npm run typecheck`.
 
 Nom complet et initiales (avatar) viennent de l'API (`full_name`, `initials`) : l'app ne

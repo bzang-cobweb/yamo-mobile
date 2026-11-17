@@ -1,5 +1,5 @@
-import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
-import { useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,50 +14,45 @@ import { ProfileMenuLink } from '../components/ProfileMenuLink';
 import { SignOutButton } from '../components/SignOutButton';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileMenu } from '../hooks/useProfileMenu';
-import type { ProfileNotice } from './ProfileFormScreen';
+import { takeProfileNotice } from '../utils/profile-notice';
 
 /**
- * Seule une route interne de l'app (`/…`) est suivie : une adresse servie par
- * erreur ou détournée n'ouvre rien, et une entrée sans route (réponse d'un
- * serveur plus ancien, mise en cache) est ignorée au lieu de faire planter l'écran.
+ * Un lien sans nom de formulaire (réponse d'un serveur plus ancien, mise en
+ * cache) est ignoré au lieu de faire planter l'écran.
  */
-function isAppRoute(path: unknown): path is Href & string {
-  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//');
+function isFormName(form: unknown): form is string {
+  return typeof form === 'string' && form !== '';
 }
 
 /**
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
  * téléphone (format international) selon les canaux de l'application, menu de
  * ses formulaires, déconnexion, suppression du compte. Le menu (liens, ordre,
- * libellés, routes) est servi par l'API, qui le définit ; il se recharge à
- * chaque retour sur le profil. Un formulaire enregistré revient ici avec
- * `notice`, qui affiche une confirmation.
+ * libellés, formulaires) est servi par l'API, qui le définit ; chaque lien ouvre
+ * `/profile/[form]`. Le menu se recharge à chaque retour sur le profil. Un
+ * formulaire enregistré revient ici avec le message de confirmation de l'API.
  */
 export function ProfileScreen() {
-  const { user, t } = useAuth();
+  const { user } = useAuth();
   // Canaux de compte de l'application ; tant qu'ils ne sont pas connus, les deux.
   const channels = useApplication().data?.channels ?? { email: true, phone: true };
   const menu = useProfileMenu();
   const { refetch } = menu;
   const hasUser = user !== null;
-  const { notice } = useLocalSearchParams<{ notice?: ProfileNotice }>();
-  const notices = {
-    saved: t('profile.saved'),
-    password: t('profile.passwordSaved'),
-    email: t('profile.emailSaved'),
-    phone: t('profile.phoneSaved'),
-  } as const;
-  const message = notice && notice in notices ? notices[notice] : null;
+  const [message, setMessage] = useState<string | null>(null);
 
-  // En revenant sur le profil, le menu se recharge ; en le quittant (vers un
-  // formulaire, un autre onglet), la confirmation s'efface.
+  // En revenant sur le profil, le menu se recharge et la confirmation d'un
+  // formulaire s'affiche ; en le quittant (vers un formulaire, un autre onglet),
+  // elle s'efface.
   useFocusEffect(
     useCallback(() => {
       if (hasUser) {
         void refetch();
       }
 
-      return () => router.setParams({ notice: undefined });
+      setMessage(takeProfileNotice());
+
+      return () => setMessage(null);
     }, [hasUser, refetch]),
   );
 
@@ -91,9 +86,14 @@ export function ProfileScreen() {
             </ThemedText>
           )}
           <View style={styles.links}>
-            {(menu.data ?? []).map(({ key, label, path }) =>
-              isAppRoute(path) ? (
-                <ProfileMenuLink key={key} href={path} label={label} testID={`profile-link-${key}`} />
+            {(menu.data ?? []).map(({ key, label, form }) =>
+              isFormName(form) ? (
+                <ProfileMenuLink
+                  key={key}
+                  href={{ pathname: '/profile/[form]', params: { form } }}
+                  label={label}
+                  testID={`profile-link-${key}`}
+                />
               ) : null,
             )}
           </View>

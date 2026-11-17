@@ -14,10 +14,13 @@ import type { Challenge, VerifyResult } from '../types';
 import { deviceName } from '../utils/device-name';
 
 type Props = {
-  /** Formulaire de la première étape (`auth.login`, `auth.register`, `auth.profile.email`…). */
+  /** Formulaire de la première étape (`auth.login`, `auth.register`, un formulaire du profil…). */
   form: string;
-  /** Envoie la première étape ; l'API répond par le code envoyé. */
-  start: (values: FormValues) => Promise<Challenge>;
+  /**
+   * Envoie la première étape ; l'API répond par le code envoyé. `null` : l'opération
+   * est achevée sans code (formulaire du profil qui n'en demande pas).
+   */
+  start: (values: FormValues) => Promise<Challenge | null>;
   /** Dernier code validé : session ouverte ou compte modifié. */
   onVerified: (result: Exclude<VerifyResult, { kind: 'pending' }>) => Promise<void>;
   /** Le titre du premier formulaire est affiché par l'en-tête de l'écran. */

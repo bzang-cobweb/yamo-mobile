@@ -20,8 +20,6 @@ type DynamicFormProps = {
   onSubmit: (values: FormValues) => Promise<void>;
   /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
   hideTitle?: boolean;
-  /** Action irréversible (supprimer son compte…) : bouton d'envoi rouge. */
-  destructive?: boolean;
 };
 
 /**
@@ -34,10 +32,14 @@ type DynamicFormProps = {
  * le bouton d'envoi envoie tout. Le retour à l'étape précédente, sans rien perdre, est
  * la flèche de l'en-tête de l'écran ; sans en-tête, un lien « Précédent ».
  *
+ * Une action irréversible (`submit.destructive`, supprimer son compte…) a un
+ * bouton d'envoi rouge.
+ *
  * Pour repartir des valeurs par défaut (autre formulaire, autre langue), le
  * monter avec une `key` différente.
  */
-export function DynamicForm({ definition, onSubmit, hideTitle = false, destructive = false }: DynamicFormProps) {
+export function DynamicForm({ definition, onSubmit, hideTitle = false }: DynamicFormProps) {
+  const destructive = definition.submit.destructive === true;
   const { t } = useI18n();
   const theme = useTheme();
   const [values, setValues] = useState<FormValues>(() => initialValues(definition));

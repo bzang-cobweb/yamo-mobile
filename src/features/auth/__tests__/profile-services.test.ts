@@ -1,46 +1,56 @@
 import type { ApiClient } from '@/shared/api/ApiClient';
 
-import { PasswordService } from '../services/PasswordService';
-import { PersonalInfoService } from '../services/PersonalInfoService';
-import { PreferencesService } from '../services/PreferencesService';
+import { ProfileFormService, profileSubmission, type ProfileSubmission } from '../services/ProfileFormService';
 import { ProfileMenuService } from '../services/ProfileMenuService';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 
-function fakeClient() {
-  const user = { id: 1 };
+const success = { action: 'profile', message: 'Modifications enregistrées.' };
 
-  return {
-    patch: jest.fn().mockResolvedValue({ data: user }),
-    put: jest.fn().mockResolvedValue(undefined),
-    user,
-  };
-}
-
-describe('services des formulaires du profil (une méthode par appel)', () => {
-  it('PersonalInfoService.update : PATCH /v1/auth/me/personal-info, renvoie le compte', async () => {
-    const client = fakeClient();
-    const values = { first_name: 'Jeanne', last_name: 'Dupont' };
-
-    await expect(new PersonalInfoService(client as unknown as ApiClient).update(values)).resolves.toBe(client.user);
-    expect(client.patch).toHaveBeenCalledWith('/v1/auth/me/personal-info', values);
+describe('profileSubmission : envoi décrit par l’API, s’il est exécutable', () => {
+  it('garde méthode, point d’API relatif et suite connus', () => {
+    expect(profileSubmission({ label: 'OK', method: 'PATCH', endpoint: '/v1/auth/me/personal-info', success })).toEqual({
+      method: 'PATCH',
+      endpoint: '/v1/auth/me/personal-info',
+      success,
+    });
+    expect(profileSubmission({ label: 'OK', method: 'DELETE', endpoint: '/v1/auth/me', destructive: true, success: { action: 'sign-out', message: 'Supprimé.' } })).not.toBeNull();
   });
 
-  it('PasswordService.update : PUT /v1/auth/me/password', async () => {
-    const client = fakeClient();
-    const values = { current_password: 'a', password: 'b', password_confirmation: 'b' };
-
-    await new PasswordService(client as unknown as ApiClient).update(values);
-    expect(client.put).toHaveBeenCalledWith('/v1/auth/me/password', values);
+  it.each([
+    ['sans envoi décrit', { label: 'OK' }],
+    ['adresse absolue', { label: 'OK', method: 'POST', endpoint: 'https://example.test/v1/x', success }],
+    ['adresse sans schéma', { label: 'OK', method: 'POST', endpoint: '//example.test/v1/x', success }],
+    ['hors de /v1', { label: 'OK', method: 'POST', endpoint: '/admin/users', success }],
+    ['chemin qui remonte', { label: 'OK', method: 'POST', endpoint: '/v1/../admin', success }],
+    ['avec une requête', { label: 'OK', method: 'POST', endpoint: '/v1/x?y=1', success }],
+    ['méthode inconnue', { label: 'OK', method: 'GET', endpoint: '/v1/x', success }],
+    ['suite inconnue', { label: 'OK', method: 'POST', endpoint: '/v1/x', success: { action: 'open-url', message: 'x' } }],
+    ['sans message', { label: 'OK', method: 'POST', endpoint: '/v1/x', success: { action: 'profile' } }],
+  ])('refuse : %s', (_name, submit) => {
+    expect(profileSubmission(submit as never)).toBeNull();
   });
+});
 
-  it('PreferencesService.update : PATCH /v1/auth/me/preferences, renvoie le compte', async () => {
-    const client = fakeClient();
+describe('ProfileFormService.submit : méthode et point d’API de la définition', () => {
+  const submission: ProfileSubmission = { method: 'PATCH', endpoint: '/v1/notifications', success: { action: 'profile', message: 'OK' } };
 
-    await expect(new PreferencesService(client as unknown as ApiClient).update({ locale: 'en' })).resolves.toBe(client.user);
-    expect(client.patch).toHaveBeenCalledWith('/v1/auth/me/preferences', { locale: 'en' });
+  it.each([
+    ['un code demandé', { challenge: 'abc', channel: 'email', destination: 'j•••@example.com' }, 'challenge'],
+    ['le compte modifié', { data: { id: 1, full_name: 'Jeanne' } }, 'user'],
+    ['une réponse vide', undefined, 'none'],
+    ['une autre réponse', { data: { enabled: true } }, 'none'],
+  ])('%s', async (_name, response, kind) => {
+    const client = { request: jest.fn().mockResolvedValue(response) };
+
+    const result = await new ProfileFormService(client as unknown as ApiClient).submit(submission, { enabled: true });
+
+    expect(result.kind).toBe(kind);
+    expect(client.request).toHaveBeenCalledWith('/v1/notifications', { method: 'PATCH', body: { enabled: true } });
   });
+});
 
+describe('services du profil (une méthode par appel)', () => {
   it('ProfileMenuService.list : GET /v1/auth/me/menu, renvoie les liens', async () => {
     const items = [{ key: 'personal', label: 'Informations personnelles' }];
     const client = { get: jest.fn().mockResolvedValue({ data: items }) };

@@ -63,7 +63,23 @@ export type FormDefinition = {
   fields: FormFieldDefinition[];
   /** Étapes, dans l'ordre ; vide (ou absent) pour un formulaire d'un seul tenant. */
   steps?: FormStep[];
-  submit: { label: string };
+  submit: FormSubmit;
+};
+
+/**
+ * Bouton d'envoi. Pour un formulaire que l'app envoie sans le connaître d'avance
+ * (formulaires du profil), l'API décrit aussi l'envoi et sa suite.
+ */
+export type FormSubmit = {
+  label: string;
+  /** Méthode HTTP de l'envoi. */
+  method?: string;
+  /** Point d'API, relatif à l'API (`/v1/…`). */
+  endpoint?: string;
+  /** Action irréversible : bouton rouge. */
+  destructive?: boolean;
+  /** Suite au succès : `profile` (retour au profil) ou `sign-out` (déconnexion), avec le message à afficher. */
+  success?: { action: string; message: string };
 };
 
 /** Une étape : titre facultatif et noms des champs qu'elle affiche. */

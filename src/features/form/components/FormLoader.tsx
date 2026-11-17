@@ -11,20 +11,18 @@ import { DynamicForm } from './DynamicForm';
 import { ERROR_COLOR } from './FieldShell';
 
 type FormLoaderProps = {
-  /** Nom du formulaire dans l'API (`auth.login`, `auth.profile.preferences`…). */
+  /** Nom du formulaire dans l'API (`auth.login`, `auth.code`…). */
   name: string;
   onSubmit: (values: FormValues) => Promise<void>;
   /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
   hideTitle?: boolean;
-  /** Action irréversible : bouton d'envoi rouge. */
-  destructive?: boolean;
 };
 
 /**
  * Charge la définition d'un formulaire depuis l'API et l'affiche. Une nouvelle
  * définition (autre langue) repart de ses valeurs par défaut.
  */
-export function FormLoader({ name, onSubmit, hideTitle = false, destructive = false }: FormLoaderProps) {
+export function FormLoader({ name, onSubmit, hideTitle = false }: FormLoaderProps) {
   const { t, locale } = useI18n();
   const query = useFormDefinition(name);
 
@@ -52,7 +50,7 @@ export function FormLoader({ name, onSubmit, hideTitle = false, destructive = fa
     );
   }
 
-  return <DynamicForm key={`${name}-${locale}`} definition={query.data} onSubmit={onSubmit} hideTitle={hideTitle} destructive={destructive} />;
+  return <DynamicForm key={`${name}-${locale}`} definition={query.data} onSubmit={onSubmit} hideTitle={hideTitle} />;
 }
 
 const styles = StyleSheet.create({

@@ -1,55 +1,149 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { Alert } from 'react-native';
 
-import type { FormValues } from '@/features/form/types';
+import type { FormDefinition, FormValues } from '@/features/form/types';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { AuthContext } from '../context/AuthContext';
 import { ProfileFormScreen } from '../screens/ProfileFormScreen';
+import { verificationService } from '../services/VerificationService';
 import type { AuthContextValue } from '../types';
+import { takeProfileNotice } from '../utils/profile-notice';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
-jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn(), canGoBack: () => true } }));
+jest.mock('react-native-safe-area-context', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-/** Le formulaire de l'API est remplacé par un bouton qui envoie des valeurs fixes. */
+  return { SafeAreaView: View };
+});
+
+const mockRequest = jest.fn();
+jest.mock('@/shared/api/ApiClient', () => ({ apiClient: { request: (...args: unknown[]) => mockRequest(...args) } }));
+jest.mock('../services/VerificationService', () => ({ verificationService: { verify: jest.fn(), resend: jest.fn() } }));
+
+let mockDefinition: FormDefinition;
+jest.mock('@/features/form/hooks/useFormDefinition', () => ({
+  useFormDefinition: () => ({ data: mockDefinition, isPending: false, isError: false }),
+}));
+
+/** Chaque formulaire de l'API est remplacé par un bouton qui envoie des valeurs fixes. */
 jest.mock('@/features/form/components/FormLoader', () => {
   const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
 
   return {
-    FormLoader: ({ onSubmit }: { onSubmit: (values: FormValues) => Promise<void> }) => (
-      <Pressable testID="fake-submit" onPress={() => onSubmit({ first_name: 'Jeanne' }).catch(() => undefined)}>
-        <Text>envoyer</Text>
+    FormLoader: ({ name, onSubmit }: { name: string; onSubmit: (values: FormValues) => Promise<void> }) => (
+      <Pressable testID={`submit-${name}`} onPress={() => onSubmit(name === 'auth.code' ? { code: '123456' } : { enabled: true }).catch(() => undefined)}>
+        <Text>{name}</Text>
       </Pressable>
     ),
   };
 });
 
-async function renderScreen(onSubmit: (values: FormValues) => Promise<void>, notice: 'saved' | 'password') {
-  await render(
-    <AuthContext.Provider value={{ t: TEST_I18N.t } as AuthContextValue}>
-      <ProfileFormScreen title="Informations personnelles" form="auth.profile.personal" notice={notice} onSubmit={onSubmit} />
-    </AuthContext.Provider>,
-  );
+/** Un formulaire que l'app ne connaît pas : tout vient de sa définition. */
+function definition(submit: Partial<FormDefinition['submit']> = {}): FormDefinition {
+  return {
+    name: 'notifications.settings',
+    title: 'Notifications',
+    subtitle: null,
+    fields: [],
+    submit: { label: 'Enregistrer', method: 'PATCH', endpoint: '/v1/notifications', success: { action: 'profile', message: 'Notifications enregistrées.' }, ...submit },
+  };
 }
 
-describe('ProfileFormScreen', () => {
-  beforeEach(() => jest.clearAllMocks());
+const user = { id: 1, full_name: 'Jeanne Dupont', locale: 'en' };
 
-  it('enregistré : envoie par le service puis revient au profil avec la confirmation', async () => {
-    const onSubmit = jest.fn().mockResolvedValue(undefined);
-    await renderScreen(onSubmit, 'password');
+async function renderScreen() {
+  const auth = { t: TEST_I18N.t, setUser: jest.fn(), signOut: jest.fn().mockResolvedValue(undefined) };
+  await render(
+    <AuthContext.Provider value={auth as unknown as AuthContextValue}>
+      <ProfileFormScreen form="notifications.settings" />
+    </AuthContext.Provider>,
+  );
 
-    await fireEvent.press(screen.getByTestId('fake-submit'));
+  return auth;
+}
 
-    expect(onSubmit).toHaveBeenCalledWith({ first_name: 'Jeanne' });
-    expect(router.dismissTo).toHaveBeenCalledWith({ pathname: '/profile', params: { notice: 'password' } });
+describe('ProfileFormScreen (tout formulaire du profil, sans le connaître d’avance)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    takeProfileNotice();
+    mockDefinition = definition();
+  });
+
+  it('affiche le titre servi par l’API dans l’en-tête, envoie au point d’API décrit et revient au profil avec le message', async () => {
+    mockRequest.mockResolvedValue(undefined);
+    const auth = await renderScreen();
+
+    expect(screen.getByText('Notifications')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('submit-notifications.settings'));
+
+    expect(mockRequest).toHaveBeenCalledWith('/v1/notifications', { method: 'PATCH', body: { enabled: true } });
+    expect(auth.setUser).not.toHaveBeenCalled();
+    expect(router.dismissTo).toHaveBeenCalledWith('/profile');
+    expect(takeProfileNotice()).toBe('Notifications enregistrées.');
+  });
+
+  it('le compte renvoyé est mis à jour dans l’app (langue comprise)', async () => {
+    mockRequest.mockResolvedValue({ data: user });
+    const auth = await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('submit-notifications.settings'));
+
+    expect(auth.setUser).toHaveBeenCalledWith(user);
+    expect(router.dismissTo).toHaveBeenCalledWith('/profile');
+  });
+
+  it('un code demandé : étape du code, puis compte mis à jour et retour au profil', async () => {
+    const challenge = { challenge: 'abc', channel: 'email', destination: 'j•••@example.com' };
+    mockRequest.mockResolvedValue(challenge);
+    (verificationService.verify as jest.Mock).mockResolvedValue({ kind: 'user', user });
+    const auth = await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('submit-notifications.settings'));
+
+    expect(router.dismissTo).not.toHaveBeenCalled();
+    expect(screen.getByTestId('code-sent')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('submit-auth.code'));
+
+    expect(verificationService.verify).toHaveBeenCalledWith(challenge, '123456', expect.any(String));
+    expect(auth.setUser).toHaveBeenCalledWith(user);
+    expect(takeProfileNotice()).toBe('Notifications enregistrées.');
+  });
+
+  it('suite « sign-out » : message, puis déconnexion', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    mockDefinition = definition({ method: 'DELETE', endpoint: '/v1/auth/me', destructive: true, success: { action: 'sign-out', message: 'Votre compte a été supprimé.' } });
+    mockRequest.mockResolvedValue(undefined);
+    const auth = await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('submit-notifications.settings'));
+
+    expect(mockRequest).toHaveBeenCalledWith('/v1/auth/me', { method: 'DELETE', body: { enabled: true } });
+    expect(alert).toHaveBeenCalledWith('Votre compte a été supprimé.');
+    expect(auth.signOut).toHaveBeenCalled();
+    expect(router.dismissTo).not.toHaveBeenCalled();
   });
 
   it('refusé par l’API : reste sur le formulaire (l’erreur y est affichée)', async () => {
-    await renderScreen(jest.fn().mockRejectedValue(new Error('422')), 'saved');
+    mockRequest.mockRejectedValue(new Error('422'));
+    await renderScreen();
 
-    await fireEvent.press(screen.getByTestId('fake-submit'));
+    await fireEvent.press(screen.getByTestId('submit-notifications.settings'));
 
     expect(router.dismissTo).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['sans envoi décrit', { method: undefined, endpoint: undefined, success: undefined }],
+    ['vers une autre adresse', { endpoint: 'https://example.test/v1/notifications' }],
+  ])('%s : une erreur, et rien n’est envoyé', async (_name, submit) => {
+    mockDefinition = definition(submit);
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-form-unsupported')).toBeTruthy();
+    expect(screen.queryByTestId('submit-notifications.settings')).toBeNull();
+    expect(mockRequest).not.toHaveBeenCalled();
   });
 });

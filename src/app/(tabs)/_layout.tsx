@@ -15,7 +15,7 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 export default function TabsLayout() {
   const { t } = useI18n();
   const theme = useTheme();
-  // `(tabs)/profile/personal` : un formulaire du profil, sans barre du haut ; il
+  // `(tabs)/profile/[form]` : un formulaire du profil, sans barre du haut ; il
   // affiche son propre en-tête avec le bouton retour.
   const inSubPage = useSegments().length > 2;
 

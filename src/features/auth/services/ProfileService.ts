@@ -5,8 +5,8 @@ import type { AvatarFile, User, UserResponse } from '../types';
 
 /**
  * Profil de l'utilisateur connecté : consultation et photo. Une méthode par appel.
- * Les formulaires du profil ont chacun leur service (`PersonalInfoService`,
- * `PasswordService`, `PreferencesService`).
+ * Les formulaires du profil sont envoyés par `ProfileFormService`, selon leur
+ * définition servie par l'API.
  */
 export class ProfileService {
   constructor(private readonly client: ApiClient = apiClient) {}

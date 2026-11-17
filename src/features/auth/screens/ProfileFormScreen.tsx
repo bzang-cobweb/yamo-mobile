@@ -1,23 +1,21 @@
-import { router } from 'expo-router';
 import type { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { FormLoader } from '@/features/form/components/FormLoader';
+import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { useFormDefinition } from '@/features/form/hooks/useFormDefinition';
 import type { FormValues } from '@/features/form/types';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
+import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-
-/** Confirmation affichée par le profil au retour d'un formulaire enregistré. */
-export type ProfileNotice = 'saved' | 'password' | 'email' | 'phone';
-
-/** Revient au profil, qui affiche la confirmation `notice`. */
-export function backToProfile(notice: ProfileNotice) {
-  router.dismissTo({ pathname: '/profile', params: { notice } });
-}
+import { ChallengeFlow } from '../components/ChallengeFlow';
+import { useAuth } from '../hooks/useAuth';
+import { profileFormService, profileSubmission, type ProfileSubmission } from '../services/ProfileFormService';
+import type { Challenge } from '../types';
+import { backToProfile } from '../utils/profile-notice';
 
 /**
  * Mise en page d'un écran du profil : en-tête fixé en haut (flèche de retour, titre de
@@ -40,29 +38,69 @@ export function ProfileScreenShell({ title, children }: PropsWithChildren<{ titl
   );
 }
 
-type Props = {
-  /** Titre de l'écran, au centre de l'en-tête (le formulaire n'affiche plus le sien). */
-  title: string;
-  /** Nom du formulaire dans l'API (`auth.profile.personal`…). */
-  form: string;
-  /** Envoi par le service du formulaire ; une erreur de l'API reste affichée dans le formulaire. */
-  onSubmit: (values: FormValues) => Promise<void>;
-  notice: ProfileNotice;
-};
-
 /**
- * Écran d'un formulaire du profil : retour, formulaire décrit par l'API (titre
- * compris). Enregistré, il revient au profil avec une confirmation.
+ * Écran de tout formulaire du profil (`/profile/[form]`), sans le connaître
+ * d'avance : l'API en donne le titre, affiché dans l'en-tête, les champs et
+ * l'envoi (méthode, point d'API, suite au succès ; décision
+ * 2026-11-17-formulaires-profil-generiques).
+ *
+ * Selon la réponse : un code demandé → étape du code ; le compte renvoyé → mis à
+ * jour (langue comprise) ; puis retour au profil avec le message, ou message et
+ * déconnexion. Un formulaire sans envoi exécutable affiche une erreur et n'envoie rien.
  */
-export function ProfileFormScreen({ title, form, onSubmit, notice }: Props) {
-  async function submit(values: FormValues) {
-    await onSubmit(values);
-    backToProfile(notice);
+export function ProfileFormScreen({ form }: { form: string }) {
+  const { t, setUser, signOut } = useAuth();
+  const definition = useFormDefinition(form);
+  const submission = definition.data ? profileSubmission(definition.data.submit) : null;
+
+  async function succeed({ success }: ProfileSubmission) {
+    if (success.action === 'sign-out') {
+      Alert.alert(success.message);
+      await signOut();
+    } else {
+      backToProfile(success.message);
+    }
+  }
+
+  async function start(values: FormValues): Promise<Challenge | null> {
+    if (submission === null) {
+      return null;
+    }
+
+    const result = await profileFormService.submit(submission, values);
+
+    if (result.kind === 'challenge') {
+      return result.challenge;
+    }
+
+    if (result.kind === 'user') {
+      setUser(result.user);
+    }
+
+    await succeed(submission);
+
+    return null;
   }
 
   return (
-    <ProfileScreenShell title={title}>
-      <FormLoader name={form} onSubmit={submit} hideTitle />
+    <ProfileScreenShell title={definition.data?.title ?? ''}>
+      {definition.data && submission === null ? (
+        <ThemedText style={styles.error} accessibilityRole="alert" testID="profile-form-unsupported">
+          {t('error.unknown')}
+        </ThemedText>
+      ) : (
+        <ChallengeFlow
+          hideFormTitle
+          form={form}
+          start={start}
+          onVerified={async (result) => {
+            if (result.kind === 'user' && submission !== null) {
+              setUser(result.user);
+              await succeed(submission);
+            }
+          }}
+        />
+      )}
     </ProfileScreenShell>
   );
 }
@@ -71,4 +109,5 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', gap: Spacing.three, padding: Spacing.four },
+  error: { color: ERROR_COLOR, textAlign: 'center' },
 });
