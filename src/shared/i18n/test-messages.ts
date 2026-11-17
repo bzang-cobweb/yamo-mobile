@@ -56,4 +56,5 @@ export const TEST_MESSAGES: Messages = {
 export const TEST_I18N: I18nValue = {
   locale: 'fr',
   t: (key, params) => translate(TEST_MESSAGES, 'fr', key, params),
+  chooseLocale: () => undefined,
 };

@@ -1,38 +1,16 @@
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+import { readItem, removeItem, saveItem } from '@/shared/storage/device-storage';
 
-/**
- * Jeton Sanctum de l'appareil. Sur iOS et Android, il vit dans le stockage
- * chiffré du système (Keychain / Keystore). Le web n'a pas d'équivalent :
- * `localStorage` n'y sert qu'au développement.
- */
-
+/** Jeton Sanctum de l'appareil, dans le stockage chiffré du système. */
 const KEY = 'yamo.auth.token';
 
-export async function readToken(): Promise<string | null> {
-  if (Platform.OS === 'web') {
-    return globalThis.localStorage?.getItem(KEY) ?? null;
-  }
-
-  return SecureStore.getItemAsync(KEY);
+export function readToken(): Promise<string | null> {
+  return readItem(KEY);
 }
 
-export async function saveToken(token: string): Promise<void> {
-  if (Platform.OS === 'web') {
-    globalThis.localStorage?.setItem(KEY, token);
-
-    return;
-  }
-
-  await SecureStore.setItemAsync(KEY, token);
+export function saveToken(token: string): Promise<void> {
+  return saveItem(KEY, token);
 }
 
-export async function clearToken(): Promise<void> {
-  if (Platform.OS === 'web') {
-    globalThis.localStorage?.removeItem(KEY);
-
-    return;
-  }
-
-  await SecureStore.deleteItemAsync(KEY);
+export function clearToken(): Promise<void> {
+  return removeItem(KEY);
 }

@@ -6,6 +6,8 @@ import { DEFAULT_LOCALE, type Locale, type Translate } from './messages';
 export type I18nValue = {
   locale: Locale;
   t: Translate;
+  /** Change la langue de l'app, avant d'avoir un compte (écran d'accueil). */
+  chooseLocale: (locale: string) => void;
 };
 
 /**
@@ -17,6 +19,7 @@ export type I18nValue = {
 export const I18nContext = createContext<I18nValue>({
   locale: DEFAULT_LOCALE,
   t: (key, params) => translate({}, DEFAULT_LOCALE, key, params),
+  chooseLocale: () => undefined,
 });
 
 export function useI18n(): I18nValue {

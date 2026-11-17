@@ -6,6 +6,7 @@ import { apiClient } from '@/shared/api/ApiClient';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 import { pickBestLocale, translate } from '@/shared/i18n/locale';
+import { readChosenLocale, saveChosenLocale } from '@/shared/i18n/locale-storage';
 import { APP_LOCALES, DEFAULT_LOCALE } from '@/shared/i18n/messages';
 import { localeService } from '@/shared/services/LocaleService';
 import { messageService } from '@/shared/services/MessageService';
@@ -35,8 +36,8 @@ function failedToLoad(query: { data: unknown; error: Error | null }): boolean {
 
 /**
  * Session de l'app : jeton (stockage chiffré), utilisateur connecté, langue —
- * celle du compte, sinon la meilleure langue de l'appareil parmi celles que l'API
- * propose — et textes de l'interface servis par l'API dans cette langue.
+ * celle du compte, sinon celle choisie sur l'écran d'accueil, sinon la meilleure
+ * langue de l'appareil, parmi celles que l'API propose — et textes de l'interface servis par l'API dans cette langue.
  * Démarrage impossible (pas de réseau, serveur injoignable) : `offline`, l'app
  * affiche l'écran hors ligne local.
  */
@@ -54,6 +55,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
     readToken().then(applyToken, () => applyToken(null));
   }, [applyToken]);
 
+  // Langue choisie sur l'écran d'accueil. undefined : pas encore lue ; null : aucune.
+  const [chosenLocale, setChosenLocale] = useState<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    readChosenLocale().then(setChosenLocale, () => setChosenLocale(null));
+  }, []);
+
+  const chooseLocale = useCallback((code: string) => {
+    setChosenLocale(code);
+    saveChosenLocale(code).catch(() => undefined);
+  }, []);
+
   // Langues proposées par l'API ; injoignable → les langues de l'app.
   const localesQuery = useQuery({
     queryKey: ['locales'],
@@ -63,7 +76,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   });
   const available = localesQuery.data?.data.map((locale) => locale.code) ?? [...APP_LOCALES];
   const deviceLocales = useLocales().map((locale) => locale.languageTag);
-  const deviceLocale = pickBestLocale(deviceLocales, available, localesQuery.data?.default ?? DEFAULT_LOCALE);
+  const preferred = chosenLocale ? [chosenLocale, ...deviceLocales] : deviceLocales;
+  const guestLocale = pickBestLocale(preferred, available, localesQuery.data?.default ?? DEFAULT_LOCALE);
 
   const meQuery = useQuery({
     queryKey: [...ME_KEY, token],
@@ -81,14 +95,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [applyToken, meQuery.error]);
 
   const user = typeof token === 'string' ? (meQuery.data ?? null) : null;
-  const locale = user?.locale ?? deviceLocale;
+  const locale = user?.locale ?? guestLocale;
 
   // Langue des requêtes : messages et formulaires de l'API dans la langue de l'app.
   apiClient.setLocale(locale);
 
   // Textes de l'interface, une fois la langue connue. Pendant un changement de
   // langue, les textes précédents restent affichés : la navigation n'est pas démontée.
-  const localeKnown = token !== undefined && !localesQuery.isPending && !(typeof token === 'string' && meQuery.isPending);
+  const localeKnown = token !== undefined && chosenLocale !== undefined && !localesQuery.isPending && !(typeof token === 'string' && meQuery.isPending);
   const messagesQuery = useQuery({
     queryKey: ['messages', locale],
     queryFn: () => messageService.get(),
@@ -150,7 +164,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [isRetrying, locale, localeKnown, messages, messagesQuery.isPending, offline, retry, setUser, signIn, signOut, user],
   );
 
-  const i18n = useMemo(() => ({ locale: value.locale, t: value.t }), [value.locale, value.t]);
+  const i18n = useMemo(() => ({ locale: value.locale, t: value.t, chooseLocale }), [value.locale, value.t, chooseLocale]);
 
   return (
     <AuthContext.Provider value={value}>

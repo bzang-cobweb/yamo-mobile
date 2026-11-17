@@ -8,6 +8,7 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
+import { LocaleSwitcher } from '../components/LocaleSwitcher';
 import { useApplication } from '../hooks/useApplication';
 
 const LOGO_HEIGHT = 160;
@@ -25,6 +26,7 @@ export function WelcomeScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
+          <LocaleSwitcher />
           <View style={styles.presentation}>
             <BrandLogo variant="vertical" height={LOGO_HEIGHT} testID="welcome-logo" />
             {isPending && <ActivityIndicator testID="welcome-loading" />}
