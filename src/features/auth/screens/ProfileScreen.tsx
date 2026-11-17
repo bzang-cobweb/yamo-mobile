@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useApplication } from '@/features/welcome/hooks/useApplication';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
@@ -16,12 +17,14 @@ import type { ProfileNotice } from './ProfileFormScreen';
 
 /**
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
- * téléphone (format international), liens vers ses formulaires (dont ajouter ou
+ * téléphone (format international) selon les canaux de l'application, liens vers ses formulaires (dont ajouter ou
  * changer l'e-mail et le numéro), déconnexion, suppression du compte. Un formulaire enregistré revient
  * ici avec `notice`, qui affiche une confirmation.
  */
 export function ProfileScreen() {
   const { user, t } = useAuth();
+  // Canaux de compte de l'application ; tant qu'ils ne sont pas connus, les deux.
+  const channels = useApplication().data?.channels ?? { email: true, phone: true };
   const { notice } = useLocalSearchParams<{ notice?: ProfileNotice }>();
   const notices = {
     saved: t('profile.saved'),
@@ -47,12 +50,12 @@ export function ProfileScreen() {
             <ThemedText type="smallBold" testID="profile-full-name">
               {user.full_name}
             </ThemedText>
-            {user.email && (
+            {channels.email && user.email && (
               <ThemedText themeColor="textSecondary" testID="profile-email">
                 {user.email}
               </ThemedText>
             )}
-            {user.phone && (
+            {channels.phone && user.phone && (
               <ThemedText themeColor="textSecondary" testID="profile-phone">
                 {user.phone_international ?? user.phone}
               </ThemedText>
@@ -65,16 +68,20 @@ export function ProfileScreen() {
           )}
           <View style={styles.links}>
             <ProfileMenuLink href="/profile/personal" label={t('profile.personalInfo')} testID="profile-link-personal" />
-            <ProfileMenuLink
-              href="/profile/email"
-              label={user.email ? t('profile.changeEmail') : t('profile.addEmail')}
-              testID="profile-link-email"
-            />
-            <ProfileMenuLink
-              href="/profile/phone"
-              label={user.phone ? t('profile.changePhone') : t('profile.addPhone')}
-              testID="profile-link-phone"
-            />
+            {channels.email && (
+              <ProfileMenuLink
+                href="/profile/email"
+                label={user.email ? t('profile.changeEmail') : t('profile.addEmail')}
+                testID="profile-link-email"
+              />
+            )}
+            {channels.phone && (
+              <ProfileMenuLink
+                href="/profile/phone"
+                label={user.phone ? t('profile.changePhone') : t('profile.addPhone')}
+                testID="profile-link-phone"
+              />
+            )}
             <ProfileMenuLink href="/profile/password" label={t('profile.password')} testID="profile-link-password" />
             <ProfileMenuLink href="/profile/preferences" label={t('profile.preferences')} testID="profile-link-preferences" />
           </View>

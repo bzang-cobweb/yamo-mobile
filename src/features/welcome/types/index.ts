@@ -4,4 +4,6 @@ export type Application = {
   name: string;
   /** Description dans la langue de la requête, ou `null`. */
   description: string | null;
+  /** Canaux de compte de l'application : au moins un est actif. */
+  channels: { email: boolean; phone: boolean };
 };

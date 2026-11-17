@@ -39,7 +39,7 @@ describe('WelcomeScreen', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('affiche le logo YaMo, la description et les deux boutons', async () => {
-    get.mockResolvedValue({ name: 'Ya Mo', description: 'Bienvenue' });
+    get.mockResolvedValue({ name: 'Ya Mo', description: 'Bienvenue', channels: { email: true, phone: true } });
     await renderScreen();
 
     expect(await screen.findByTestId('welcome-description')).toHaveTextContent('Bienvenue');
@@ -52,7 +52,7 @@ describe('WelcomeScreen', () => {
   });
 
   it('affiche le logo avant la réponse de l’API, sans description si elle est vide', async () => {
-    get.mockResolvedValue({ name: 'Ya Mo', description: null });
+    get.mockResolvedValue({ name: 'Ya Mo', description: null, channels: { email: true, phone: true } });
     await renderScreen();
 
     expect(screen.getByTestId('welcome-logo')).toBeTruthy();

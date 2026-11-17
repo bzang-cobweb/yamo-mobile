@@ -9,6 +9,11 @@ import type { AuthContextValue, User } from '../types';
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
 
+let mockChannels = { email: true, phone: true };
+jest.mock('@/features/welcome/hooks/useApplication', () => ({
+  useApplication: () => ({ data: { name: 'Ya Mo', description: null, channels: mockChannels } }),
+}));
+
 const mockParams: { notice?: string } = {};
 jest.mock('expo-router', () => ({
   router: { setParams: jest.fn(), back: jest.fn(), push: jest.fn() },
@@ -105,5 +110,31 @@ describe('ProfileScreen', () => {
     await renderProfile();
 
     expect(screen.getByTestId('profile-notice')).toHaveTextContent('Numéro enregistré.');
+  });
+
+  describe("selon les canaux de l'application", () => {
+    afterEach(() => {
+      mockChannels = { email: true, phone: true };
+    });
+
+    it("sans téléphone : ni numéro ni lien, même si le compte en a un", async () => {
+      mockChannels = { email: true, phone: false };
+
+      await renderProfile({ ...jeanne, phone: '+41791234567', phone_international: '+41 79 123 45 67', phone_country: 'CH' });
+
+      expect(screen.queryByTestId('profile-phone')).toBeNull();
+      expect(screen.queryByTestId('profile-link-phone')).toBeNull();
+      expect(screen.getByTestId('profile-link-email')).toBeTruthy();
+    });
+
+    it("sans e-mail : ni adresse ni lien", async () => {
+      mockChannels = { email: false, phone: true };
+
+      await renderProfile();
+
+      expect(screen.queryByTestId('profile-email')).toBeNull();
+      expect(screen.queryByTestId('profile-link-email')).toBeNull();
+      expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Ajouter un numéro');
+    });
   });
 });
