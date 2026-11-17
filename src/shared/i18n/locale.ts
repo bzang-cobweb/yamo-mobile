@@ -1,4 +1,4 @@
-import { APP_LOCALES, DEFAULT_LOCALE, OFFLINE_MESSAGES, type Locale, type MessageKey, type Messages } from './messages';
+import { APP_LOCALES, DEFAULT_LOCALE, OFFLINE_MESSAGES, type Locale, type Messages, type TranslationParams } from './messages';
 
 export function isLocale(value: string | null | undefined): value is Locale {
   return APP_LOCALES.includes(value as Locale);
@@ -35,11 +35,13 @@ export function pickBestLocale(preferred: readonly string[], available: readonly
 export function translate(
   messages: Messages,
   locale: Locale,
-  key: MessageKey,
-  params: Record<string, string> = {},
+  key: string,
+  params: TranslationParams = {},
 ): string {
   const local: Record<string, string> = OFFLINE_MESSAGES[locale];
   const text = local[key] ?? messages[key] ?? key;
 
-  return text.replace(/:([A-Za-z]\w*)/g, (match, name: string) => params[name] ?? match);
+  return text.replace(/:([A-Za-z]\w*)/g, (match, name: string) =>
+    name in params ? String(params[name]) : match,
+  );
 }

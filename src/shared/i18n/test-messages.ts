@@ -9,7 +9,6 @@ import type { Messages } from './messages';
 export const TEST_MESSAGES: Messages = {
   'tabs.home': 'Accueil',
   'tabs.profile': 'Profil',
-  'home.greeting': 'Bonjour :name',
   'profile.title': 'Profil',
   'profile.personalInfo': 'Informations personnelles',
   'profile.password': 'Changer le mot de passe',

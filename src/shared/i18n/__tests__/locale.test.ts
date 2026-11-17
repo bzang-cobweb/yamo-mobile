@@ -1,4 +1,3 @@
-import type { MessageKey } from '../messages';
 import { pickBestLocale, translate } from '../locale';
 
 describe('pickBestLocale', () => {
@@ -36,8 +35,16 @@ describe('translate', () => {
 
   it("prend le texte servi par l'API et remplace les variables au format Laravel", () => {
     expect(translate(fr, 'fr', 'home.greeting', { name: 'jeanne' })).toBe('Bonjour jeanne');
-    expect(translate(fr, 'fr', 'a.fullName' as MessageKey, { fullName: 'Jeanne Dupont' })).toBe('Connecté en tant que Jeanne Dupont');
-    expect(translate(fr, 'fr', 'a.email' as MessageKey, { email: 'j@x.ch' })).toBe('E-mail : j@x.ch');
+    expect(translate(fr, 'fr', 'a.fullName', { fullName: 'Jeanne Dupont' })).toBe('Connecté en tant que Jeanne Dupont');
+    expect(translate(fr, 'fr', 'a.email', { email: 'j@x.ch' })).toBe('E-mail : j@x.ch');
+  });
+
+  it('accepte une clé quelconque et des valeurs numériques', () => {
+    const messages = { 'form.stepOf': 'Étape :current sur :total', 'x.zero': ':n élément' };
+
+    expect(translate(messages, 'fr', 'form.stepOf', { current: 1, total: 3 })).toBe('Étape 1 sur 3');
+    expect(translate(messages, 'fr', 'x.zero', { n: 0 })).toBe('0 élément');
+    expect(translate(messages, 'fr', 'form.stepOf', { current: 2 })).toBe('Étape 2 sur :total');
   });
 
   it("affiche la clé quand l'API ne l'a pas envoyée", () => {

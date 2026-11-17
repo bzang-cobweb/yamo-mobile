@@ -28,57 +28,14 @@ export const OFFLINE_MESSAGES = {
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
-export type OfflineKey = keyof (typeof OFFLINE_MESSAGES)['fr'];
-
-/** Clés des textes servis par l'API, telles qu'on les utilise dans l'app. */
-export type ApiMessageKey =
-  | 'tabs.home'
-  | 'tabs.profile'
-  | 'home.greeting'
-  | 'profile.title'
-  | 'profile.personalInfo'
-  | 'profile.password'
-  | 'profile.preferences'
-  | 'profile.saved'
-  | 'profile.passwordSaved'
-  | 'profile.signOut'
-  | 'profile.addEmail'
-  | 'profile.changeEmail'
-  | 'profile.addPhone'
-  | 'profile.changePhone'
-  | 'profile.emailSaved'
-  | 'profile.phoneSaved'
-  | 'auth.createAccount'
-  | 'auth.haveAccount'
-  | 'auth.codeSent'
-  | 'auth.resend'
-  | 'auth.resent'
-  | 'auth.forgotPassword'
-  | 'auth.forgotPasswordTitle'
-  | 'nav.back'
-  | 'auth.passwordReset'
-  | 'auth.previousStep'
-  | 'auth.signIn'
-  | 'form.next'
-  | 'form.previous'
-  | 'form.stepOf'
-  | 'form.loading'
-  | 'form.submitting'
-  | 'form.selectPlaceholder'
-  | 'form.showPassword'
-  | 'form.hidePassword'
-  | 'form.retry'
-  | 'form.clearDate'
-  | 'form.search'
-  | 'avatar.label'
-  | 'avatar.change'
-  | 'avatar.choose'
-  | 'avatar.remove'
-  | 'avatar.cancel'
-  | 'avatar.uploading'
-  | 'error.unknown';
-
-export type MessageKey = ApiMessageKey | OfflineKey;
-
 /** Textes reçus de l'API, par clé. */
 export type Messages = Readonly<Record<string, string>>;
+
+/**
+ * Variables d'un texte : chaque `:nom` du texte est remplacé par la valeur de
+ * `nom` (`t('form.stepOf', { current: 1, total: 3 })`).
+ */
+export type TranslationParams = Readonly<Record<string, string | number>>;
+
+/** Texte d'une clé, quelle qu'elle soit ; une clé inconnue s'affiche telle quelle. */
+export type Translate = (key: string, params?: TranslationParams) => string;

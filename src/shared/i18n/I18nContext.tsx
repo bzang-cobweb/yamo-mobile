@@ -1,11 +1,11 @@
 import { createContext, useContext } from 'react';
 
 import { translate } from './locale';
-import { DEFAULT_LOCALE, type Locale, type MessageKey } from './messages';
+import { DEFAULT_LOCALE, type Locale, type Translate } from './messages';
 
 export type I18nValue = {
   locale: Locale;
-  t: (key: MessageKey, params?: Record<string, string>) => string;
+  t: Translate;
 };
 
 /**

@@ -143,7 +143,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
       {currentStep && (
         <View style={styles.header}>
           <ThemedText type="small" themeColor="textSecondary" style={styles.progress} testID="form-step-progress">
-            {t('form.stepOf', { current: String(step + 1), total: String(steps.length) })}
+            {t('form.stepOf', { current: step + 1, total: steps.length })}
           </ThemedText>
           {currentStep.title !== null && (
             <ThemedText type="subtitle" accessibilityRole="header" testID="form-step-title">

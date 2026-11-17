@@ -1,4 +1,4 @@
-import type { Locale, MessageKey } from '@/shared/i18n/messages';
+import type { Locale, Translate } from '@/shared/i18n/messages';
 
 /** Utilisateur renvoyé par l'API (`UserResource` du contrat `openapi.json`). */
 export type User = {
@@ -80,7 +80,7 @@ export type AuthContextValue = {
   user: User | null;
   /** Langue de l'app : celle du compte, sinon la meilleure langue de l'appareil. */
   locale: Locale;
-  t: (key: MessageKey, params?: Record<string, string>) => string;
+  t: Translate;
   /** Ouvre la session une fois le code validé (connexion, inscription). */
   signIn: (session: Session) => Promise<void>;
   signOut: () => Promise<void>;
