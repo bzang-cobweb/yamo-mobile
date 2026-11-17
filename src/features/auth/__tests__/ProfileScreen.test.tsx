@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 
@@ -15,13 +16,13 @@ jest.mock('@/features/welcome/hooks/useApplication', () => ({
 }));
 
 const DEFAULT_MENU = [
-  { key: 'personal', label: 'Informations personnelles' },
-  { key: 'email', label: "Changer d'adresse e-mail" },
-  { key: 'phone', label: 'Ajouter un numéro' },
-  { key: 'password', label: 'Changer le mot de passe' },
-  { key: 'preferences', label: 'Préférences' },
+  { key: 'personal', label: 'Informations personnelles', path: '/profile/personal' },
+  { key: 'email', label: "Changer d'adresse e-mail", path: '/profile/email' },
+  { key: 'phone', label: 'Ajouter un numéro', path: '/profile/phone' },
+  { key: 'password', label: 'Changer le mot de passe', path: '/profile/password' },
+  { key: 'preferences', label: 'Préférences', path: '/profile/preferences' },
 ];
-let mockMenu: { key: string; label: string }[] | undefined = DEFAULT_MENU;
+let mockMenu: { key: string; label: string; path: string }[] | undefined = DEFAULT_MENU;
 const mockRefetch = jest.fn();
 jest.mock('../hooks/useProfileMenu', () => ({
   useProfileMenu: () => ({ data: mockMenu, refetch: mockRefetch }),
@@ -108,8 +109,8 @@ describe('ProfileScreen', () => {
 
   it('affiche le menu servi par l’API, dans son ordre et avec ses libellés', async () => {
     mockMenu = [
-      { key: 'preferences', label: 'Préférences' },
-      { key: 'email', label: 'Ajouter une adresse e-mail' },
+      { key: 'preferences', label: 'Préférences', path: '/profile/preferences' },
+      { key: 'email', label: 'Ajouter une adresse e-mail', path: '/profile/email' },
     ];
     await renderProfile();
 
@@ -119,14 +120,27 @@ describe('ProfileScreen', () => {
     expect(screen.queryByTestId('profile-link-personal')).toBeNull();
   });
 
-  it('ignore un lien dont l’app ne connaît pas l’écran', async () => {
+  it('ouvre la route servie par l’API, même pour un lien que l’app ne connaît pas', async () => {
+    mockMenu = [{ key: 'notifications', label: 'Notifications', path: '/profile/notifications' }];
+    await renderProfile();
+
+    await fireEvent.press(screen.getByTestId('profile-link-notifications'));
+
+    expect(router.push).toHaveBeenCalledWith('/profile/notifications');
+  });
+
+  it('ignore un lien sans route ou dont la route n’est pas interne à l’app', async () => {
     mockMenu = [
-      { key: 'billing', label: 'Facturation' },
-      { key: 'password', label: 'Changer le mot de passe' },
+      { key: 'external', label: 'Ailleurs', path: 'https://example.test' },
+      { key: 'protocol', label: 'Sans schéma', path: '//example.test' },
+      { key: 'legacy', label: 'Sans route' } as unknown as { key: string; label: string; path: string },
+      { key: 'password', label: 'Changer le mot de passe', path: '/profile/password' },
     ];
     await renderProfile();
 
-    expect(screen.queryByText('Facturation')).toBeNull();
+    expect(screen.queryByText('Ailleurs')).toBeNull();
+    expect(screen.queryByText('Sans schéma')).toBeNull();
+    expect(screen.queryByText('Sans route')).toBeNull();
     expect(screen.getByTestId('profile-link-password')).toBeTruthy();
   });
 

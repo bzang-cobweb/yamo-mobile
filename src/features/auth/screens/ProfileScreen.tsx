@@ -14,27 +14,22 @@ import { ProfileMenuLink } from '../components/ProfileMenuLink';
 import { SignOutButton } from '../components/SignOutButton';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileMenu } from '../hooks/useProfileMenu';
-import type { ProfileMenuKey } from '../types';
 import type { ProfileNotice } from './ProfileFormScreen';
 
-/** Écran ouvert par chaque lien du menu ; une clé absente d'ici est ignorée. */
-const MENU_ROUTES: Record<ProfileMenuKey, Href> = {
-  personal: '/profile/personal',
-  email: '/profile/email',
-  phone: '/profile/phone',
-  password: '/profile/password',
-  preferences: '/profile/preferences',
-};
-
-function isMenuKey(key: string): key is ProfileMenuKey {
-  return Object.hasOwn(MENU_ROUTES, key);
+/**
+ * Seule une route interne de l'app (`/…`) est suivie : une adresse servie par
+ * erreur ou détournée n'ouvre rien, et une entrée sans route (réponse d'un
+ * serveur plus ancien, mise en cache) est ignorée au lieu de faire planter l'écran.
+ */
+function isAppRoute(path: unknown): path is Href & string {
+  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//');
 }
 
 /**
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
  * téléphone (format international) selon les canaux de l'application, menu de
  * ses formulaires, déconnexion, suppression du compte. Le menu (liens, ordre,
- * libellés) est servi par l'API, qui le définit ; il se recharge à
+ * libellés, routes) est servi par l'API, qui le définit ; il se recharge à
  * chaque retour sur le profil. Un formulaire enregistré revient ici avec
  * `notice`, qui affiche une confirmation.
  */
@@ -96,9 +91,9 @@ export function ProfileScreen() {
             </ThemedText>
           )}
           <View style={styles.links}>
-            {(menu.data ?? []).map(({ key, label }) =>
-              isMenuKey(key) ? (
-                <ProfileMenuLink key={key} href={MENU_ROUTES[key]} label={label} testID={`profile-link-${key}`} />
+            {(menu.data ?? []).map(({ key, label, path }) =>
+              isAppRoute(path) ? (
+                <ProfileMenuLink key={key} href={path} label={label} testID={`profile-link-${key}`} />
               ) : null,
             )}
           </View>
