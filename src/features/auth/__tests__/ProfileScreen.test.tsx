@@ -30,6 +30,7 @@ const jeanne: User = {
   description: null,
   email: 'jeanne@example.com',
   phone: null,
+  phone_international: null,
   phone_country: null,
   last_seen_at: null,
   is_online: true,
@@ -74,6 +75,8 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-link-preferences')).toHaveTextContent('Préférences');
     expect(screen.getByTestId('sign-out')).toHaveTextContent('Se déconnecter');
     expect(screen.queryByTestId('profile-notice')).toBeNull();
+    expect(screen.queryByText('Profil')).toBeNull();
+    expect(screen.queryByTestId('profile-phone')).toBeNull();
   });
 
   it('au retour d’un formulaire enregistré, affiche la confirmation adaptée', async () => {
@@ -89,11 +92,11 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-link-email')).toHaveTextContent("Changer d'adresse e-mail");
     expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Ajouter un numéro');
 
-    await renderProfile({ ...jeanne, email: null, phone: '+41791234567', phone_country: 'CH' });
+    await renderProfile({ ...jeanne, email: null, phone: '+41791234567', phone_international: '+41 79 123 45 67', phone_country: 'CH' });
 
     expect(screen.getByTestId('profile-link-email')).toHaveTextContent('Ajouter une adresse e-mail');
     expect(screen.getByTestId('profile-link-phone')).toHaveTextContent('Changer de numéro');
-    expect(screen.getByTestId('profile-phone')).toHaveTextContent('+41791234567');
+    expect(screen.getByTestId('profile-phone')).toHaveTextContent('+41 79 123 45 67');
   });
 
   it('au retour d’un changement d’e-mail ou de numéro, le confirme', async () => {

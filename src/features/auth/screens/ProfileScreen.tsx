@@ -14,9 +14,10 @@ import { useAuth } from '../hooks/useAuth';
 import type { ProfileNotice } from './ProfileFormScreen';
 
 /**
- * Profil (onglet) : photo modifiable, prénom et nom, e-mail et téléphone, liens
- * vers ses formulaires (dont ajouter ou changer l'e-mail et le numéro), déconnexion. Un formulaire enregistré revient ici avec `notice`,
- * qui affiche une confirmation.
+ * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
+ * téléphone (format international), liens vers ses formulaires (dont ajouter ou
+ * changer l'e-mail et le numéro), déconnexion. Un formulaire enregistré revient
+ * ici avec `notice`, qui affiche une confirmation.
  */
 export function ProfileScreen() {
   const { user, t } = useAuth();
@@ -40,7 +41,6 @@ export function ProfileScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
         <ScrollView contentContainerStyle={styles.content}>
-          <ThemedText type="subtitle">{t('profile.title')}</ThemedText>
           <AvatarPicker />
           <View style={styles.identity}>
             <ThemedText type="smallBold" testID="profile-full-name">
@@ -53,7 +53,7 @@ export function ProfileScreen() {
             )}
             {user.phone && (
               <ThemedText themeColor="textSecondary" testID="profile-phone">
-                {user.phone}
+                {user.phone_international ?? user.phone}
               </ThemedText>
             )}
           </View>

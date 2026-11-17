@@ -26,8 +26,8 @@ export function WelcomeScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
-          <LocaleSwitcher />
           <View style={styles.presentation}>
+            <LocaleSwitcher />
             <BrandLogo variant="vertical" height={LOGO_HEIGHT} testID="welcome-logo" />
             {isPending && <ActivityIndicator testID="welcome-loading" />}
             {application?.description && (

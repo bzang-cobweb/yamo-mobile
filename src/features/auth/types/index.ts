@@ -21,6 +21,8 @@ export type User = {
   email: string | null;
   /** E.164 (`+41791234567`), ou `null`. */
   phone: string | null;
+  /** Le même numéro au format international lisible (`+41 79 123 45 67`), pour l'affichage. */
+  phone_international: string | null;
   /** Code ISO du pays de l'indicatif du téléphone. */
   phone_country: string | null;
   last_seen_at: string | null;

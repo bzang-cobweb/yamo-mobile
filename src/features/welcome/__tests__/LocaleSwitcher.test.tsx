@@ -8,9 +8,11 @@ import { localeService } from '@/shared/services/LocaleService';
 import { LocaleSwitcher } from '../components/LocaleSwitcher';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
+jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('@/shared/services/LocaleService', () => ({ localeService: { list: jest.fn() } }));
 
 const list = localeService.list as jest.Mock;
+const THREE = { data: [{ code: 'fr', label: 'Français' }, { code: 'en', label: 'English' }, { code: 'de', label: 'Deutsch' }], default: 'fr' };
 
 async function renderSwitcher(chooseLocale = jest.fn()) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -28,23 +30,24 @@ async function renderSwitcher(chooseLocale = jest.fn()) {
 describe('LocaleSwitcher', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it("propose les langues de l'API, la langue courante marquée", async () => {
-    list.mockResolvedValue({ data: [{ code: 'fr', label: 'Français' }, { code: 'en', label: 'English' }], default: 'fr' });
+  it('affiche la langue courante dans une liste déroulante unique', async () => {
+    list.mockResolvedValue(THREE);
 
     await renderSwitcher();
 
-    expect(await screen.findByText('English')).toBeTruthy();
-    expect(screen.getByTestId('locale-option-fr').props.accessibilityState).toEqual({ selected: true });
-    expect(screen.getByTestId('locale-option-en').props.accessibilityState).toEqual({ selected: false });
+    expect(await screen.findByTestId('locale-switcher')).toHaveTextContent('Français');
+    expect(screen.queryByText('Deutsch')).toBeNull();
   });
 
-  it('change la langue au toucher', async () => {
-    list.mockResolvedValue({ data: [{ code: 'fr', label: 'Français' }, { code: 'en', label: 'English' }], default: 'fr' });
+  it("ouvre la liste des langues de l'API et change de langue au choix", async () => {
+    list.mockResolvedValue(THREE);
 
     const chooseLocale = await renderSwitcher();
-    fireEvent.press(await screen.findByTestId('locale-option-en'));
+    fireEvent.press(await screen.findByTestId('locale-switcher'));
+    expect((await screen.findByTestId('locale-option-fr')).props.accessibilityState).toEqual({ selected: true });
+    fireEvent.press(screen.getByTestId('locale-option-de'));
 
-    expect(chooseLocale).toHaveBeenCalledWith('en');
+    expect(chooseLocale).toHaveBeenCalledWith('de');
   });
 
   it("ne s'affiche pas avec une seule langue", async () => {
@@ -52,7 +55,7 @@ describe('LocaleSwitcher', () => {
 
     await renderSwitcher();
 
-    await screen.findByTestId('locale-option-fr').catch(() => undefined);
-    expect(screen.queryByTestId('locale-option-fr')).toBeNull();
+    await screen.findByTestId('locale-switcher').catch(() => undefined);
+    expect(screen.queryByTestId('locale-switcher')).toBeNull();
   });
 });

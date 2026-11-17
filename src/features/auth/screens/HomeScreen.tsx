@@ -18,7 +18,7 @@ export function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <Avatar user={user} />
         <ThemedText type="subtitle" style={styles.fullName} testID="home-full-name">
           {user.full_name}
