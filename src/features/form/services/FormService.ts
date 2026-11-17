@@ -6,9 +6,15 @@ import type { FormDefinition, FormResponse, FormValues } from '../types';
 export class FormService {
   constructor(private readonly client: ApiClient = apiClient) {}
 
-  /** `GET /api/v1/forms/{name}` — libellés dans la langue de la requête. */
-  async get(name: string): Promise<FormDefinition> {
-    return (await this.client.get<FormResponse>(`/v1/forms/${encodeURIComponent(name)}`)).data;
+  /**
+   * `GET /api/v1/forms/{name}` — libellés dans la langue de la requête. `record`
+   * lie le formulaire à un enregistrement (une adresse) : prérempli, et envoyé
+   * pour le modifier.
+   */
+  async get(name: string, record?: string): Promise<FormDefinition> {
+    const query = record ? `?record=${encodeURIComponent(record)}` : '';
+
+    return (await this.client.get<FormResponse>(`/v1/forms/${encodeURIComponent(name)}${query}`)).data;
   }
 
   /**

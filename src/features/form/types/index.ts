@@ -78,7 +78,10 @@ export type FormSubmit = {
   endpoint?: string;
   /** Action irréversible : bouton rouge. */
   destructive?: boolean;
-  /** Suite au succès : `profile` (retour au profil) ou `sign-out` (déconnexion), avec le message à afficher. */
+  /**
+   * Suite au succès, avec le message à afficher : `profile` (retour au profil),
+   * `sign-out` (déconnexion) ou `back` (retour à l'écran précédent, une liste).
+   */
   success?: { action: string; message: string };
 };
 

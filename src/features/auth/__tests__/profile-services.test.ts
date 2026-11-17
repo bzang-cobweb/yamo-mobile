@@ -15,6 +15,8 @@ describe('profileSubmission : envoi décrit par l’API, s’il est exécutable'
       success,
     });
     expect(profileSubmission({ label: 'OK', method: 'DELETE', endpoint: '/v1/auth/me', destructive: true, success: { action: 'sign-out', message: 'Supprimé.' } })).not.toBeNull();
+    // Retrait d'un item d'une liste : pas de libellé de bouton d'envoi, suite « back ».
+    expect(profileSubmission({ method: 'DELETE', endpoint: '/v1/auth/me/addresses/12', success: { action: 'back', message: 'Adresse retirée.' } })).not.toBeNull();
   });
 
   it.each([

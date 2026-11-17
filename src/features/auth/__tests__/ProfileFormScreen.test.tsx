@@ -24,8 +24,13 @@ jest.mock('@/shared/api/ApiClient', () => ({ apiClient: { request: (...args: unk
 jest.mock('../services/VerificationService', () => ({ verificationService: { verify: jest.fn(), resend: jest.fn() } }));
 
 let mockDefinition: FormDefinition;
+const mockUseFormDefinition = jest.fn();
 jest.mock('@/features/form/hooks/useFormDefinition', () => ({
-  useFormDefinition: () => ({ data: mockDefinition, isPending: false, isError: false }),
+  useFormDefinition: (...args: unknown[]) => {
+    mockUseFormDefinition(...args);
+
+    return { data: mockDefinition, isPending: false, isError: false };
+  },
 }));
 
 /** Chaque formulaire de l'API est remplacé par un bouton qui envoie des valeurs fixes. */
@@ -33,8 +38,8 @@ jest.mock('@/features/form/components/FormLoader', () => {
   const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
 
   return {
-    FormLoader: ({ name, onSubmit }: { name: string; onSubmit: (values: FormValues) => Promise<void> }) => (
-      <Pressable testID={`submit-${name}`} onPress={() => onSubmit(name === 'auth.code' ? { code: '123456' } : { enabled: true }).catch(() => undefined)}>
+    FormLoader: ({ name, record, onSubmit }: { name: string; record?: string; onSubmit: (values: FormValues) => Promise<void> }) => (
+      <Pressable testID={`submit-${name}`} accessibilityHint={record} onPress={() => onSubmit(name === 'auth.code' ? { code: '123456' } : { enabled: true }).catch(() => undefined)}>
         <Text>{name}</Text>
       </Pressable>
     ),
@@ -54,11 +59,11 @@ function definition(submit: Partial<FormDefinition['submit']> = {}): FormDefinit
 
 const user = { id: 1, full_name: 'Jeanne Dupont', locale: 'en' };
 
-async function renderScreen() {
+async function renderScreen(record?: string) {
   const auth = { t: TEST_I18N.t, setUser: jest.fn(), signOut: jest.fn().mockResolvedValue(undefined) };
   await render(
     <AuthContext.Provider value={auth as unknown as AuthContextValue}>
-      <ProfileFormScreen form="notifications.settings" />
+      <ProfileFormScreen form="notifications.settings" record={record} />
     </AuthContext.Provider>,
   );
 
@@ -124,6 +129,21 @@ describe('ProfileFormScreen (tout formulaire du profil, sans le connaître d’a
     expect(alert).toHaveBeenCalledWith('Votre compte a été supprimé.');
     expect(auth.signOut).toHaveBeenCalled();
     expect(router.dismissTo).not.toHaveBeenCalled();
+  });
+
+  it('ouvert depuis un item d’une liste : formulaire lié à l’enregistrement, puis retour à la liste avec le message', async () => {
+    mockDefinition = definition({ method: 'PATCH', endpoint: '/v1/auth/me/addresses/12', success: { action: 'back', message: 'Adresse enregistrée.' } });
+    mockRequest.mockResolvedValue(undefined);
+    await renderScreen('12');
+
+    expect(mockUseFormDefinition).toHaveBeenCalledWith('notifications.settings', '12');
+    expect(screen.getByTestId('submit-notifications.settings').props.accessibilityHint).toBe('12');
+    await fireEvent.press(screen.getByTestId('submit-notifications.settings'));
+
+    expect(mockRequest).toHaveBeenCalledWith('/v1/auth/me/addresses/12', { method: 'PATCH', body: { enabled: true } });
+    expect(router.back).toHaveBeenCalled();
+    expect(router.dismissTo).not.toHaveBeenCalled();
+    expect(takeProfileNotice()).toBe('Adresse enregistrée.');
   });
 
   it('refusé par l’API : reste sur le formulaire (l’erreur y est affichée)', async () => {

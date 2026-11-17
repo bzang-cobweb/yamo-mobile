@@ -15,7 +15,7 @@ import { ChallengeFlow } from '../components/ChallengeFlow';
 import { useAuth } from '../hooks/useAuth';
 import { profileFormService, profileSubmission, type ProfileSubmission } from '../services/ProfileFormService';
 import type { Challenge } from '../types';
-import { backToProfile } from '../utils/profile-notice';
+import { backToProfile, backWithNotice } from '../utils/profile-notice';
 
 /**
  * Mise en page d'un écran du profil : en-tête fixé en haut (flèche de retour, titre de
@@ -45,18 +45,24 @@ export function ProfileScreenShell({ title, children }: PropsWithChildren<{ titl
  * 2026-11-17-formulaires-profil-generiques).
  *
  * Selon la réponse : un code demandé → étape du code ; le compte renvoyé → mis à
- * jour (langue comprise) ; puis retour au profil avec le message, ou message et
- * déconnexion. Un formulaire sans envoi exécutable affiche une erreur et n'envoie rien.
+ * jour (langue comprise) ; puis retour au profil avec le message, retour à la
+ * liste d'où il a été ouvert, ou message et déconnexion. Un formulaire sans envoi
+ * exécutable affiche une erreur et n'envoie rien.
+ *
+ * `record` : formulaire ouvert depuis un item d'une liste (décision
+ * 2026-11-18-adresses-liste-generique), prérempli avec cet enregistrement.
  */
-export function ProfileFormScreen({ form }: { form: string }) {
+export function ProfileFormScreen({ form, record }: { form: string; record?: string }) {
   const { t, setUser, signOut } = useAuth();
-  const definition = useFormDefinition(form);
+  const definition = useFormDefinition(form, record);
   const submission = definition.data ? profileSubmission(definition.data.submit) : null;
 
   async function succeed({ success }: ProfileSubmission) {
     if (success.action === 'sign-out') {
       Alert.alert(success.message);
       await signOut();
+    } else if (success.action === 'back') {
+      backWithNotice(success.message);
     } else {
       backToProfile(success.message);
     }
@@ -92,6 +98,7 @@ export function ProfileFormScreen({ form }: { form: string }) {
         <ChallengeFlow
           hideFormTitle
           form={form}
+          record={record}
           start={start}
           onVerified={async (result) => {
             if (result.kind === 'user' && submission !== null) {

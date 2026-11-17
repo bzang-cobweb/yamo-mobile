@@ -13,6 +13,8 @@ import { ERROR_COLOR } from './FieldShell';
 type FormLoaderProps = {
   /** Nom du formulaire dans l'API (`auth.login`, `auth.code`…). */
   name: string;
+  /** Enregistrement auquel le formulaire est lié (`?record=`), s'il y en a un. */
+  record?: string;
   onSubmit: (values: FormValues) => Promise<void>;
   /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
   hideTitle?: boolean;
@@ -22,9 +24,9 @@ type FormLoaderProps = {
  * Charge la définition d'un formulaire depuis l'API et l'affiche. Une nouvelle
  * définition (autre langue) repart de ses valeurs par défaut.
  */
-export function FormLoader({ name, onSubmit, hideTitle = false }: FormLoaderProps) {
+export function FormLoader({ name, record, onSubmit, hideTitle = false }: FormLoaderProps) {
   const { t, locale } = useI18n();
-  const query = useFormDefinition(name);
+  const query = useFormDefinition(name, record);
 
   if (query.isPending) {
     return (

@@ -17,7 +17,7 @@ jest.mock('@/features/welcome/hooks/useApplication', () => ({
   useApplication: () => ({ data: { name: 'Ya Mo', description: null, channels: mockChannels } }),
 }));
 
-type MenuItem = { key: string; label: string; form: string };
+type MenuItem = { key: string; label: string; form?: string; list?: string };
 
 const DEFAULT_MENU: MenuItem[] = [
   { key: 'personal', label: 'Informations personnelles', form: 'auth.profile.personal' },
@@ -139,16 +139,27 @@ describe('ProfileScreen', () => {
     expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: 'notifications.settings' } });
   });
 
+  it('ouvre la liste servie par l’API pour un lien `list`', async () => {
+    mockMenu = [{ key: 'addresses', label: 'Mes adresses', list: 'location.addresses' }];
+    await renderProfile();
+
+    await fireEvent.press(screen.getByTestId('profile-link-addresses'));
+
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'location.addresses' } });
+  });
+
   it('ignore un lien sans formulaire (réponse d’un serveur plus ancien)', async () => {
     mockMenu = [
       { key: 'legacy', label: 'Sans formulaire', path: '/profile/legacy' } as unknown as MenuItem,
       { key: 'empty', label: 'Vide', form: '' },
+      { key: 'empty-list', label: 'Liste vide', list: '' },
       { key: 'password', label: 'Changer le mot de passe', form: 'auth.profile.password' },
     ];
     await renderProfile();
 
     expect(screen.queryByText('Sans formulaire')).toBeNull();
     expect(screen.queryByText('Vide')).toBeNull();
+    expect(screen.queryByText('Liste vide')).toBeNull();
     expect(screen.getByTestId('profile-link-password')).toBeTruthy();
   });
 

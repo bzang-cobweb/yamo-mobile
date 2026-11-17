@@ -7,7 +7,7 @@ import type { Challenge, User } from '../types';
 const METHODS = ['POST', 'PATCH', 'PUT', 'DELETE'] as const;
 
 /** Suites au succès que l'app sait exécuter. */
-const ACTIONS = ['profile', 'sign-out'] as const;
+const ACTIONS = ['profile', 'sign-out', 'back'] as const;
 
 /**
  * Point d'API relatif (`/v1/auth/me/…`) : jamais une autre adresse, ni un chemin
@@ -15,7 +15,10 @@ const ACTIONS = ['profile', 'sign-out'] as const;
  */
 const ENDPOINT = /^\/v1(\/[A-Za-z0-9_-]+)+$/;
 
-/** Envoi d'un formulaire du profil, tel que l'API le décrit et que l'app sait l'exécuter. */
+/**
+ * Envoi d'un formulaire du profil, ou du retrait d'un item d'une liste, tel que
+ * l'API le décrit et que l'app sait l'exécuter.
+ */
 export type ProfileSubmission = {
   method: (typeof METHODS)[number];
   endpoint: string;
@@ -35,7 +38,7 @@ export type ProfileSubmitResult =
  * L'envoi décrit par `submit`, ou `null` s'il manque ou si l'app ne sait pas
  * l'exécuter (méthode, point d'API ou suite inconnus) : rien n'est alors envoyé.
  */
-export function profileSubmission(submit: FormSubmit): ProfileSubmission | null {
+export function profileSubmission(submit: Omit<FormSubmit, 'label'> & { label?: string }): ProfileSubmission | null {
   const { method, endpoint, success } = submit;
 
   if (

@@ -12,7 +12,13 @@ export function backToProfile(message: string) {
   router.dismissTo('/profile');
 }
 
-/** La confirmation en attente, une seule fois. */
+/** Revient à l'écran précédent (une liste du profil), qui affiche `message`. */
+export function backWithNotice(message: string) {
+  pending = message;
+  router.back();
+}
+
+/** La confirmation en attente, une seule fois, pour l'écran qui reprend la main. */
 export function takeProfileNotice(): string | null {
   const message = pending;
   pending = null;

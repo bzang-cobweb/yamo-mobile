@@ -92,12 +92,15 @@ un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`
 
 Connecté : menu fixe en bas, deux icônes — Accueil (écran par défaut, `src/app/(tabs)/index.tsx`)
 et Profil (pile `src/app/(tabs)/profile/`). Le profil affiche la photo, le nom, l'e-mail, le
-menu servi par l'API (`GET /api/v1/auth/me/menu` : libellé et nom du formulaire de chaque
-lien), « Se déconnecter » et le lien rouge « Supprimer mon compte ». Chaque lien ouvre
-`/profile/[form]` (`ProfileFormScreen`), qui affiche et envoie le formulaire selon sa
+menu servi par l'API (`GET /api/v1/auth/me/menu` : libellé, et nom du formulaire ou de la
+liste de chaque lien), « Se déconnecter » et le lien rouge « Supprimer mon compte ». Un lien
+`form` ouvre `/profile/[form]` (`ProfileFormScreen`), qui affiche et envoie le formulaire selon sa
 définition : méthode et point d'API (`/v1/…` seulement), étape du code si l'API en demande
-un, compte mis à jour, puis retour au profil avec le message de l'API ou déconnexion. Ajouter
-un lien au menu ne demande donc aucune modification de l'app. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
+un, compte mis à jour, puis retour au profil avec le message de l'API, retour à la liste, ou
+déconnexion. Un lien `list` ouvre `/profile/lists/[list]` (`ProfileListScreen`, liste servie par
+`GET /api/v1/lists/{list}`, comme « Mes adresses ») : items, bouton de création, formulaire
+d'un item (`/profile/[form]?record=…`) et retrait après confirmation. Ajouter un lien, un
+formulaire ou une liste au menu ne demande donc aucune modification de l'app. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
 typées avant `npm run typecheck`.
 
 Nom complet et initiales (avatar) viennent de l'API (`full_name`, `initials`) : l'app ne

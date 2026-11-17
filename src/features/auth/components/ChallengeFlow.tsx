@@ -16,6 +16,8 @@ import { deviceName } from '../utils/device-name';
 type Props = {
   /** Formulaire de la première étape (`auth.login`, `auth.register`, un formulaire du profil…). */
   form: string;
+  /** Enregistrement auquel le premier formulaire est lié (une adresse), s'il y en a un. */
+  record?: string;
   /**
    * Envoie la première étape ; l'API répond par le code envoyé. `null` : l'opération
    * est achevée sans code (formulaire du profil qui n'en demande pas).
@@ -32,7 +34,7 @@ type Props = {
  * `auth.code` pour chaque code envoyé (« Code envoyé à … », renvoi possible).
  * Rien n'est acquis avant que l'API ait validé le dernier code.
  */
-export function ChallengeFlow({ form, start, onVerified, hideFormTitle = false }: Props) {
+export function ChallengeFlow({ form, record, start, onVerified, hideFormTitle = false }: Props) {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
 
   return (
@@ -40,7 +42,7 @@ export function ChallengeFlow({ form, start, onVerified, hideFormTitle = false }
       {/* Le formulaire reste monté pendant l'étape de code : en y revenant, on retrouve
           son étape et ses valeurs. */}
       <View style={challenge === null ? undefined : styles.hidden}>
-        <FormLoader name={form} hideTitle={hideFormTitle} onSubmit={async (values) => setChallenge(await start(values))} />
+        <FormLoader name={form} record={record} hideTitle={hideFormTitle} onSubmit={async (values) => setChallenge(await start(values))} />
       </View>
       {challenge !== null && (
         <CodeStep

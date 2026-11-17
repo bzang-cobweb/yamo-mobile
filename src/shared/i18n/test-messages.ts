@@ -42,6 +42,8 @@ export const TEST_MESSAGES: Messages = {
   'form.showPassword': 'Afficher le mot de passe',
   'form.hidePassword': 'Masquer le mot de passe',
   'form.retry': 'Réessayer',
+  'list.loading': 'Chargement de la liste…',
+  'list.cancel': 'Annuler',
   'form.clearDate': 'Effacer',
   'form.search': 'Rechercher…',
   'profile.deleteAccount': 'Supprimer mon compte',

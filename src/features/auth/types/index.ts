@@ -74,11 +74,12 @@ export type VerifyResult =
 export type UserResponse = { data: User };
 
 /**
- * Lien du menu du profil, défini par le serveur : `form` est le nom du formulaire
- * qu'il ouvre (`/profile/[form]`). L'app l'affiche et l'envoie sans le connaître
- * d'avance, ce qui permet d'ajouter un lien sans nouvelle version de l'app.
+ * Lien du menu du profil, défini par le serveur : il ouvre soit le formulaire
+ * `form` (`/profile/[form]`), soit la liste `list` (`/profile/lists/[list]`).
+ * L'app les affiche et les envoie sans les connaître d'avance, ce qui permet
+ * d'ajouter un lien sans nouvelle version de l'app.
  */
-export type ProfileMenuItem = { key: string; label: string; form: string };
+export type ProfileMenuItem = { key: string; label: string; form?: string; list?: string };
 
 export type AuthContextValue = {
   /** `true` tant que le jeton enregistré, l'utilisateur, les langues et les textes ne sont pas chargés. */

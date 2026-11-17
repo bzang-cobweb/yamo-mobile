@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,22 +14,32 @@ import { ProfileMenuLink } from '../components/ProfileMenuLink';
 import { SignOutButton } from '../components/SignOutButton';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileMenu } from '../hooks/useProfileMenu';
+import type { ProfileMenuItem } from '../types';
 import { takeProfileNotice } from '../utils/profile-notice';
 
 /**
- * Un lien sans nom de formulaire (réponse d'un serveur plus ancien, mise en
- * cache) est ignoré au lieu de faire planter l'écran.
+ * Un lien sans nom de formulaire ni de liste (réponse d'un serveur plus ancien,
+ * mise en cache, ou cible inconnue) est ignoré au lieu de faire planter l'écran.
  */
-function isFormName(form: unknown): form is string {
-  return typeof form === 'string' && form !== '';
+function isName(name: unknown): name is string {
+  return typeof name === 'string' && name !== '';
+}
+
+/** Route ouverte par un lien du menu : son formulaire, sinon sa liste. */
+function menuHref({ form, list }: ProfileMenuItem): Href | null {
+  if (isName(form)) {
+    return { pathname: '/profile/[form]', params: { form } };
+  }
+
+  return isName(list) ? { pathname: '/profile/lists/[list]', params: { list } } : null;
 }
 
 /**
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
  * téléphone (format international) selon les canaux de l'application, menu de
  * ses formulaires, déconnexion, suppression du compte. Le menu (liens, ordre,
- * libellés, formulaires) est servi par l'API, qui le définit ; chaque lien ouvre
- * `/profile/[form]`. Le menu se recharge à chaque retour sur le profil. Un
+ * libellés, formulaires, listes) est servi par l'API, qui le définit ; chaque
+ * lien ouvre `/profile/[form]` ou `/profile/lists/[list]`. Le menu se recharge à chaque retour sur le profil. Un
  * formulaire enregistré revient ici avec le message de confirmation de l'API.
  */
 export function ProfileScreen() {
@@ -86,16 +96,13 @@ export function ProfileScreen() {
             </ThemedText>
           )}
           <View style={styles.links}>
-            {(menu.data ?? []).map(({ key, label, form }) =>
-              isFormName(form) ? (
-                <ProfileMenuLink
-                  key={key}
-                  href={{ pathname: '/profile/[form]', params: { form } }}
-                  label={label}
-                  testID={`profile-link-${key}`}
-                />
-              ) : null,
-            )}
+            {(menu.data ?? []).map((item) => {
+              const href = menuHref(item);
+
+              return href === null ? null : (
+                <ProfileMenuLink key={item.key} href={href} label={item.label} testID={`profile-link-${item.key}`} />
+              );
+            })}
           </View>
           <SignOutButton />
           <DeleteAccountLink />
