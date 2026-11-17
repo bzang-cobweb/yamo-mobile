@@ -1,5 +1,4 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
-
 import { isApiPath } from '@/shared/api/paths';
 
 import type { FieldSuggestions, FormDefinition, FormResponse, FormValues, Suggestion, SuggestionsResponse } from '../types';
