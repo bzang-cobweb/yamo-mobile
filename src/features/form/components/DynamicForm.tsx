@@ -9,7 +9,7 @@ import { Spacing } from '@/shared/theme/theme';
 
 import { formService } from '../services/FormService';
 import type { FieldValue, FormDefinition, FormErrors, FormFieldDefinition, FormValues } from '../types';
-import { countryKey, fieldError, initialValues, submittedValues } from '../utils/values';
+import { countryKey, fieldError, initialValues, isVisible, submittedValues } from '../utils/values';
 import { ERROR_COLOR } from './FieldShell';
 import { FormField } from './FormField';
 
@@ -46,9 +46,9 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, destructi
   const [step, setStep] = useState(0);
   const isLastStep = steps.length === 0 || step === steps.length - 1;
   const currentStep = steps[step];
-  const visibleFields = currentStep
-    ? definition.fields.filter((field) => currentStep.fields.includes(field.name))
-    : definition.fields;
+  const visibleFields = (
+    currentStep ? definition.fields.filter((field) => currentStep.fields.includes(field.name)) : definition.fields
+  ).filter((field) => isVisible(field, values));
 
   function previousStep() {
     setErrors({});
@@ -84,7 +84,10 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, destructi
   }
 
   function isDisabled(field: FormFieldDefinition): boolean {
-    return submitting || Boolean(field.readonly) || (Boolean(field.depends_on) && !values[field.depends_on ?? '']);
+    // Un téléphone verrouillé ne verrouille que son pays : le numéro reste à saisir.
+    const locked = Boolean(field.locked) && field.type !== 'phone';
+
+    return submitting || Boolean(field.readonly) || locked || (Boolean(field.depends_on) && !values[field.depends_on ?? '']);
   }
 
   /** Erreur d'un champ ; celle du pays d'un téléphone s'affiche sous le téléphone. */
@@ -166,6 +169,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, destructi
           onSubmitEditing={submit}
           country={field.type === 'phone' ? String(values[countryKey(field.name)] ?? '') : undefined}
           onCountryChange={field.type === 'phone' ? (country) => change(countryKey(field.name), country) : undefined}
+          countryLocked={field.type === 'phone' && Boolean(field.locked)}
         />
       ))}
 

@@ -15,8 +15,9 @@ import { OptionsModal } from './OptionsModal';
  * Téléphone : sur une ligne, le pays (son indicatif) puis le numéro. Le pays se
  * choisit parmi les options (pays actifs, indicatif en `hint`) ; l'API vérifie le
  * numéro selon ce pays. Valeurs : `<nom>` (numéro) et `<nom>_country` (code ISO).
+ * Un seul pays actif : il est choisi d'office et verrouillé (`countryLocked`).
  */
-export function PhoneField({ field, value, onChange, error, disabled, country, onCountryChange }: FieldProps<string>) {
+export function PhoneField({ field, value, onChange, error, disabled, country, onCountryChange, countryLocked = false }: FieldProps<string>) {
   const { t } = useI18n();
   const theme = useTheme();
   const inputStyle = useInputStyle(Boolean(error));
@@ -30,9 +31,10 @@ export function PhoneField({ field, value, onChange, error, disabled, country, o
           testID={`field-${field.name}-country`}
           accessibilityRole="button"
           accessibilityLabel={selected?.label ?? t('form.selectPlaceholder')}
-          disabled={disabled}
+          accessibilityState={{ disabled: disabled || countryLocked }}
+          disabled={disabled || countryLocked}
           onPress={() => setOpen(true)}
-          style={[inputStyle, styles.country]}>
+          style={[inputStyle, styles.country, countryLocked && styles.readonly]}>
           <ThemedText themeColor={selected ? 'text' : 'textSecondary'}>
             {selected ? `${selected.value} ${selected.hint ?? ''}`.trim() : '+'}
           </ThemedText>

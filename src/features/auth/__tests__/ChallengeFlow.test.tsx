@@ -21,7 +21,7 @@ jest.mock('@/features/form/components/FormLoader', () => {
 
   return {
     FormLoader: ({ name, onSubmit }: { name: string; onSubmit: (values: FormValues) => Promise<void> }) => (
-      <Pressable testID={`submit-${name}`} onPress={() => onSubmit(name === 'auth.code' ? { code: '123456' } : { identifier: 'a@b.c' }).catch(() => undefined)}>
+      <Pressable testID={`submit-${name}`} onPress={() => onSubmit(name === 'auth.code' ? { code: '123456' } : { channel: 'email', email: 'a@b.c' }).catch(() => undefined)}>
         <Text>{name}</Text>
       </Pressable>
     ),
@@ -53,7 +53,7 @@ describe('ChallengeFlow', () => {
     expect(screen.queryByTestId('submit-auth.code')).toBeNull();
     await fireEvent.press(screen.getByTestId('submit-auth.login'));
 
-    expect(start).toHaveBeenCalledWith({ identifier: 'a@b.c' });
+    expect(start).toHaveBeenCalledWith({ channel: 'email', email: 'a@b.c' });
     expect(screen.getByTestId('code-sent')).toHaveTextContent('Code envoyé à j•••@example.com.');
     expect(onVerified).not.toHaveBeenCalled();
 

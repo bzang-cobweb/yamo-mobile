@@ -20,7 +20,9 @@ export type FieldType =
   /** Pays (indicatif) + numéro ; valeurs `<nom>` et `<nom>_country`. */
   | 'phone'
   /** Code de vérification à 6 chiffres. */
-  | 'code';
+  | 'code'
+  /** Choix parmi quelques options, en boutons côte à côte (ex. « E-mail | Téléphone »). */
+  | 'segmented';
 
 export type FieldOption = {
   value: string;
@@ -40,6 +42,10 @@ export type FormFieldDefinition = {
   required: boolean;
   /** Affiché, non modifiable, jamais envoyé. */
   readonly?: boolean;
+  /** Option unique choisie d'office (ex. le seul pays actif) : non modifiable, mais envoyée. */
+  locked?: boolean;
+  /** Affiché (et envoyé) seulement quand le champ `field` vaut `value`. */
+  visible_when?: { field: string; value: string } | null;
   /** Liste dépendante : nom du champ parent. */
   depends_on?: string | null;
   /** Nombre maximal de caractères (textarea : 1 000 par défaut), ou `null`. */
@@ -85,4 +91,6 @@ export type FieldProps<V extends FieldValue = FieldValue> = {
   /** Champ téléphone : pays choisi (code ISO) et son changement. */
   country?: string;
   onCountryChange?: (country: string) => void;
+  /** Champ téléphone : pays verrouillé (le seul actif), le numéro reste modifiable. */
+  countryLocked?: boolean;
 };

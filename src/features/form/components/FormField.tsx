@@ -6,6 +6,7 @@ import { DateField } from './fields/DateField';
 import { NumberField } from './fields/NumberField';
 import { PhoneField } from './fields/PhoneField';
 import { RadioField } from './fields/RadioField';
+import { SegmentedField } from './fields/SegmentedField';
 import { SelectField } from './fields/SelectField';
 import { SwitchField } from './fields/SwitchField';
 import { TextareaField } from './fields/TextareaField';
@@ -16,7 +17,7 @@ import { TextField } from './fields/TextField';
  * (décision 2026-11-15-contrat-mobile-features-formulaires). Ajouter un type :
  * un cas ici et son composant dans `fields/`.
  */
-export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange }: FieldProps<FieldValue>) {
+export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange, countryLocked }: FieldProps<FieldValue>) {
   const common = { field, error, disabled };
   const asText = typeof value === 'string' ? value : '';
   const asBoolean = value === true;
@@ -41,13 +42,24 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
     case 'checkbox_group':
       return <CheckboxGroupField {...common} value={asList} onChange={onChange} />;
     case 'phone':
-      return <PhoneField {...common} value={asText} onChange={onChange} country={country} onCountryChange={onCountryChange} />;
+      return (
+        <PhoneField
+          {...common}
+          value={asText}
+          onChange={onChange}
+          country={country}
+          onCountryChange={onCountryChange}
+          countryLocked={countryLocked}
+        />
+      );
     case 'code':
       return <CodeField {...common} value={asText} onChange={onChange} onSubmitEditing={onSubmitEditing} />;
     case 'date':
       return <DateField {...common} value={asText} onChange={onChange} />;
     case 'switch':
       return <SwitchField {...common} value={asBoolean} onChange={onChange} />;
+    case 'segmented':
+      return <SegmentedField {...common} value={asText} onChange={onChange} />;
     default: {
       // Type inconnu de cette version de l'app : rien n'est affiché plutôt qu'un champ faux.
       const unknown: never = field.type;

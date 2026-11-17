@@ -18,10 +18,10 @@ function client(response: unknown) {
 
 describe('services des opérations vérifiées par code (une méthode par appel)', () => {
   it.each([
-    ['LoginService.login', '/v1/auth/login', (c: ApiClient) => new LoginService(c).login({ identifier: 'a@b.c', password: 'x' })],
+    ['LoginService.login', '/v1/auth/login', (c: ApiClient) => new LoginService(c).login({ channel: 'email', email: 'a@b.c', password: 'x' })],
     ['RegisterService.register', '/v1/auth/register', (c: ApiClient) => new RegisterService(c).register({ name: 'marie' })],
     ['EmailChangeService.start', '/v1/auth/me/email', (c: ApiClient) => new EmailChangeService(c).start({ email: 'a@b.c' })],
-    ['PasswordResetService.forgot', '/v1/auth/password/forgot', (c: ApiClient) => new PasswordResetService(c).forgot({ identifier: 'a@b.c' })],
+    ['PasswordResetService.forgot', '/v1/auth/password/forgot', (c: ApiClient) => new PasswordResetService(c).forgot({ channel: 'email', email: 'a@b.c' })],
     ['PhoneChangeService.start', '/v1/auth/me/phone', (c: ApiClient) => new PhoneChangeService(c).start({ phone: '079', phone_country: 'CH' })],
   ])('%s : POST %s, renvoie le défi', async (_name, path, call) => {
     const fake = client(challenge);

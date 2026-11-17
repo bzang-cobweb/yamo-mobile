@@ -27,7 +27,7 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('@/features/form/components/FormLoader', () => {
   const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const values: Record<string, FormValues> = {
-    'auth.password.forgot': { identifier: 'jeanne@example.com' },
+    'auth.password.forgot': { channel: 'email', email: 'jeanne@example.com' },
     'auth.code': { code: '123456' },
     'auth.password.reset': { password: 'New-password-42', password_confirmation: 'New-password-42' },
   };
@@ -60,7 +60,7 @@ describe('ForgotPasswordScreen', () => {
     expect(screen.getByTestId('back-header-title')).toHaveTextContent('Mot de passe oublié');
 
     await fireEvent.press(screen.getByTestId('submit-auth.password.forgot'));
-    expect(passwordResetService.forgot).toHaveBeenCalledWith({ identifier: 'jeanne@example.com' });
+    expect(passwordResetService.forgot).toHaveBeenCalledWith({ channel: 'email', email: 'jeanne@example.com' });
 
     // Dans l'étape de code, la flèche de l'en-tête revient au formulaire, puis à l'écran précédent.
     await fireEvent.press(screen.getByTestId('back-header-link'));

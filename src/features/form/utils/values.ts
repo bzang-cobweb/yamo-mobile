@@ -36,14 +36,20 @@ export function initialValues(definition: FormDefinition): FormValues {
   );
 }
 
+/** Le champ est-il affiché ? Non si sa condition (`visible_when`) n'est pas remplie. */
+export function isVisible(field: FormFieldDefinition, values: FormValues): boolean {
+  return !field.visible_when || values[field.visible_when.field] === field.visible_when.value;
+}
+
 /**
- * Ce qui part à l'API : tout sauf les champs en lecture seule (le téléphone en
- * lecture seule ne part pas non plus avec son pays).
+ * Ce qui part à l'API : tout sauf les champs en lecture seule et ceux que leur
+ * condition masque (un téléphone ne part pas non plus avec son pays). Un champ
+ * verrouillé (`locked`), lui, part.
  */
 export function submittedValues(definition: FormDefinition, values: FormValues): FormValues {
   const skipped = new Set(
     definition.fields
-      .filter((field) => field.readonly)
+      .filter((field) => field.readonly || !isVisible(field, values))
       .flatMap((field) => (field.type === 'phone' ? [field.name, countryKey(field.name)] : [field.name])),
   );
 
