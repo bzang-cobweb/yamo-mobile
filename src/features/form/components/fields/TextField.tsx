@@ -8,6 +8,7 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import type { FieldProps, FieldType } from '../../types';
 import { FieldShell } from '../FieldShell';
 import { useInputStyle } from './inputStyle';
+import { SuggestionList } from './SuggestionList';
 
 /** Ce qui distingue `text`, `email` et `password` : clavier, saisie masquée, remplissage automatique. */
 const VARIANTS: Partial<Record<FieldType, TextInputProps>> = {
@@ -22,13 +23,17 @@ const TOGGLE_SIZE = 22;
  * Champ texte : sert les types `text`, `email`, `password` et `hidden`
  * (décision 2026-11-15-contrat-mobile-features-formulaires). Un champ `hidden`
  * garde sa valeur et l'envoie, sans rien afficher. Un champ `password` est
- * masqué, avec un bouton pour afficher ce qui a été saisi.
+ * masqué, avec un bouton pour afficher ce qui a été saisi. Un champ à
+ * suggestions les affiche sous la saisie ; en choisir une remplit les champs
+ * qu'elle décrit (décision 2026-11-18-adresse-du-compte-modele).
  */
-export function TextField({ field, value, onChange, error, disabled, onSubmitEditing }: FieldProps<string>) {
+export function TextField({ field, value, onChange, error, disabled, onSubmitEditing, suggestionParams, onSuggestion }: FieldProps<string>) {
   const inputStyle = useInputStyle(Boolean(error));
   const { t } = useI18n();
   const theme = useTheme();
   const [revealed, setRevealed] = useState(false);
+  // La valeur posée par la dernière suggestion choisie : la liste ne se rouvre pas dessus.
+  const [picked, setPicked] = useState<string | null>(null);
 
   if (field.type === 'hidden') {
     return null;
@@ -73,6 +78,18 @@ export function TextField({ field, value, onChange, error, disabled, onSubmitEdi
         </View>
       ) : (
         input
+      )}
+      {field.suggestions && onSuggestion && !disabled && value !== picked && (
+        <SuggestionList
+          name={field.name}
+          suggestions={field.suggestions}
+          query={value}
+          params={suggestionParams ?? {}}
+          onPick={(suggestion) => {
+            setPicked(suggestion.values[field.name] ?? value);
+            onSuggestion(suggestion.values);
+          }}
+        />
       )}
     </FieldShell>
   );

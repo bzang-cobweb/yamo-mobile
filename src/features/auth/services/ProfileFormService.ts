@@ -1,5 +1,6 @@
 import type { FormSubmit, FormValues } from '@/features/form/types';
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
+import { isApiPath } from '@/shared/api/paths';
 
 import type { Challenge, User } from '../types';
 
@@ -9,11 +10,6 @@ const METHODS = ['POST', 'PATCH', 'PUT', 'DELETE'] as const;
 /** Suites au succès que l'app sait exécuter. */
 const ACTIONS = ['profile', 'sign-out', 'back'] as const;
 
-/**
- * Point d'API relatif (`/v1/auth/me/…`) : jamais une autre adresse, ni un chemin
- * qui remonte (`..`), ni une requête (`?`).
- */
-const ENDPOINT = /^\/v1(\/[A-Za-z0-9_-]+)+$/;
 
 /**
  * Envoi d'un formulaire du profil, ou du retrait d'un item d'une liste, tel que
@@ -43,8 +39,7 @@ export function profileSubmission(submit: Omit<FormSubmit, 'label'> & { label?: 
 
   if (
     !METHODS.includes(method as ProfileSubmission['method']) ||
-    typeof endpoint !== 'string' ||
-    !ENDPOINT.test(endpoint) ||
+    !isApiPath(endpoint) ||
     !ACTIONS.includes(success?.action as ProfileSubmission['success']['action']) ||
     typeof success?.message !== 'string'
   ) {

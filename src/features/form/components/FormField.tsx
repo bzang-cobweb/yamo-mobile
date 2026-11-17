@@ -17,7 +17,7 @@ import { TextField } from './fields/TextField';
  * (décision 2026-11-15-contrat-mobile-features-formulaires). Ajouter un type :
  * un cas ici et son composant dans `fields/`.
  */
-export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange, countryLocked }: FieldProps<FieldValue>) {
+export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange, countryLocked, suggestionParams, onSuggestion }: FieldProps<FieldValue>) {
   const common = { field, error, disabled };
   const asText = typeof value === 'string' ? value : '';
   const asBoolean = value === true;
@@ -28,7 +28,16 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
     case 'hidden':
     case 'email':
     case 'password':
-      return <TextField {...common} value={asText} onChange={onChange} onSubmitEditing={onSubmitEditing} />;
+      return (
+        <TextField
+          {...common}
+          value={asText}
+          onChange={onChange}
+          onSubmitEditing={onSubmitEditing}
+          suggestionParams={suggestionParams}
+          onSuggestion={onSuggestion}
+        />
+      );
     case 'number':
       return <NumberField {...common} value={asText} onChange={onChange} />;
     case 'textarea':

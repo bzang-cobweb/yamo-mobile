@@ -76,6 +76,27 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
     setErrors(({ [name]: _cleared, ...rest }) => rest);
   }
 
+  /**
+   * Suggestion choisie : remplit les champs qu'elle décrit, s'ils sont dans le
+   * formulaire et modifiables ; les autres valeurs sont ignorées.
+   */
+  function pick(picked: Record<string, string>) {
+    const editable = new Set(
+      definition.fields.filter((field) => !field.readonly && !field.locked && field.type !== 'hidden').map((field) => field.name),
+    );
+    const accepted = Object.fromEntries(Object.entries(picked).filter(([name]) => editable.has(name)));
+
+    setValues((current) => ({ ...current, ...accepted }));
+    setErrors((current) => Object.fromEntries(Object.entries(current).filter(([name]) => !(name in accepted))));
+  }
+
+  /** Valeur des champs passés en paramètre des suggestions d'un champ. */
+  function suggestionParams(field: FormFieldDefinition): Record<string, string> | undefined {
+    return field.suggestions
+      ? Object.fromEntries(field.suggestions.params.map((name) => [name, String(values[name] ?? '')]))
+      : undefined;
+  }
+
   /** Le champ tel qu'affiché : options filtrées par le parent, lecture seule. */
   function shown(field: FormFieldDefinition): FormFieldDefinition {
     if (!field.depends_on) {
@@ -179,6 +200,8 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
           country={field.type === 'phone' ? String(values[countryKey(field.name)] ?? '') : undefined}
           onCountryChange={field.type === 'phone' ? (country) => change(countryKey(field.name), country) : undefined}
           countryLocked={field.type === 'phone' && Boolean(field.locked)}
+          suggestionParams={suggestionParams(field)}
+          onSuggestion={field.suggestions ? pick : undefined}
         />
       ))}
 
