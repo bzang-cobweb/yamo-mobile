@@ -34,7 +34,7 @@ function isMenuKey(key: string): key is ProfileMenuKey {
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
  * téléphone (format international) selon les canaux de l'application, menu de
  * ses formulaires, déconnexion, suppression du compte. Le menu (liens, ordre,
- * libellés) est servi par l'API et réglé dans le back-office ; il se recharge à
+ * libellés) est servi par l'API, qui le définit ; il se recharge à
  * chaque retour sur le profil. Un formulaire enregistré revient ici avec
  * `notice`, qui affiche une confirmation.
  */

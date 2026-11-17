@@ -2,7 +2,7 @@ import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
 import type { ProfileMenuItem } from '../types';
 
-/** Menu du profil, réglé dans le back-office. Une méthode par appel. */
+/** Menu du profil, défini par le serveur. Une méthode par appel. */
 export class ProfileMenuService {
   constructor(private readonly client: ApiClient = apiClient) {}
 

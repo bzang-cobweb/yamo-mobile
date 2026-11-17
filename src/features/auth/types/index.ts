@@ -77,7 +77,7 @@ export type UserResponse = { data: User };
 export type ProfileMenuKey = 'personal' | 'email' | 'phone' | 'password' | 'preferences';
 
 /**
- * Lien du menu du profil, réglé dans le back-office. `key` reste une chaîne : un
+ * Lien du menu du profil, défini par le serveur. `key` reste une chaîne : un
  * écran ajouté côté serveur et inconnu de cette version de l'app est ignoré.
  */
 export type ProfileMenuItem = { key: string; label: string };
