@@ -1,8 +1,8 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BrandLogo } from '@/shared/brand/BrandLogo';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
@@ -10,12 +10,12 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { useApplication } from '../hooks/useApplication';
 
-const LOGO_SIZE = 160;
+const LOGO_HEIGHT = 160;
 
 /**
- * Accueil, premier écran d'un invité : logo de l'application centré (son nom s'il
- * n'y a pas de logo) et sa description, réglés dans le back-office ; puis les
- * boutons de connexion et de création de compte.
+ * Accueil, premier écran d'un invité : logo YaMo centré (livré avec l'app) et
+ * description de l'application (réglée dans le back-office) ; puis les boutons
+ * de connexion et de création de compte.
  */
 export function WelcomeScreen() {
   const { t } = useI18n();
@@ -26,24 +26,8 @@ export function WelcomeScreen() {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.presentation}>
-            {isPending ? (
-              <ActivityIndicator testID="welcome-loading" />
-            ) : application?.logo_url ? (
-              <Image
-                testID="welcome-logo"
-                accessibilityRole="image"
-                accessibilityLabel={application.name}
-                source={{ uri: application.logo_url }}
-                style={styles.logo}
-                contentFit="contain"
-              />
-            ) : (
-              application && (
-                <ThemedText type="title" accessibilityRole="header" style={styles.centered} testID="welcome-name">
-                  {application.name}
-                </ThemedText>
-              )
-            )}
+            <BrandLogo variant="vertical" height={LOGO_HEIGHT} testID="welcome-logo" />
+            {isPending && <ActivityIndicator testID="welcome-loading" />}
             {application?.description && (
               <ThemedText themeColor="textSecondary" style={styles.centered} testID="welcome-description">
                 {application.description}
@@ -86,7 +70,6 @@ const styles = StyleSheet.create({
   },
   // Logo et description au centre de l'espace libre ; les boutons en bas.
   presentation: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three },
-  logo: { width: LOGO_SIZE, height: LOGO_SIZE },
   centered: { textAlign: 'center' },
   actions: { gap: Spacing.two },
   button: { alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.three, borderWidth: 1, borderColor: PRIMARY },

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { I18nContext } from '@/shared/i18n/I18nContext';
@@ -38,13 +38,12 @@ async function renderScreen() {
 describe('WelcomeScreen', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('affiche le nom sans logo, la description et les deux boutons', async () => {
-    get.mockResolvedValue({ name: 'yamo', logo_url: null, description: 'Bienvenue' });
+  it('affiche le logo YaMo, la description et les deux boutons', async () => {
+    get.mockResolvedValue({ name: 'Ya Mo', description: 'Bienvenue' });
     await renderScreen();
 
-    expect(await screen.findByTestId('welcome-name')).toHaveTextContent('yamo');
-    expect(screen.queryByTestId('welcome-logo')).toBeNull();
-    expect(screen.getByTestId('welcome-description')).toHaveTextContent('Bienvenue');
+    expect(await screen.findByTestId('welcome-description')).toHaveTextContent('Bienvenue');
+    expect(screen.getByTestId('welcome-logo').props.accessibilityLabel).toBe('YaMo');
 
     await fireEvent.press(screen.getByTestId('welcome-sign-in'));
     expect(router.push).toHaveBeenCalledWith('/sign-in');
@@ -52,12 +51,12 @@ describe('WelcomeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/sign-up');
   });
 
-  it('affiche le logo à la place du nom, sans description si elle est vide', async () => {
-    get.mockResolvedValue({ name: 'yamo', logo_url: 'http://api.test/storage/app/logo/x/logo.png', description: null });
+  it('affiche le logo avant la réponse de l’API, sans description si elle est vide', async () => {
+    get.mockResolvedValue({ name: 'Ya Mo', description: null });
     await renderScreen();
 
-    expect(await screen.findByTestId('welcome-logo')).toBeTruthy();
-    expect(screen.queryByTestId('welcome-name')).toBeNull();
+    expect(screen.getByTestId('welcome-logo')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByTestId('welcome-loading')).toBeNull());
     expect(screen.queryByTestId('welcome-description')).toBeNull();
   });
 });

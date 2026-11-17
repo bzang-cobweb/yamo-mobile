@@ -1,6 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BrandLogo } from '@/shared/brand/BrandLogo';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
@@ -21,6 +22,7 @@ export function OfflineScreen({ onRetry, retrying }: Props) {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <BrandLogo variant="symbol" height={48} testID="offline-logo" />
         <ThemedText style={styles.message} accessibilityRole="alert" testID="offline-message">
           {t('offline.message')}
         </ThemedText>

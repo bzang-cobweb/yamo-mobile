@@ -15,6 +15,7 @@ describe('OfflineScreen', () => {
     );
 
     expect(screen.getByTestId('offline-message')).toHaveTextContent(/^Can't connect/);
+    expect(screen.getByTestId('offline-logo').props.accessibilityLabel).toBe('YaMo');
     await fireEvent.press(screen.getByText('Try again'));
     expect(onRetry).toHaveBeenCalled();
   });
