@@ -51,6 +51,11 @@ describe('services des opérations vérifiées par code (une méthode par appel)
     await expect(verify({ data: { id: 1 }, token: 't' })).resolves.toEqual({ kind: 'session', session: { user: { id: 1 }, token: 't' } });
     await expect(verify({ data: { id: 1 } })).resolves.toEqual({ kind: 'user', user: { id: 1 } });
     await expect(verify({ next: 'password', challenge: 'abc' })).resolves.toEqual({ kind: 'password', challenge: 'abc' });
+    await expect(verify({ next: 'restore', challenge: 'abc', deletion_date: '2026-12-20' })).resolves.toEqual({
+      kind: 'restore',
+      challenge: 'abc',
+      deletionDate: '2026-12-20',
+    });
   });
 
   it('PasswordResetService.reset : POST /v1/auth/password/reset avec le défi', async () => {

@@ -54,7 +54,8 @@ export type VerifyResponse =
   | Challenge
   | { data: User; token: string }
   | { data: User }
-  | { next: 'password'; challenge: string };
+  | { next: 'password'; challenge: string }
+  | { next: 'restore'; challenge: string; deletion_date: string };
 
 /** Résultat d'un code validé. */
 export type VerifyResult =
@@ -65,7 +66,9 @@ export type VerifyResult =
   /** Changement d'e-mail ou de téléphone enregistré. */
   | { kind: 'user'; user: User }
   /** Mot de passe oublié : code validé, le nouveau mot de passe peut être choisi. */
-  | { kind: 'password'; challenge: string };
+  | { kind: 'password'; challenge: string }
+  /** Connexion à un compte en attente de suppression : il peut être récupéré jusqu'à `deletionDate` (`AAAA-MM-JJ`). */
+  | { kind: 'restore'; challenge: string; deletionDate: string };
 
 /** `GET /api/v1/auth/me`. */
 export type UserResponse = { data: User };

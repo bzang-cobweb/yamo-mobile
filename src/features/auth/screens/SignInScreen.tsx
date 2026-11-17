@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -6,18 +7,29 @@ import { Spacing } from '@/shared/theme/theme';
 
 import { ChallengeFlow } from '../components/ChallengeFlow';
 import { GuestScreen } from '../components/GuestScreen';
+import { RestoreAccountPrompt } from '../components/RestoreAccountPrompt';
 import { useAuth } from '../hooks/useAuth';
 import { loginService } from '../services/LoginService';
 
 /**
  * Connexion en deux étapes : e-mail ou téléphone et mot de passe (formulaire
  * `auth.login`), puis le code reçu (formulaire `auth.code`). L'app n'entre qu'une
- * fois le code validé. Liens vers le mot de passe oublié et la création de compte ;
- * au retour d'un mot de passe changé, une confirmation. L'en-tête ramène à l'accueil.
+ * fois le code validé. Un compte en attente de suppression propose d'abord d'être
+ * récupéré. Liens vers le mot de passe oublié et la création de compte ; au retour
+ * d'un mot de passe changé, une confirmation. L'en-tête ramène à l'accueil.
  */
 export function SignInScreen() {
   const { signIn, t } = useAuth();
   const { notice } = useLocalSearchParams<{ notice?: string }>();
+  const [restore, setRestore] = useState<{ challenge: string; deletionDate: string } | null>(null);
+
+  if (restore !== null) {
+    return (
+      <GuestScreen title={t('auth.signIn')}>
+        <RestoreAccountPrompt challenge={restore.challenge} deletionDate={restore.deletionDate} onCancel={() => router.replace('/welcome')} />
+      </GuestScreen>
+    );
+  }
 
   return (
     <GuestScreen title={t('auth.signIn')}>
@@ -33,6 +45,8 @@ export function SignInScreen() {
         onVerified={async (result) => {
           if (result.kind === 'session') {
             await signIn(result.session);
+          } else if (result.kind === 'restore') {
+            setRestore({ challenge: result.challenge, deletionDate: result.deletionDate });
           }
         }}
       />
