@@ -164,7 +164,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [isRetrying, locale, localeKnown, messages, messagesQuery.isPending, offline, retry, setUser, signIn, signOut, user],
   );
 
-  const i18n = useMemo(() => ({ locale: value.locale, t: value.t, chooseLocale }), [value.locale, value.t, chooseLocale]);
+  const localeChosen = user !== null || typeof chosenLocale === 'string';
+  const i18n = useMemo(
+    () => ({ locale: value.locale, t: value.t, chooseLocale, localeChosen }),
+    [value.locale, value.t, chooseLocale, localeChosen],
+  );
 
   return (
     <AuthContext.Provider value={value}>

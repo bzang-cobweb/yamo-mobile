@@ -10,15 +10,15 @@ import { countryService } from '../services/CountryService';
 import { readChosenCountry, saveChosenCountry } from '../utils/country-storage';
 
 /**
- * Pays courant, l'espace de l'app (décisions 2026-11-18-espace-pays et
- * 2026-11-18-ecran-entree-toujours). Premier lancement : rien n'est choisi,
- * l'écran d'entrée s'affiche. Ensuite : le pays gardé sur l'appareil, s'il est
- * toujours ouvert ; sinon l'écran d'entrée. Le pays est envoyé à chaque requête
+ * Pays courant, l'espace de l'app (décisions 2026-11-18-espace-pays,
+ * 2026-11-18-ecran-entree-toujours et 2026-11-18-ecran-entree-selecteurs).
+ * L'écran d'entrée s'affiche tant que le pays et la langue ne sont pas choisis ;
+ * ensuite on entre directement, si le pays gardé est toujours ouvert. Le pays est envoyé à chaque requête
  * (`X-Country`) ; en changer recharge toutes les données, sans déconnexion.
  */
 export function CountryProvider({ children }: PropsWithChildren) {
   const queryClient = useQueryClient();
-  const { locale } = useI18n();
+  const { locale, localeChosen } = useI18n();
   // undefined : pas encore lu ; null : aucun.
   const [chosen, setChosen] = useState<string | null | undefined>(undefined);
   const [entryOpen, setEntryOpen] = useState(false);
@@ -65,12 +65,13 @@ export function CountryProvider({ children }: PropsWithChildren) {
       failed: query.isError && !query.isFetching,
       retry: () => void refetch(),
       countries,
-      country: entryOpen ? null : current,
+      // L'écran d'entrée ne s'affiche plus quand pays et langue sont déjà choisis.
+      country: entryOpen || !localeChosen ? null : current,
       enter,
       reopen: () => setEntryOpen(true),
       canChange: countries.length > 1,
     }),
-    [chosen, countries, current, enter, entryOpen, query.isError, query.isFetching, query.isSuccess, refetch],
+    [chosen, countries, current, enter, entryOpen, localeChosen, query.isError, query.isFetching, query.isSuccess, refetch],
   );
 
   return <CountryContext.Provider value={value}>{children}</CountryContext.Provider>;

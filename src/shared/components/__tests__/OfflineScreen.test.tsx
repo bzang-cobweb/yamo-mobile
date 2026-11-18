@@ -9,7 +9,7 @@ describe('OfflineScreen', () => {
   it("affiche le message et le bouton locaux, sans aucun texte de l'API", async () => {
     const onRetry = jest.fn();
     await render(
-      <I18nContext.Provider value={{ locale: 'en', t: (key, params) => translate({}, 'en', key, params), chooseLocale: () => undefined }}>
+      <I18nContext.Provider value={{ locale: 'en', t: (key, params) => translate({}, 'en', key, params), chooseLocale: () => undefined, localeChosen: true }}>
         <OfflineScreen onRetry={onRetry} retrying={false} />
       </I18nContext.Provider>,
     );

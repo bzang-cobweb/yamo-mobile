@@ -91,12 +91,14 @@ un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`
 ### Pays
 
 Le pays est l'« espace » de l'app (`src/features/country`). L'écran d'entrée
-(`EntryScreen`) s'affiche toujours au premier lancement : la langue (invité),
-puis le pays parmi ceux servis par `GET /api/v1/countries` (un seul : montré
-choisi). Le choix est gardé sur l'appareil ; au lancement suivant on entre
-directement, sauf si ce pays a été fermé. Chaque requête porte `X-Country`. Le
-drapeau (`CountryFlag`, barre du haut et accueil) rouvre l'écran quand plusieurs
-pays sont ouverts ; changer de pays recharge les données sans déconnecter.
+(`EntryScreen`) s'affiche tant que la langue et le pays ne sont pas choisis :
+logo, description de l'application, puis deux sélecteurs (`EntrySelect`), la
+langue (invité) et le pays, avec recherche, parmi ceux servis par
+`GET /api/v1/countries` (un seul : montré choisi). « Entrer » garde les deux sur
+l'appareil ; ensuite on entre directement, sauf si ce pays a été fermé. Chaque
+requête porte `X-Country`. Le drapeau (`CountryFlag`, barre du haut et accueil)
+rouvre l'écran quand plusieurs pays sont ouverts ; changer de pays recharge les
+données sans déconnecter.
 
 ### Navigation
 

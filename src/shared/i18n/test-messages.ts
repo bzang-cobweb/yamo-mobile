@@ -49,6 +49,7 @@ export const TEST_MESSAGES: Messages = {
   'entry.country': 'Pays',
   'entry.language': 'Langue',
   'entry.enter': 'Entrer',
+  'entry.chooseCountry': 'Choisir un pays',
   'entry.changeCountry': 'Changer de pays',
   'list.noResults': 'Aucun résultat.',
   'form.clearDate': 'Effacer',
@@ -73,4 +74,5 @@ export const TEST_I18N: I18nValue = {
   locale: 'fr',
   t: (key, params) => translate(TEST_MESSAGES, 'fr', key, params),
   chooseLocale: () => undefined,
+  localeChosen: true,
 };

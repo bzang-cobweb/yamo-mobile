@@ -21,10 +21,12 @@ type Props = {
   onClose: () => void;
   /** Préfixe des testID des options (`field-<nom>`). */
   testIDPrefix: string;
+  /** Recherche proposée même avec peu d'options. */
+  searchable?: boolean;
 };
 
 /** Fenêtre de choix commune aux listes déroulantes et au pays d'un téléphone. */
-export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix }: Props) {
+export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false }: Props) {
   const { t } = useI18n();
   const theme = useTheme();
   const [query, setQuery] = useState('');
@@ -46,7 +48,7 @@ export function OptionsModal({ visible, title, options, selected, onSelect, onCl
       <Pressable style={styles.backdrop} onPress={close}>
         <ThemedView type="backgroundElement" style={styles.sheet}>
           {title !== null && <ThemedText type="smallBold">{title}</ThemedText>}
-          {options.length > SEARCH_FROM && (
+          {(searchable || options.length > SEARCH_FROM) && (
             <TextInput
               testID={`${testIDPrefix}-search`}
               value={query}

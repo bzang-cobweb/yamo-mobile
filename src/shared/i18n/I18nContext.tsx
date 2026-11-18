@@ -8,6 +8,11 @@ export type I18nValue = {
   t: Translate;
   /** Change la langue de l'app, avant d'avoir un compte (écran d'accueil). */
   chooseLocale: (locale: string) => void;
+  /**
+   * La langue a été choisie : gardée sur l'appareil, ou celle du compte connecté.
+   * Avec un pays gardé, l'écran d'entrée ne s'affiche plus.
+   */
+  localeChosen: boolean;
 };
 
 /**
@@ -20,6 +25,7 @@ export const I18nContext = createContext<I18nValue>({
   locale: DEFAULT_LOCALE,
   t: (key, params) => translate({}, DEFAULT_LOCALE, key, params),
   chooseLocale: () => undefined,
+  localeChosen: false,
 });
 
 export function useI18n(): I18nValue {

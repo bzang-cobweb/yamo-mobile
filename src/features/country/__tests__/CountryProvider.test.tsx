@@ -57,6 +57,10 @@ jest.mock('@/shared/services/LocaleService', () => ({
   },
 }));
 
+jest.mock('@/features/welcome/hooks/useApplication', () => ({
+  useApplication: () => ({ data: { name: 'YaMo', description: 'Trouvez votre logement.' }, isPending: false }),
+}));
+
 const CAMEROON: Country = { code: 'CM', name: 'Cameroun', native_name: 'Cameroun', flag: '🇨🇲', currency: 'XAF', dial_code: '+237' };
 const SENEGAL: Country = { code: 'SN', name: 'Sénégal', native_name: 'Sénégal', flag: '🇸🇳', currency: 'XOF', dial_code: '+221' };
 
@@ -79,17 +83,22 @@ function App() {
 }
 
 /** Langue modifiable comme dans l'app : `chooseLocale` change la langue courante. */
+let mockLocaleChosen = false;
+
 function I18n({ children }: { children: React.ReactNode }) {
   const [locale, setLocale] = React.useState<Locale>('fr');
+  const [chosen, setChosen] = React.useState(mockLocaleChosen);
 
   return (
     <I18nContext.Provider
       value={{
         ...TEST_I18N,
         locale,
+        localeChosen: chosen,
         chooseLocale: (code: string) => {
           mockChooseLocale(code);
           setLocale(code as Locale);
+          setChosen(true);
         },
       }}>
       {children}
@@ -119,64 +128,81 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockStored = null;
+    mockLocaleChosen = false;
   });
 
-  it('premier lancement avec un seul pays : l’écran d’entrée s’affiche quand même, pays choisi d’office', async () => {
+  it('premier lancement : logo, description, sélecteurs ; un seul pays est montré choisi', async () => {
     mockCountries = [CAMEROON];
     await renderApp();
 
-    expect(screen.getByTestId('entry-screen')).toBeTruthy();
-    expect(screen.getByTestId('entry-country-CM').props.accessibilityState).toEqual({ selected: true, disabled: true });
-    await waitFor(() => expect(screen.getByTestId('entry-locale-fr')).toBeTruthy());
+    expect(screen.getByTestId('entry-description').props.children).toBe('Trouvez votre logement.');
+    expect(screen.getByTestId('entry-country').props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    expect(screen.getByText('🇨🇲  Cameroun')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('entry-enter'));
 
     expect(screen.getByTestId('inside').props.children).toBe('CM');
     expect(mockSave).toHaveBeenCalledWith('CM');
+    // La langue affichée devient un choix gardé.
+    expect(mockChooseLocale).toHaveBeenCalledWith('fr');
     expect(mockSetCountry).toHaveBeenLastCalledWith('CM');
-    // Un seul pays : le drapeau n'est qu'un rappel.
     expect(screen.getByTestId('country-flag').props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
   });
 
-  it('plusieurs pays : il faut en choisir un pour entrer', async () => {
+  it('plusieurs pays : on cherche et choisit dans le sélecteur, puis on entre', async () => {
     mockCountries = [CAMEROON, SENEGAL];
     await renderApp();
 
     expect(screen.getByTestId('entry-enter').props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
 
-    await fireEvent.press(screen.getByTestId('entry-country-SN'));
+    await fireEvent.press(screen.getByTestId('entry-country'));
+    // Recherche proposée même avec deux pays.
+    await fireEvent.changeText(screen.getByTestId('entry-country-search'), 'séné');
+    expect(screen.queryByTestId('entry-country-option-CM')).toBeNull();
+    await fireEvent.press(screen.getByTestId('entry-country-option-SN'));
     await fireEvent.press(screen.getByTestId('entry-enter'));
 
     expect(screen.getByTestId('inside').props.children).toBe('SN');
   });
 
-  it('changer de langue garde le pays touché', async () => {
+  it('changer de langue dans son sélecteur garde le pays touché', async () => {
     mockCountries = [CAMEROON, SENEGAL];
     await renderApp();
 
-    await fireEvent.press(screen.getByTestId('entry-country-SN'));
-    await waitFor(() => expect(screen.getByTestId('entry-locale-en')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('entry-country'));
+    await fireEvent.press(screen.getByTestId('entry-country-option-SN'));
+    await waitFor(() => expect(screen.getByTestId('entry-locale').props.accessibilityState).toEqual(expect.objectContaining({ disabled: false })));
+    await fireEvent.press(screen.getByTestId('entry-locale'));
     await act(async () => {
-      fireEvent.press(screen.getByTestId('entry-locale-en'));
+      fireEvent.press(screen.getByTestId('entry-locale-option-en'));
     });
 
     expect(mockChooseLocale).toHaveBeenCalledWith('en');
-    expect(screen.getByTestId('entry-screen')).toBeTruthy();
-    expect(screen.getByTestId('entry-country-SN').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+    expect(screen.getByText('🇸🇳  Sénégal')).toBeTruthy();
   });
 
-  it('lancement suivant : on entre directement dans le pays gardé', async () => {
+  it('pays et langue déjà choisis : on entre directement', async () => {
     mockCountries = [CAMEROON, SENEGAL];
     mockStored = 'SN';
+    mockLocaleChosen = true;
     await renderApp();
 
     expect(screen.getByTestId('inside').props.children).toBe('SN');
     expect(mockSetCountry).toHaveBeenLastCalledWith('SN');
   });
 
+  it('pays gardé mais langue jamais choisie : l’écran d’entrée s’affiche', async () => {
+    mockCountries = [CAMEROON];
+    mockStored = 'CM';
+    await renderApp();
+
+    expect(screen.getByTestId('entry-screen')).toBeTruthy();
+  });
+
   it('pays gardé fermé entre-temps : retour à l’écran d’entrée', async () => {
     mockCountries = [CAMEROON];
     mockStored = 'SN';
+    mockLocaleChosen = true;
     await renderApp();
 
     expect(screen.getByTestId('entry-screen')).toBeTruthy();
@@ -185,12 +211,14 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
   it('le drapeau rouvre l’écran ; changer de pays recharge les données, sans toucher aux pays', async () => {
     mockCountries = [CAMEROON, SENEGAL];
     mockStored = 'CM';
+    mockLocaleChosen = true;
     const { invalidate } = await renderApp();
 
     await fireEvent.press(screen.getByTestId('country-flag'));
     expect(screen.getByTestId('entry-screen')).toBeTruthy();
 
-    await fireEvent.press(screen.getByTestId('entry-country-SN'));
+    await fireEvent.press(screen.getByTestId('entry-country'));
+    await fireEvent.press(screen.getByTestId('entry-country-option-SN'));
     await act(async () => {
       fireEvent.press(screen.getByTestId('entry-enter'));
     });
@@ -205,10 +233,10 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
   it('rentrer dans le même pays ne recharge rien', async () => {
     mockCountries = [CAMEROON, SENEGAL];
     mockStored = 'CM';
+    mockLocaleChosen = true;
     const { invalidate } = await renderApp();
 
     await fireEvent.press(screen.getByTestId('country-flag'));
-    await fireEvent.press(screen.getByTestId('entry-country-CM'));
     await fireEvent.press(screen.getByTestId('entry-enter'));
 
     expect(invalidate).not.toHaveBeenCalled();
