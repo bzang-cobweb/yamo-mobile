@@ -5,6 +5,7 @@ import { Text } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
+import type { Locale } from '@/shared/i18n/messages';
 
 import { CountryFlag } from '../components/CountryFlag';
 import { useCountry } from '../context/CountryContext';
@@ -79,7 +80,7 @@ function App() {
 
 /** Langue modifiable comme dans l'app : `chooseLocale` change la langue courante. */
 function I18n({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = React.useState('fr');
+  const [locale, setLocale] = React.useState<Locale>('fr');
 
   return (
     <I18nContext.Provider
@@ -88,7 +89,7 @@ function I18n({ children }: { children: React.ReactNode }) {
         locale,
         chooseLocale: (code: string) => {
           mockChooseLocale(code);
-          setLocale(code);
+          setLocale(code as Locale);
         },
       }}>
       {children}
