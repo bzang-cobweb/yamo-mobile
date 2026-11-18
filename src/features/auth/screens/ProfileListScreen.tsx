@@ -116,7 +116,7 @@ export function ProfileListScreen({ list }: { list: string }) {
     const removable = item.delete !== null && profileSubmission(item.delete) !== null;
 
     return (
-      <View style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
+      <View style={[styles.row, { borderColor: theme.backgroundSelected }]}>
         <Pressable
           testID={`profile-list-item-${item.id}`}
           accessibilityRole={edit ? 'link' : undefined}
@@ -241,7 +241,9 @@ function useDebounced(value: string, delay: number): string {
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
   error: { color: ERROR_COLOR },
+  // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
   row: {
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,

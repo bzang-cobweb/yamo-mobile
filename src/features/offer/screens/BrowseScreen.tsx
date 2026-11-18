@@ -73,7 +73,7 @@ export function BrowseScreen() {
       items={definition.items}
       keyExtractor={(item) => item.id}
       renderItem={(item) => (
-        <View testID={`browse-item-${item.id}`} style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+        <View testID={`browse-item-${item.id}`} style={[styles.card, { borderColor: theme.backgroundSelected }]}>
           {/* La photo au-dessus du titre et du sous-titre ; sans photo, un emplacement neutre. */}
           <ItemPhoto uri={item.image} placeholder testID={`browse-item-${item.id}-photo`} />
           <ThemedText type="smallBold">{item.title}</ThemedText>
@@ -100,5 +100,6 @@ export function BrowseScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four },
-  card: { borderRadius: 8, padding: Spacing.two, gap: Spacing.one },
+  // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
+  card: { borderRadius: 8, borderWidth: 1, padding: Spacing.two, gap: Spacing.one },
 });

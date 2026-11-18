@@ -21,7 +21,7 @@ export function ItemPhoto({ uri, placeholder = false, testID }: { uri: string | 
   }
 
   return (
-    <View style={[styles.photo, styles.empty, { backgroundColor: theme.background }]} testID={testID ? `${testID}-empty` : undefined}>
+    <View style={[styles.photo, styles.empty, { backgroundColor: theme.backgroundElement }]} testID={testID ? `${testID}-empty` : undefined}>
       <SymbolView name={{ ios: 'photo', android: 'image', web: 'image' }} size={28} tintColor={theme.textSecondary} />
     </View>
   );
