@@ -92,14 +92,21 @@ un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`
 
 Le pays est l'« espace » de l'app (`src/features/country`). L'écran d'entrée
 (`EntryScreen`) s'affiche tant que la langue et le pays ne sont pas choisis :
-le sélecteur de langue de l'accueil au-dessus du logo (invité), le logo, la
-description de l'application, puis le sélecteur de pays (`EntrySelect`), avec
-recherche, parmi ceux servis par
-`GET /api/v1/countries` (un seul : montré choisi). « Entrer » garde les deux sur
-l'appareil ; ensuite on entre directement, sauf si ce pays a été fermé. Chaque
-requête porte `X-Country`. Le drapeau (`CountryFlag`, barre du haut et accueil)
-rouvre l'écran quand plusieurs pays sont ouverts ; changer de pays recharge les
-données sans déconnecter.
+le sélecteur de langue au-dessus du logo (invité), le logo, la description de
+l'application, puis le sélecteur de pays (`EntrySelect`), avec recherche, parmi
+ceux servis par `GET /api/v1/countries` (un seul : montré choisi). « Entrer »
+garde les deux sur l'appareil ; ensuite on entre directement, sauf si ce pays a
+été fermé. Chaque requête porte `X-Country`.
+
+### Accueil
+
+La barre du haut (`AppTopBar`) est la même pour un visiteur et un membre : le
+logo à gauche, puis la langue (`LocaleSwitcher` : appareil pour un visiteur,
+compte pour un membre) et le drapeau (`CountrySwitcher`), qui ouvre la liste des
+pays avec recherche ; changer de pays recharge les données sans déconnecter.
+Dessous, les offres publiées du pays (`BrowseScreen`, liste `offer.browse`,
+ouverte sans connexion). Un visiteur (`GuestHomeScreen`) a en bas « Se
+connecter » et « Créer un compte ».
 
 ### Navigation
 

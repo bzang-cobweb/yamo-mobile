@@ -61,3 +61,14 @@ describe('services du profil (une méthode par appel)', () => {
     expect(client.get).toHaveBeenCalledWith('/v1/auth/me/menu');
   });
 });
+
+describe('ProfileService.updateLocale', () => {
+  it('change la langue du compte et rend l’utilisateur modifié', async () => {
+    const { ProfileService } = jest.requireActual<typeof import('../services/ProfileService')>('../services/ProfileService');
+    const user = { id: 1, locale: 'en' };
+    const client = { patch: jest.fn().mockResolvedValue({ data: user }) };
+
+    await expect(new ProfileService(client as unknown as ApiClient).updateLocale('en')).resolves.toBe(user);
+    expect(client.patch).toHaveBeenCalledWith('/v1/auth/me/preferences', { locale: 'en' });
+  });
+});

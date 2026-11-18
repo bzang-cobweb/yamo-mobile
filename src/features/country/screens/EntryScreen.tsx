@@ -24,7 +24,7 @@ const LOGO_HEIGHT = 160;
  * à la même place (invité seulement : connecté, c'est celle du compte), le logo,
  * la description de l'application, puis le sélecteur de pays, avec recherche.
  * Un pays seul est montré choisi. « Entrer » garde la langue et le pays :
- * l'écran ne revient plus, sauf par le drapeau.
+ * l'écran ne revient plus ; ensuite, la barre du haut permet d'en changer.
  */
 export function EntryScreen({ showLanguage }: { showLanguage: boolean }) {
   const { t, locale, chooseLocale } = useI18n();

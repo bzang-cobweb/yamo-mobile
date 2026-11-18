@@ -165,9 +165,27 @@ export function AuthProvider({ children }: PropsWithChildren) {
   );
 
   const localeChosen = user !== null || typeof chosenLocale === 'string';
+
+  // Connecté : changer de langue change celle du compte (décision
+  // 2026-11-18-accueil-offres-du-pays) ; invité : celle gardée sur l'appareil.
+  const chooseAppLocale = useCallback(
+    (code: string) => {
+      if (user === null) {
+        chooseLocale(code);
+
+        return;
+      }
+
+      if (code !== user.locale) {
+        profileService.updateLocale(code).then(setUser, () => undefined);
+      }
+    },
+    [chooseLocale, setUser, user],
+  );
+
   const i18n = useMemo(
-    () => ({ locale: value.locale, t: value.t, chooseLocale, localeChosen }),
-    [value.locale, value.t, chooseLocale, localeChosen],
+    () => ({ locale: value.locale, t: value.t, chooseLocale: chooseAppLocale, localeChosen }),
+    [value.locale, value.t, chooseAppLocale, localeChosen],
   );
 
   return (

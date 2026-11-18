@@ -21,7 +21,6 @@ export function CountryProvider({ children }: PropsWithChildren) {
   const { locale, localeChosen } = useI18n();
   // undefined : pas encore lu ; null : aucun.
   const [chosen, setChosen] = useState<string | null | undefined>(undefined);
-  const [entryOpen, setEntryOpen] = useState(false);
 
   useEffect(() => {
     readChosenCountry().then(setChosen, () => setChosen(null));
@@ -47,7 +46,6 @@ export function CountryProvider({ children }: PropsWithChildren) {
       const changed = code !== chosen;
       apiClient.setCountry(code);
       setChosen(code);
-      setEntryOpen(false);
       saveChosenCountry(code).catch(() => undefined);
 
       if (changed) {
@@ -66,13 +64,12 @@ export function CountryProvider({ children }: PropsWithChildren) {
       retry: () => void refetch(),
       countries,
       // L'écran d'entrée ne s'affiche plus quand pays et langue sont déjà choisis.
-      country: entryOpen || !localeChosen ? null : current,
+      country: localeChosen ? current : null,
       chosen: current,
       enter,
-      reopen: () => setEntryOpen(true),
       canChange: countries.length > 1,
     }),
-    [chosen, countries, current, enter, entryOpen, localeChosen, query.isError, query.isFetching, query.isSuccess, refetch],
+    [chosen, countries, current, enter, localeChosen, query.isError, query.isFetching, query.isSuccess, refetch],
   );
 
   return <CountryContext.Provider value={value}>{children}</CountryContext.Provider>;
