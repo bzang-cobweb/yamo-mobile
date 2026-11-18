@@ -1,9 +1,18 @@
-import { useRef, type ReactElement } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
+import { SymbolView } from "expo-symbols";
+import { useRef, type ReactElement } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  TextInput,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 
-import { ThemedText } from '@/shared/theme/components/themed-text';
-import { useTheme } from '@/shared/theme/hooks/use-theme';
-import { Spacing } from '@/shared/theme/theme';
+import { ThemedText } from "@/shared/theme/components/themed-text";
+import { useTheme } from "@/shared/theme/hooks/use-theme";
+import { Spacing } from "@/shared/theme/theme";
 
 /** Champ de recherche : la liste ne filtre rien, elle rend la saisie à qui l'affiche. */
 export type ListSearch = {
@@ -96,14 +105,22 @@ export function List<T>({
       ListHeaderComponentStyle={styles.header}
       ListEmptyComponent={
         empty ? (
-          <ThemedText themeColor="textSecondary" style={styles.empty} testID={testID ? `${testID}-empty` : undefined}>
+          <ThemedText
+            themeColor="textSecondary"
+            style={styles.empty}
+            testID={testID ? `${testID}-empty` : undefined}
+          >
             {empty}
           </ThemedText>
         ) : undefined
       }
       ListFooterComponent={
         loadingMore ? (
-          <View style={styles.footer} accessibilityLabel={loadingMoreLabel} testID={testID ? `${testID}-loading-more` : undefined}>
+          <View
+            style={styles.footer}
+            accessibilityLabel={loadingMoreLabel}
+            testID={testID ? `${testID}-loading-more` : undefined}
+          >
             <ActivityIndicator />
           </View>
         ) : undefined
@@ -120,20 +137,35 @@ export function List<T>({
 
   return (
     <View style={styles.fill}>
-      <View style={[StyleSheet.flatten(contentContainerStyle), styles.searchBar]}>
-        <TextInput
-          testID={testID ? `${testID}-search` : undefined}
-          value={search.value}
-          onChangeText={search.onChange}
-          placeholder={search.placeholder}
-          accessibilityLabel={search.placeholder}
-          placeholderTextColor={theme.textSecondary}
-          autoCorrect={false}
-          autoCapitalize="none"
-          clearButtonMode="while-editing"
-          returnKeyType="search"
-          style={[styles.search, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-        />
+      <View
+        style={[StyleSheet.flatten(contentContainerStyle), styles.searchBar]}
+      >
+        <View
+          style={[
+            styles.searchField,
+            { backgroundColor: theme.backgroundElement },
+          ]}
+        >
+          <SymbolView
+            testID={testID ? `${testID}-search-icon` : undefined}
+            name={{ ios: "magnifyingglass", android: "search", web: "search" }}
+            size={18}
+            tintColor={theme.textSecondary}
+          />
+          <TextInput
+            testID={testID ? `${testID}-search` : undefined}
+            value={search.value}
+            onChangeText={search.onChange}
+            placeholder={search.placeholder}
+            accessibilityLabel={search.placeholder}
+            placeholderTextColor={theme.textSecondary}
+            autoCorrect={false}
+            autoCapitalize="none"
+            clearButtonMode="while-editing"
+            returnKeyType="search"
+            style={[styles.search, { color: theme.text }]}
+          />
+        </View>
       </View>
       {list}
     </View>
@@ -147,9 +179,16 @@ function Separator() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   searchBar: { paddingBottom: 0 },
-  search: { borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, fontSize: 16 },
+  searchField: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.two,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.three,
+  },
+  search: { flex: 1, paddingVertical: Spacing.two, fontSize: 16 },
   header: { gap: Spacing.three, marginBottom: Spacing.three },
-  empty: { textAlign: 'center' },
+  empty: { textAlign: "center" },
   footer: { paddingVertical: Spacing.three },
   separator: { height: Spacing.two },
 });

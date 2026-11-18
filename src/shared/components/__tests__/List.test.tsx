@@ -3,6 +3,12 @@ import { Text } from 'react-native';
 
 import { List } from '../List';
 
+jest.mock('expo-symbols', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { SymbolView: (props: { testID?: string; name: unknown }) => <View testID={props.testID} {...{ symbol: props.name }} /> };
+});
+
 type Fruit = { code: string; name: string };
 
 const FRUITS: Fruit[] = [
@@ -102,6 +108,7 @@ describe('List (données locales, sans API)', () => {
     await fireEvent.changeText(field, 'abr');
 
     expect(onChange).toHaveBeenCalledWith('abr');
+    expect(screen.getByTestId('fruits-search-icon').props.symbol).toEqual(expect.objectContaining({ ios: 'magnifyingglass' }));
     // Le champ n'est pas dans la zone qui défile : il vient avant la liste, pas dans son en-tête.
     expect(screen.getAllByTestId(/^fruits(-search)?$/).map((node) => node.props.testID)).toEqual(['fruits-search', 'fruits']);
   });
