@@ -140,12 +140,12 @@ describe('ProfileScreen', () => {
   });
 
   it('ouvre la liste servie par l’API pour un lien `list`', async () => {
-    mockMenu = [{ key: 'addresses', label: 'Mes adresses', list: 'location.addresses' }];
+    mockMenu = [{ key: 'addresses', label: 'Mes adresses', list: 'auth.addresses' }];
     await renderProfile();
 
     await fireEvent.press(screen.getByTestId('profile-link-addresses'));
 
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'location.addresses' } });
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'auth.addresses' } });
   });
 
   it('ignore un lien sans formulaire (réponse d’un serveur plus ancien)', async () => {

@@ -12,7 +12,7 @@ jest.mock('../services/ListService', () => ({ listService: { get: (...args: unkn
 
 function page(ids: string[], next: string | null, title = 'Mes adresses'): ListDefinition {
   return {
-    name: 'location.addresses',
+    name: 'auth.addresses',
     title,
     empty: null,
     create: null,
@@ -35,13 +35,13 @@ describe('useListDefinition (pages suivies par curseur)', () => {
     mockGet.mockImplementation(async (_name: string, cursor: string | null) =>
       cursor === 'c2' ? page(['3'], null, 'ignoré') : page(['1', '2'], 'c2'),
     );
-    const { result } = await renderHook(() => useListDefinition('location.addresses'), { wrapper });
+    const { result } = await renderHook(() => useListDefinition('auth.addresses'), { wrapper });
     await waitFor(() => expect(result.current.hasNextPage).toBe(true));
     await act(async () => {
       await result.current.fetchNextPage();
     });
 
-    expect(mockGet).toHaveBeenLastCalledWith('location.addresses', 'c2', '');
+    expect(mockGet).toHaveBeenLastCalledWith('auth.addresses', 'c2', '');
     expect(result.current.data?.title).toBe('Mes adresses');
     await waitFor(() => expect(result.current.data?.items.map((item) => item.id)).toEqual(['1', '2', '3']));
     expect(result.current.hasNextPage).toBe(false);
@@ -49,7 +49,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
 
   it('reload repart de la première page, en une requête', async () => {
     mockGet.mockImplementation(async (_name: string, cursor: string | null) => (cursor === 'c2' ? page(['3'], null) : page(['1', '2'], 'c2')));
-    const { result } = await renderHook(() => useListDefinition('location.addresses'), { wrapper });
+    const { result } = await renderHook(() => useListDefinition('auth.addresses'), { wrapper });
     await waitFor(() => expect(result.current.hasNextPage).toBe(true));
     await act(async () => {
       await result.current.fetchNextPage();
@@ -63,7 +63,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
     });
 
     expect(mockGet).toHaveBeenCalledTimes(1);
-    expect(mockGet).toHaveBeenCalledWith('location.addresses', null, '');
+    expect(mockGet).toHaveBeenCalledWith('auth.addresses', null, '');
     await waitFor(() => expect(result.current.data?.items.map((item) => item.id)).toEqual(['2']));
     expect(result.current.hasNextPage).toBe(true);
   });
@@ -73,7 +73,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
     mockGet.mockImplementation(async (_name: string, _cursor: string | null, search: string) =>
       search === 'lac' ? new Promise<ListDefinition>((resolve) => (finish = resolve)) : page(['1', '2'], null),
     );
-    const { result, rerender } = await renderHook(({ search }: { search: string }) => useListDefinition('location.addresses', search), {
+    const { result, rerender } = await renderHook(({ search }: { search: string }) => useListDefinition('auth.addresses', search), {
       wrapper,
       initialProps: { search: '' },
     });
@@ -81,7 +81,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
 
     await rerender({ search: ' lac ' });
 
-    expect(mockGet).toHaveBeenLastCalledWith('location.addresses', null, 'lac');
+    expect(mockGet).toHaveBeenLastCalledWith('auth.addresses', null, 'lac');
     expect(result.current.isPending).toBe(false);
     expect(result.current.data?.items.map((item) => item.id)).toEqual(['1', '2']);
 

@@ -5,7 +5,7 @@ import { FormService } from '../services/FormService';
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 
 describe('FormService.get', () => {
-  const definition = { name: 'location.address' };
+  const definition = { name: 'auth.address' };
 
   function service() {
     const client = { get: jest.fn().mockResolvedValue({ data: definition }) };
@@ -16,15 +16,15 @@ describe('FormService.get', () => {
   it('demande la définition du formulaire', async () => {
     const { client, forms } = service();
 
-    await expect(forms.get('location.address')).resolves.toBe(definition);
-    expect(client.get).toHaveBeenCalledWith('/v1/forms/location.address');
+    await expect(forms.get('auth.address')).resolves.toBe(definition);
+    expect(client.get).toHaveBeenCalledWith('/v1/forms/auth.address');
   });
 
   it('lié à un enregistrement : `?record=`, encodé', async () => {
     const { client, forms } = service();
 
-    await forms.get('location.address', '12&x=1');
+    await forms.get('auth.address', '12&x=1');
 
-    expect(client.get).toHaveBeenCalledWith('/v1/forms/location.address?record=12%26x%3D1');
+    expect(client.get).toHaveBeenCalledWith('/v1/forms/auth.address?record=12%26x%3D1');
   });
 });
