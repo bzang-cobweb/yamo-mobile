@@ -11,6 +11,8 @@ export type CountryContextValue = {
   countries: Country[];
   /** Le pays courant, une fois entré ; `null` tant que l'écran d'entrée est affiché. */
   country: Country | null;
+  /** Le pays gardé (toujours ouvert), même écran d'entrée affiché : présélectionné. */
+  chosen: Country | null;
   /** Entrer dans un pays : gardé sur l'appareil, envoyé à l'API, données rechargées. */
   enter: (code: string) => void;
   /** Rouvrir l'écran d'entrée (drapeau de la barre du haut). */
@@ -25,6 +27,7 @@ export const CountryContext = createContext<CountryContextValue>({
   retry: () => undefined,
   countries: [],
   country: null,
+  chosen: null,
   enter: () => undefined,
   reopen: () => undefined,
   canChange: false,

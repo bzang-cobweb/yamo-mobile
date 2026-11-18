@@ -29,10 +29,10 @@ const LOGO_HEIGHT = 140;
 export function EntryScreen({ showLanguage }: { showLanguage: boolean }) {
   const { t, locale, chooseLocale } = useI18n();
   const theme = useTheme();
-  const { countries, country: current, enter } = useCountry();
+  const { countries, chosen, enter } = useCountry();
   const { data: application, isPending } = useApplication();
   const { data: locales } = useQuery({ queryKey: ['locales'], queryFn: () => localeService.list(), staleTime: Infinity, enabled: showLanguage });
-  const [selected, setSelected] = useState<string | null>(() => current?.code ?? (countries.length === 1 ? countries[0].code : null));
+  const [selected, setSelected] = useState<string | null>(() => chosen?.code ?? (countries.length === 1 ? countries[0].code : null));
   const choice = countries.length === 1 ? countries[0].code : selected;
 
   function submit() {

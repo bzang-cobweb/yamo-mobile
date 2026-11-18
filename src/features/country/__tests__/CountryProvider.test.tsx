@@ -216,6 +216,8 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
 
     await fireEvent.press(screen.getByTestId('country-flag'));
     expect(screen.getByTestId('entry-screen')).toBeTruthy();
+    // Le pays actuel est présélectionné.
+    expect(screen.getByText('🇨🇲  Cameroun')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('entry-country'));
     await fireEvent.press(screen.getByTestId('entry-country-option-SN'));

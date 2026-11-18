@@ -67,6 +67,7 @@ export function CountryProvider({ children }: PropsWithChildren) {
       countries,
       // L'écran d'entrée ne s'affiche plus quand pays et langue sont déjà choisis.
       country: entryOpen || !localeChosen ? null : current,
+      chosen: current,
       enter,
       reopen: () => setEntryOpen(true),
       canChange: countries.length > 1,
