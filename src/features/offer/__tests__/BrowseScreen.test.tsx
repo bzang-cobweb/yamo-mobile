@@ -22,6 +22,11 @@ jest.mock('react-native-safe-area-context', () => {
   return { SafeAreaView: View };
 });
 // La barre du haut a ses propres tests.
+jest.mock('@/features/welcome/components/LocaleSwitcher', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { LocaleSwitcher: () => <View testID="locale-switcher" /> };
+});
 jest.mock('@/features/welcome/components/AppTopBar', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
@@ -118,6 +123,8 @@ describe('Accueil : offres du pays', () => {
     await show(<GuestHomeScreen />);
 
     expect(screen.getByTestId('app-top-bar')).toBeTruthy();
+    // La langue, en bas, après les boutons.
+    expect(screen.getByTestId('locale-switcher')).toBeTruthy();
     expect(screen.getByText('Studio à Akwa')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('welcome-sign-in'));

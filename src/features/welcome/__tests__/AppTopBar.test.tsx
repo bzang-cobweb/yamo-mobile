@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { render, screen } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { CountryContext, type CountryContextValue } from '@/features/country/context/CountryContext';
@@ -34,7 +34,7 @@ jest.mock('@/shared/services/LocaleService', () => ({
 
 const CAMEROON = { code: 'CM', name: 'Cameroun', native_name: 'Cameroun', flag: '🇨🇲', currency: 'XAF', dial_code: '+237' };
 
-async function renderBar(showLanguage?: boolean) {
+async function renderBar() {
   const country = { country: CAMEROON, countries: [CAMEROON], canChange: false } as unknown as CountryContextValue;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
 
@@ -42,7 +42,7 @@ async function renderBar(showLanguage?: boolean) {
     <QueryClientProvider client={client}>
       <I18nContext.Provider value={TEST_I18N}>
         <CountryContext.Provider value={country}>
-          <AppTopBar showLanguage={showLanguage} />
+          <AppTopBar />
         </CountryContext.Provider>
       </I18nContext.Provider>
     </QueryClientProvider>,
@@ -50,31 +50,11 @@ async function renderBar(showLanguage?: boolean) {
 }
 
 describe('AppTopBar', () => {
-  it('connecté : le logo et le drapeau, sans langue', async () => {
-    await renderBar(false);
+  it('le logo et le drapeau, sans langue (elle est en bas de l’accueil)', async () => {
+    await renderBar();
 
-    expect(screen.getByTestId('app-top-bar-logo')).toBeTruthy();
+    expect(screen.getByTestId('app-top-bar-logo').props.accessibilityLabel).toBe('YaMo');
     expect(screen.getByText('🇨🇲')).toBeTruthy();
     expect(screen.queryByTestId('locale-switcher')).toBeNull();
-  });
-
-  it('logo à gauche, puis la langue et le drapeau du pays', async () => {
-    const country = { country: CAMEROON, countries: [CAMEROON], canChange: false } as unknown as CountryContextValue;
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-
-    await render(
-      <QueryClientProvider client={client}>
-        <I18nContext.Provider value={TEST_I18N}>
-          <CountryContext.Provider value={country}>
-            <AppTopBar />
-          </CountryContext.Provider>
-        </I18nContext.Provider>
-      </QueryClientProvider>,
-    );
-
-    const logo = screen.getByTestId('app-top-bar-logo');
-    expect(logo.props.accessibilityLabel).toBe('YaMo');
-    await waitFor(() => expect(screen.getByTestId('locale-switcher')).toBeTruthy());
-    expect(screen.getByText('🇨🇲')).toBeTruthy();
   });
 });

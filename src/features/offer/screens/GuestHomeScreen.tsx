@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppTopBar } from '@/features/welcome/components/AppTopBar';
+import { LocaleSwitcher } from '@/features/welcome/components/LocaleSwitcher';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
@@ -13,8 +14,8 @@ import { BrowseScreen } from './BrowseScreen';
 
 /**
  * Accueil d'un visiteur (décision 2026-11-18-accueil-offres-du-pays) : la barre du
- * haut (logo, langue, pays), les offres du pays, et en bas « Se connecter » et
- * « Créer un compte ».
+ * haut (logo, pays), les offres du pays, et en bas « Se connecter » et « Créer un
+ * compte », puis la langue (décision 2026-11-19-titre-tirets-avis).
  */
 export function GuestHomeScreen() {
   const { t } = useI18n();
@@ -43,6 +44,10 @@ export function GuestHomeScreen() {
             <ThemedText style={{ color: theme.primary }}>{t('auth.createAccount')}</ThemedText>
           </Pressable>
         </View>
+        {/* La langue, après les boutons (décision 2026-11-19-titre-tirets-avis). */}
+        <View style={styles.language}>
+          <LocaleSwitcher />
+        </View>
       </SafeAreaView>
     </ThemedView>
   );
@@ -57,8 +62,9 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth / 2,
     alignSelf: 'center',
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three,
+    paddingTop: Spacing.three,
   },
+  language: { alignItems: 'center', paddingVertical: Spacing.two },
   button: { flex: 1, alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.three, borderWidth: 1 },
   secondary: { backgroundColor: 'transparent' },
   pressed: { opacity: 0.8 },
