@@ -46,7 +46,7 @@ export const TEST_MESSAGES: Messages = {
   'list.cancel': 'Annuler',
   'entry.title': 'Bienvenue',
   'entry.subtitle': 'Choisissez votre pays et votre langue.',
-  'entry.country': 'Pays',
+  'entry.country': 'Quel pays ?',
   'entry.language': 'Langue',
   'entry.enter': 'Entrer',
   'entry.chooseCountry': 'Choisir un pays',
