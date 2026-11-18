@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 
 import { apiClient } from '@/shared/api/ApiClient';
@@ -31,6 +31,9 @@ export function CountryProvider({ children }: PropsWithChildren) {
     queryKey: ['countries', locale],
     queryFn: () => countryService.list(),
     staleTime: Infinity,
+    // Changement de langue : la liste précédente reste affichée, l'écran d'entrée
+    // n'est pas démonté et garde le pays touché.
+    placeholderData: keepPreviousData,
     retry: (failureCount, error) => !(error instanceof NetworkError) && failureCount < 2,
   });
   const countries = useMemo(() => query.data ?? [], [query.data]);

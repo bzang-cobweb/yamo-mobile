@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import * as React from 'react';
 import { Text } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -43,7 +44,16 @@ jest.mock('../utils/country-storage', () => ({
 
 const mockChooseLocale = jest.fn();
 jest.mock('@/shared/services/LocaleService', () => ({
-  localeService: { list: () => Promise.resolve({ data: [{ code: 'fr', label: 'Français' }], default: 'fr' }) },
+  localeService: {
+    list: () =>
+      Promise.resolve({
+        data: [
+          { code: 'fr', label: 'Français' },
+          { code: 'en', label: 'English' },
+        ],
+        default: 'fr',
+      }),
+  },
 }));
 
 const CAMEROON: Country = { code: 'CM', name: 'Cameroun', native_name: 'Cameroun', flag: '🇨🇲', currency: 'XAF', dial_code: '+237' };
@@ -67,17 +77,36 @@ function App() {
   );
 }
 
+/** Langue modifiable comme dans l'app : `chooseLocale` change la langue courante. */
+function I18n({ children }: { children: React.ReactNode }) {
+  const [locale, setLocale] = React.useState('fr');
+
+  return (
+    <I18nContext.Provider
+      value={{
+        ...TEST_I18N,
+        locale,
+        chooseLocale: (code: string) => {
+          mockChooseLocale(code);
+          setLocale(code);
+        },
+      }}>
+      {children}
+    </I18nContext.Provider>
+  );
+}
+
 async function renderApp() {
   // gcTime infini : aucun minuteur de nettoyage ne garde jest ouvert.
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const invalidate = jest.spyOn(client, 'invalidateQueries');
   await render(
     <QueryClientProvider client={client}>
-      <I18nContext.Provider value={{ ...TEST_I18N, chooseLocale: mockChooseLocale }}>
+      <I18n>
         <CountryProvider>
           <App />
         </CountryProvider>
-      </I18nContext.Provider>
+      </I18n>
     </QueryClientProvider>,
   );
   await waitFor(() => expect(screen.queryByText('loading')).toBeNull());
@@ -118,6 +147,21 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
     await fireEvent.press(screen.getByTestId('entry-enter'));
 
     expect(screen.getByTestId('inside').props.children).toBe('SN');
+  });
+
+  it('changer de langue garde le pays touché', async () => {
+    mockCountries = [CAMEROON, SENEGAL];
+    await renderApp();
+
+    await fireEvent.press(screen.getByTestId('entry-country-SN'));
+    await waitFor(() => expect(screen.getByTestId('entry-locale-en')).toBeTruthy());
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('entry-locale-en'));
+    });
+
+    expect(mockChooseLocale).toHaveBeenCalledWith('en');
+    expect(screen.getByTestId('entry-screen')).toBeTruthy();
+    expect(screen.getByTestId('entry-country-SN').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
   });
 
   it('lancement suivant : on entre directement dans le pays gardé', async () => {
