@@ -70,9 +70,11 @@ function RootNavigator() {
       {!isLoading && country.country !== null && (
         <Stack screenOptions={{ headerShown: false }}>
           {/* Fiche d'une offre : pour un visiteur comme pour un membre (décision 2026-11-18-fiche-offre). */}
-          <Stack.Screen name="offers/[id]" />
+          <Stack.Screen name="offers/[id]/index" />
           <Stack.Protected guard={user !== null}>
             <Stack.Screen name="(tabs)" />
+            {/* Son avis sur une offre, ouvert depuis la fiche (décision 2026-11-19-contrat-avis-offres). */}
+            <Stack.Screen name="offers/[id]/review" />
           </Stack.Protected>
           {/* Invité : l'accueil d'abord (ancre de la pile), d'où partent la connexion et l'inscription. */}
           <Stack.Protected guard={user === null}>

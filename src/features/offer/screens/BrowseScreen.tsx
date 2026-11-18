@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
@@ -20,7 +21,8 @@ const SEARCH_DELAY = 300;
 /**
  * Les offres publiées du pays courant (décision 2026-11-18-accueil-offres-du-pays),
  * pour un visiteur comme pour un membre : liste générique, défilement infini,
- * recherche dans le titre. La photo, puis le titre, puis prix et ville. Toucher
+ * recherche dans le titre. La photo, puis le titre, puis prix et ville, puis la
+ * note et le dernier avis. Toucher
  * une offre ouvre sa fiche.
  */
 export function BrowseScreen() {
@@ -88,6 +90,8 @@ export function BrowseScreen() {
               {item.subtitle}
             </ThemedText>
           )}
+          {/* La note moyenne, puis le dernier avis en gras sur sa ligne (décision 2026-11-19-contrat-avis-offres). */}
+          <ItemReviews item={item} testID={`browse-item-${item.id}`} />
         </Pressable>
       )}
       hasMore={query.hasNextPage}

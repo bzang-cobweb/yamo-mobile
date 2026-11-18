@@ -22,7 +22,9 @@ export type FieldType =
   /** Code de vérification à 6 chiffres. */
   | 'code'
   /** Choix parmi quelques options, en boutons côte à côte (ex. « E-mail | Téléphone »). */
-  | 'segmented';
+  | 'segmented'
+  /** Note en étoiles, valeur « 1 » à « 5 » (décision 2026-11-19-contrat-avis-offres). */
+  | 'rating';
 
 export type FieldOption = {
   value: string;

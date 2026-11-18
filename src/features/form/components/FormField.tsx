@@ -6,6 +6,7 @@ import { DateField } from './fields/DateField';
 import { NumberField } from './fields/NumberField';
 import { PhoneField } from './fields/PhoneField';
 import { RadioField } from './fields/RadioField';
+import { RatingField } from './fields/RatingField';
 import { SegmentedField } from './fields/SegmentedField';
 import { SelectField } from './fields/SelectField';
 import { SwitchField } from './fields/SwitchField';
@@ -60,6 +61,8 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
       return <SwitchField {...common} value={asBoolean} onChange={onChange} />;
     case 'segmented':
       return <SegmentedField {...common} value={asText} onChange={onChange} />;
+    case 'rating':
+      return <RatingField {...common} value={asText} onChange={onChange} />;
     default: {
       // Type inconnu de cette version de l'app : rien n'est affiché plutôt qu'un champ faux.
       const unknown: never = field.type;

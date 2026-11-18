@@ -66,6 +66,8 @@ function item(id: string, overrides: Partial<ListItem> = {}): ListItem {
     title: `Carte ${id}`,
     subtitle: 'Expire en 2030',
     image: null,
+    rating: null,
+    highlight: null,
     edit: { form: 'payments.card', record: id },
     delete: {
       label: 'Retirer',

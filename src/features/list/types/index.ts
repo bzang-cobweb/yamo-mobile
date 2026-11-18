@@ -6,13 +6,17 @@ import type { FormSubmit } from '@/features/form/types';
  */
 export type ListItemDelete = Omit<FormSubmit, 'label'> & { label: string; confirm: string };
 
-/** Un item d'une liste : titre, sous-titre, formulaire d'édition, retrait. */
+/** Un item d'une liste : titre, sous-titre, photo, note, phrase mise en avant, formulaire d'édition, retrait. */
 export type ListItem = {
   id: string;
   title: string;
   subtitle: string | null;
   /** Photo (URL), affichée au-dessus du titre ; `null` : aucune. */
   image: string | null;
+  /** Note moyenne (1 à 5) et nombre de notes ; `null` : aucune (décision 2026-11-19-contrat-avis-offres). */
+  rating: { average: number; count: number } | null;
+  /** Phrase mise en avant (le dernier avis), en gras sur sa ligne ; `null` : aucune. */
+  highlight: string | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */
   edit: { form: string; record: string } | null;
   delete: ListItemDelete | null;

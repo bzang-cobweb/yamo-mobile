@@ -8,6 +8,7 @@ import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
 import { ItemPhoto } from '@/shared/components/ItemPhoto';
+import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { List } from '@/shared/components/List';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -131,6 +132,8 @@ export function ProfileListScreen({ list }: { list: string }) {
               {item.subtitle}
             </ThemedText>
           )}
+          {/* La note et la phrase mise en avant, quand l'API les sert. */}
+          <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
         </Pressable>
         {removable && item.delete && (
           <Pressable

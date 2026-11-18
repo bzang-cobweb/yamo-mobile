@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 import type { ListDefinition } from '@/features/list/types';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -61,8 +62,17 @@ function list(): ListDefinition {
     search: 'Rechercher par titre…',
     next_cursor: 'c2',
     items: [
-      { id: '9', title: 'Maison à Bastos', subtitle: '400 000 FCFA · Yaoundé', image: 'https://api.test/storage/9.jpg', edit: null, delete: null },
-      { id: '7', title: 'Studio à Akwa', subtitle: '25 000 FCFA · Douala', image: null, edit: null, delete: null },
+      {
+        id: '9',
+        title: 'Maison à Bastos',
+        subtitle: '400 000 FCFA · Yaoundé',
+        image: 'https://api.test/storage/9.jpg',
+        rating: { average: 4.5, count: 12 },
+        highlight: 'Grande maison, quartier calme.',
+        edit: null,
+        delete: null,
+      },
+      { id: '7', title: 'Studio à Akwa', subtitle: '25 000 FCFA · Douala', image: null, rating: null, highlight: null, edit: null, delete: null },
     ],
   };
 }
@@ -94,6 +104,24 @@ describe('Accueil : offres du pays', () => {
     expect(screen.getByTestId('browse-item-7-photo-empty')).toBeTruthy();
     // La photo est le premier élément de la carte, avant le titre.
     expect(screen.getByTestId('browse-item-9').children[0]).toBe(screen.getByTestId('browse-item-9-photo'));
+  });
+
+  it('la note moyenne, puis le dernier avis en gras sur sa ligne ; rien sans avis', async () => {
+    await show(<BrowseScreen />);
+
+    const rating = screen.getByTestId('browse-item-9-rating');
+    expect(rating.props.accessibilityLabel).toBe('Note moyenne 4,5 sur 5, 12 avis');
+    expect(screen.getByText('4,5 (12)')).toBeTruthy();
+    const highlight = screen.getByTestId('browse-item-9-highlight');
+    expect(highlight.props.children).toBe('Grande maison, quartier calme.');
+    expect(highlight.props.numberOfLines).toBe(2);
+    expect(StyleSheet.flatten(highlight.props.style).fontWeight).toBe(700);
+    // Après le sous-titre.
+    const card = screen.getByTestId('browse-item-9');
+    expect(card.children.indexOf(highlight)).toBeGreaterThan(card.children.indexOf(screen.getByText('400 000 FCFA · Yaoundé')));
+
+    expect(screen.queryByTestId('browse-item-7-rating')).toBeNull();
+    expect(screen.queryByTestId('browse-item-7-highlight')).toBeNull();
   });
 
   it('toucher une offre ouvre sa fiche', async () => {

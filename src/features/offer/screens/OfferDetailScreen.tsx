@@ -1,6 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { takeProfileNotice } from '@/features/auth/utils/profile-notice';
+import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -10,6 +15,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
+import { OfferReviews } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { useOfferDetail } from '../hooks/useOfferDetail';
 
@@ -17,8 +23,11 @@ import { useOfferDetail } from '../hooks/useOfferDetail';
  * Fiche d'une offre (`/offers/[id]`, décision 2026-11-18-fiche-offre), pour un
  * visiteur comme pour un membre, décrite par l'API : les photos en carrousel,
  * le titre, le prix, la ville, les caractéristiques, la description et la date de
- * publication. Une offre introuvable affiche un message ; le retour ramène à
- * l'accueil.
+ * publication, puis les avis (décision 2026-11-19-contrat-avis-offres). Une offre
+ * introuvable affiche un message ; le retour ramène à l'accueil.
+ *
+ * Au retour du formulaire d'avis, ou après le retrait du sien, la fiche et les
+ * listes se rechargent, et le message de l'API s'affiche.
  */
 export function OfferDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
@@ -27,6 +36,34 @@ export function OfferDetailScreen({ id }: { id: string }) {
   const { width: windowWidth } = useWindowDimensions();
   const width = Math.min(windowWidth, MaxContentWidth / 2);
   const offer = query.data;
+  const queryClient = useQueryClient();
+  const [notice, setNotice] = useState<{ message: string; failed: boolean } | null>(null);
+  const shown = useRef(false);
+  const { refetch } = query;
+
+  // Un avis donné ou retiré : la fiche, et les listes (note, dernier avis), sont à recharger.
+  const changed = useCallback(
+    (message: string | null, failed = false) => {
+      setNotice(message === null ? null : { message, failed });
+      void refetch();
+      void queryClient.invalidateQueries({ queryKey: ['list'] });
+    },
+    [queryClient, refetch],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      // Le premier affichage charge déjà la fiche ; au retour du formulaire, son message.
+      if (shown.current) {
+        const message = takeProfileNotice();
+
+        if (message !== null) {
+          changed(message);
+        }
+      }
+      shown.current = true;
+    }, [changed]),
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -103,6 +140,18 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </View>
                 )}
 
+                {notice && (
+                  <ThemedText
+                    type="small"
+                    style={notice.failed ? styles.error : { color: theme.primary }}
+                    accessibilityRole="alert"
+                    testID="offer-notice">
+                    {notice.message}
+                  </ThemedText>
+                )}
+
+                {offer.reviews && <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />}
+
                 {offer.published_at && (
                   <ThemedText type="small" themeColor="textSecondary" testID="offer-published">
                     {t('offer.publishedOn', { date: new Date(offer.published_at).toLocaleDateString(locale, { dateStyle: 'long' }) })}
@@ -127,4 +176,5 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.one, marginTop: Spacing.three },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
   factLabel: { flexShrink: 1 },
+  error: { color: ERROR_COLOR },
 });
