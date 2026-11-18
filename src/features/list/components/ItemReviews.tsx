@@ -10,8 +10,9 @@ import type { ListItem } from '../types';
 
 /**
  * Sous le sous-titre d'un item (décision 2026-11-19-contrat-avis-offres) : la note
- * moyenne (« ★★★★★ 4,5 (12) »), puis la phrase mise en avant (le dernier avis),
- * en gras, sur sa ligne, sur deux lignes au plus. Rien de ce que l'API ne sert pas.
+ * moyenne (« ★★★★★ 4,5 (12) »), puis la phrase mise en avant (pour une offre : ses
+ * détails et son prix, décision 2026-11-19-item-titre-saisi-details), en gras, sur
+ * sa ligne, sur deux lignes au plus. Rien de ce que l'API ne sert pas.
  */
 export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 'highlight'>; testID?: string }) {
   const { t, locale } = useI18n();

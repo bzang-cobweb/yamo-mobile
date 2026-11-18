@@ -64,15 +64,15 @@ function list(): ListDefinition {
     items: [
       {
         id: '9',
-        title: 'Maison à Bastos',
-        subtitle: '400 000 FCFA · Yaoundé',
+        title: 'Maison - Yaoundé',
+        subtitle: 'Maison à Bastos',
         image: 'https://api.test/storage/9.jpg',
         rating: { average: 4.5, count: 12 },
-        highlight: 'Grande maison, quartier calme.',
+        highlight: '4 chambres · 400 000 FCFA / mois',
         edit: null,
         delete: null,
       },
-      { id: '7', title: 'Studio à Akwa', subtitle: '25 000 FCFA · Douala', image: null, rating: null, highlight: null, edit: null, delete: null },
+      { id: '7', title: 'Studio à Akwa', subtitle: null, image: null, rating: null, highlight: '25 000 FCFA / mois', edit: null, delete: null },
     ],
   };
 }
@@ -88,12 +88,13 @@ describe('Accueil : offres du pays', () => {
     mockList = list();
   });
 
-  it('montre la vitrine du pays : titre, prix et ville, recherche', async () => {
+  it('montre la vitrine du pays : titre, titre saisi, prix, recherche', async () => {
     await show(<BrowseScreen />);
 
     expect(mockCalls[0][0]).toBe('offer.browse');
+    expect(screen.getByText('Maison - Yaoundé')).toBeTruthy();
     expect(screen.getByText('Maison à Bastos')).toBeTruthy();
-    expect(screen.getByText('25 000 FCFA · Douala')).toBeTruthy();
+    expect(screen.getByText('25 000 FCFA / mois')).toBeTruthy();
     expect(screen.getByTestId('browse-list-search').props.placeholder).toBe('Rechercher par titre…');
   });
 
@@ -106,22 +107,22 @@ describe('Accueil : offres du pays', () => {
     expect(screen.getByTestId('browse-item-9').children[0]).toBe(screen.getByTestId('browse-item-9-photo'));
   });
 
-  it('la note moyenne, puis le dernier avis en gras sur sa ligne ; rien sans avis', async () => {
+  it('la note moyenne, puis détails et prix en gras sur leur ligne ; sans avis, pas de note', async () => {
     await show(<BrowseScreen />);
 
     const rating = screen.getByTestId('browse-item-9-rating');
     expect(rating.props.accessibilityLabel).toBe('Note moyenne 4,5 sur 5, 12 avis');
     expect(screen.getByText('4,5 (12)')).toBeTruthy();
     const highlight = screen.getByTestId('browse-item-9-highlight');
-    expect(highlight.props.children).toBe('Grande maison, quartier calme.');
+    expect(highlight.props.children).toBe('4 chambres · 400 000 FCFA / mois');
     expect(highlight.props.numberOfLines).toBe(2);
     expect(StyleSheet.flatten(highlight.props.style).fontWeight).toBe(700);
     // Après le sous-titre.
     const card = screen.getByTestId('browse-item-9');
-    expect(card.children.indexOf(highlight)).toBeGreaterThan(card.children.indexOf(screen.getByText('400 000 FCFA · Yaoundé')));
+    expect(card.children.indexOf(highlight)).toBeGreaterThan(card.children.indexOf(screen.getByText('Maison à Bastos')));
 
     expect(screen.queryByTestId('browse-item-7-rating')).toBeNull();
-    expect(screen.queryByTestId('browse-item-7-highlight')).toBeNull();
+    expect(screen.getByTestId('browse-item-7-highlight').props.children).toBe('25 000 FCFA / mois');
   });
 
   it('toucher une offre ouvre sa fiche', async () => {
