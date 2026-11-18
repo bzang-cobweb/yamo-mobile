@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
@@ -45,9 +45,15 @@ export function ProfileListScreen({ list }: { list: string }) {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Au premier affichage, la requête part déjà : ne recharger qu'aux retours.
+  const shown = useRef(false);
+
   useFocusEffect(
     useCallback(() => {
-      void reload();
+      if (shown.current) {
+        void reload();
+      }
+      shown.current = true;
       setNotice(takeProfileNotice());
       setError(null);
 

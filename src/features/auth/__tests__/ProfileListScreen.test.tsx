@@ -207,10 +207,10 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-delete-7')).toBeNull();
   });
 
-  it('à l’affichage, la liste repart de la première page', async () => {
+  it('premier affichage : pas de rechargement en plus du chargement initial', async () => {
     await renderScreen();
 
-    expect(mockReload).toHaveBeenCalled();
+    expect(mockReload).not.toHaveBeenCalled();
   });
 
   it('en approchant du bas, charge la page suivante tant qu’il en reste', async () => {
