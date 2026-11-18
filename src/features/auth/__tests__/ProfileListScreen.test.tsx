@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert, type AlertButton } from 'react-native';
+import { Alert, StyleSheet, type AlertButton } from 'react-native';
 
 import type { ListDefinition, ListItem } from '@/features/list/types';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -108,6 +108,15 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     await renderScreen();
 
     expect(screen.getByTestId('profile-list-empty').props.children).toBe('Aucune carte.');
+  });
+
+  it('le bouton de création est au-dessus de la liste, aligné à droite', async () => {
+    await renderScreen();
+
+    // Ordre du rendu : le bouton vient avant le premier item.
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('"profile-list-create"')).toBeLessThan(tree.indexOf('"profile-list-item-7"'));
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-create').props.style)).toEqual(expect.objectContaining({ alignSelf: 'flex-end' }));
   });
 
   it('le bouton de création ouvre le formulaire vide', async () => {

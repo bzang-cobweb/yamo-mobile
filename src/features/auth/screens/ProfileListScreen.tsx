@@ -22,7 +22,8 @@ import { ProfileScreenShell } from './ProfileFormScreen';
  * titre, affiché dans l'en-tête, le texte d'une liste vide, le bouton de
  * création et les items.
  *
- * - Le bouton de création ouvre son formulaire (`/profile/[form]`).
+ * - Le bouton de création, au-dessus de la liste et aligné à droite, ouvre son
+ *   formulaire (`/profile/[form]`).
  * - Toucher un item ouvre son formulaire lié à l'enregistrement (`?record=`).
  * - Le bouton de retrait d'un item demande confirmation, envoie le retrait décrit
  *   par l'API, puis affiche son message. Un retrait que l'app ne sait pas
@@ -99,6 +100,18 @@ export function ProfileListScreen({ list }: { list: string }) {
         </View>
       ) : (
         <>
+          {/* Bouton de création au-dessus de la liste, aligné à droite (décision 2026-11-18-adresse-app-simplifiee). */}
+          {definition.create && (
+            <Pressable
+              testID="profile-list-create"
+              accessibilityRole="button"
+              onPress={() =>
+                definition.create && router.push({ pathname: '/profile/[form]', params: { form: definition.create.form } })
+              }
+              style={({ pressed }) => [styles.create, pressed && styles.pressed]}>
+              <ThemedText type="linkPrimary">{definition.create.label}</ThemedText>
+            </Pressable>
+          )}
           {notice && (
             <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="profile-list-notice">
               {notice}
@@ -159,17 +172,6 @@ export function ProfileListScreen({ list }: { list: string }) {
               );
             })}
           </View>
-          {definition.create && (
-            <Pressable
-              testID="profile-list-create"
-              accessibilityRole="button"
-              onPress={() =>
-                definition.create && router.push({ pathname: '/profile/[form]', params: { form: definition.create.form } })
-              }
-              style={({ pressed }) => [styles.create, pressed && styles.pressed]}>
-              <ThemedText type="linkPrimary">{definition.create.label}</ThemedText>
-            </Pressable>
-          )}
         </>
       )}
     </ProfileScreenShell>
@@ -191,6 +193,6 @@ const styles = StyleSheet.create({
   },
   itemText: { flex: 1, gap: Spacing.half, paddingVertical: Spacing.one },
   delete: { padding: Spacing.one },
-  create: { alignSelf: 'center', padding: Spacing.two },
+  create: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
   pressed: { opacity: 0.6 },
 });
