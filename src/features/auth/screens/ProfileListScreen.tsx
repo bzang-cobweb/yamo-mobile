@@ -23,8 +23,8 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
  * titre, affiché dans l'en-tête, le texte d'une liste vide, le bouton de
  * création et les items.
  *
- * - Le bouton « + », fixe au-dessus de la liste et à droite (décision
- *   2026-11-18-bouton-ajout-fixe), ouvre le formulaire de création (`/profile/[form]`).
+ * - Le lien de création, fixe sous la recherche et aligné à droite (décision
+ *   2026-11-18-lien-creation-sous-recherche), ouvre son formulaire (`/profile/[form]`).
  * - Toucher un item ouvre son formulaire lié à l'enregistrement (`?record=`).
  * - Le bouton de retrait d'un item demande confirmation, envoie le retrait décrit
  *   par l'API, puis affiche son message. Un retrait que l'app ne sait pas

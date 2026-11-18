@@ -117,14 +117,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     jest.useRealTimers();
   });
 
-  it('affiche le titre dans l’en-tête, les items et le bouton « + » nommé par l’API', async () => {
+  it('affiche le titre dans l’en-tête, les items et le lien de création', async () => {
     await renderScreen();
 
     expect(screen.getByText('Mes cartes')).toBeTruthy();
     expect(screen.getByText('Carte 7')).toBeTruthy();
     expect(screen.getByText('Expire en 2030')).toBeTruthy();
     expect(screen.getByText('Carte 8')).toBeTruthy();
-    expect(screen.getByTestId('profile-list-create').props.accessibilityLabel).toBe('Ajouter une carte');
+    expect(screen.getByText('Ajouter une carte')).toBeTruthy();
     expect(screen.queryByTestId('profile-list-empty')).toBeNull();
   });
 
@@ -135,10 +135,10 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByTestId('profile-list-empty').props.children).toBe('Aucune carte.');
   });
 
-  it('le bouton « + » est fixe, hors de la partie qui défile, avant la liste', async () => {
+  it('le lien de création est fixe, hors de la partie qui défile, avant la liste', async () => {
     await renderScreen();
 
-    // Barre fixe puis liste : le « + » n'est pas dans la FlatList (`profile-list`).
+    // Zone fixe puis liste : le lien n'est pas dans la FlatList (`profile-list`).
     const order = screen.getAllByTestId(/^profile-list(-create)?$/).map((node) => node.props.testID);
     expect(order).toEqual(['profile-list-create', 'profile-list']);
     expect(screen.getByTestId('profile-list-bar')).toBeTruthy();

@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { List } from '../List';
 
@@ -119,26 +119,27 @@ describe('List (données locales, sans API)', () => {
     expect(screen.queryByTestId('fruits-search')).toBeNull();
   });
 
-  it('avec create : un bouton « + » fixe, nommé, qui appelle onPress', async () => {
+  it('avec create : un lien fixe, avec son libellé, aligné à droite, qui appelle onPress', async () => {
     const onPress = jest.fn();
     await renderList({ create: { label: 'Ajouter un fruit', onPress } });
 
-    const button = screen.getByTestId('fruits-create');
-    expect(button.props.accessibilityLabel).toBe('Ajouter un fruit');
-    expect(screen.getByTestId('fruits-create-icon').props.symbol).toEqual(expect.objectContaining({ ios: 'plus' }));
-    await fireEvent.press(button);
+    const link = screen.getByTestId('fruits-create');
+    expect(screen.getByText('Ajouter un fruit')).toBeTruthy();
+    expect(StyleSheet.flatten(link.props.style)).toEqual(expect.objectContaining({ alignSelf: 'flex-end' }));
+    await fireEvent.press(link);
 
     expect(onPress).toHaveBeenCalledTimes(1);
+    // Hors de la partie qui défile : avant la liste, pas dans son en-tête.
     expect(screen.getAllByTestId(/^fruits(-create)?$/).map((node) => node.props.testID)).toEqual(['fruits-create', 'fruits']);
-    expect(screen.queryByTestId('fruits-search')).toBeNull();
   });
 
-  it('recherche et « + » partagent la barre, le « + » à droite', async () => {
+  it('la recherche, sur toute la ligne, vient avant le lien de création', async () => {
     await renderList({
       search: { value: '', onChange: jest.fn(), placeholder: 'Chercher…' },
       create: { label: 'Ajouter', onPress: jest.fn() },
     });
 
-    expect(screen.getAllByTestId(/^fruits-(search|create)$/).map((node) => node.props.testID)).toEqual(['fruits-search', 'fruits-create']);
+    expect(screen.getAllByTestId(/^fruits(-search|-create)?$/).map((node) => node.props.testID)).toEqual(['fruits-search', 'fruits-create', 'fruits']);
+    expect(StyleSheet.flatten(screen.getByTestId('fruits-bar').props.style).flexDirection).not.toBe('row');
   });
 });

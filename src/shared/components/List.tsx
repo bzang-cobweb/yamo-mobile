@@ -13,7 +13,7 @@ export type ListSearch = {
   placeholder: string;
 };
 
-/** Bouton « + » de création : `label` est son nom lu par l'accessibilité. */
+/** Lien de création : son libellé, affiché, et son action. */
 export type ListCreate = {
   label: string;
   onPress: () => void;
@@ -36,9 +36,9 @@ export type ListProps<T> = {
   onRefresh?: () => void;
   /** Texte affiché quand il n'y a aucun item. */
   empty?: string | null;
-  /** Champ de recherche, dans la barre fixe au-dessus de la liste. */
+  /** Champ de recherche, sur toute la largeur de la zone fixe au-dessus de la liste. */
   search?: ListSearch | null;
-  /** Bouton « + », à droite de la barre fixe. */
+  /** Lien de création, sous la recherche, aligné à droite, dans la zone fixe. */
   create?: ListCreate | null;
   /** Contenu en tête des items, qui défile avec eux (message, erreur). */
   header?: ReactElement | null;
@@ -52,10 +52,11 @@ export type ListProps<T> = {
  * ignore d'où viennent les items : en approchant du bas, elle demande la suite
  * (`onLoadMore`) tant qu'il en reste (`hasMore`), une seule demande à la fois.
  *
- * Au-dessus de la partie qui défile, une barre fixe porte le champ de recherche
- * (`search`, décision 2026-11-18-recherche-dans-la-liste) et le bouton « + »
- * (`create`, décision 2026-11-18-bouton-ajout-fixe) : toujours à portée, et le
- * clavier reste ouvert pendant que les items changent.
+ * Au-dessus de la partie qui défile, une zone fixe porte le champ de recherche
+ * sur toute la largeur (`search`, décision 2026-11-18-recherche-dans-la-liste),
+ * puis le lien de création aligné à droite (`create`, décision
+ * 2026-11-18-lien-creation-sous-recherche) : toujours à portée, et le clavier
+ * reste ouvert pendant que les items changent.
  */
 export function List<T>({
   items,
@@ -159,16 +160,10 @@ export function List<T>({
           <Pressable
             testID={id('create')}
             accessibilityRole="button"
-            accessibilityLabel={create.label}
             hitSlop={Spacing.two}
             onPress={create.onPress}
-            style={({ pressed }) => [styles.create, { backgroundColor: theme.backgroundElement }, pressed && styles.pressed]}>
-            <SymbolView
-              testID={id('create-icon')}
-              name={{ ios: 'plus', android: 'add', web: 'add' }}
-              size={20}
-              tintColor={theme.text}
-            />
+            style={({ pressed }) => [styles.create, pressed && styles.pressed]}>
+            <ThemedText type="linkPrimary">{create.label}</ThemedText>
           </Pressable>
         )}
       </View>
@@ -183,9 +178,8 @@ function Separator() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: Spacing.two, paddingBottom: 0 },
+  bar: { gap: Spacing.two, paddingBottom: 0 },
   searchField: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
@@ -193,7 +187,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   search: { flex: 1, paddingVertical: Spacing.two, fontSize: 16 },
-  create: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  create: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
   pressed: { opacity: 0.6 },
   header: { gap: Spacing.three, marginBottom: Spacing.three },
   empty: { textAlign: 'center' },

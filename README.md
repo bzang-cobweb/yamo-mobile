@@ -98,7 +98,7 @@ liste de chaque lien), « Se déconnecter » et le lien rouge « Supprimer mon c
 définition : méthode et point d'API (`/v1/…` seulement), étape du code si l'API en demande
 un, compte mis à jour, puis retour au profil avec le message de l'API, retour à la liste, ou
 déconnexion. Un lien `list` ouvre `/profile/lists/[list]` (`ProfileListScreen`, liste servie par
-`GET /api/v1/lists/{list}`, comme « Mes adresses ») : items, bouton « + » fixe au-dessus de la liste, formulaire
+`GET /api/v1/lists/{list}`, comme « Mes adresses ») : items, lien de création fixe sous la recherche, formulaire
 d'un item (`/profile/[form]?record=…`) et retrait après confirmation. Les items arrivent par
 pages : l'API sert `next_cursor`, renvoyé en `?cursor=` pour la suite, chargée en approchant
 du bas. L'affichage passe par `List` (`src/shared/components/List.tsx`), composant générique à
