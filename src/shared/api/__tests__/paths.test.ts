@@ -1,7 +1,7 @@
 import { isApiPath } from '../paths';
 
 describe('isApiPath : point d’API qu’un serveur peut faire appeler', () => {
-  it.each(['/v1/addresses/suggestions', '/v1/auth/me'])('accepte %s', (path) => {
+  it.each(['/v1/auth/me/addresses', '/v1/auth/me'])('accepte %s', (path) => {
     expect(isApiPath(path)).toBe(true);
   });
 

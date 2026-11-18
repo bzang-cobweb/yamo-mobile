@@ -99,9 +99,7 @@ définition : méthode et point d'API (`/v1/…` seulement), étape du code si l
 un, compte mis à jour, puis retour au profil avec le message de l'API, retour à la liste, ou
 déconnexion. Un lien `list` ouvre `/profile/lists/[list]` (`ProfileListScreen`, liste servie par
 `GET /api/v1/lists/{list}`, comme « Mes adresses ») : items, bouton de création, formulaire
-d'un item (`/profile/[form]?record=…`) et retrait après confirmation. Un champ texte peut
-proposer des suggestions servies par l'API (`suggestions` de sa définition, comme la rue d'une
-adresse) : en choisir une remplit les champs qu'elle décrit. Ajouter un lien, un
+d'un item (`/profile/[form]?record=…`) et retrait après confirmation. Ajouter un lien, un
 formulaire ou une liste au menu ne demande donc aucune modification de l'app. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
 typées avant `npm run typecheck`.
 

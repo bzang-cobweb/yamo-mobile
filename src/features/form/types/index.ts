@@ -50,22 +50,9 @@ export type FormFieldDefinition = {
   depends_on?: string | null;
   /** Nombre maximal de caractères (textarea : 1 000 par défaut), ou `null`. */
   max_length?: number | null;
-  /**
-   * Suggestions pendant la saisie (décision 2026-11-18-adresse-du-compte-modele) :
-   * `GET <endpoint>?q=<saisie>` avec la valeur des champs `params`, à partir de
-   * `min_length` caractères. Choisir une suggestion remplit les champs de ses `values`.
-   */
-  suggestions?: FieldSuggestions | null;
   default: unknown;
   options: FieldOption[];
 };
-
-export type FieldSuggestions = { endpoint: string; params: string[]; min_length: number };
-
-/** Une suggestion : son libellé, et les valeurs des champs qu'elle remplit. */
-export type Suggestion = { label: string; values: Record<string, string> };
-
-export type SuggestionsResponse = { data: Suggestion[] };
 
 export type FormDefinition = {
   name: string;
@@ -130,8 +117,4 @@ export type FieldProps<V extends FieldValue = FieldValue> = {
   onCountryChange?: (country: string) => void;
   /** Champ téléphone : pays verrouillé (le seul actif), le numéro reste modifiable. */
   countryLocked?: boolean;
-  /** Champ à suggestions : valeur des champs passés en paramètre (ex. le pays choisi). */
-  suggestionParams?: Record<string, string>;
-  /** Champ à suggestions : une suggestion choisie remplit ces champs. */
-  onSuggestion?: (values: Record<string, string>) => void;
 };
