@@ -12,6 +12,11 @@ import { backWithNotice, takeProfileNotice } from '../utils/profile-notice';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+jest.mock('expo-image', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { Image: View };
+});
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
@@ -60,6 +65,7 @@ function item(id: string, overrides: Partial<ListItem> = {}): ListItem {
     id,
     title: `Carte ${id}`,
     subtitle: 'Expire en 2030',
+    image: null,
     edit: { form: 'payments.card', record: id },
     delete: {
       label: 'Retirer',
@@ -126,6 +132,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByText('Carte 8')).toBeTruthy();
     expect(screen.getByText('Ajouter une carte')).toBeTruthy();
     expect(screen.queryByTestId('profile-list-empty')).toBeNull();
+  });
+
+  it('un item avec photo l’affiche au-dessus de son titre ; sans photo, rien', async () => {
+    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg' }), item('8')]);
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-item-7-photo').props.source).toEqual({ uri: 'https://api.test/storage/7.jpg' });
+    expect(screen.queryByTestId('profile-list-item-8-photo')).toBeNull();
   });
 
   it('vide : affiche le texte servi par l’API', async () => {

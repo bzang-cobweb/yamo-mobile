@@ -12,19 +12,19 @@ const BAR_HEIGHT = 52;
 const LOGO_HEIGHT = 24;
 
 /**
- * Barre fixe du haut, la même pour un visiteur et un membre (décision
- * 2026-11-18-accueil-offres-du-pays) : le mot « YaMo » à gauche, livré avec l'app
+ * Barre fixe du haut (décision 2026-11-18-accueil-offres-du-pays) : le mot « YaMo » à gauche, livré avec l'app
  * (décision 2026-11-17-logo-livre-avec-le-code) ; à droite, la langue et le pays,
- * chacun ouvrant sa liste.
+ * chacun ouvrant sa liste. Connecté, pas de langue : elle se règle dans les
+ * préférences du compte (décision 2026-11-18-liste-photo-barre-connecte).
  */
-export function AppTopBar() {
+export function AppTopBar({ showLanguage = true }: { showLanguage?: boolean }) {
   return (
     <ThemedView testID="app-top-bar">
       <SafeAreaView edges={['top', 'left', 'right']}>
         <View style={styles.bar}>
           <BrandLogo variant="word" height={LOGO_HEIGHT} testID="app-top-bar-logo" />
           <View style={styles.selectors}>
-            <LocaleSwitcher />
+            {showLanguage && <LocaleSwitcher />}
             <CountrySwitcher />
           </View>
         </View>

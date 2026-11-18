@@ -20,7 +20,7 @@ export default function TabsLayout() {
   const inSubPage = useSegments().length > 2;
 
   return (
-    <Tabs screenOptions={{ header: () => <AppTopBar />, tabBarShowLabel: false, tabBarActiveTintColor: theme.primary }}>
+    <Tabs screenOptions={{ header: () => <AppTopBar showLanguage={false} />, tabBarShowLabel: false, tabBarActiveTintColor: theme.primary }}>
       <Tabs.Screen
         name="index"
         options={{

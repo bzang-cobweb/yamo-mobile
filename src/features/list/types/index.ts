@@ -11,6 +11,8 @@ export type ListItem = {
   id: string;
   title: string;
   subtitle: string | null;
+  /** Photo (URL), affichée au-dessus du titre ; `null` : aucune. */
+  image: string | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */
   edit: { form: string; record: string } | null;
   delete: ListItemDelete | null;

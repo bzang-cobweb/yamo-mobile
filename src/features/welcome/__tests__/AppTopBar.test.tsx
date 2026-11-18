@@ -34,7 +34,30 @@ jest.mock('@/shared/services/LocaleService', () => ({
 
 const CAMEROON = { code: 'CM', name: 'Cameroun', native_name: 'Cameroun', flag: '🇨🇲', currency: 'XAF', dial_code: '+237' };
 
+async function renderBar(showLanguage?: boolean) {
+  const country = { country: CAMEROON, countries: [CAMEROON], canChange: false } as unknown as CountryContextValue;
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+
+  await render(
+    <QueryClientProvider client={client}>
+      <I18nContext.Provider value={TEST_I18N}>
+        <CountryContext.Provider value={country}>
+          <AppTopBar showLanguage={showLanguage} />
+        </CountryContext.Provider>
+      </I18nContext.Provider>
+    </QueryClientProvider>,
+  );
+}
+
 describe('AppTopBar', () => {
+  it('connecté : le logo et le drapeau, sans langue', async () => {
+    await renderBar(false);
+
+    expect(screen.getByTestId('app-top-bar-logo')).toBeTruthy();
+    expect(screen.getByText('🇨🇲')).toBeTruthy();
+    expect(screen.queryByTestId('locale-switcher')).toBeNull();
+  });
+
   it('logo à gauche, puis la langue et le drapeau du pays', async () => {
     const country = { country: CAMEROON, countries: [CAMEROON], canChange: false } as unknown as CountryContextValue;
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });

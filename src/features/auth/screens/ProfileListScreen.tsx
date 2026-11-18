@@ -7,6 +7,7 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
+import { ItemPhoto } from '@/shared/components/ItemPhoto';
 import { List } from '@/shared/components/List';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -122,6 +123,8 @@ export function ProfileListScreen({ list }: { list: string }) {
           disabled={!edit}
           onPress={() => edit && router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: edit.record } })}
           style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
+          {/* La photo de l'item, s'il en a une, au-dessus du titre. */}
+          <ItemPhoto uri={item.image} testID={`profile-list-item-${item.id}-photo`} />
           <ThemedText>{item.title}</ThemedText>
           {item.subtitle && (
             <ThemedText type="small" themeColor="textSecondary">

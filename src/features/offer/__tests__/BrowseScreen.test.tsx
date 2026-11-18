@@ -10,6 +10,11 @@ import { GuestHomeScreen } from '../screens/GuestHomeScreen';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+jest.mock('expo-image', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { Image: View };
+});
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -51,8 +56,8 @@ function list(): ListDefinition {
     search: 'Rechercher par titre…',
     next_cursor: 'c2',
     items: [
-      { id: '9', title: 'Maison à Bastos', subtitle: '400 000 FCFA · Yaoundé', edit: null, delete: null },
-      { id: '7', title: 'Studio à Akwa', subtitle: '25 000 FCFA · Douala', edit: null, delete: null },
+      { id: '9', title: 'Maison à Bastos', subtitle: '400 000 FCFA · Yaoundé', image: 'https://api.test/storage/9.jpg', edit: null, delete: null },
+      { id: '7', title: 'Studio à Akwa', subtitle: '25 000 FCFA · Douala', image: null, edit: null, delete: null },
     ],
   };
 }
@@ -75,6 +80,15 @@ describe('Accueil : offres du pays', () => {
     expect(screen.getByText('Maison à Bastos')).toBeTruthy();
     expect(screen.getByText('25 000 FCFA · Douala')).toBeTruthy();
     expect(screen.getByTestId('browse-list-search').props.placeholder).toBe('Rechercher par titre…');
+  });
+
+  it('la photo au-dessus du titre ; sans photo, un emplacement neutre', async () => {
+    await show(<BrowseScreen />);
+
+    expect(screen.getByTestId('browse-item-9-photo').props.source).toEqual({ uri: 'https://api.test/storage/9.jpg' });
+    expect(screen.getByTestId('browse-item-7-photo-empty')).toBeTruthy();
+    // La photo est le premier élément de la carte, avant le titre.
+    expect(screen.getByTestId('browse-item-9').children[0]).toBe(screen.getByTestId('browse-item-9-photo'));
   });
 
   it('charge la suite en approchant du bas', async () => {

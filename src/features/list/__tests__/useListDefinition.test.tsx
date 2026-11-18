@@ -18,7 +18,7 @@ function page(ids: string[], next: string | null, title = 'Mes adresses'): ListD
     create: null,
     search: null,
     next_cursor: next,
-    items: ids.map((id) => ({ id, title: id, subtitle: null, edit: null, delete: null })),
+    items: ids.map((id) => ({ id, title: id, subtitle: null, image: null, edit: null, delete: null })),
   };
 }
 

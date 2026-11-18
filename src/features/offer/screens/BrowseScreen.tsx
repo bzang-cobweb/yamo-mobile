@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
+import { ItemPhoto } from '@/shared/components/ItemPhoto';
 import { List } from '@/shared/components/List';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -18,7 +19,7 @@ const SEARCH_DELAY = 300;
 /**
  * Les offres publiées du pays courant (décision 2026-11-18-accueil-offres-du-pays),
  * pour un visiteur comme pour un membre : liste générique, défilement infini,
- * recherche dans le titre. Titre, puis prix et ville. Toucher une offre ne fait
+ * recherche dans le titre. La photo, puis le titre, puis prix et ville. Toucher une offre ne fait
  * rien encore (sa fiche viendra).
  */
 export function BrowseScreen() {
@@ -73,6 +74,8 @@ export function BrowseScreen() {
       keyExtractor={(item) => item.id}
       renderItem={(item) => (
         <View testID={`browse-item-${item.id}`} style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+          {/* La photo au-dessus du titre et du sous-titre ; sans photo, un emplacement neutre. */}
+          <ItemPhoto uri={item.image} placeholder testID={`browse-item-${item.id}-photo`} />
           <ThemedText type="smallBold">{item.title}</ThemedText>
           {item.subtitle && (
             <ThemedText type="small" themeColor="textSecondary">
@@ -97,5 +100,5 @@ export function BrowseScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four },
-  card: { borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, gap: Spacing.half },
+  card: { borderRadius: 8, padding: Spacing.two, gap: Spacing.one },
 });
