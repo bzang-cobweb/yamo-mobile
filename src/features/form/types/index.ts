@@ -50,6 +50,8 @@ export type FormFieldDefinition = {
   depends_on?: string | null;
   /** Nombre maximal de caractères (textarea : 1 000 par défaut), ou `null`. */
   max_length?: number | null;
+  /** Unité affichée après la valeur (« m² »), ou `null` (décision 2026-11-18-fiche-offre). */
+  suffix?: string | null;
   default: unknown;
   options: FieldOption[];
 };
