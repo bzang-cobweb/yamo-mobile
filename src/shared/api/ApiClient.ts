@@ -11,13 +11,14 @@ type RequestOptions = {
 };
 
 /**
- * Client HTTP de l'API Laravel : URL de base, en-têtes, jeton, langue, erreurs.
+ * Client HTTP de l'API Laravel : URL de base, en-têtes, jeton, langue, pays, erreurs.
  * Les services des features le reçoivent et n'écrivent qu'une méthode par
  * appel API. Le jeton et la langue sont fixés par le fournisseur d'authentification.
  */
 export class ApiClient {
   private token: string | null = null;
   private locale: string | null = null;
+  private country: string | null = null;
 
   constructor(private readonly baseUrl: string) {}
 
@@ -27,6 +28,11 @@ export class ApiClient {
 
   setLocale(locale: string): void {
     this.locale = locale;
+  }
+
+  /** Pays courant, l'espace de l'app (`X-Country`, décision 2026-11-18-espace-pays). */
+  setCountry(code: string | null): void {
+    this.country = code;
   }
 
   get<T>(path: string): Promise<T> {
@@ -67,6 +73,7 @@ export class ApiClient {
         headers: {
           Accept: 'application/json',
           ...(this.locale && { 'Accept-Language': this.locale }),
+          ...(this.country && { 'X-Country': this.country }),
           ...(body !== undefined && !isForm && { 'Content-Type': 'application/json' }),
           ...(this.token && { Authorization: `Bearer ${this.token}` }),
         },

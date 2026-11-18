@@ -34,6 +34,19 @@ describe('ApiClient', () => {
     });
   });
 
+  it('envoie le pays courant (X-Country), et plus rien une fois retiré', async () => {
+    fetchMock.mockReturnValue(respond(200, { data: 1 }));
+    const client = new ApiClient('http://api.test');
+    client.setCountry('CM');
+
+    await client.get('/v1/lists/offer.mine');
+    expect(fetchMock.mock.calls[0][1].headers).toEqual({ Accept: 'application/json', 'X-Country': 'CM' });
+
+    client.setCountry(null);
+    await client.get('/v1/lists/offer.mine');
+    expect(fetchMock.mock.calls[1][1].headers).toEqual({ Accept: 'application/json' });
+  });
+
   it('envoie un FormData tel quel, sans forcer le Content-Type (multipart)', async () => {
     fetchMock.mockReturnValue(respond(200, { data: 1 }));
     const client = new ApiClient('http://api.test');

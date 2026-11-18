@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CountryFlag } from '@/features/country/components/CountryFlag';
 import { BrandLogo } from '@/shared/brand/BrandLogo';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -29,7 +30,10 @@ export function WelcomeScreen() {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.presentation}>
-            <LocaleSwitcher style={styles.localeSwitcher} />
+            <View style={styles.topRow}>
+              <LocaleSwitcher />
+              <CountryFlag />
+            </View>
             <BrandLogo variant="vertical" height={LOGO_HEIGHT} testID="welcome-logo" />
             {isPending && <ActivityIndicator testID="welcome-loading" />}
             {application?.description && (
@@ -62,8 +66,8 @@ export function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  // Un peu d'air entre le choix de la langue et le logo.
-  localeSwitcher: { marginBottom: Spacing.four },
+  // Langue et drapeau du pays courant, un peu d'air avant le logo.
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, marginBottom: Spacing.four },
   content: {
     flexGrow: 1,
     width: '100%',

@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useCountry } from '@/features/country/context/CountryContext';
+import { CountryProvider } from '@/features/country/providers/CountryProvider';
+import { EntryScreen } from '@/features/country/screens/EntryScreen';
 import { AuthProvider } from '@/features/auth/providers/AuthProvider';
 import { ConnectivityGate } from '@/shared/components/ConnectivityGate';
 import { bindQueriesToNetwork, useIsOnline } from '@/shared/network/connectivity';
@@ -25,23 +28,29 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <RootNavigator />
-        </ThemeProvider>
+        <CountryProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <RootNavigator />
+          </ThemeProvider>
+        </CountryProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
 }
 
 /**
- * Écrans accessibles selon l'état de connexion. L'écran de démarrage (sans texte)
+ * Avant tout, l'écran d'entrée tant qu'aucun pays n'est choisi (décisions
+ * 2026-11-18-espace-pays et 2026-11-18-ecran-entree-toujours). Puis les écrans
+ * accessibles selon l'état de connexion. L'écran de démarrage (sans texte)
  * reste affiché pendant le chargement. L'écran courant ne s'affiche que si l'app
  * peut fonctionner : sans internet, à tout moment, ou si le démarrage a échoué,
  * l'écran hors ligne le recouvre (décision 2026-11-16-ecran-hors-ligne-permanent).
  */
 function RootNavigator() {
-  const { isLoading, offline: failedToStart, isRetrying, retry, user } = useAuth();
-  const offline = !useIsOnline() || failedToStart;
+  const { isLoading: authLoading, offline: failedToStart, isRetrying, retry, user } = useAuth();
+  const country = useCountry();
+  const isLoading = authLoading || !country.ready;
+  const offline = !useIsOnline() || failedToStart || country.failed;
 
   useEffect(() => {
     if (!isLoading || offline) {
@@ -49,9 +58,16 @@ function RootNavigator() {
     }
   }, [isLoading, offline]);
 
+  const retryAll = () => {
+    retry();
+    country.retry();
+  };
+
   return (
-    <ConnectivityGate offline={offline} onRetry={retry} retrying={isRetrying}>
-      {!isLoading && (
+    <ConnectivityGate offline={offline} onRetry={retryAll} retrying={isRetrying}>
+      {/* Pas encore entré dans un pays : l'écran d'entrée (décision 2026-11-18-ecran-entree-toujours). */}
+      {!isLoading && country.country === null && <EntryScreen showLanguage={user === null} />}
+      {!isLoading && country.country !== null && (
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={user !== null}>
             <Stack.Screen name="(tabs)" />

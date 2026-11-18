@@ -88,6 +88,16 @@ formulaire n'est pas gardée en mémoire une fois le formulaire fermé : rouvert
 les valeurs à jour du compte. Ajouter
 un type : un cas dans le `switch` de `FormField` et son composant dans `fields/`.
 
+### Pays
+
+Le pays est l'« espace » de l'app (`src/features/country`). L'écran d'entrée
+(`EntryScreen`) s'affiche toujours au premier lancement : la langue (invité),
+puis le pays parmi ceux servis par `GET /api/v1/countries` (un seul : montré
+choisi). Le choix est gardé sur l'appareil ; au lancement suivant on entre
+directement, sauf si ce pays a été fermé. Chaque requête porte `X-Country`. Le
+drapeau (`CountryFlag`, barre du haut et accueil) rouvre l'écran quand plusieurs
+pays sont ouverts ; changer de pays recharge les données sans déconnecter.
+
 ### Navigation
 
 Connecté : menu fixe en bas, deux icônes — Accueil (écran par défaut, `src/app/(tabs)/index.tsx`)
