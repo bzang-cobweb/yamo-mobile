@@ -165,16 +165,17 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
     expect(screen.getByTestId('inside').props.children).toBe('SN');
   });
 
-  it('changer de langue dans son sélecteur garde le pays touché', async () => {
+  it('changer de langue avec le sélecteur de l’accueil garde le pays touché', async () => {
     mockCountries = [CAMEROON, SENEGAL];
     await renderApp();
 
     await fireEvent.press(screen.getByTestId('entry-country'));
     await fireEvent.press(screen.getByTestId('entry-country-option-SN'));
-    await waitFor(() => expect(screen.getByTestId('entry-locale').props.accessibilityState).toEqual(expect.objectContaining({ disabled: false })));
-    await fireEvent.press(screen.getByTestId('entry-locale'));
+    // Le sélecteur de langue de l'accueil, avec son icône.
+    await waitFor(() => expect(screen.getByTestId('locale-switcher')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('locale-switcher'));
     await act(async () => {
-      fireEvent.press(screen.getByTestId('entry-locale-option-en'));
+      fireEvent.press(screen.getByTestId('locale-option-en'));
     });
 
     expect(mockChooseLocale).toHaveBeenCalledWith('en');

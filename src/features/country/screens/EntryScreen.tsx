@@ -1,12 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LocaleSwitcher } from '@/features/welcome/components/LocaleSwitcher';
 import { useApplication } from '@/features/welcome/hooks/useApplication';
 import { BrandLogo } from '@/shared/brand/BrandLogo';
 import { useI18n } from '@/shared/i18n/I18nContext';
-import { localeService } from '@/shared/services/LocaleService';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -16,22 +15,22 @@ import { EntrySelect } from '../components/EntrySelect';
 import { useCountry } from '../context/CountryContext';
 import type { Country } from '../types';
 
-const LOGO_HEIGHT = 140;
+// Même logo et même place que l'accueil.
+const LOGO_HEIGHT = 160;
 
 /**
  * Écran d'entrée (décisions 2026-11-18-espace-pays, 2026-11-18-ecran-entree-toujours
- * et 2026-11-18-ecran-entree-selecteurs) : le logo, la description de
- * l'application, puis deux sélecteurs, la langue (invité seulement : connecté,
- * c'est celle du compte) et le pays, avec recherche. Un pays seul est montré
- * choisi. « Entrer » garde la langue et le pays : l'écran ne revient plus, sauf
- * par le drapeau.
+ * et 2026-11-18-ecran-entree-selecteurs) : le sélecteur de langue de l'accueil,
+ * à la même place (invité seulement : connecté, c'est celle du compte), le logo,
+ * la description de l'application, puis le sélecteur de pays, avec recherche.
+ * Un pays seul est montré choisi. « Entrer » garde la langue et le pays :
+ * l'écran ne revient plus, sauf par le drapeau.
  */
 export function EntryScreen({ showLanguage }: { showLanguage: boolean }) {
   const { t, locale, chooseLocale } = useI18n();
   const theme = useTheme();
   const { countries, chosen, enter } = useCountry();
   const { data: application, isPending } = useApplication();
-  const { data: locales } = useQuery({ queryKey: ['locales'], queryFn: () => localeService.list(), staleTime: Infinity, enabled: showLanguage });
   const [selected, setSelected] = useState<string | null>(() => chosen?.code ?? (countries.length === 1 ? countries[0].code : null));
   const choice = countries.length === 1 ? countries[0].code : selected;
 
@@ -52,6 +51,7 @@ export function EntryScreen({ showLanguage }: { showLanguage: boolean }) {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="entry-screen">
           <View style={styles.presentation}>
+            {showLanguage && <LocaleSwitcher style={styles.localeSwitcher} />}
             <BrandLogo variant="vertical" height={LOGO_HEIGHT} testID="entry-logo" />
             {isPending && <ActivityIndicator testID="entry-loading" />}
             {application?.description && (
@@ -62,16 +62,6 @@ export function EntryScreen({ showLanguage }: { showLanguage: boolean }) {
           </View>
 
           <View style={styles.fields}>
-            {showLanguage && (
-              <EntrySelect
-                testID="entry-locale"
-                label={t('entry.language')}
-                placeholder={t('entry.language')}
-                options={(locales?.data ?? []).map(({ code, label }) => ({ value: code, label }))}
-                selected={locale}
-                onSelect={chooseLocale}
-              />
-            )}
             <EntrySelect
               testID="entry-country"
               label={t('entry.country')}
@@ -120,6 +110,8 @@ const styles = StyleSheet.create({
   // Logo et description au centre de l'espace libre ; les sélecteurs en bas.
   presentation: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three },
   centered: { textAlign: 'center' },
+  // Comme sur l'accueil : un peu d'air entre la langue et le logo.
+  localeSwitcher: { marginBottom: Spacing.four },
   fields: { gap: Spacing.three },
   button: { alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.three, marginTop: Spacing.two },
   disabled: { opacity: 0.4 },
