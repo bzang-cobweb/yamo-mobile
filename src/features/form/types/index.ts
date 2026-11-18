@@ -52,6 +52,11 @@ export type FormFieldDefinition = {
   max_length?: number | null;
   /** Unité affichée après la valeur (« m² »), ou `null` (décision 2026-11-18-fiche-offre). */
   suffix?: string | null;
+  /**
+   * Unité qui suit la valeur d'un autre champ (`suffixes` : valeur => unité, « true »
+   * ou « false » pour une case) ; `suffix` à défaut (décision 2026-11-18-unite-prix-chambres).
+   */
+  suffix_when?: { field: string; suffixes: Record<string, string> } | null;
   default: unknown;
   options: FieldOption[];
 };

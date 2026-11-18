@@ -76,15 +76,25 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
     setErrors(({ [name]: _cleared, ...rest }) => rest);
   }
 
-  /** Le champ tel qu'affiché : options filtrées par le parent, lecture seule. */
+  /**
+   * Le champ tel qu'affiché : options filtrées par le parent ; unité qui suit la
+   * valeur d'un autre champ (« XAF / jour » si « Meublé » est coché).
+   */
   function shown(field: FormFieldDefinition): FormFieldDefinition {
+    let current = field;
+
+    if (field.suffix_when) {
+      const other = values[field.suffix_when.field];
+      current = { ...current, suffix: field.suffix_when.suffixes[String(other ?? '')] ?? field.suffix };
+    }
+
     if (!field.depends_on) {
-      return field;
+      return current;
     }
 
     const parent = values[field.depends_on];
 
-    return { ...field, options: field.options.filter((option) => option.parent === parent) };
+    return { ...current, options: field.options.filter((option) => option.parent === parent) };
   }
 
   function isDisabled(field: FormFieldDefinition): boolean {

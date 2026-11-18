@@ -84,4 +84,28 @@ describe('Champs conditionnels, sélecteur à boutons et option verrouillée', (
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ country_id: '1' }));
   });
+
+  it('l’unité d’un prix suit la case « Meublé » pendant la saisie', async () => {
+    await renderForm({
+      name: 'offer.offer',
+      title: null,
+      subtitle: null,
+      submit: { label: 'Enregistrer' },
+      fields: [
+        field({
+          name: 'price',
+          type: 'number',
+          suffix: 'XAF / mois',
+          suffix_when: { field: 'furnished', suffixes: { true: 'XAF / jour', false: 'XAF / mois' } },
+        }),
+        field({ name: 'furnished', type: 'switch', default: false }),
+      ],
+    });
+
+    expect(screen.getByTestId('field-price-suffix').props.children).toBe('XAF / mois');
+
+    await fireEvent(screen.getByTestId('field-furnished'), 'valueChange', true);
+
+    expect(screen.getByTestId('field-price-suffix').props.children).toBe('XAF / jour');
+  });
 });
