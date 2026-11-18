@@ -69,6 +69,8 @@ function RootNavigator() {
       {!isLoading && country.country === null && <EntryScreen showLanguage={user === null} />}
       {!isLoading && country.country !== null && (
         <Stack screenOptions={{ headerShown: false }}>
+          {/* Fiche d'une offre : pour un visiteur comme pour un membre (décision 2026-11-18-fiche-offre). */}
+          <Stack.Screen name="offers/[id]" />
           <Stack.Protected guard={user !== null}>
             <Stack.Screen name="(tabs)" />
           </Stack.Protected>

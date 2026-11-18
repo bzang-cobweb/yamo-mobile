@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
@@ -19,8 +20,8 @@ const SEARCH_DELAY = 300;
 /**
  * Les offres publiées du pays courant (décision 2026-11-18-accueil-offres-du-pays),
  * pour un visiteur comme pour un membre : liste générique, défilement infini,
- * recherche dans le titre. La photo, puis le titre, puis prix et ville. Toucher une offre ne fait
- * rien encore (sa fiche viendra).
+ * recherche dans le titre. La photo, puis le titre, puis prix et ville. Toucher
+ * une offre ouvre sa fiche.
  */
 export function BrowseScreen() {
   const { t } = useI18n();
@@ -73,7 +74,12 @@ export function BrowseScreen() {
       items={definition.items}
       keyExtractor={(item) => item.id}
       renderItem={(item) => (
-        <View testID={`browse-item-${item.id}`} style={[styles.card, { borderColor: theme.backgroundSelected }]}>
+        <Pressable
+          testID={`browse-item-${item.id}`}
+          accessibilityRole="link"
+          // La fiche de l'offre (décision 2026-11-18-fiche-offre).
+          onPress={() => router.push({ pathname: '/offers/[id]', params: { id: item.id } })}
+          style={({ pressed }) => [styles.card, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
           {/* La photo au-dessus du titre et du sous-titre ; sans photo, un emplacement neutre. */}
           <ItemPhoto uri={item.image} placeholder testID={`browse-item-${item.id}-photo`} />
           <ThemedText type="smallBold">{item.title}</ThemedText>
@@ -82,7 +88,7 @@ export function BrowseScreen() {
               {item.subtitle}
             </ThemedText>
           )}
-        </View>
+        </Pressable>
       )}
       hasMore={query.hasNextPage}
       onLoadMore={() => query.fetchNextPage()}
@@ -100,6 +106,7 @@ export function BrowseScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four },
+  pressed: { opacity: 0.7 },
   // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
   card: { borderRadius: 8, borderWidth: 1, padding: Spacing.two, gap: Spacing.one },
 });

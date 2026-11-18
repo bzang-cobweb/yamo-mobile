@@ -91,6 +91,14 @@ describe('Accueil : offres du pays', () => {
     expect(screen.getByTestId('browse-item-9').children[0]).toBe(screen.getByTestId('browse-item-9-photo'));
   });
 
+  it('toucher une offre ouvre sa fiche', async () => {
+    await show(<BrowseScreen />);
+
+    await fireEvent.press(screen.getByTestId('browse-item-7'));
+
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '7' } });
+  });
+
   it('charge la suite en approchant du bas', async () => {
     await show(<BrowseScreen />);
 

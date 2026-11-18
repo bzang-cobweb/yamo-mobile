@@ -106,7 +106,9 @@ compte pour un membre) et le drapeau (`CountrySwitcher`), qui ouvre la liste des
 pays avec recherche ; changer de pays recharge les données sans déconnecter.
 Dessous, les offres publiées du pays (`BrowseScreen`, liste `offer.browse`,
 ouverte sans connexion). Un visiteur (`GuestHomeScreen`) a en bas « Se
-connecter » et « Créer un compte ».
+connecter » et « Créer un compte ». Toucher une offre ouvre sa fiche
+(`/offers/[id]`, `OfferDetailScreen`), décrite par `GET /api/v1/offers/{id}` :
+photos en carrousel, titre, prix, ville, caractéristiques, description.
 
 ### Navigation
 
