@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
@@ -20,17 +20,24 @@ import { backToProfile, backWithNotice } from '../utils/profile-notice';
 /**
  * Mise en page d'un écran du profil : en-tête fixé en haut (flèche de retour, titre de
  * l'écran au centre), contenu qui défile dessous, au-dessus du clavier.
+ *
+ * `scrolls={false}` : le contenu défile lui-même (une `List`), qui ne peut pas
+ * être placée dans un `ScrollView` ; il reprend alors `profileContentStyle`.
  */
-export function ProfileScreenShell({ title, children }: PropsWithChildren<{ title: string }>) {
+export function ProfileScreenShell({ title, scrolls = true, children }: PropsWithChildren<{ title: string; scrolls?: boolean }>) {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <BackStackProvider>
           <BackHeader title={title} />
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
-            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-              {children}
-            </ScrollView>
+            {scrolls ? (
+              <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+                {children}
+              </ScrollView>
+            ) : (
+              <View style={styles.safeArea}>{children}</View>
+            )}
           </KeyboardAvoidingView>
         </BackStackProvider>
       </SafeAreaView>
@@ -112,9 +119,17 @@ export function ProfileFormScreen({ form, record }: { form: string; record?: str
   );
 }
 
+/** Marges et largeur du contenu d'un écran du profil. */
+export const profileContentStyle = {
+  width: '100%',
+  maxWidth: MaxContentWidth / 2,
+  alignSelf: 'center',
+  padding: Spacing.four,
+} as const;
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', gap: Spacing.three, padding: Spacing.four },
+  content: { ...profileContentStyle, gap: Spacing.three },
   error: { color: ERROR_COLOR, textAlign: 'center' },
 });

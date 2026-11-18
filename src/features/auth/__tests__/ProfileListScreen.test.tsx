@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { Alert, StyleSheet, type AlertButton } from 'react-native';
 
@@ -32,9 +32,20 @@ const mockRequest = jest.fn();
 jest.mock('@/shared/api/ApiClient', () => ({ apiClient: { request: (...args: unknown[]) => mockRequest(...args) } }));
 
 let mockList: ListDefinition | undefined;
+let mockPaging = { hasNextPage: false, isFetchingNextPage: false };
 const mockRefetch = jest.fn().mockResolvedValue(undefined);
+const mockReload = jest.fn().mockResolvedValue(undefined);
+const mockFetchNextPage = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/features/list/hooks/useListDefinition', () => ({
-  useListDefinition: () => ({ data: mockList, isPending: mockList === undefined, isError: false, refetch: mockRefetch }),
+  useListDefinition: () => ({
+    data: mockList,
+    isPending: mockList === undefined,
+    isError: false,
+    refetch: mockRefetch,
+    reload: mockReload,
+    fetchNextPage: mockFetchNextPage,
+    ...mockPaging,
+  }),
 }));
 
 /** Une liste que l'app ne connaît pas : tout vient de sa définition. */
@@ -62,6 +73,7 @@ function list(items: ListItem[], overrides: Partial<ListDefinition> = {}): ListD
     title: 'Mes cartes',
     empty: 'Aucune carte.',
     create: { label: 'Ajouter une carte', form: 'payments.card' },
+    next_cursor: null,
     items,
     ...overrides,
   };
@@ -90,6 +102,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     jest.clearAllMocks();
     takeProfileNotice();
     mockList = list([item('7'), item('8', { subtitle: null })]);
+    mockPaging = { hasNextPage: false, isFetchingNextPage: false };
   });
 
   it('affiche le titre dans l’en-tête, les items et le bouton de création', async () => {
@@ -114,8 +127,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     await renderScreen();
 
     // Ordre du rendu : le bouton vient avant le premier item.
-    const tree = JSON.stringify(screen.toJSON());
-    expect(tree.indexOf('"profile-list-create"')).toBeLessThan(tree.indexOf('"profile-list-item-7"'));
+    const order = screen.getAllByTestId(/^profile-list-(create|item-7)$/).map((node) => node.props.testID);
+    expect(order).toEqual(['profile-list-create', 'profile-list-item-7']);
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-create').props.style)).toEqual(expect.objectContaining({ alignSelf: 'flex-end' }));
   });
 
@@ -135,16 +148,16 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '7' } });
   });
 
-  it('retirer un item : confirmation, envoi décrit, message, puis liste rechargée', async () => {
+  it('retirer un item : confirmation, envoi décrit, message, puis liste rechargée depuis le début', async () => {
     const alert = confirmAlert();
     mockRequest.mockResolvedValue(undefined);
     await renderScreen();
-    mockRefetch.mockClear();
+    mockReload.mockClear();
 
     await fireEvent.press(screen.getByTestId('profile-list-delete-7'));
 
     expect(alert).toHaveBeenCalledWith('Retirer cette carte ?', undefined, expect.any(Array));
-    await waitFor(() => expect(mockRefetch).toHaveBeenCalled());
+    await waitFor(() => expect(mockReload).toHaveBeenCalled());
     expect(mockRequest).toHaveBeenCalledWith('/v1/payments/cards/7', { method: 'DELETE', body: {} });
     expect(screen.getByTestId('profile-list-notice').props.children).toBe('Carte retirée.');
   });
@@ -192,6 +205,51 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).not.toHaveBeenCalled();
     expect(screen.queryByTestId('profile-list-create')).toBeNull();
     expect(screen.queryByTestId('profile-list-delete-7')).toBeNull();
+  });
+
+  it('à l’affichage, la liste repart de la première page', async () => {
+    await renderScreen();
+
+    expect(mockReload).toHaveBeenCalled();
+  });
+
+  it('en approchant du bas, charge la page suivante tant qu’il en reste', async () => {
+    mockPaging = { hasNextPage: true, isFetchingNextPage: false };
+    await renderScreen();
+
+    await act(async () => {
+      fireEvent(screen.getByTestId('profile-list'), 'onEndReached', { distanceFromEnd: 10 });
+    });
+
+    expect(mockFetchNextPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('dernière page atteinte : ne demande plus rien', async () => {
+    await renderScreen();
+
+    await act(async () => {
+      fireEvent(screen.getByTestId('profile-list'), 'onEndReached', { distanceFromEnd: 10 });
+    });
+
+    expect(mockFetchNextPage).not.toHaveBeenCalled();
+  });
+
+  it('suite en cours de chargement : indicateur en pied de liste', async () => {
+    mockPaging = { hasNextPage: true, isFetchingNextPage: true };
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-loading-more')).toBeTruthy();
+  });
+
+  it('tirer vers le bas recharge depuis le début', async () => {
+    await renderScreen();
+    mockReload.mockClear();
+
+    await act(async () => {
+      fireEvent(screen.getByTestId('profile-list'), 'onRefresh');
+    });
+
+    expect(mockReload).toHaveBeenCalledTimes(1);
   });
 
   it('au retour d’un formulaire enregistré, affiche son message une seule fois', async () => {

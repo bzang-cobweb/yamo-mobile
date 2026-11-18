@@ -6,9 +6,14 @@ import type { ListDefinition, ListResponse } from '../types';
 export class ListService {
   constructor(private readonly client: ApiClient = apiClient) {}
 
-  /** `GET /api/v1/lists/{name}` — textes dans la langue du compte. */
-  async get(name: string): Promise<ListDefinition> {
-    return (await this.client.get<ListResponse>(`/v1/lists/${encodeURIComponent(name)}`)).data;
+  /**
+   * `GET /api/v1/lists/{name}` — une page de la liste, textes dans la langue du
+   * compte : la première sans curseur, sinon celle qui suit `cursor`.
+   */
+  async get(name: string, cursor?: string | null): Promise<ListDefinition> {
+    const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+
+    return (await this.client.get<ListResponse>(`/v1/lists/${encodeURIComponent(name)}${query}`)).data;
   }
 }
 

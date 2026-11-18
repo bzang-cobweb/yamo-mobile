@@ -99,7 +99,10 @@ définition : méthode et point d'API (`/v1/…` seulement), étape du code si l
 un, compte mis à jour, puis retour au profil avec le message de l'API, retour à la liste, ou
 déconnexion. Un lien `list` ouvre `/profile/lists/[list]` (`ProfileListScreen`, liste servie par
 `GET /api/v1/lists/{list}`, comme « Mes adresses ») : items, bouton de création, formulaire
-d'un item (`/profile/[form]?record=…`) et retrait après confirmation. Ajouter un lien, un
+d'un item (`/profile/[form]?record=…`) et retrait après confirmation. Les items arrivent par
+pages : l'API sert `next_cursor`, renvoyé en `?cursor=` pour la suite, chargée en approchant
+du bas. L'affichage passe par `List` (`src/shared/components/List.tsx`), composant générique à
+défilement infini que toute feature peut utiliser avec ses propres données. Ajouter un lien, un
 formulaire ou une liste au menu ne demande donc aucune modification de l'app. Après l'ajout d'une route, relancer `npx expo start` pour régénérer les routes
 typées avant `npm run typecheck`.
 

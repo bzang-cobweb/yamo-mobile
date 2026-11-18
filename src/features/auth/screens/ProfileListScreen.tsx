@@ -7,6 +7,7 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
+import { List } from '@/shared/components/List';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -14,7 +15,7 @@ import { Spacing } from '@/shared/theme/theme';
 import { useAuth } from '../hooks/useAuth';
 import { profileFormService, profileSubmission } from '../services/ProfileFormService';
 import { takeProfileNotice } from '../utils/profile-notice';
-import { ProfileScreenShell } from './ProfileFormScreen';
+import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
 
 /**
  * Écran de toute liste du profil (`/profile/lists/[list]`), sans la connaître
@@ -29,26 +30,40 @@ import { ProfileScreenShell } from './ProfileFormScreen';
  *   par l'API, puis affiche son message. Un retrait que l'app ne sait pas
  *   exécuter (méthode, point d'API ou suite inconnus) n'est pas proposé.
  *
- * La liste se recharge à chaque retour sur l'écran, et affiche alors la
- * confirmation du formulaire enregistré.
+ * Les items arrivent par pages (décision 2026-11-18-contrat-liste-infinie-role-admin) :
+ * la suite se charge en approchant du bas, avec le composant générique `List`.
+ * La liste repart de la première page à chaque retour sur l'écran, après un
+ * retrait, et quand on la tire vers le bas ; au retour d'un formulaire
+ * enregistré, elle en affiche la confirmation.
  */
 export function ProfileListScreen({ list }: { list: string }) {
   const { t } = useAuth();
   const theme = useTheme();
   const query = useListDefinition(list);
-  const { refetch } = query;
+  const { reload, refetch } = query;
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      void refetch();
+      void reload();
       setNotice(takeProfileNotice());
       setError(null);
 
       return () => setNotice(null);
-    }, [refetch]),
+    }, [reload]),
   );
+
+  async function refresh() {
+    setRefreshing(true);
+
+    try {
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   async function remove(item: ListItem) {
     const submission = item.delete ? profileSubmission(item.delete) : null;
@@ -67,7 +82,7 @@ export function ProfileListScreen({ list }: { list: string }) {
       setError(t('error.unknown'));
     }
 
-    await refetch();
+    await reload();
   }
 
   function confirmRemove(item: ListItem) {
@@ -83,97 +98,113 @@ export function ProfileListScreen({ list }: { list: string }) {
 
   const definition = query.data;
 
-  return (
-    <ProfileScreenShell title={definition?.title ?? ''}>
-      {query.isPending ? (
-        <View style={styles.center} accessibilityLabel={t('list.loading')}>
-          <ActivityIndicator />
-        </View>
-      ) : query.isError || !definition ? (
-        <View style={styles.center}>
-          <ThemedText style={styles.error} accessibilityRole="alert">
-            {query.error instanceof NetworkError ? t('offline.message') : t('error.unknown')}
-          </ThemedText>
-          <Pressable accessibilityRole="button" testID="profile-list-retry" onPress={() => refetch()}>
-            <ThemedText type="linkPrimary">{query.error instanceof NetworkError ? t('offline.retry') : t('form.retry')}</ThemedText>
-          </Pressable>
-        </View>
-      ) : (
-        <>
-          {/* Bouton de création au-dessus de la liste, aligné à droite (décision 2026-11-18-adresse-app-simplifiee). */}
-          {definition.create && (
-            <Pressable
-              testID="profile-list-create"
-              accessibilityRole="button"
-              onPress={() =>
-                definition.create && router.push({ pathname: '/profile/[form]', params: { form: definition.create.form } })
-              }
-              style={({ pressed }) => [styles.create, pressed && styles.pressed]}>
-              <ThemedText type="linkPrimary">{definition.create.label}</ThemedText>
-            </Pressable>
-          )}
-          {notice && (
-            <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="profile-list-notice">
-              {notice}
-            </ThemedText>
-          )}
-          {error && (
-            <ThemedText type="small" style={styles.error} accessibilityRole="alert" testID="profile-list-error">
-              {error}
-            </ThemedText>
-          )}
-          {definition.items.length === 0 && definition.empty && (
-            <ThemedText themeColor="textSecondary" style={styles.empty} testID="profile-list-empty">
-              {definition.empty}
-            </ThemedText>
-          )}
-          <View style={styles.items}>
-            {definition.items.map((item) => {
-              const edit = item.edit;
-              const removable = item.delete !== null && profileSubmission(item.delete) !== null;
+  function renderItem(item: ListItem) {
+    const edit = item.edit;
+    const removable = item.delete !== null && profileSubmission(item.delete) !== null;
 
-              return (
-                <View key={item.id} style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
-                  <Pressable
-                    testID={`profile-list-item-${item.id}`}
-                    accessibilityRole={edit ? 'link' : undefined}
-                    disabled={!edit}
-                    onPress={() =>
-                      edit && router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: edit.record } })
-                    }
-                    style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
-                    <ThemedText>{item.title}</ThemedText>
-                    {item.subtitle && (
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {item.subtitle}
-                      </ThemedText>
-                    )}
-                  </Pressable>
-                  {removable && item.delete && (
-                    <Pressable
-                      testID={`profile-list-delete-${item.id}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${item.delete.label} ${item.title}`}
-                      onPress={() => confirmRemove(item)}
-                      style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
-                      <ThemedText type="small" style={styles.error}>
-                        {item.delete.label}
-                      </ThemedText>
-                    </Pressable>
-                  )}
-                  {edit && (
-                    <SymbolView
-                      name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
-                      size={16}
-                      tintColor={theme.textSecondary}
-                    />
-                  )}
-                </View>
-              );
-            })}
+    return (
+      <View style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
+        <Pressable
+          testID={`profile-list-item-${item.id}`}
+          accessibilityRole={edit ? 'link' : undefined}
+          disabled={!edit}
+          onPress={() => edit && router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: edit.record } })}
+          style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
+          <ThemedText>{item.title}</ThemedText>
+          {item.subtitle && (
+            <ThemedText type="small" themeColor="textSecondary">
+              {item.subtitle}
+            </ThemedText>
+          )}
+        </Pressable>
+        {removable && item.delete && (
+          <Pressable
+            testID={`profile-list-delete-${item.id}`}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.delete.label} ${item.title}`}
+            onPress={() => confirmRemove(item)}
+            style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+            <ThemedText type="small" style={styles.error}>
+              {item.delete.label}
+            </ThemedText>
+          </Pressable>
+        )}
+        {edit && (
+          <SymbolView
+            name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
+            size={16}
+            tintColor={theme.textSecondary}
+          />
+        )}
+      </View>
+    );
+  }
+
+  if (query.isPending || query.isError || !definition) {
+    return (
+      <ProfileScreenShell title={definition?.title ?? ''}>
+        {query.isPending ? (
+          <View style={styles.center} accessibilityLabel={t('list.loading')}>
+            <ActivityIndicator />
           </View>
-        </>
-      )}
+        ) : (
+          <View style={styles.center}>
+            <ThemedText style={styles.error} accessibilityRole="alert">
+              {query.error instanceof NetworkError ? t('offline.message') : t('error.unknown')}
+            </ThemedText>
+            <Pressable accessibilityRole="button" testID="profile-list-retry" onPress={() => refetch()}>
+              <ThemedText type="linkPrimary">{query.error instanceof NetworkError ? t('offline.retry') : t('form.retry')}</ThemedText>
+            </Pressable>
+          </View>
+        )}
+      </ProfileScreenShell>
+    );
+  }
+
+  return (
+    <ProfileScreenShell title={definition.title} scrolls={false}>
+      <List
+        testID="profile-list"
+        items={definition.items}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        hasMore={query.hasNextPage}
+        onLoadMore={() => query.fetchNextPage()}
+        loadingMore={query.isFetchingNextPage}
+        loadingMoreLabel={t('list.loading')}
+        refreshing={refreshing}
+        onRefresh={() => void refresh()}
+        empty={definition.empty}
+        contentContainerStyle={profileContentStyle}
+        header={
+          definition.create || notice || error ? (
+            <>
+              {/* Bouton de création au-dessus de la liste, aligné à droite (décision 2026-11-18-adresse-app-simplifiee). */}
+              {definition.create && (
+                <Pressable
+                  testID="profile-list-create"
+                  accessibilityRole="button"
+                  onPress={() =>
+                    definition.create && router.push({ pathname: '/profile/[form]', params: { form: definition.create.form } })
+                  }
+                  style={({ pressed }) => [styles.create, pressed && styles.pressed]}>
+                  <ThemedText type="linkPrimary">{definition.create.label}</ThemedText>
+                </Pressable>
+              )}
+              {notice && (
+                <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="profile-list-notice">
+                  {notice}
+                </ThemedText>
+              )}
+              {error && (
+                <ThemedText type="small" style={styles.error} accessibilityRole="alert" testID="profile-list-error">
+                  {error}
+                </ThemedText>
+              )}
+            </>
+          ) : null
+        }
+      />
     </ProfileScreenShell>
   );
 }
@@ -181,8 +212,6 @@ export function ProfileListScreen({ list }: { list: string }) {
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
   error: { color: ERROR_COLOR },
-  empty: { textAlign: 'center' },
-  items: { gap: Spacing.two },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
