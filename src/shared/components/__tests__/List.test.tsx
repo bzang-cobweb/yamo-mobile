@@ -91,4 +91,24 @@ describe('List (données locales, sans API)', () => {
 
     expect(onRefresh).toHaveBeenCalled();
   });
+
+  it('avec search : un champ au-dessus de la liste, qui rend la saisie', async () => {
+    const onChange = jest.fn();
+    await renderList({ search: { value: 'ab', onChange, placeholder: 'Chercher un fruit…' } });
+
+    const field = screen.getByTestId('fruits-search');
+    expect(field.props.value).toBe('ab');
+    expect(field.props.placeholder).toBe('Chercher un fruit…');
+    await fireEvent.changeText(field, 'abr');
+
+    expect(onChange).toHaveBeenCalledWith('abr');
+    // Le champ n'est pas dans la zone qui défile : il vient avant la liste, pas dans son en-tête.
+    expect(screen.getAllByTestId(/^fruits(-search)?$/).map((node) => node.props.testID)).toEqual(['fruits-search', 'fruits']);
+  });
+
+  it('sans search : pas de champ', async () => {
+    await renderList();
+
+    expect(screen.queryByTestId('fruits-search')).toBeNull();
+  });
 });

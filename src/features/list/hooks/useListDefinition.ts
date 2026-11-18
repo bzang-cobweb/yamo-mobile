@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -15,17 +15,22 @@ import type { ListDefinition } from '../types';
  * `reload()` repart de la première page : après un retrait ou un enregistrement,
  * une seule requête, sans repasser par l'état de chargement.
  *
+ * `search` restreint la liste côté serveur (décision 2026-11-18-recherche-dans-la-liste).
+ * Pendant qu'une nouvelle recherche se charge, les items précédents restent
+ * affichés : l'écran ne repasse pas par l'état de chargement.
+ *
  * Pas gardée en mémoire une fois l'écran fermé (`gcTime: 0`) : rouverte, elle
  * montre les items actuels.
  */
-export function useListDefinition(name: string) {
+export function useListDefinition(name: string, search = '') {
   const { locale } = useI18n();
   const queryClient = useQueryClient();
-  const queryKey = useMemo(() => ['list', name, locale], [name, locale]);
+  const term = search.trim();
+  const queryKey = useMemo(() => ['list', name, locale, term], [name, locale, term]);
 
   const query = useInfiniteQuery({
     queryKey,
-    queryFn: ({ pageParam }) => listService.get(name, pageParam),
+    queryFn: ({ pageParam }) => listService.get(name, pageParam, term),
     initialPageParam: null as string | null,
     getNextPageParam: (last: ListDefinition) => last.next_cursor ?? undefined,
     select: (data: InfiniteData<ListDefinition, string | null>): ListDefinition => ({
@@ -33,6 +38,7 @@ export function useListDefinition(name: string) {
       next_cursor: data.pages[data.pages.length - 1].next_cursor,
       items: data.pages.flatMap((page) => page.items),
     }),
+    placeholderData: keepPreviousData,
     gcTime: 0,
   });
 

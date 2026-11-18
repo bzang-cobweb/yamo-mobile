@@ -44,6 +44,7 @@ export const TEST_MESSAGES: Messages = {
   'form.retry': 'Réessayer',
   'list.loading': 'Chargement de la liste…',
   'list.cancel': 'Annuler',
+  'list.noResults': 'Aucun résultat.',
   'form.clearDate': 'Effacer',
   'form.search': 'Rechercher…',
   'profile.deleteAccount': 'Supprimer mon compte',

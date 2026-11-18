@@ -36,8 +36,9 @@ let mockPaging = { hasNextPage: false, isFetchingNextPage: false };
 const mockRefetch = jest.fn().mockResolvedValue(undefined);
 const mockReload = jest.fn().mockResolvedValue(undefined);
 const mockFetchNextPage = jest.fn().mockResolvedValue(undefined);
+const mockHookCalls: [string, string | undefined][] = [];
 jest.mock('@/features/list/hooks/useListDefinition', () => ({
-  useListDefinition: () => ({
+  useListDefinition: (name: string, search?: string) => (mockHookCalls.push([name, search]), {
     data: mockList,
     isPending: mockList === undefined,
     isError: false,
@@ -47,6 +48,11 @@ jest.mock('@/features/list/hooks/useListDefinition', () => ({
     ...mockPaging,
   }),
 }));
+
+/** Les recherches demandées à la liste, dans l'ordre, sans répétition. */
+function searches() {
+  return mockHookCalls.map(([, search]) => search).filter((search, index, all) => index === 0 || search !== all[index - 1]);
+}
 
 /** Une liste que l'app ne connaît pas : tout vient de sa définition. */
 function item(id: string, overrides: Partial<ListItem> = {}): ListItem {
@@ -73,6 +79,7 @@ function list(items: ListItem[], overrides: Partial<ListDefinition> = {}): ListD
     title: 'Mes cartes',
     empty: 'Aucune carte.',
     create: { label: 'Ajouter une carte', form: 'payments.card' },
+    search: null,
     next_cursor: null,
     items,
     ...overrides,
@@ -103,6 +110,11 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     takeProfileNotice();
     mockList = list([item('7'), item('8', { subtitle: null })]);
     mockPaging = { hasNextPage: false, isFetchingNextPage: false };
+    mockHookCalls.length = 0;
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('affiche le titre dans l’en-tête, les items et le bouton de création', async () => {
@@ -259,5 +271,54 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.back).toHaveBeenCalled();
     expect(screen.getByTestId('profile-list-notice').props.children).toBe('Carte enregistrée.');
     expect(takeProfileNotice()).toBeNull();
+  });
+
+  it('liste non cherchable : pas de champ de recherche', async () => {
+    await renderScreen();
+
+    expect(screen.queryByTestId('profile-list-search')).toBeNull();
+  });
+
+  it('liste cherchable : la recherche part une fois, après la pause de frappe', async () => {
+    jest.useFakeTimers();
+    mockList = list([item('7')], { search: 'Rechercher une carte…' });
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-search').props.placeholder).toBe('Rechercher une carte…');
+    await fireEvent.changeText(screen.getByTestId('profile-list-search'), 'vi');
+    await act(async () => jest.advanceTimersByTime(100));
+    await fireEvent.changeText(screen.getByTestId('profile-list-search'), 'visa ');
+    await act(async () => jest.advanceTimersByTime(299));
+    expect(searches()).toEqual(['']);
+
+    await act(async () => jest.advanceTimersByTime(1));
+    expect(searches()).toEqual(['', 'visa']);
+  });
+
+  it('recherche sans résultat : « Aucun résultat. », et le champ reste affiché', async () => {
+    jest.useFakeTimers();
+    mockList = list([], { search: 'Rechercher une carte…' });
+    await renderScreen();
+    expect(screen.getByTestId('profile-list-empty').props.children).toBe('Aucune carte.');
+
+    await fireEvent.changeText(screen.getByTestId('profile-list-search'), 'zzz');
+    await act(async () => jest.advanceTimersByTime(300));
+
+    expect(screen.getByTestId('profile-list-empty').props.children).toBe('Aucun résultat.');
+    expect(screen.getByTestId('profile-list-search').props.value).toBe('zzz');
+    expect(screen.getByTestId('profile-list-create')).toBeTruthy();
+  });
+
+  it('effacer la recherche redemande toute la liste', async () => {
+    jest.useFakeTimers();
+    mockList = list([item('7')], { search: 'Rechercher une carte…' });
+    await renderScreen();
+
+    await fireEvent.changeText(screen.getByTestId('profile-list-search'), 'visa');
+    await act(async () => jest.advanceTimersByTime(300));
+    await fireEvent.changeText(screen.getByTestId('profile-list-search'), '');
+    await act(async () => jest.advanceTimersByTime(300));
+
+    expect(searches()).toEqual(['', 'visa', '']);
   });
 });

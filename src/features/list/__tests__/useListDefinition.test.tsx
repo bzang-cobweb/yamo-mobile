@@ -16,6 +16,7 @@ function page(ids: string[], next: string | null, title = 'Mes adresses'): ListD
     title,
     empty: null,
     create: null,
+    search: null,
     next_cursor: next,
     items: ids.map((id) => ({ id, title: id, subtitle: null, edit: null, delete: null })),
   };
@@ -40,7 +41,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
       await result.current.fetchNextPage();
     });
 
-    expect(mockGet).toHaveBeenLastCalledWith('location.addresses', 'c2');
+    expect(mockGet).toHaveBeenLastCalledWith('location.addresses', 'c2', '');
     expect(result.current.data?.title).toBe('Mes adresses');
     await waitFor(() => expect(result.current.data?.items.map((item) => item.id)).toEqual(['1', '2', '3']));
     expect(result.current.hasNextPage).toBe(false);
@@ -62,8 +63,29 @@ describe('useListDefinition (pages suivies par curseur)', () => {
     });
 
     expect(mockGet).toHaveBeenCalledTimes(1);
-    expect(mockGet).toHaveBeenCalledWith('location.addresses', null);
+    expect(mockGet).toHaveBeenCalledWith('location.addresses', null, '');
     await waitFor(() => expect(result.current.data?.items.map((item) => item.id)).toEqual(['2']));
     expect(result.current.hasNextPage).toBe(true);
+  });
+
+  it('une recherche demande la liste restreinte, en gardant les items affichés pendant le chargement', async () => {
+    let finish: (value: ListDefinition) => void = () => undefined;
+    mockGet.mockImplementation(async (_name: string, _cursor: string | null, search: string) =>
+      search === 'lac' ? new Promise<ListDefinition>((resolve) => (finish = resolve)) : page(['1', '2'], null),
+    );
+    const { result, rerender } = await renderHook(({ search }: { search: string }) => useListDefinition('location.addresses', search), {
+      wrapper,
+      initialProps: { search: '' },
+    });
+    await waitFor(() => expect(result.current.data?.items).toHaveLength(2));
+
+    await rerender({ search: ' lac ' });
+
+    expect(mockGet).toHaveBeenLastCalledWith('location.addresses', null, 'lac');
+    expect(result.current.isPending).toBe(false);
+    expect(result.current.data?.items.map((item) => item.id)).toEqual(['1', '2']);
+
+    await act(async () => finish(page(['2'], null)));
+    await waitFor(() => expect(result.current.data?.items.map((item) => item.id)).toEqual(['2']));
   });
 });

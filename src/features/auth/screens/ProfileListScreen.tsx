@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
@@ -35,11 +35,17 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
  * La liste repart de la première page à chaque retour sur l'écran, après un
  * retrait, et quand on la tire vers le bas ; au retour d'un formulaire
  * enregistré, elle en affiche la confirmation.
+ *
+ * Une liste cherchable (`search` servi par l'API) affiche un champ de recherche ;
+ * la recherche part 300 ms après la dernière frappe, côté serveur (décision
+ * 2026-11-18-recherche-dans-la-liste).
  */
 export function ProfileListScreen({ list }: { list: string }) {
   const { t } = useAuth();
   const theme = useTheme();
-  const query = useListDefinition(list);
+  const [searchText, setSearchText] = useState('');
+  const search = useDebounced(searchText.trim(), SEARCH_DELAY);
+  const query = useListDefinition(list, search);
   const { reload, refetch } = query;
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -180,7 +186,8 @@ export function ProfileListScreen({ list }: { list: string }) {
         loadingMoreLabel={t('list.loading')}
         refreshing={refreshing}
         onRefresh={() => void refresh()}
-        empty={definition.empty}
+        empty={search ? t('list.noResults') : definition.empty}
+        search={definition.search ? { value: searchText, onChange: setSearchText, placeholder: definition.search } : null}
         contentContainerStyle={profileContentStyle}
         header={
           definition.create || notice || error ? (
@@ -213,6 +220,22 @@ export function ProfileListScreen({ list }: { list: string }) {
       />
     </ProfileScreenShell>
   );
+}
+
+/** Pause après la dernière frappe avant d'envoyer la recherche. */
+export const SEARCH_DELAY = 300;
+
+/** `value`, une fois qu'il n'a plus changé pendant `delay` ms. */
+function useDebounced(value: string, delay: number): string {
+  const [settled, setSettled] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(value), delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return settled;
 }
 
 const styles = StyleSheet.create({

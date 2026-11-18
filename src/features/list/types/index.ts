@@ -27,6 +27,8 @@ export type ListDefinition = {
   empty: string | null;
   /** Bouton de création : libellé et formulaire ouvert ; `null` pour une liste en lecture seule. */
   create: { label: string; form: string } | null;
+  /** Texte d'aide du champ de recherche ; `null` : liste non cherchable (décision 2026-11-18-recherche-dans-la-liste). */
+  search: string | null;
   /** Curseur de la page suivante ; `null` : plus rien après (décision 2026-11-18-contrat-liste-infinie-role-admin). */
   next_cursor: string | null;
   /** Items de cette page. */

@@ -19,4 +19,15 @@ describe('ListService.get', () => {
     await new ListService(client as unknown as ApiClient).get('location.addresses', 'eyJpZCI6MjB9+/=');
     expect(client.get).toHaveBeenCalledWith('/v1/lists/location.addresses?cursor=eyJpZCI6MjB9%2B%2F%3D');
   });
+
+  it('ajoute la recherche, nettoyée et encodée, au curseur', async () => {
+    const client = { get: jest.fn().mockResolvedValue({ data: { items: [] } }) };
+    const service = new ListService(client as unknown as ApiClient);
+
+    await service.get('location.addresses', 'c2', ' Genève & co ');
+    expect(client.get).toHaveBeenLastCalledWith('/v1/lists/location.addresses?cursor=c2&search=Gen%C3%A8ve%20%26%20co');
+
+    await service.get('location.addresses', null, '   ');
+    expect(client.get).toHaveBeenLastCalledWith('/v1/lists/location.addresses');
+  });
 });
