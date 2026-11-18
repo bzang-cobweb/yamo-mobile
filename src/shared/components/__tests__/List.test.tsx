@@ -118,4 +118,27 @@ describe('List (données locales, sans API)', () => {
 
     expect(screen.queryByTestId('fruits-search')).toBeNull();
   });
+
+  it('avec create : un bouton « + » fixe, nommé, qui appelle onPress', async () => {
+    const onPress = jest.fn();
+    await renderList({ create: { label: 'Ajouter un fruit', onPress } });
+
+    const button = screen.getByTestId('fruits-create');
+    expect(button.props.accessibilityLabel).toBe('Ajouter un fruit');
+    expect(screen.getByTestId('fruits-create-icon').props.symbol).toEqual(expect.objectContaining({ ios: 'plus' }));
+    await fireEvent.press(button);
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByTestId(/^fruits(-create)?$/).map((node) => node.props.testID)).toEqual(['fruits-create', 'fruits']);
+    expect(screen.queryByTestId('fruits-search')).toBeNull();
+  });
+
+  it('recherche et « + » partagent la barre, le « + » à droite', async () => {
+    await renderList({
+      search: { value: '', onChange: jest.fn(), placeholder: 'Chercher…' },
+      create: { label: 'Ajouter', onPress: jest.fn() },
+    });
+
+    expect(screen.getAllByTestId(/^fruits-(search|create)$/).map((node) => node.props.testID)).toEqual(['fruits-search', 'fruits-create']);
+  });
 });

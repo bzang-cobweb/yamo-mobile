@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert, StyleSheet, type AlertButton } from 'react-native';
+import { Alert, type AlertButton } from 'react-native';
 
 import type { ListDefinition, ListItem } from '@/features/list/types';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -117,14 +117,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     jest.useRealTimers();
   });
 
-  it('affiche le titre dans l’en-tête, les items et le bouton de création', async () => {
+  it('affiche le titre dans l’en-tête, les items et le bouton « + » nommé par l’API', async () => {
     await renderScreen();
 
     expect(screen.getByText('Mes cartes')).toBeTruthy();
     expect(screen.getByText('Carte 7')).toBeTruthy();
     expect(screen.getByText('Expire en 2030')).toBeTruthy();
     expect(screen.getByText('Carte 8')).toBeTruthy();
-    expect(screen.getByText('Ajouter une carte')).toBeTruthy();
+    expect(screen.getByTestId('profile-list-create').props.accessibilityLabel).toBe('Ajouter une carte');
     expect(screen.queryByTestId('profile-list-empty')).toBeNull();
   });
 
@@ -135,13 +135,13 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByTestId('profile-list-empty').props.children).toBe('Aucune carte.');
   });
 
-  it('le bouton de création est au-dessus de la liste, aligné à droite', async () => {
+  it('le bouton « + » est fixe, hors de la partie qui défile, avant la liste', async () => {
     await renderScreen();
 
-    // Ordre du rendu : le bouton vient avant le premier item.
-    const order = screen.getAllByTestId(/^profile-list-(create|item-7)$/).map((node) => node.props.testID);
-    expect(order).toEqual(['profile-list-create', 'profile-list-item-7']);
-    expect(StyleSheet.flatten(screen.getByTestId('profile-list-create').props.style)).toEqual(expect.objectContaining({ alignSelf: 'flex-end' }));
+    // Barre fixe puis liste : le « + » n'est pas dans la FlatList (`profile-list`).
+    const order = screen.getAllByTestId(/^profile-list(-create)?$/).map((node) => node.props.testID);
+    expect(order).toEqual(['profile-list-create', 'profile-list']);
+    expect(screen.getByTestId('profile-list-bar')).toBeTruthy();
   });
 
   it('le bouton de création ouvre le formulaire vide', async () => {
