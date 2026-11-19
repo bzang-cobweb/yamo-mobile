@@ -63,9 +63,17 @@ export type FormFieldDefinition = {
    * ou « false » pour une case) ; `suffix` à défaut (décision 2026-11-18-unite-prix-chambres).
    */
   suffix_when?: { field: string; suffixes: Record<string, string> } | null;
+  /**
+   * Suggestions pendant la saisie d'un texte : point d'API relatif (`/v1/…`), appelé
+   * avec `?q=` ; `null` (ou absent) : aucune (décision 2026-11-19-contrat-adresse-offre-recherche).
+   */
+  suggestions?: string | null;
   default: unknown;
   options: FieldOption[];
 };
+
+/** Une suggestion : la valeur du champ, son libellé, et les autres champs qu'elle remplit. */
+export type FieldSuggestion = { value: string; label: string; fill: Record<string, string> };
 
 export type FormDefinition = {
   name: string;
@@ -130,4 +138,6 @@ export type FieldProps<V extends FieldValue = FieldValue> = {
   onCountryChange?: (country: string) => void;
   /** Champ téléphone : pays verrouillé (le seul actif), le numéro reste modifiable. */
   countryLocked?: boolean;
+  /** Une suggestion choisie remplit d'autres champs (`{ zip, city }`). */
+  onFill?: (values: Record<string, string>) => void;
 };

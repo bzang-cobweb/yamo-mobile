@@ -7,6 +7,9 @@ import { FormField } from '../components/FormField';
 import type { FormFieldDefinition } from '../types';
 import { initialValue } from '../utils/values';
 
+// Le champ texte peut appeler l'API (suggestions) : son adresse de test.
+jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
+
 function field(overrides: Partial<FormFieldDefinition> = {}): FormFieldDefinition {
   return { name: 'price', type: 'range', label: 'Loyer', placeholder: null, help: null, required: false, default: null, options: [], suffix: 'FCFA', ...overrides };
 }

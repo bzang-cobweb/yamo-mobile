@@ -8,6 +8,9 @@ import { I18nContext } from '@/shared/i18n/I18nContext';
 import { FormField } from '../components/FormField';
 import type { FormFieldDefinition } from '../types';
 
+// Le champ texte peut appeler l'API (suggestions) : son adresse de test.
+jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
+
 function field(): FormFieldDefinition {
   return { name: 'rating', type: 'rating', label: 'Note', placeholder: null, help: null, required: true, default: null, options: [] };
 }

@@ -1,6 +1,9 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
-import type { FormDefinition, FormResponse, FormValues } from '../types';
+import type { FieldSuggestion, FormDefinition, FormResponse, FormValues } from '../types';
+
+/** Point d'API de suggestions accepté : relatif à l'API, sans paramètre ni remontée. */
+const SUGGESTIONS_ENDPOINT = /^\/v1\/[a-z0-9/_-]+$/;
 
 /** Définitions des formulaires servies par l'API. Une méthode par appel. */
 export class FormService {
@@ -23,6 +26,19 @@ export class FormService {
    */
   async validateStep(name: string, step: number, values: FormValues): Promise<void> {
     await this.client.post<void>(`/v1/forms/${encodeURIComponent(name)}/steps/${step}`, values);
+  }
+
+  /**
+   * Suggestions pour la saisie `query` d'un champ (décision
+   * 2026-11-19-contrat-adresse-offre-recherche) : `GET <endpoint>?q=…`. Un point
+   * d'API d'une autre forme est refusé.
+   */
+  async suggestions(endpoint: string, query: string): Promise<FieldSuggestion[]> {
+    if (!SUGGESTIONS_ENDPOINT.test(endpoint) || endpoint.includes('..')) {
+      throw new Error(`Point d'API refusé : ${endpoint}`);
+    }
+
+    return (await this.client.get<{ data: FieldSuggestion[] }>(`${endpoint}?q=${encodeURIComponent(query)}`)).data;
   }
 }
 

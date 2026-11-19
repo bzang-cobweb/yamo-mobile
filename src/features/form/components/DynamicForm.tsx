@@ -192,6 +192,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
           country={field.type === 'phone' ? String(values[countryKey(field.name)] ?? '') : undefined}
           onCountryChange={field.type === 'phone' ? (country) => change(countryKey(field.name), country) : undefined}
           countryLocked={field.type === 'phone' && Boolean(field.locked)}
+          onFill={(filled) => Object.entries(filled).forEach(([name, filledValue]) => change(name, filledValue))}
         />
       ))}
 
