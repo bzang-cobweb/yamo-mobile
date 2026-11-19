@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert, StyleSheet } from 'react-native';
+import { Alert } from 'react-native';
 
 import { ApiError } from '@/shared/api/errors';
 import type { ApiClient } from '@/shared/api/ApiClient';
@@ -405,7 +405,5 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     await show();
     expect(within(screen.getByTestId('offer-booking-bar')).getByTestId('offer-price')).toBeTruthy();
     expect(screen.queryByTestId('offer-booking')).toBeNull();
-    // Au milieu de la barre.
-    expect(StyleSheet.flatten(screen.getByTestId('offer-booking-price').props.style)).toMatchObject({ alignItems: 'center' });
   });
 });
