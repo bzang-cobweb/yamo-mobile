@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ApiError, NetworkError } from '@/shared/api/errors';
@@ -156,7 +156,8 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
     submitRef.current = submit;
   });
 
-  useEffect(() => {
+  // Avant que l'écran soit peint : la barre apparaît avec le formulaire, sans délai.
+  useLayoutEffect(() => {
     if (footer === null) {
       return;
     }
@@ -167,7 +168,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
   }, [footer, footerId, buttonLabel, busy, submitting, destructive]);
 
   // En partant (formulaire fermé), il rend la barre.
-  useEffect(() => () => footer?.set(footerId, null), [footer, footerId]);
+  useLayoutEffect(() => () => footer?.set(footerId, null), [footer, footerId]);
 
   // Une autre étape (suivante ou précédente) s'affiche depuis son début ; pas au premier affichage.
   const shownStep = useRef(step);
