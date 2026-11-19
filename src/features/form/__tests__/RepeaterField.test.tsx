@@ -58,6 +58,9 @@ describe('RepeaterField (liste de groupes décrite par Laravel)', () => {
     expect(screen.getByText('Arrivée')).toBeTruthy();
     expect(screen.getByTestId('field-informations-item-0-toggle').props.accessibilityState).toEqual({ expanded: false });
     expect(screen.queryByTestId('field-informations.0.title')).toBeNull();
+    // Supprimer : une icône sur le titre, visible fermé ; plus de lien dans le bloc (décision 2026-11-19-repeater-icone-supprimer).
+    expect(screen.getByTestId('field-informations-remove-0').props.accessibilityLabel).toBe('Retirer ce bloc');
+    expect(screen.queryByText('Retirer ce bloc')).toBeNull();
     await fireEvent.press(screen.getByTestId('field-informations-item-0-toggle'));
     await fireEvent.press(screen.getByTestId('field-informations-item-1-toggle'));
     // L'identifiant n'est pas affiché.

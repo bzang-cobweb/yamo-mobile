@@ -1,3 +1,4 @@
+import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -78,6 +79,19 @@ export function RepeaterField({ field, value, onChange, errors, disabled }: Fiel
             open={opened.includes(index) || hasErrors(index)}
             onToggle={(open) => toggle(index, open)}
             style={[styles.item, { borderColor: theme.backgroundSelected }]}
+            // Supprimer : une icône sur le titre (décision 2026-11-19-repeater-icone-supprimer).
+            action={
+              <Pressable
+                testID={`field-${field.name}-remove-${index}`}
+                accessibilityRole="button"
+                accessibilityLabel={t('form.repeaterRemove')}
+                disabled={disabled}
+                hitSlop={Spacing.two}
+                onPress={() => remove(index)}
+                style={({ pressed }) => [styles.remove, pressed && styles.pressed]}>
+                <SymbolView name={{ ios: 'trash', android: 'delete', web: 'delete' }} size={16} tintColor={ERROR_COLOR} />
+              </Pressable>
+            }
             testID={`field-${field.name}-item-${index}`}>
             {subFields
               .filter((sub) => sub.type !== 'hidden')
@@ -95,18 +109,6 @@ export function RepeaterField({ field, value, onChange, errors, disabled }: Fiel
                   />
                 );
               })}
-            <Pressable
-              testID={`field-${field.name}-remove-${index}`}
-              accessibilityRole="button"
-              accessibilityLabel={t('form.repeaterRemove')}
-              disabled={disabled}
-              hitSlop={Spacing.one}
-              onPress={() => remove(index)}
-              style={({ pressed }) => [styles.remove, pressed && styles.pressed]}>
-              <ThemedText type="small" style={styles.removeText}>
-                {t('form.repeaterRemove')}
-              </ThemedText>
-            </Pressable>
           </Accordion>
         ))}
         {canAdd && (
@@ -129,8 +131,7 @@ export function RepeaterField({ field, value, onChange, errors, disabled }: Fiel
 const styles = StyleSheet.create({
   items: { gap: Spacing.three },
   item: { marginTop: 0, borderWidth: 1, borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
-  remove: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
-  removeText: { color: ERROR_COLOR },
+  remove: { paddingHorizontal: Spacing.two },
   add: { alignItems: 'center', borderWidth: 1, borderStyle: 'dashed', borderRadius: 8, paddingVertical: Spacing.three },
   pressed: { opacity: 0.6 },
 });

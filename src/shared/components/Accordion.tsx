@@ -15,6 +15,8 @@ type Props = {
   open?: boolean;
   onToggle?: (open: boolean) => void;
   style?: StyleProp<ViewStyle>;
+  /** Une action dans la barre du titre, avant la flèche (ex. supprimer). */
+  action?: ReactNode;
   /** Préfixe des identifiants de test : `<testID>-toggle`, `<testID>-content`. */
   testID?: string;
   children: ReactNode;
@@ -25,7 +27,7 @@ type Props = {
  * titre et une flèche ; le contenu s'affiche ou se replie au toucher du titre.
  * Chaque section s'ouvre et se ferme seule, indépendamment des autres.
  */
-export function Accordion({ title, initiallyOpen = true, open: controlled, onToggle, style, testID, children }: Props) {
+export function Accordion({ title, initiallyOpen = true, open: controlled, onToggle, style, action, testID, children }: Props) {
   const theme = useTheme();
   const [own, setOwn] = useState(initiallyOpen);
   const open = controlled ?? own;
@@ -44,7 +46,10 @@ export function Accordion({ title, initiallyOpen = true, open: controlled, onTog
         hitSlop={Spacing.one}
         onPress={toggle}
         style={({ pressed }) => [styles.header, pressed && styles.pressed]}>
-        <ThemedText type="smallBold">{title}</ThemedText>
+        <ThemedText type="smallBold" style={styles.title}>
+          {title}
+        </ThemedText>
+        {action}
         <SymbolView
           name={open ? { ios: 'chevron.up', android: 'expand_less', web: 'expand_less' } : { ios: 'chevron.down', android: 'expand_more', web: 'expand_more' }}
           size={14}
@@ -63,6 +68,7 @@ export function Accordion({ title, initiallyOpen = true, open: controlled, onTog
 const styles = StyleSheet.create({
   section: { marginTop: Spacing.three },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two, paddingVertical: Spacing.one },
+  title: { flex: 1 },
   content: { gap: Spacing.one, marginTop: Spacing.one },
   pressed: { opacity: 0.6 },
 });
