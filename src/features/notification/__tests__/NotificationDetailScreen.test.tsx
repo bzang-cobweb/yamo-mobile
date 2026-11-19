@@ -14,7 +14,7 @@ jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn(), ca
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-  return { SafeAreaView: View };
+  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
 });
 jest.mock('@/features/auth/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 } }) }));
 
