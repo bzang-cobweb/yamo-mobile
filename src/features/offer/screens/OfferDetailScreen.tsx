@@ -146,7 +146,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </Accordion>
                 )}
 
-                {/* Règles du logement et autres informations (décision 2026-11-19-contrat-regles-informations). */}
+                {/* Règles et autres informations (décision 2026-11-19-contrat-regles-informations). */}
                 {((offer.rules?.length ?? 0) > 0 || offer.information) && (
                   <Accordion title={t('offer.rules')} testID="offer-rules">
                     {offer.rules?.map((rule) => (

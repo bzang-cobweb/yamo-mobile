@@ -140,7 +140,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-location-block')).toBeNull();
   });
 
-  it('règles du logement et autres informations, dans leur section ; rien sans valeur', async () => {
+  it('règles et autres informations, dans leur section ; rien sans valeur', async () => {
     // Décision 2026-11-19-contrat-regles-informations.
     mockState = {
       data: { ...OFFER, rules: [{ label: 'Arrivée à partir de', value: '15:00' }, { label: 'Animaux acceptés', value: 'Non' }], information: 'Clés chez le gardien.\nParking.' },
@@ -148,7 +148,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
       error: null,
     };
     await show();
-    expect(screen.getByText('Règles du logement')).toBeTruthy();
+    expect(screen.getByText('Règles')).toBeTruthy();
     expect(screen.getAllByTestId('offer-rule')).toHaveLength(2);
     expect(screen.getByText('15:00')).toBeTruthy();
     expect(screen.getByTestId('offer-information').props.children).toBe('Clés chez le gardien.\nParking.');
