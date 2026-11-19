@@ -113,7 +113,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </ThemedText>
                 )}
 
-                {/* Puis la description, l'adresse (les indications du propriétaire ; la ville est dans les caractéristiques), les caractéristiques. */}
+                {/* Puis la description, la localisation, les caractéristiques. */}
                 {/* La description seule, sans titre (décision 2026-11-19-fiche-description-equipements). */}
                 {offer.description && (
                   <View style={styles.section}>
@@ -121,10 +121,16 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </View>
                 )}
 
-                {offer.indication && (
-                  <View style={styles.section}>
-                    <ThemedText type="smallBold">{t('offer.address')}</ThemedText>
-                    <ThemedText testID="offer-indication">{offer.indication}</ThemedText>
+                {/* L'adresse complète et son indication (décision 2026-11-19-fiche-localisation). */}
+                {offer.address && (
+                  <View style={styles.section} testID="offer-location-block">
+                    <ThemedText type="smallBold">{t('offer.location')}</ThemedText>
+                    <ThemedText testID="offer-address">{offer.address}</ThemedText>
+                    {offer.indication && (
+                      <ThemedText type="small" themeColor="textSecondary" testID="offer-indication">
+                        {offer.indication}
+                      </ThemedText>
+                    )}
                   </View>
                 )}
 
