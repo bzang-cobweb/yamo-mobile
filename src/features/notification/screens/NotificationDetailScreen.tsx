@@ -21,8 +21,9 @@ import { useMarkRead, useNotification } from '../hooks/useNotifications';
 
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste :
- * - son titre et son statut ;
- * - qui agit, comme sur la carte (photo cerclée de vert en ligne, nom, date complète) ;
+ * - à la place du titre, qui agit, comme sur la carte (photo cerclée de vert en
+ *   ligne, nom, date complète) ; sans qui agit, le titre ;
+ * - son statut ;
  * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
  * - le message joint ;
  * - un bouton vers l'écran qu'elle désigne (« Réservations reçues »).
@@ -72,12 +73,10 @@ export function NotificationDetailScreen({ id }: { id: string }) {
             </View>
           ) : (
             <ScrollView contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
-              <ThemedText type="subtitle" accessibilityRole="header" testID="notification-detail-title">
-                {notification.title}
-              </ThemedText>
-              {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
-              {/* Qui agit, comme sur la carte : sa photo (cerclée de vert en ligne), son nom, la date complète dessous. */}
+              {/* À la place du titre : qui agit, comme sur la carte (photo cerclée de vert en ligne, nom, date complète) ;
+                  sans qui agit (ancienne notification), le titre. */}
               <NotificationActor actor={notification.actor} title={notification.title} date={date ?? ''} onOpen={go} testID="notification-detail" />
+              {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
               <NotificationText
                 type="default"
                 body={notification.actor && notification.summary ? notification.summary : notification.body}

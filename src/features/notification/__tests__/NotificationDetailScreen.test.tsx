@@ -59,10 +59,12 @@ describe('NotificationDetailScreen', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
-  it('son titre, son statut, sa date, son texte, son message ; ouverte, elle est marquée lue', async () => {
+  it('qui agit à la place du titre, son statut, sa date, son texte, son message ; ouverte, elle est marquée lue', async () => {
     await show();
 
-    expect(await screen.findByTestId('notification-detail-title')).toHaveTextContent('Demande de logement');
+    // À la place du titre : qui agit.
+    expect(await screen.findByTestId('notification-detail-actor')).toHaveTextContent('Paul Etoa');
+    expect(screen.queryByText('Demande de logement')).toBeNull();
     expect(notificationService.get).toHaveBeenCalledWith('n1');
     expect(screen.getByText('Notification')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();
