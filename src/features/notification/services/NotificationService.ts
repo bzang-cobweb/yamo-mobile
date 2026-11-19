@@ -1,6 +1,6 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
-import type { NotificationPage } from '../types';
+import type { AppNotification, NotificationPage } from '../types';
 
 /** Les notifications de l'app du compte connecté (`/api/v1/notifications`). */
 export class NotificationService {
@@ -14,6 +14,11 @@ export class NotificationService {
   }
 
   /** Le nombre de non lues : la pastille de l'onglet. */
+  /** `GET /api/v1/notifications/{id}` — une de ses notifications, pour sa page. */
+  async get(id: string): Promise<AppNotification> {
+    return (await this.client.get<{ data: AppNotification }>(`/v1/notifications/${encodeURIComponent(id)}`)).data;
+  }
+
   async unreadCount(): Promise<number> {
     return (await this.client.get<{ data: { unread: number } }>('/v1/notifications/unread-count')).data.unread;
   }

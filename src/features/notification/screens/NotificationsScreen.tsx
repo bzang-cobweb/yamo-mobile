@@ -14,16 +14,13 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { useNotifications } from '../hooks/useNotifications';
 import type { AppNotification } from '../types';
 import { relativeTime } from '../utils/relativeTime';
-
-/** Un écran de l'app (`/profile/lists/offer.bookings`) : jamais une adresse externe. */
-const APP_LINK = /^\/[A-Za-z0-9._\-/]+$/;
+import { APP_LINK, NotificationText } from '../components/NotificationText';
 
 /**
  * L'onglet « Notifications » (décision 2026-11-19-contrat-centre-notifications) : la
  * plus récente en tête, par pages ; les non lues mises en avant. Toucher une
- * notification la marque lue et ouvre l'écran qu'elle désigne ; ses liens
- * (« Voir l'annonce ») et les passages liés de son texte (le nom d'un membre)
- * ouvrent le leur ; « Tout marquer
+ * notification la marque lue et ouvre sa page (`/notifications/[id]`) ; les
+ * passages liés de son texte (le nom d'un membre, de l'offre) ouvrent le leur ; « Tout marquer
  * comme lu » en tête. Rechargée à chaque retour sur l'onglet.
  */
 export function NotificationsScreen() {
@@ -40,12 +37,12 @@ export function NotificationsScreen() {
     }, [refetch, refreshCount]),
   );
 
-  /** Marque la notification lue et ouvre l'écran désigné (la sienne, ou l'un de ses liens). */
-  function open(notification: AppNotification, link: string | null = notification.link) {
+  /** Marque la notification lue et ouvre un écran : sa page, ou un passage lié de son texte. */
+  function open(notification: AppNotification, link: string = `/notifications/${notification.id}`) {
     if (!notification.read) {
       void markRead(notification.id);
     }
-    if (link !== null && APP_LINK.test(link)) {
+    if (APP_LINK.test(link)) {
       router.push(link as Href);
     }
   }
@@ -121,23 +118,7 @@ export function NotificationsScreen() {
             <View style={styles.texts}>
               <ThemedText type={item.read ? 'default' : 'smallBold'}>{item.title}</ThemedText>
               {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
-              <ThemedText type="small" themeColor="textSecondary">
-                {segments(item.body, item.text_links ?? []).map((segment, index) =>
-                  segment.link === null ? (
-                    segment.text
-                  ) : (
-                    <ThemedText
-                      key={`${segment.link}-${index}`}
-                      type="smallBold"
-                      style={{ color: theme.primary }}
-                      accessibilityRole="link"
-                      testID={`notification-${item.id}-text-link-${index}`}
-                      onPress={() => open(item, segment.link)}>
-                      {segment.text}
-                    </ThemedText>
-                  ),
-                )}
-              </ThemedText>
+              <NotificationText body={item.body} links={item.text_links ?? []} onLink={(link) => open(item, link)} testID={`notification-${item.id}-text`} />
               {item.message && <Quote text={item.message} testID={`notification-${item.id}-message`} />}
               {item.links.map((link, index) => (
                 <Pressable
@@ -159,35 +140,6 @@ export function NotificationsScreen() {
       />
     </ThemedView>
   );
-}
-
-/**
- * Le texte découpé autour de ses passages liés (« Paul Etoa » → `/members/37`) : le
- * premier endroit où chaque passage apparaît devient un lien.
- */
-function segments(body: string, links: { text: string; link: string }[]): { text: string; link: string | null }[] {
-  let parts: { text: string; link: string | null }[] = [{ text: body, link: null }];
-
-  for (const link of links) {
-    if (!link.text || !APP_LINK.test(link.link)) {
-      continue;
-    }
-    const index = parts.findIndex((part) => part.link === null && part.text.includes(link.text));
-    if (index === -1) {
-      continue;
-    }
-    const part = parts[index];
-    const at = part.text.indexOf(link.text);
-    parts = [
-      ...parts.slice(0, index),
-      ...(at > 0 ? [{ text: part.text.slice(0, at), link: null }] : []),
-      { text: link.text, link: link.link },
-      ...(at + link.text.length < part.text.length ? [{ text: part.text.slice(at + link.text.length), link: null }] : []),
-      ...parts.slice(index + 1),
-    ];
-  }
-
-  return parts;
 }
 
 const styles = StyleSheet.create({

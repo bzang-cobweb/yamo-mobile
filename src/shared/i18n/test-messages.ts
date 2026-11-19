@@ -11,6 +11,8 @@ export const TEST_MESSAGES: Messages = {
   'tabs.profile': 'Profil',
   'tabs.notifications': 'Notifications',
   'notifications.title': 'Notifications',
+  'notifications.detail': 'Notification',
+  'notifications.open': 'Ouvrir',
   'notifications.markAllRead': 'Tout marquer comme lu',
   'notifications.empty': "Aucune notification pour l'instant.",
   'notifications.unread': 'Non lue',

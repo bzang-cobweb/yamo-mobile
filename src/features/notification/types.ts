@@ -18,6 +18,8 @@ export type AppNotification = {
   links: { label: string; link: string }[];
   /** Passages du texte qui ouvrent un écran (« Paul Etoa » → `/members/37`). */
   text_links: { text: string; link: string }[];
+  /** Libellé du bouton qui ouvre `link` (« Réservations reçues ») ; `null` : un libellé générique. */
+  link_label: string | null;
   read: boolean;
   created_at: string | null;
 };

@@ -21,8 +21,8 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }], read: false, created_at: new Date().toISOString() },
-    { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], read: true, created_at: '2026-01-02T10:00:00Z' },
+    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
+    { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
 };
@@ -61,12 +61,12 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(screen.getByText('Tout marquer comme lu')).toBeTruthy();
   });
 
-  it('toucher une notification la marque lue et ouvre l’écran désigné', async () => {
+  it('toucher une notification la marque lue et ouvre sa page', async () => {
     await show();
     await fireEvent.press(await screen.findByTestId('notification-a'));
 
     expect(notificationService.read).toHaveBeenCalledWith('a');
-    expect(router.push).toHaveBeenCalledWith('/profile/lists/offer.bookings.received');
+    expect(router.push).toHaveBeenCalledWith('/notifications/a');
     await waitFor(() => expect(screen.getByTestId('notification-a').props.accessibilityLabel).not.toMatch(/^Non lue/));
   });
 
@@ -89,11 +89,11 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(screen.getByText(/demande un séjour/)).toBeTruthy();
   });
 
-  it('une adresse externe n’est jamais ouverte ; une notification lue ne repart pas à l’API', async () => {
+  it('une notification lue ouvre sa page sans repartir à l’API', async () => {
     await show();
     await fireEvent.press(await screen.findByTestId('notification-b'));
 
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.push).toHaveBeenCalledWith('/notifications/b');
     expect(notificationService.read).not.toHaveBeenCalled();
   });
 

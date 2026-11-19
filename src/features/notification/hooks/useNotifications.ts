@@ -9,12 +9,37 @@ import type { AppNotification, NotificationPage } from '../types';
 
 const UNREAD_KEY = ['notifications', 'unread'];
 const LIST_KEY = ['notifications', 'list'];
+const DETAIL_KEY = ['notifications', 'detail'];
 
 /** Le nombre de non lues du compte connecté (la pastille de l'onglet). */
 export function useUnreadCount() {
   const { user } = useAuth();
 
   return useQuery({ queryKey: [...UNREAD_KEY, user?.id], queryFn: () => notificationService.unreadCount(), enabled: user !== null });
+}
+
+/** Marquer une notification lue : tout de suite à l'écran (liste et page), puis par l'API, puis la pastille. */
+export function useMarkRead() {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    async (id: string) => {
+      queryClient.setQueriesData<InfiniteData<NotificationPage, string | null>>({ queryKey: LIST_KEY }, (data) =>
+        data ? { ...data, pages: data.pages.map((page) => ({ ...page, items: page.items.map((item) => (item.id === id ? { ...item, read: true } : item)) })) } : data,
+      );
+      queryClient.setQueriesData<AppNotification>({ queryKey: DETAIL_KEY }, (item) => (item && item.id === id ? { ...item, read: true } : item));
+      await notificationService.read(id);
+      await queryClient.invalidateQueries({ queryKey: UNREAD_KEY });
+    },
+    [queryClient],
+  );
+}
+
+/** Une notification, pour sa page. */
+export function useNotification(id: string) {
+  const { locale } = useI18n();
+
+  return useQuery({ queryKey: [...DETAIL_KEY, id, locale], queryFn: () => notificationService.get(id) });
 }
 
 /**
@@ -35,18 +60,7 @@ export function useNotifications() {
   });
 
   const refreshCount = useCallback(() => queryClient.invalidateQueries({ queryKey: UNREAD_KEY }), [queryClient]);
-
-  // Marquée lue tout de suite à l'écran, puis par l'API.
-  const markRead = useCallback(
-    async (id: string) => {
-      queryClient.setQueriesData<InfiniteData<NotificationPage, string | null>>({ queryKey: LIST_KEY }, (data) =>
-        data ? { ...data, pages: data.pages.map((page) => ({ ...page, items: page.items.map((item) => (item.id === id ? { ...item, read: true } : item)) })) } : data,
-      );
-      await notificationService.read(id);
-      await refreshCount();
-    },
-    [queryClient, refreshCount],
-  );
+  const markRead = useMarkRead();
 
   const markAllRead = useCallback(async () => {
     queryClient.setQueriesData<InfiniteData<NotificationPage, string | null>>({ queryKey: LIST_KEY }, (data) =>
