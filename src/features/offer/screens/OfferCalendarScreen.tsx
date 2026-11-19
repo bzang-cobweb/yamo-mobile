@@ -112,9 +112,16 @@ export function OfferCalendarScreen({ id }: { id: string }) {
             </View>
           ) : (
             <ScrollView contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
-              <ThemedText type="subtitle" accessibilityRole="header" testID="offer-calendar-heading">
-                {data.heading}
-              </ThemedText>
+              <View style={styles.heading}>
+                <ThemedText type="subtitle" accessibilityRole="header" testID="offer-calendar-heading">
+                  {data.heading}
+                </ThemedText>
+                {data.address && (
+                  <ThemedText themeColor="textSecondary" testID="offer-calendar-address">
+                    {data.address}
+                  </ThemedText>
+                )}
+              </View>
               <MonthGrid
                 testID="offer-calendar"
                 label={data.label}
@@ -195,6 +202,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   error: { color: ERROR_COLOR },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.four },
+  heading: { gap: Spacing.one },
   legend: { gap: Spacing.two },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   legendBox: { width: 18, height: 18, borderRadius: 4 },

@@ -95,8 +95,10 @@ export type OfferCalendarDay = { date: string; day: number; state: string; dot: 
 export type OfferCalendarMonth = {
   /** Titre de la barre du haut (« Calendrier »). */
   title: string;
-  /** Titre du contenu : l'offre (« Studio · meublé · Douala »). */
+  /** Titre du contenu : le titre saisi de l'offre (« Studio photos »). */
   heading: string;
+  /** Son adresse, sous le titre ; `null` sans adresse. */
+  address: string | null;
   month: string;
   label: string;
   previous: string | null;
