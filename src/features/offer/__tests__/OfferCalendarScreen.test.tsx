@@ -22,7 +22,8 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 const DECEMBER: OfferCalendarMonth = {
-  title: 'Calendrier · Studio',
+  title: 'Calendrier',
+  heading: 'Studio · meublé · Douala',
   month: '2026-12',
   label: 'Décembre 2026',
   previous: '2026-11',
@@ -73,6 +74,8 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     await show();
 
     expect(await screen.findByText('Décembre 2026')).toBeTruthy();
+    expect(screen.getByTestId('offer-calendar-heading')).toHaveTextContent('Studio · meublé · Douala');
+    expect(screen.getByText('Calendrier')).toBeTruthy();
     expect(offerService.calendar).toHaveBeenCalledWith('7', null);
     expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-day-2026-12-01').props.style)).toMatchObject({ backgroundColor: '#2E9D5B' });
     expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-day-2026-12-02').props.style)).toMatchObject({ backgroundColor: TONE_COLORS.danger });

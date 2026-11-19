@@ -93,7 +93,10 @@ export type OfferCalendarDay = { date: string; day: number; state: string; dot: 
 
 /** Un mois du calendrier d'une offre, décrit par l'API. */
 export type OfferCalendarMonth = {
+  /** Titre de la barre du haut (« Calendrier »). */
   title: string;
+  /** Titre du contenu : l'offre (« Studio · meublé · Douala »). */
+  heading: string;
   month: string;
   label: string;
   previous: string | null;

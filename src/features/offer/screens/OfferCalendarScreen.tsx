@@ -112,6 +112,9 @@ export function OfferCalendarScreen({ id }: { id: string }) {
             </View>
           ) : (
             <ScrollView contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
+              <ThemedText type="subtitle" accessibilityRole="header" testID="offer-calendar-heading">
+                {data.heading}
+              </ThemedText>
               <MonthGrid
                 testID="offer-calendar"
                 label={data.label}
