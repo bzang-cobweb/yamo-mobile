@@ -1,15 +1,18 @@
-import { useSegments } from 'expo-router';
+import { usePathname, useSegments } from 'expo-router';
+import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { Tabs } from 'expo-router/js-tabs';
 import { SymbolView } from 'expo-symbols';
 
+import { useUnreadCount } from '@/features/notification/hooks/useNotifications';
 import { AppTopBar } from '@/features/welcome/components/AppTopBar';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 
 /**
  * Pour un utilisateur connecté : barre fixe en haut (logo de l'application) sur
- * l'écran racine de chaque onglet, pas sur les formulaires du profil ; menu fixe en bas, Accueil (écran par défaut) et
- * Profil. Icônes seules ; leur nom, servi par l'API, est annoncé aux lecteurs
+ * l'écran racine de chaque onglet, pas sur les formulaires du profil ; menu fixe en bas, Accueil (écran par défaut),
+ * Notifications (avec la pastille des non lues) et Profil. Icônes seules ; leur nom, servi par l'API, est annoncé aux lecteurs
  * d'écran. Les formulaires du profil (`app/profile/[form].tsx`) s'ouvrent hors des
  * onglets, par-dessus ; les listes du profil gardent le menu.
  */
@@ -20,6 +23,26 @@ export default function TabsLayout() {
   // affiche son propre en-tête avec le bouton retour.
   const segments = useSegments();
   const inSubPage = segments.length > 2;
+  // Le nombre de non lues, redemandé à chaque changement d'écran (retour sur un onglet, d'une liste…).
+  const pathname = usePathname();
+  const unreadQuery = useUnreadCount();
+  const unread = unreadQuery.data ?? 0;
+  const { refetch: refetchUnread } = unreadQuery;
+
+  useEffect(() => {
+    void refetchUnread();
+  }, [pathname, refetchUnread]);
+
+  // L'app revenue au premier plan : la pastille aussi.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        void refetchUnread();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [refetchUnread]);
 
   return (
     <Tabs
@@ -40,6 +63,25 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <SymbolView
               name={{ ios: focused ? 'house.fill' : 'house', android: 'home', web: 'home' }}
+              tintColor={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      {/* Notifications, entre Accueil et Profil, avec la pastille des non lues, « 0 » compris
+          (décision 2026-11-19-contrat-centre-notifications). */}
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: t('tabs.notifications'),
+          tabBarAccessibilityLabel: `${t('tabs.notifications')}, ${unread}`,
+          tabBarButtonTestID: 'tab-notifications',
+          tabBarBadge: unread > 99 ? '99+' : unread,
+          tabBarBadgeStyle: { backgroundColor: theme.primary, color: theme.onPrimary },
+          tabBarIcon: ({ color, size, focused }) => (
+            <SymbolView
+              name={{ ios: focused ? 'bell.fill' : 'bell', android: 'notifications', web: 'notifications' }}
               tintColor={color}
               size={size}
             />
