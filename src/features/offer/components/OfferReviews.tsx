@@ -10,7 +10,7 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
 
-import type { OfferReviews as Reviews } from '../types';
+import type { OfferReview as Review, OfferReviews as Reviews } from '../types';
 
 /** Le formulaire servi par l'API pour donner son avis. */
 export const REVIEW_FORM = 'offer.review';
@@ -74,21 +74,18 @@ export function OfferReviews({ offerId, reviews, onChanged }: { offerId: string;
       )}
 
       {reviews.latest.map((review) => (
-        <View key={review.id} style={[styles.review, { borderBottomColor: theme.backgroundSelected }]} testID="offer-review">
-          <View style={styles.reviewHead}>
-            <ThemedText type="smallBold">{review.author}</ThemedText>
-            {review.created_at && (
-              <ThemedText type="small" themeColor="textSecondary">
-                {new Date(review.created_at).toLocaleDateString(locale, { dateStyle: 'medium' })}
-              </ThemedText>
-            )}
-          </View>
-          <View accessible accessibilityLabel={t('form.ratingValue', { value: String(review.rating) })}>
-            <Stars value={review.rating} emptyColor={theme.backgroundSelected} />
-          </View>
-          <ThemedText type="small">{review.comment}</ThemedText>
-        </View>
+        <ReviewRow key={review.id} review={review} />
       ))}
+      {/* Plus d'avis que ceux affichés : la liste complète (décision 2026-11-19-nuit-tous-les-avis). */}
+      {reviews.count > reviews.latest.length && (
+        <Pressable
+          testID="offer-reviews-all"
+          accessibilityRole="link"
+          hitSlop={Spacing.two}
+          onPress={() => router.push({ pathname: '/offers/[id]/reviews', params: { id: offerId } })}>
+          <ThemedText type="linkPrimary">{t('offer.allReviews', { count: String(reviews.count) })}</ThemedText>
+        </Pressable>
+      )}
 
       {user === null ? (
         <ThemedText type="small" themeColor="textSecondary" testID="offer-reviews-sign-in">
@@ -116,6 +113,29 @@ export function OfferReviews({ offerId, reviews, onChanged }: { offerId: string;
           </View>
         )
       )}
+    </View>
+  );
+}
+
+/** Un avis : prénom, date, étoiles, commentaire ; sur la fiche comme dans la liste complète. */
+export function ReviewRow({ review }: { review: Review }) {
+  const { t, locale } = useI18n();
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.review, { borderBottomColor: theme.backgroundSelected }]} testID="offer-review">
+      <View style={styles.reviewHead}>
+        <ThemedText type="smallBold">{review.author}</ThemedText>
+        {review.created_at && (
+          <ThemedText type="small" themeColor="textSecondary">
+            {new Date(review.created_at).toLocaleDateString(locale, { dateStyle: 'medium' })}
+          </ThemedText>
+        )}
+      </View>
+      <View accessible accessibilityLabel={t('form.ratingValue', { value: String(review.rating) })}>
+        <Stars value={review.rating} emptyColor={theme.backgroundSelected} />
+      </View>
+      <ThemedText type="small">{review.comment}</ThemedText>
     </View>
   );
 }

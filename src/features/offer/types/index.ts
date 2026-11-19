@@ -35,6 +35,9 @@ export type OfferReview = {
   created_at: string | null;
 };
 
+/** Une page de tous les avis d'une offre (décision 2026-11-19-nuit-tous-les-avis). */
+export type OfferReviewPage = { items: OfferReview[]; next_cursor: string | null };
+
 /** Le bloc « Avis » de la fiche. */
 export type OfferReviews = {
   /** Note moyenne au dixième ; `null` sans avis. */

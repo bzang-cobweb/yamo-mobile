@@ -165,6 +165,19 @@ describe('OfferDetailScreen : avis', () => {
     expect(screen.queryByTestId('offer-review-write')).toBeNull();
   });
 
+  it('plus d’avis que ceux affichés : « Voir les N avis » ouvre la liste complète ; sinon, pas de lien', async () => {
+    // Décision 2026-11-19-nuit-tous-les-avis. Deux avis, tous affichés : pas de lien.
+    await show();
+    expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
+
+    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, count: 12 } }, isPending: false, error: null };
+    await show();
+
+    expect(screen.getByText('Voir les 12 avis')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('offer-reviews-all'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/reviews', params: { id: OFFER.id } });
+  });
+
   it('un cœur sur la photo quand l’API en sert un ; aucun sinon', async () => {
     mockState = { data: { ...OFFER, favorite: { active: false, endpoint: '/v1/offers/7/favorite' } }, isPending: false, error: null };
     await show();
