@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { NetworkError } from '@/shared/api/errors';
+import { Quote } from '@/shared/components/Quote';
 import { StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -123,13 +124,7 @@ export function NotificationsScreen() {
               <ThemedText type="small" themeColor="textSecondary">
                 {item.body}
               </ThemedText>
-              {item.message && (
-                <View style={[styles.message, { borderColor: theme.backgroundSelected }]} testID={`notification-${item.id}-message`}>
-                  <ThemedText type="small" style={styles.messageText}>
-                    « {item.message} »
-                  </ThemedText>
-                </View>
-              )}
+              {item.message && <Quote text={item.message} testID={`notification-${item.id}-message`} />}
               {item.links.map((link, index) => (
                 <Pressable
                   key={link.link}
@@ -162,8 +157,6 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', gap: Spacing.three, padding: Spacing.three, borderWidth: 1, borderRadius: 8 },
   dot: { width: 10, height: 10, borderRadius: 5, marginTop: Spacing.two },
   texts: { flex: 1, gap: Spacing.one },
-  message: { borderLeftWidth: 3, paddingLeft: Spacing.two },
-  messageText: { fontStyle: 'italic' },
   link: { alignSelf: 'flex-start' },
   pressed: { opacity: 0.7 },
 });

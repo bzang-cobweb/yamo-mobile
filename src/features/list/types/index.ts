@@ -24,7 +24,7 @@ export type ListItemAction = {
 /** Un compteur sur la carte (« 2 demandes en attente ») qui ouvre `list` avec ces filtres. */
 export type ListItemCounter = { label: string; list: string; filter: Record<string, string> };
 
-/** Un item d'une liste : titre, sous-titre, photo, note, phrase mise en avant, formulaire d'édition, retrait. */
+/** Un item d'une liste : titre, sous-titre, photo, note, phrase mise en avant, message cité, formulaire d'édition, retrait. */
 export type ListItem = {
   id: string;
   title: string;
@@ -35,6 +35,8 @@ export type ListItem = {
   rating: { average: number; count: number } | null;
   /** Phrase mise en avant, en gras sur sa ligne ; `null` : aucune. */
   highlight: string | null;
+  /** Message cité sous le sous-titre (celui d'un membre avec sa demande) ; `null` (ou absent) : aucun. */
+  quote?: string | null;
   /**
    * Cœur de favori sur la photo (décision 2026-11-19-contrat-vedette-favoris) : plein si
    * `active` ; PUT sur `endpoint` ajoute, DELETE retire ; `null` (ou absent) : pas de cœur.

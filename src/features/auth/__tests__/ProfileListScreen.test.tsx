@@ -458,5 +458,13 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(StyleSheet.flatten(screen.getByTestId('profile-list-tag-3').props.style)).toMatchObject({ backgroundColor: '#E8890C' });
       expect(screen.queryByTestId('profile-list-tag-4')).toBeNull();
     });
+
+    it('le message du membre, cité sur la carte', async () => {
+      mockList = list([item('3', { quote: 'Je viens pour le travail.' }), item('4')]);
+      await renderScreen();
+
+      expect(screen.getByTestId('profile-list-quote-3')).toHaveTextContent('« Je viens pour le travail. »');
+      expect(screen.queryByTestId('profile-list-quote-4')).toBeNull();
+    });
   });
 });

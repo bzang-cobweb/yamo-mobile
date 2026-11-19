@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { Quote } from '@/shared/components/Quote';
 import { StatusTag } from '@/shared/components/StatusTag';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem, ListItemAction, ListItemCounter } from '@/features/list/types';
@@ -226,6 +227,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               {item.subtitle}
             </ThemedText>
           )}
+          {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
           {/* La note et la phrase mise en avant, quand l'API les sert. */}
           <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
         </Pressable>
