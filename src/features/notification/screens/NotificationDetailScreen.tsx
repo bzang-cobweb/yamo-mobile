@@ -6,13 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
+import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
 import { StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
-import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { NotificationActor } from '../components/NotificationActor';
@@ -26,13 +26,12 @@ import { useMarkRead, useNotification } from '../hooks/useNotifications';
  * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
  * - son statut ;
  * - le message joint, entier ;
- * - un bouton vers l'écran qu'elle désigne (« Réservations reçues »).
+ * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
  *
  * Ouverte, elle est marquée lue.
  */
 export function NotificationDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
-  const theme = useTheme();
   const query = useNotification(id);
   const markRead = useMarkRead();
   const notification = query.data;
@@ -86,18 +85,15 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               {/* Même ordre que la carte : le texte, le statut, puis le message, entier ici. */}
               {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
               {notification.message && <Quote text={notification.message} testID="notification-detail-message" />}
-              {notification.link && APP_LINK.test(notification.link) && (
-                <Pressable
-                  testID="notification-detail-open"
-                  accessibilityRole="button"
-                  onPress={() => notification.link && go(notification.link)}
-                  style={({ pressed }) => [styles.button, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
-                  <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
-                    {notification.link_label ?? t('notifications.open')}
-                  </ThemedText>
-                </Pressable>
-              )}
             </ScrollView>
+          )}
+          {/* Le bouton dans la barre fixe du bas : « Traiter la demande » (le propriétaire), « Mes réservations » (le membre). */}
+          {notification?.link && APP_LINK.test(notification.link) && (
+            <FixedButtonBar
+              label={notification.link_label ?? t('notifications.open')}
+              onPress={() => notification.link && go(notification.link)}
+              testID="notification-detail-open"
+            />
           )}
         </BackStackProvider>
       </SafeAreaView>
@@ -110,6 +106,4 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   error: { color: ERROR_COLOR },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
-  button: { alignItems: 'center', paddingVertical: Spacing.three, borderRadius: 12, marginTop: Spacing.two },
-  pressed: { opacity: 0.7 },
 });

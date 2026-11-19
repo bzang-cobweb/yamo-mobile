@@ -34,7 +34,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Paul Etoa', link: '/members/37' },
     { text: 'Studio photos', link: '/offers/22' },
   ],
-  link_label: 'Réservations reçues',
+  link_label: 'Traiter la demande',
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -87,7 +87,8 @@ describe('NotificationDetailScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/members/37');
     await fireEvent.press(screen.getByText('Studio photos'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
-    await fireEvent.press(screen.getByText('Réservations reçues'));
+    await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
+    expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');
     expect(router.push).toHaveBeenLastCalledWith('/profile/lists/offer.bookings.received');
   });
 });

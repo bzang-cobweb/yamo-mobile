@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
 import { StatusTag } from '@/shared/components/StatusTag';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
@@ -318,19 +319,7 @@ export function ProfileListScreen({ list }: { list: string }) {
       />
       {/* Le bouton fixe en bas : un formulaire (« Ajouter un logement ») ou un écran (« Rechercher un logement »). */}
       {definition.footer && (
-        <View
-          testID="profile-list-footer"
-          style={[styles.footer, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background, paddingBottom: Math.max(insets.bottom, Spacing.three) }]}>
-          <Pressable
-            testID="profile-list-footer-button"
-            accessibilityRole="button"
-            onPress={() => definition.footer && openFooter(definition.footer)}
-            style={({ pressed }) => [styles.footerButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
-            <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
-              {definition.footer.label}
-            </ThemedText>
-          </Pressable>
-        </View>
+        <FixedButtonBar label={definition.footer.label} onPress={() => definition.footer && openFooter(definition.footer)} testID="profile-list-footer" />
       )}
     </ProfileScreenShell>
   );
@@ -384,6 +373,4 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
   counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
-  footer: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
-  footerButton: { alignItems: 'center', paddingVertical: Spacing.three, borderRadius: 12 },
 });
