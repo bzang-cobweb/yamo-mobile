@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { StatusTag } from '@/shared/components/StatusTag';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem, ListItemAction, ListItemCounter } from '@/features/list/types';
 import { activeFilterCount, setFilterFields, setFilterValues, useListFilters } from '@/features/list/utils/filters';
@@ -218,13 +219,7 @@ export function ProfileListScreen({ list }: { list: string }) {
           style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
           {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
           <ItemPicture item={item} testID={`profile-list-item-${item.id}`} />
-          {item.tag && (
-            <View style={[styles.tag, { backgroundColor: TAG_COLORS[item.tag.tone] ?? TAG_COLORS.neutral }]} testID={`profile-list-tag-${item.id}`}>
-              <ThemedText type="smallBold" style={styles.tagText}>
-                {item.tag.label}
-              </ThemedText>
-            </View>
-          )}
+          {item.tag && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
           <ThemedText>{item.title}</ThemedText>
           {item.subtitle && (
             <ThemedText type="small" themeColor="textSecondary">
@@ -401,14 +396,6 @@ function openFooter(footer: { form: string | null; link: string | null }) {
   }
 }
 
-/** Les couleurs des pastilles de statut : en attente orange, acceptée verte, refusée rouge, sinon gris. */
-const TAG_COLORS: Record<string, string> = {
-  warning: '#E8890C',
-  success: '#2E9D5B',
-  danger: ERROR_COLOR,
-  neutral: '#8A8F98',
-};
-
 /** Pause après la dernière frappe avant d'envoyer la recherche. */
 export const SEARCH_DELAY = 300;
 
@@ -445,8 +432,6 @@ const styles = StyleSheet.create({
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
-  tag: { alignSelf: 'flex-start', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 10 },
-  tagText: { color: '#ffffff' },
   counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
   cardActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.two },
   cardAction: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 8 },

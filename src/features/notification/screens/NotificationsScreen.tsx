@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { NetworkError } from '@/shared/api/errors';
+import { StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
@@ -19,7 +20,8 @@ const APP_LINK = /^\/[A-Za-z0-9._\-/]+$/;
 /**
  * L'onglet « Notifications » (décision 2026-11-19-contrat-centre-notifications) : la
  * plus récente en tête, par pages ; les non lues mises en avant. Toucher une
- * notification la marque lue et ouvre l'écran qu'elle désigne ; « Tout marquer
+ * notification la marque lue et ouvre l'écran qu'elle désigne ; ses liens
+ * (« Voir l'annonce ») ouvrent le leur ; « Tout marquer
  * comme lu » en tête. Rechargée à chaque retour sur l'onglet.
  */
 export function NotificationsScreen() {
@@ -36,12 +38,13 @@ export function NotificationsScreen() {
     }, [refetch, refreshCount]),
   );
 
-  async function open(notification: AppNotification) {
+  /** Marque la notification lue et ouvre l'écran désigné (la sienne, ou l'un de ses liens). */
+  function open(notification: AppNotification, link: string | null = notification.link) {
     if (!notification.read) {
       void markRead(notification.id);
     }
-    if (notification.link !== null && APP_LINK.test(notification.link)) {
-      router.push(notification.link as Href);
+    if (link !== null && APP_LINK.test(link)) {
+      router.push(link as Href);
     }
   }
 
@@ -106,8 +109,8 @@ export function NotificationsScreen() {
           <Pressable
             testID={`notification-${item.id}`}
             accessibilityRole="button"
-            accessibilityLabel={item.read ? `${item.title}. ${item.body}` : `${t('notifications.unread')} : ${item.title}. ${item.body}`}
-            onPress={() => void open(item)}
+            accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}${item.tag ? `, ${item.tag.label}` : ''}. ${item.body}`}
+            onPress={() => open(item)}
             style={({ pressed }) => [
               styles.item,
               { borderColor: theme.backgroundSelected, backgroundColor: item.read ? theme.background : theme.backgroundElement },
@@ -116,9 +119,21 @@ export function NotificationsScreen() {
             {!item.read && <View style={[styles.dot, { backgroundColor: theme.primary }]} testID={`notification-${item.id}-unread`} />}
             <View style={styles.texts}>
               <ThemedText type={item.read ? 'default' : 'smallBold'}>{item.title}</ThemedText>
+              {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
               <ThemedText type="small" themeColor="textSecondary">
                 {item.body}
               </ThemedText>
+              {item.links.map((link, index) => (
+                <Pressable
+                  key={link.link}
+                  accessibilityRole="link"
+                  testID={`notification-${item.id}-link-${index}`}
+                  hitSlop={Spacing.one}
+                  onPress={() => open(item, link.link)}
+                  style={styles.link}>
+                  <ThemedText type="linkPrimary">{link.label}</ThemedText>
+                </Pressable>
+              ))}
               <ThemedText type="small" themeColor="textSecondary">
                 {relativeTime(item.created_at, t, locale)}
               </ThemedText>
@@ -140,5 +155,6 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', gap: Spacing.three, padding: Spacing.three, borderWidth: 1, borderRadius: 8 },
   dot: { width: 10, height: 10, borderRadius: 5, marginTop: Spacing.two },
   texts: { flex: 1, gap: Spacing.one },
+  link: { alignSelf: 'flex-start' },
   pressed: { opacity: 0.7 },
 });

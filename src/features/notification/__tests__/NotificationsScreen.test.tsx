@@ -21,8 +21,8 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Nouvelle demande', body: 'Marie Curie demande un séjour.', link: '/profile/lists/offer.bookings.received', read: false, created_at: new Date().toISOString() },
-    { id: 'b', title: 'Demande acceptée', body: 'Votre demande est acceptée.', link: 'https://exemple.test', read: true, created_at: '2026-01-02T10:00:00Z' },
+    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], read: false, created_at: new Date().toISOString() },
+    { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', link: 'https://exemple.test', links: [], read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
 };
@@ -50,7 +50,9 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
   it('la plus récente en tête, les non lues mises en avant', async () => {
     await show();
 
-    expect(await screen.findByText('Nouvelle demande')).toBeTruthy();
+    expect(await screen.findByTestId('notification-a-tag')).toBeTruthy();
+    expect(screen.getByText('En attente')).toBeTruthy();
+    expect(screen.queryByTestId('notification-b-tag')).toBeNull();
     expect(screen.getByTestId('notification-a-unread')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-unread')).toBeNull();
     expect(screen.getByText('Tout marquer comme lu')).toBeTruthy();
@@ -63,6 +65,15 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(notificationService.read).toHaveBeenCalledWith('a');
     expect(router.push).toHaveBeenCalledWith('/profile/lists/offer.bookings.received');
     await waitFor(() => expect(screen.queryByTestId('notification-a-unread')).toBeNull());
+  });
+
+  it('« Voir l’annonce » marque la notification lue et ouvre la fiche de l’offre', async () => {
+    await show();
+    await fireEvent.press(await screen.findByText('Voir l’annonce'));
+
+    expect(notificationService.read).toHaveBeenCalledWith('a');
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
   it('une adresse externe n’est jamais ouverte ; une notification lue ne repart pas à l’API', async () => {
