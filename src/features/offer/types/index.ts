@@ -33,6 +33,12 @@ export type OfferDetail = {
   favorite?: ListItemFavorite | null;
   /** Les avis ; `null` pour une offre non publiée (décision 2026-11-19-contrat-avis-offres). */
   reviews: OfferReviews | null;
+  /**
+   * Bouton de la barre fixe (décision 2026-11-19-contrat-reservations) : « Réserver »
+   * (séjour) ou « Demander une visite », et le formulaire à ouvrir avec l'offre ;
+   * `null` (ou absent) : pas de bouton (sa propre offre).
+   */
+  booking?: { type: 'stay' | 'visit'; label: string; form: string } | null;
 };
 
 /** Un avis : prénom de l'auteur, note de 1 à 5, commentaire, date. */

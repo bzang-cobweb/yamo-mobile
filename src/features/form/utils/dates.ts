@@ -30,6 +30,3 @@ export function toIsoDate(date: Date): string {
 export function formatDate(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
 }
-
-/** Bornes du sélecteur : la plus ancienne date acceptée par l'API, et aujourd'hui. */
-export const MIN_DATE = new Date(1900, 0, 1);

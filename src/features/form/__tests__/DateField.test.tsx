@@ -6,14 +6,22 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { DateField } from '../components/fields/DateField';
 import type { FormFieldDefinition } from '../types';
 
+/** Les bornes reçues par le dernier calendrier affiché. */
+let mockBounds: { minimumDate?: Date; maximumDate?: Date; value?: Date } = {};
+
 /** Le sélecteur natif est remplacé par un bouton qui choisit le 12 avril 1990. */
 jest.mock('@react-native-community/datetimepicker', () => {
   const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const Picker = ({ onChange, testID }: { onChange: (event: { type: string }, date?: Date) => void; testID?: string }) => (
-    <Pressable testID={testID} onPress={() => onChange({ type: 'set' }, new Date(1990, 3, 12))}>
-      <Text>calendrier</Text>
-    </Pressable>
-  );
+  type PickerProps = { onChange: (event: { type: string }, date?: Date) => void; testID?: string; minimumDate?: Date; maximumDate?: Date; value?: Date };
+  const Picker = ({ onChange, testID, minimumDate, maximumDate, value }: PickerProps) => {
+    mockBounds = { minimumDate, maximumDate, value };
+
+    return (
+      <Pressable testID={testID} onPress={() => onChange({ type: 'set' }, new Date(1990, 3, 12))}>
+        <Text>calendrier</Text>
+      </Pressable>
+    );
+  };
 
   return { __esModule: true, default: Picker, DateTimePickerAndroid: { open: jest.fn() } };
 });
@@ -73,5 +81,19 @@ describe('DateField', () => {
     await renderField('1990-04-12', jest.fn(), { ...birthDate, required: true });
 
     expect(screen.queryByTestId('field-birth_date-clear')).toBeNull();
+  });
+
+  it('le calendrier suit les bornes servies ; sans bornes, toute date (décision 2026-11-19-bornes-des-dates)', async () => {
+    await renderField('', jest.fn(), { ...birthDate, name: 'check_in', date_range: { min: '2030-01-10', max: '2031-01-10' } });
+    await fireEvent.press(screen.getByTestId('field-check_in'));
+    expect(mockBounds.minimumDate).toEqual(new Date(2030, 0, 10));
+    expect(mockBounds.maximumDate).toEqual(new Date(2031, 0, 10));
+    // Ouvert sur la première date possible quand aujourd'hui est avant.
+    expect(mockBounds.value).toEqual(new Date(2030, 0, 10));
+
+    await renderField('', jest.fn(), { ...birthDate, name: 'available_from' });
+    await fireEvent.press(screen.getByTestId('field-available_from'));
+    expect(mockBounds.minimumDate).toBeUndefined();
+    expect(mockBounds.maximumDate).toBeUndefined();
   });
 });

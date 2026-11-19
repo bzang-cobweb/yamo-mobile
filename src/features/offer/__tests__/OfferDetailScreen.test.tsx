@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
 
@@ -30,7 +30,7 @@ jest.mock('expo-image', () => {
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-  return { SafeAreaView: View };
+  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }) };
 });
 
 let mockState: { data?: OfferDetail; isPending: boolean; error: unknown } = { isPending: true, error: null };
@@ -143,7 +143,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-status')).toBeNull();
   });
 
-  it('prix, description, localisation (adresse complète et indication), puis caractéristiques', async () => {
+  it('description, localisation (adresse complète et indication), puis caractéristiques ; le prix dans la barre fixe', async () => {
     mockState = { data: { ...OFFER, address: 'Rue Njo-Njo 12, Douala, Cameroun', indication: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
     await show();
     // Décision 2026-11-19-fiche-localisation.
@@ -151,7 +151,10 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByTestId('offer-address').props.children).toBe('Rue Njo-Njo 12, Douala, Cameroun');
     expect(screen.getByTestId('offer-indication').props.children).toBe('Derrière le marché, portail bleu');
     await openSections();
-    const order = ['offer-price', 'offer-description', 'offer-address', 'offer-indication', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
+    // Le prix n'est plus sous le titre : il est dans la barre fixe (décision 2026-11-19-contrat-reservations).
+    expect(within(screen.getByTestId('offer-booking-bar')).getByTestId('offer-price')).toBeTruthy();
+    expect(within(screen.getByTestId('offer-detail')).queryByTestId('offer-price')).toBeNull();
+    const order = ['offer-description', 'offer-address', 'offer-indication', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
 
@@ -362,5 +365,34 @@ describe('OfferService.get', () => {
 
     await expect(new OfferService(client as unknown as ApiClient).get('7')).resolves.toBe(OFFER);
     expect(client.get).toHaveBeenCalledWith('/v1/offers/7');
+  });
+});
+
+describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contrat-reservations)', () => {
+  afterEach(() => {
+    mockUser = null;
+    jest.mocked(router.push).mockClear();
+  });
+
+  it('un visiteur passe par la connexion ; un membre ouvre le formulaire lié à l’offre', async () => {
+    mockState = { data: { ...OFFER, booking: { type: 'stay', label: 'Réserver', form: 'offer.booking' } }, isPending: false, error: null };
+    mockUser = null;
+    await show();
+    const bar = screen.getByTestId('offer-booking-bar');
+    expect(within(bar).getByText('250 000 FCFA')).toBeTruthy();
+    await fireEvent.press(within(bar).getByText('Réserver'));
+    expect(router.push).toHaveBeenCalledWith('/sign-in');
+
+    mockUser = { id: 3 };
+    await show();
+    await fireEvent.press(screen.getByTestId('offer-booking'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/offers/[id]/book', params: { id: OFFER.id } });
+  });
+
+  it('sa propre offre : le prix seul, sans bouton', async () => {
+    mockState = { data: { ...OFFER, booking: null }, isPending: false, error: null };
+    await show();
+    expect(within(screen.getByTestId('offer-booking-bar')).getByTestId('offer-price')).toBeTruthy();
+    expect(screen.queryByTestId('offer-booking')).toBeNull();
   });
 });

@@ -7,22 +7,28 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
 import type { FieldProps } from '../../types';
-import { formatDate, MIN_DATE, parseIsoDate, toIsoDate } from '../../utils/dates';
+import { formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
 import { FieldShell } from '../FieldShell';
 import { useInputStyle } from './inputStyle';
 
 /**
  * Date seule (`AAAA-MM-JJ`) avec le sélecteur natif : calendrier déplié sous le
  * champ sur iOS (replié dès qu'une date est choisie), boîte de dialogue sur
- * Android. Limitée à aujourd'hui. Un champ facultatif peut être vidé (« Effacer »,
- * sous le champ → valeur vide).
+ * Android. Le calendrier propose les dates entre les bornes servies par Laravel
+ * (`date_range` : une naissance jusqu'à aujourd'hui, une réservation à partir
+ * d'aujourd'hui ; décision 2026-11-19-bornes-des-dates), toutes sans bornes. Un champ
+ * facultatif peut être vidé (« Effacer », sous le champ → valeur vide).
  */
 export function DateField({ field, value, onChange, error, disabled }: FieldProps<string>) {
   const { t, locale } = useI18n();
   const inputStyle = useInputStyle(Boolean(error));
   const [open, setOpen] = useState(false);
   const date = parseIsoDate(value);
+  const minimumDate = parseIsoDate(field.date_range?.min ?? '') ?? undefined;
+  const maximumDate = parseIsoDate(field.date_range?.max ?? '') ?? undefined;
+  // Le calendrier s'ouvre sur la date choisie, sinon aujourd'hui ramené dans les bornes.
   const today = new Date();
+  const start = date ?? (minimumDate && today < minimumDate ? minimumDate : maximumDate && today > maximumDate ? maximumDate : today);
 
   function choose(event: DateTimePickerEvent, chosen?: Date) {
     if (event.type === 'set' && chosen) {
@@ -34,7 +40,7 @@ export function DateField({ field, value, onChange, error, disabled }: FieldProp
 
   function toggle() {
     if (Platform.OS === 'android') {
-      DateTimePickerAndroid.open({ value: date ?? today, mode: 'date', minimumDate: MIN_DATE, maximumDate: today, onChange: choose });
+      DateTimePickerAndroid.open({ value: start, mode: 'date', minimumDate, maximumDate, onChange: choose });
     } else {
       setOpen((current) => !current);
     }
@@ -73,12 +79,12 @@ export function DateField({ field, value, onChange, error, disabled }: FieldProp
       {open && Platform.OS !== 'android' && (
         <DateTimePicker
           testID={`field-${field.name}-picker`}
-          value={date ?? today}
+          value={start}
           mode="date"
           display="inline"
           locale={locale}
-          minimumDate={MIN_DATE}
-          maximumDate={today}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
           onChange={choose}
         />
       )}

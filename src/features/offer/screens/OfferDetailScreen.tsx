@@ -1,9 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { takeProfileNotice } from '@/features/auth/utils/profile-notice';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
@@ -20,6 +21,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { OfferReviews } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { useOfferDetail } from '../hooks/useOfferDetail';
+import type { OfferDetail } from '../types';
 
 /**
  * Fiche d'une offre (`/offers/[id]`, décision 2026-11-18-fiche-offre), pour un
@@ -107,12 +109,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 <ThemedText type="subtitle" testID="offer-title">
                   {offer.title}
                 </ThemedText>
-                {/* Le prix seul, sans son libellé (décision 2026-11-19-fiche-offre-ordre). */}
-                {offer.price && (
-                  <ThemedText type="smallBold" style={{ color: theme.primary }} testID="offer-price">
-                    {offer.price.value}
-                  </ThemedText>
-                )}
+                {/* Le prix n'est plus ici : il est dans la barre fixe (décision 2026-11-19-contrat-reservations). */}
 
                 {/* Puis la description, la localisation, les caractéristiques. */}
                 {/* La description seule, sans titre (décision 2026-11-19-fiche-description-equipements). */}
@@ -200,9 +197,52 @@ export function OfferDetailScreen({ id }: { id: string }) {
               </View>
             </ScrollView>
           )}
+          {/* Barre fixe en bas : le prix et le bouton de réservation (décision 2026-11-19-contrat-reservations). */}
+          {offer && (offer.price || offer.booking) && <BookingBar offer={offer} />}
         </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
+  );
+}
+
+/**
+ * Le prix à gauche, le bouton à droite (« Réserver », « Demander une visite »). Un
+ * visiteur passe d'abord par la connexion ; un membre ouvre le formulaire décrit par
+ * Laravel, lié à l'offre. Sa propre offre : le prix seul.
+ */
+function BookingBar({ offer }: { offer: OfferDetail }) {
+  const theme = useTheme();
+  const { user } = useAuth();
+  const insets = useSafeAreaInsets();
+  const booking = offer.booking;
+
+  return (
+    <View
+      testID="offer-booking-bar"
+      style={[styles.bar, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background, paddingBottom: Math.max(insets.bottom, Spacing.three) }]}>
+      <View style={[styles.barContent, { maxWidth: MaxContentWidth / 2 }]}>
+        <View style={styles.barPrice}>
+          {offer.price && (
+            <ThemedText type="smallBold" style={{ color: theme.primary }} testID="offer-price">
+              {offer.price.value}
+            </ThemedText>
+          )}
+        </View>
+        {booking && (
+          <Pressable
+            testID="offer-booking"
+            accessibilityRole="button"
+            onPress={() =>
+              user === null ? router.push('/sign-in') : router.push({ pathname: '/offers/[id]/book', params: { id: offer.id } })
+            }
+            style={({ pressed }) => [styles.bookButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
+            <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
+              {booking.label}
+            </ThemedText>
+          </Pressable>
+        )}
+      </View>
+    </View>
   );
 }
 
@@ -237,4 +277,9 @@ const styles = StyleSheet.create({
   factValue: { flexShrink: 1, textAlign: 'right' },
   information: { paddingTop: Spacing.one },
   error: { color: ERROR_COLOR },
+  bar: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
+  barContent: { width: '100%', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  barPrice: { flex: 1 },
+  bookButton: { paddingVertical: Spacing.three, paddingHorizontal: Spacing.four, borderRadius: 12, alignItems: 'center' },
+  pressed: { opacity: 0.7 },
 });

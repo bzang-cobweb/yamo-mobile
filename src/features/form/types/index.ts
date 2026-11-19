@@ -64,6 +64,8 @@ export type FormFieldDefinition = {
   depends_on?: string | null;
   /** Nombre maximal de caractères (textarea : 1 000 par défaut), ou `null`. */
   max_length?: number | null;
+  /** Bornes du calendrier d'une date (`AAAA-MM-JJ` ou `null`) ; absentes : toute date (décision 2026-11-19-bornes-des-dates). */
+  date_range?: { min: string | null; max: string | null } | null;
   /** Unité affichée après la valeur (« m² »), ou `null` (décision 2026-11-18-fiche-offre). */
   suffix?: string | null;
   /**
