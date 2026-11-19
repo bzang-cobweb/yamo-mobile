@@ -24,8 +24,8 @@ export type OfferDetail = {
   rules?: { label: string; value: string }[];
   /** Blocs d'informations, dans l'ordre : titre et description (décision 2026-11-19-contrat-offer-informations). */
   informations?: { id: string; title: string; description: string }[];
-  /** Sections repliables, dans l'ordre, ouvertes ou non à l'arrivée ; servies par Laravel (décision 2026-11-19-sections-fiche-laravel). */
-  sections?: { key: string; open: boolean }[];
+  /** Sections repliables, complètes, dans l'ordre et l'ouverture servis par Laravel (décisions 2026-11-19-sections-fiche-laravel et 2026-11-19-sections-construites-laravel). */
+  sections?: OfferSection[];
   published_at: string | null;
   /** Statut, servi au seul propriétaire. */
   status: { value: string; label: string } | null;
@@ -39,6 +39,22 @@ export type OfferDetail = {
    * `null` (ou absent) : pas de bouton (sa propre offre).
    */
   booking?: { type: 'stay' | 'visit'; label: string; form: string } | null;
+};
+
+/**
+ * Une section de la fiche, construite par Laravel : `rows` (lignes « libellé —
+ * valeur » : caractéristiques, règles), `text` (un texte et une note : la
+ * localisation, un bloc d'informations), `reviews` (les avis de `reviews`). Un type
+ * inconnu est ignoré.
+ */
+export type OfferSection = {
+  key: string;
+  type: 'rows' | 'text' | 'reviews' | string;
+  title: string;
+  open: boolean;
+  rows?: { label: string; value: string }[];
+  text?: string;
+  note?: string | null;
 };
 
 /** Un avis : prénom de l'auteur, note de 1 à 5, commentaire, date. */

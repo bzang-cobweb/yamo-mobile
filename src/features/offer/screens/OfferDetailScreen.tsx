@@ -119,57 +119,37 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </View>
                 )}
 
-                {/* Les sections repliables, dans l'ordre et l'ouverture servis par Laravel
-                    (décision 2026-11-19-sections-fiche-laravel) ; une clé inconnue est ignorée. */}
+                {/* Les sections repliables, complètes, dans l'ordre et l'ouverture servis par
+                    Laravel (décisions 2026-11-19-sections-fiche-laravel et
+                    2026-11-19-sections-construites-laravel) : un seul aiguillage, sur le type. */}
                 {(offer.sections ?? []).map((section) => {
-                  switch (section.key) {
-                    // L'adresse complète, pays compris, et son indication (décision 2026-11-19-fiche-localisation).
-                    case 'location':
-                      return offer.address ? (
-                        <Accordion key={section.key} title={t('offer.location')} initiallyOpen={section.open} testID="offer-location-block">
-                          <View style={[styles.location, { borderBottomColor: theme.backgroundSelected }]}>
-                            <ThemedText testID="offer-address">{offer.address}</ThemedText>
-                            {offer.indication && (
-                              <ThemedText type="small" themeColor="textSecondary" testID="offer-indication">
-                                {offer.indication}
+                  switch (section.type) {
+                    // Lignes « libellé — valeur » : caractéristiques, règles.
+                    case 'rows':
+                      return (
+                        <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
+                          {(section.rows ?? []).map((row) => (
+                            <FactRow key={row.label} fact={row} testID={`offer-${section.key}-row`} />
+                          ))}
+                        </Accordion>
+                      );
+                    // Un texte et sa note : la localisation (adresse, indication), un bloc d'informations.
+                    case 'text':
+                      return (
+                        <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
+                          <View style={[styles.text, { borderBottomColor: theme.backgroundSelected }]}>
+                            <ThemedText testID={`offer-${section.key}-text`}>{section.text}</ThemedText>
+                            {section.note && (
+                              <ThemedText type="small" themeColor="textSecondary" testID={`offer-${section.key}-note`}>
+                                {section.note}
                               </ThemedText>
                             )}
                           </View>
                         </Accordion>
-                      ) : null;
-                    case 'facts':
-                      return (
-                        <Accordion key={section.key} title={t('offer.details')} initiallyOpen={section.open} testID="offer-facts">
-                          {offer.facts.map((fact) => (
-                            <FactRow key={fact.label} fact={fact} testID="offer-fact" />
-                          ))}
-                        </Accordion>
                       );
-                    // Règles (décision 2026-11-19-contrat-regles-informations).
-                    case 'rules':
-                      return (
-                        <Accordion key={section.key} title={t('offer.rules')} initiallyOpen={section.open} testID="offer-rules">
-                          {offer.rules?.map((rule) => (
-                            <FactRow key={rule.label} fact={rule} testID="offer-rule" />
-                          ))}
-                        </Accordion>
-                      );
-                    // Un bloc d'informations par section, titrée par son titre (décision 2026-11-19-contrat-offer-informations).
-                    case 'informations':
-                      return (offer.informations ?? []).map((information) => (
-                        <Accordion
-                          key={`information-${information.id}`}
-                          title={information.title}
-                          initiallyOpen={section.open}
-                          testID={`offer-information-${information.id}`}>
-                          <ThemedText type="small" style={styles.information} testID="offer-information">
-                            {information.description}
-                          </ThemedText>
-                        </Accordion>
-                      ));
                     case 'reviews':
                       return offer.reviews ? (
-                        <Accordion key={section.key} title={t('offer.reviews')} initiallyOpen={section.open} testID="offer-reviews-block">
+                        <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
                           <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />
                         </Accordion>
                       ) : null;
@@ -271,11 +251,10 @@ const styles = StyleSheet.create({
   body: { width: '100%', alignSelf: 'center', gap: Spacing.two, padding: Spacing.four },
   section: { gap: Spacing.one, marginTop: Spacing.three },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
-  // Le séparateur à la fin du bloc « Localisation ».
-  location: { gap: Spacing.one, paddingBottom: Spacing.two, borderBottomWidth: 1 },
+  // Le texte d'une section, et le séparateur à sa fin.
+  text: { gap: Spacing.one, paddingBottom: Spacing.two, borderBottomWidth: 1 },
   factLabel: { flexShrink: 0, maxWidth: '45%' },
   factValue: { flexShrink: 1, textAlign: 'right' },
-  information: { paddingTop: Spacing.one },
   error: { color: ERROR_COLOR },
   bar: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
   barContent: { width: '100%', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: Spacing.three },

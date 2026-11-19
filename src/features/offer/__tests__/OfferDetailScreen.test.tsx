@@ -10,7 +10,7 @@ import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { OfferDetailScreen } from '../screens/OfferDetailScreen';
 import { OfferService } from '../services/OfferService';
-import type { OfferDetail } from '../types';
+import type { OfferDetail, OfferSection } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -39,19 +39,22 @@ jest.mock('../hooks/useOfferDetail', () => ({
   useOfferDetail: () => ({ ...mockState, data: mockState.data && mockWithSections(mockState.data), refetch: mockRefetch }),
 }));
 
-/** Les sections que Laravel sert par défaut (localisation ouverte, puis caractéristiques, règles, avis), sauf si le test les donne. */
+/**
+ * Les sections que Laravel sert par défaut, complètes (décision
+ * 2026-11-19-sections-construites-laravel) : localisation ouverte, puis
+ * caractéristiques, règles, avis, et un bloc par information ; sauf si le test les donne.
+ */
 function mockWithSections(offer: OfferDetail): OfferDetail {
   if (offer.sections) {
     return offer;
   }
-  const present = [
-    ['location', Boolean(offer.address)],
-    ['facts', offer.facts.length > 0],
-    ['rules', (offer.rules?.length ?? 0) > 0],
-    ['reviews', Boolean(offer.reviews)],
-    ['informations', (offer.informations?.length ?? 0) > 0],
-  ] as const;
-  const sections = present.filter(([, shown]) => shown).map(([key]) => ({ key, open: key === 'location' }));
+  const sections: OfferSection[] = [
+    ...(offer.address ? [{ key: 'location', type: 'text', title: 'Localisation', open: true, text: offer.address, note: offer.indication ?? null }] : []),
+    ...(offer.facts.length > 0 ? [{ key: 'facts', type: 'rows', title: 'Caractéristiques', open: false, rows: offer.facts }] : []),
+    ...((offer.rules?.length ?? 0) > 0 ? [{ key: 'rules', type: 'rows', title: 'Règles', open: false, rows: offer.rules }] : []),
+    ...(offer.reviews ? [{ key: 'reviews', type: 'reviews', title: 'Avis', open: false }] : []),
+    ...(offer.informations ?? []).map((information) => ({ key: `information-${information.id}`, type: 'text', title: information.title, open: false, text: information.description, note: null })),
+  ];
   if (sections.length > 0 && !sections.some((section) => section.open)) {
     sections[0].open = true;
   }
@@ -107,7 +110,7 @@ async function show() {
 
 /** Ouvre les sections repliées (seule la première est ouverte à l'arrivée). */
 async function openSections() {
-  for (const block of ['offer-location-block', 'offer-facts', 'offer-rules', 'offer-reviews-block']) {
+  for (const block of ['offer-section-location', 'offer-section-facts', 'offer-section-rules', 'offer-section-reviews']) {
     const toggle = screen.queryByTestId(`${block}-toggle`);
     if (toggle && !toggle.props.accessibilityState?.expanded) {
       await fireEvent.press(toggle);
@@ -132,7 +135,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     // Le prix seul ; la ville est dans les caractéristiques (décision 2026-11-19-fiche-offre-ordre).
     expect(screen.queryByText('Loyer mensuel')).toBeNull();
     expect(screen.queryByTestId('offer-location')).toBeNull();
-    expect(screen.getAllByTestId('offer-fact')).toHaveLength(3);
+    expect(screen.getAllByTestId('offer-facts-row')).toHaveLength(3);
     // Le libellé d'une valeur longue reste affiché (décision 2026-11-19-fiche-description-equipements).
     expect(screen.getByText('Équipements')).toBeTruthy();
     expect(screen.getByText('85 m²')).toBeTruthy();
@@ -148,50 +151,58 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     await show();
     // Décision 2026-11-19-fiche-localisation.
     expect(screen.getByText('Localisation')).toBeTruthy();
-    expect(screen.getByTestId('offer-address').props.children).toBe('Rue Njo-Njo 12, Douala, Cameroun');
-    expect(screen.getByTestId('offer-indication').props.children).toBe('Derrière le marché, portail bleu');
+    expect(screen.getByTestId('offer-location-text').props.children).toBe('Rue Njo-Njo 12, Douala, Cameroun');
+    expect(screen.getByTestId('offer-location-note').props.children).toBe('Derrière le marché, portail bleu');
     await openSections();
     // Le prix n'est plus sous le titre : il est dans la barre fixe (décision 2026-11-19-contrat-reservations).
     expect(within(screen.getByTestId('offer-booking-bar')).getByTestId('offer-price')).toBeTruthy();
     expect(within(screen.getByTestId('offer-detail')).queryByTestId('offer-price')).toBeNull();
-    const order = ['offer-description', 'offer-address', 'offer-indication', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
+    const order = ['offer-description', 'offer-location-text', 'offer-location-note', 'offer-facts-row'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
 
     // Seule la première section est ouverte à l'arrivée (décision 2026-11-19-premiere-section-ouverte).
     await show();
-    expect(screen.getByTestId('offer-location-block-toggle').props.accessibilityState).toEqual({ expanded: true });
-    for (const block of ['offer-facts', 'offer-reviews-block']) {
+    expect(screen.getByTestId('offer-section-location-toggle').props.accessibilityState).toEqual({ expanded: true });
+    for (const block of ['offer-section-facts', 'offer-section-reviews']) {
       expect(screen.getByTestId(`${block}-toggle`).props.accessibilityState).toEqual({ expanded: false });
     }
-    expect(screen.queryAllByTestId('offer-fact')).toHaveLength(0);
-    await fireEvent.press(screen.getByTestId('offer-facts-toggle'));
-    expect(screen.getAllByTestId('offer-fact').length).toBeGreaterThan(0);
-    expect(screen.getByTestId('offer-address')).toBeTruthy();
+    expect(screen.queryAllByTestId('offer-facts-row')).toHaveLength(0);
+    await fireEvent.press(screen.getByTestId('offer-section-facts-toggle'));
+    expect(screen.getAllByTestId('offer-facts-row').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('offer-location-text')).toBeTruthy();
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
     // Sans adresse : pas de bloc.
-    expect(screen.queryByTestId('offer-location-block')).toBeNull();
+    expect(screen.queryByTestId('offer-section-location')).toBeNull();
     // La première section affichée est alors « Caractéristiques » : c'est elle qui est ouverte.
-    expect(screen.getByTestId('offer-facts-toggle').props.accessibilityState).toEqual({ expanded: true });
+    expect(screen.getByTestId('offer-section-facts-toggle').props.accessibilityState).toEqual({ expanded: true });
   });
 
-  it('les sections suivent l’ordre et l’ouverture servis par Laravel ; une clé inconnue est ignorée', async () => {
-    // Décision 2026-11-19-sections-fiche-laravel.
+  it('les sections suivent l’ordre et l’ouverture servis par Laravel ; un type inconnu est ignoré', async () => {
+    // Décisions 2026-11-19-sections-fiche-laravel et 2026-11-19-sections-construites-laravel.
     mockState = {
-      data: { ...OFFER, address: 'Rue Njo-Njo 12, Douala, Cameroun', sections: [{ key: 'reviews', open: true }, { key: 'weather', open: true }, { key: 'facts', open: false }] },
+      data: {
+        ...OFFER,
+        address: 'Rue Njo-Njo 12, Douala, Cameroun',
+        sections: [
+          { key: 'reviews', type: 'reviews', title: 'Avis', open: true },
+          { key: 'weather', type: 'weather', title: 'Météo', open: true },
+          { key: 'facts', type: 'rows', title: 'Caractéristiques', open: false, rows: OFFER.facts },
+        ],
+      },
       isPending: false,
       error: null,
     };
     await show();
 
     const json = JSON.stringify(screen.toJSON());
-    expect(json.indexOf('"testID":"offer-reviews-block"')).toBeLessThan(json.indexOf('"testID":"offer-facts"'));
-    expect(screen.getByTestId('offer-reviews-block-toggle').props.accessibilityState).toEqual({ expanded: true });
-    expect(screen.getByTestId('offer-facts-toggle').props.accessibilityState).toEqual({ expanded: false });
+    expect(json.indexOf('"testID":"offer-section-reviews"')).toBeLessThan(json.indexOf('"testID":"offer-section-facts"'));
+    expect(screen.getByTestId('offer-section-reviews-toggle').props.accessibilityState).toEqual({ expanded: true });
+    expect(screen.getByTestId('offer-section-facts-toggle').props.accessibilityState).toEqual({ expanded: false });
     // Pas servie : pas affichée, même avec une adresse.
-    expect(screen.queryByTestId('offer-location-block')).toBeNull();
+    expect(screen.queryByTestId('offer-section-location')).toBeNull();
   });
 
   it('règles dans leur section ; rien sans valeur', async () => {
@@ -204,15 +215,15 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     await show();
     await openSections();
     expect(screen.getByText('Règles')).toBeTruthy();
-    expect(screen.getAllByTestId('offer-rule')).toHaveLength(2);
+    expect(screen.getAllByTestId('offer-rules-row')).toHaveLength(2);
     expect(screen.getByText('15:00')).toBeTruthy();
     // Après les caractéristiques.
     const json = JSON.stringify(screen.toJSON());
-    expect(json.indexOf('"testID":"offer-fact"')).toBeLessThan(json.indexOf('"testID":"offer-rule"'));
+    expect(json.indexOf('"testID":"offer-facts-row"')).toBeLessThan(json.indexOf('"testID":"offer-rules-row"'));
 
     mockState = { data: { ...OFFER, rules: [] }, isPending: false, error: null };
     await show();
-    expect(screen.queryByTestId('offer-rules')).toBeNull();
+    expect(screen.queryByTestId('offer-section-rules')).toBeNull();
   });
 
   it('un bloc d’informations par section, titrée par son titre, après les avis', async () => {
@@ -227,12 +238,12 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByText('Arrivée')).toBeTruthy();
     expect(screen.getByText('Parking')).toBeTruthy();
     // Fermées à l'arrivée : la description s'ouvre avec la section.
-    expect(screen.queryAllByTestId('offer-information')).toHaveLength(0);
-    await fireEvent.press(screen.getByTestId('offer-information-4-toggle'));
-    expect(screen.getByTestId('offer-information').props.children).toBe('Clés chez le gardien.\nAppeler la veille.');
+    expect(screen.queryAllByTestId('offer-information-4-text')).toHaveLength(0);
+    await fireEvent.press(screen.getByTestId('offer-section-information-4-toggle'));
+    expect(screen.getByTestId('offer-information-4-text').props.children).toBe('Clés chez le gardien.\nAppeler la veille.');
     const json = JSON.stringify(screen.toJSON());
-    expect(json.indexOf('"testID":"offer-reviews-block"')).toBeLessThan(json.indexOf('"testID":"offer-information-4"'));
-    expect(json.indexOf('"testID":"offer-information-4"')).toBeLessThan(json.indexOf('"testID":"offer-information-9"'));
+    expect(json.indexOf('"testID":"offer-section-reviews"')).toBeLessThan(json.indexOf('"testID":"offer-section-information-4"'));
+    expect(json.indexOf('"testID":"offer-section-information-4"')).toBeLessThan(json.indexOf('"testID":"offer-section-information-9"'));
   });
 
   it('le carrousel suit la photo affichée', async () => {
