@@ -40,6 +40,8 @@ type DynamicFormProps = {
  */
 export function DynamicForm({ definition, onSubmit, hideTitle = false }: DynamicFormProps) {
   const destructive = definition.submit.destructive === true;
+  // L'alignement des titres vient de la définition du formulaire (décision 2026-11-19-alignement-titre-formulaire).
+  const titleAlign = { textAlign: definition.title_align === 'center' ? 'center' : 'left' } as const;
   const { t } = useI18n();
   const theme = useTheme();
   const [values, setValues] = useState<FormValues>(() => initialValues(definition));
@@ -150,12 +152,12 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
       {((!hideTitle && definition.title !== null) || definition.subtitle !== null) && (
         <View style={styles.header}>
           {!hideTitle && definition.title !== null && (
-            <ThemedText type="subtitle" accessibilityRole="header" testID="form-title">
+            <ThemedText type="subtitle" accessibilityRole="header" style={titleAlign} testID="form-title">
               {definition.title}
             </ThemedText>
           )}
           {definition.subtitle !== null && (
-            <ThemedText themeColor="textSecondary" testID="form-subtitle">
+            <ThemedText themeColor="textSecondary" style={titleAlign} testID="form-subtitle">
               {definition.subtitle}
             </ThemedText>
           )}
@@ -168,12 +170,12 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
             {t('form.stepOf', { current: step + 1, total: steps.length })}
           </ThemedText>
           {currentStep.title !== null && (
-            <ThemedText type="subtitle" accessibilityRole="header" testID="form-step-title">
+            <ThemedText type="subtitle" accessibilityRole="header" style={titleAlign} testID="form-step-title">
               {currentStep.title}
             </ThemedText>
           )}
           {currentStep.subtitle && (
-            <ThemedText themeColor="textSecondary" testID="form-step-subtitle">
+            <ThemedText themeColor="textSecondary" style={titleAlign} testID="form-step-subtitle">
               {currentStep.subtitle}
             </ThemedText>
           )}

@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { ApiError } from '@/shared/api/errors';
@@ -67,6 +68,18 @@ describe('DynamicForm à étapes', () => {
     );
 
     expect(screen.getAllByTestId(/^field-(name|gender)$/).map((node) => node.props.testID)).toEqual(['field-gender', 'field-name']);
+  });
+
+  it('le titre d’étape suit l’alignement de la définition : centré, ou à gauche par défaut', async () => {
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <DynamicForm definition={{ ...register, title_align: 'center' }} onSubmit={jest.fn()} />
+      </I18nContext.Provider>,
+    );
+    expect(StyleSheet.flatten(screen.getByTestId('form-step-title').props.style).textAlign).toBe('center');
+
+    await renderForm();
+    expect(StyleSheet.flatten(screen.getByTestId('form-step-title').props.style).textAlign).toBe('left');
   });
 
   it('« Suivant » fait valider l’étape par l’API avec ses seuls champs, puis avance', async () => {

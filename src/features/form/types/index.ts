@@ -81,6 +81,8 @@ export type FormDefinition = {
   title: string | null;
   /** Sous-titre affiché sous le titre, ou `null`. */
   subtitle: string | null;
+  /** Alignement du titre, du sous-titre et des titres d'étape ; absent : `start` (décision 2026-11-19-alignement-titre-formulaire). */
+  title_align?: 'start' | 'center';
   fields: FormFieldDefinition[];
   /** Étapes, dans l'ordre ; vide (ou absent) pour un formulaire d'un seul tenant. */
   steps?: FormStep[];
