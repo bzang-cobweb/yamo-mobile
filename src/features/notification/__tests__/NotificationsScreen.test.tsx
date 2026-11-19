@@ -89,6 +89,8 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     // Sans qui agit (une ancienne notification) : son titre en tête, son texte entier.
     expect(screen.queryByTestId('notification-b-actor')).toBeNull();
     expect(screen.getByTestId('notification-b-text')).toHaveTextContent('Votre demande est acceptée.');
+    // Le message, sur une ligne.
+    expect(screen.getByText('« Je viens pour le travail. »').props.numberOfLines).toBe(1);
 
     await fireEvent.press(screen.getByTestId('notification-a-actor'));
     expect(router.push).toHaveBeenCalledWith('/members/4');
