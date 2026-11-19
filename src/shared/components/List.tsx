@@ -13,6 +13,13 @@ export type ListSearch = {
   placeholder: string;
 };
 
+/** Lien des filtres : son libellé, le nombre de filtres actifs (badge) et son action. */
+export type ListFilter = {
+  label: string;
+  count: number;
+  onPress: () => void;
+};
+
 /** Lien de création : son libellé, affiché, et son action. */
 export type ListCreate = {
   label: string;
@@ -40,6 +47,8 @@ export type ListProps<T> = {
   search?: ListSearch | null;
   /** Lien de création, sous la recherche, aligné à droite, dans la zone fixe. */
   create?: ListCreate | null;
+  /** Lien des filtres, sous la recherche, aligné à droite, avec un badge (décision 2026-11-19-contrat-filtres-vitrine). */
+  filter?: ListFilter | null;
   /** Contenu en tête des items, qui défile avec eux (message, erreur). */
   header?: ReactElement | null;
   contentContainerStyle?: StyleProp<ViewStyle>;
@@ -71,6 +80,7 @@ export function List<T>({
   empty,
   search,
   create,
+  filter,
   header,
   contentContainerStyle,
   testID,
@@ -126,7 +136,7 @@ export function List<T>({
     />
   );
 
-  if (!search && !create) {
+  if (!search && !create && !filter) {
     return list;
   }
 
@@ -166,6 +176,29 @@ export function List<T>({
             <ThemedText type="linkPrimary">{create.label}</ThemedText>
           </Pressable>
         )}
+        {filter && (
+          <Pressable
+            testID={id('filter')}
+            accessibilityRole="button"
+            accessibilityLabel={filter.count > 0 ? `${filter.label} (${filter.count})` : filter.label}
+            hitSlop={Spacing.two}
+            onPress={filter.onPress}
+            style={({ pressed }) => [styles.filter, pressed && styles.pressed]}>
+            <SymbolView
+              name={{ ios: 'line.3.horizontal.decrease', android: 'filter_list', web: 'filter_list' }}
+              size={16}
+              tintColor={theme.primary}
+            />
+            <ThemedText type="linkPrimary">{filter.label}</ThemedText>
+            {filter.count > 0 && (
+              <View style={[styles.badge, { backgroundColor: theme.primary }]} testID={id('filter-badge')}>
+                <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
+                  {filter.count}
+                </ThemedText>
+              </View>
+            )}
+          </Pressable>
+        )}
       </View>
       {list}
     </View>
@@ -188,6 +221,8 @@ const styles = StyleSheet.create({
   },
   search: { flex: 1, paddingVertical: Spacing.two, fontSize: 16 },
   create: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
+  filter: { alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: Spacing.one, paddingVertical: Spacing.one },
+  badge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: Spacing.one, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.6 },
   header: { gap: Spacing.three, marginBottom: Spacing.three },
   empty: { textAlign: 'center' },

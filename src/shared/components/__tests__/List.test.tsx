@@ -133,6 +133,20 @@ describe('List (données locales, sans API)', () => {
     expect(screen.getAllByTestId(/^fruits(-create)?$/).map((node) => node.props.testID)).toEqual(['fruits-create', 'fruits']);
   });
 
+  it('avec filter : un lien à droite, avec un badge du nombre de filtres actifs, absent à zéro', async () => {
+    const onPress = jest.fn();
+    await renderList({ search: { value: '', onChange: jest.fn(), placeholder: 'Chercher…' }, filter: { label: 'Filtres', count: 2, onPress } });
+
+    expect(screen.getByTestId('fruits-filter-badge')).toHaveTextContent('2');
+    expect(screen.getByTestId('fruits-filter').props.accessibilityLabel).toBe('Filtres (2)');
+    expect(StyleSheet.flatten(screen.getByTestId('fruits-filter').props.style)).toEqual(expect.objectContaining({ alignSelf: 'flex-end' }));
+    await fireEvent.press(screen.getByTestId('fruits-filter'));
+    expect(onPress).toHaveBeenCalled();
+
+    await renderList({ filter: { label: 'Filtres', count: 0, onPress } });
+    expect(screen.queryByTestId('fruits-filter-badge')).toBeNull();
+  });
+
   it('la recherche, sur toute la ligne, vient avant le lien de création', async () => {
     await renderList({
       search: { value: '', onChange: jest.fn(), placeholder: 'Chercher…' },

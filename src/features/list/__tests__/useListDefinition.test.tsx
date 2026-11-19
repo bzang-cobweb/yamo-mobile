@@ -41,7 +41,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
       await result.current.fetchNextPage();
     });
 
-    expect(mockGet).toHaveBeenLastCalledWith('auth.addresses', 'c2', '');
+    expect(mockGet).toHaveBeenLastCalledWith('auth.addresses', 'c2', '', {});
     expect(result.current.data?.title).toBe('Mes adresses');
     await waitFor(() => expect(result.current.data?.items.map((item) => item.id)).toEqual(['1', '2', '3']));
     expect(result.current.hasNextPage).toBe(false);
@@ -63,7 +63,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
     });
 
     expect(mockGet).toHaveBeenCalledTimes(1);
-    expect(mockGet).toHaveBeenCalledWith('auth.addresses', null, '');
+    expect(mockGet).toHaveBeenCalledWith('auth.addresses', null, '', {});
     await waitFor(() => expect(result.current.data?.items.map((item) => item.id)).toEqual(['2']));
     expect(result.current.hasNextPage).toBe(true);
   });
@@ -81,7 +81,7 @@ describe('useListDefinition (pages suivies par curseur)', () => {
 
     await rerender({ search: ' lac ' });
 
-    expect(mockGet).toHaveBeenLastCalledWith('auth.addresses', null, 'lac');
+    expect(mockGet).toHaveBeenLastCalledWith('auth.addresses', null, 'lac', {});
     expect(result.current.isPending).toBe(false);
     expect(result.current.data?.items.map((item) => item.id)).toEqual(['1', '2']);
 

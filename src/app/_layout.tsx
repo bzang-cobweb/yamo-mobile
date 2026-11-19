@@ -71,6 +71,8 @@ function RootNavigator() {
         <Stack screenOptions={{ headerShown: false }}>
           {/* Fiche d'une offre : pour un visiteur comme pour un membre (décision 2026-11-18-fiche-offre). */}
           <Stack.Screen name="offers/[id]/index" />
+          {/* Les filtres d'une liste (décision 2026-11-19-contrat-filtres-vitrine). */}
+          <Stack.Screen name="filters/[list]" />
           <Stack.Protected guard={user !== null}>
             <Stack.Screen name="(tabs)" />
             {/* Son avis sur une offre, ouvert depuis la fiche (décision 2026-11-19-contrat-avis-offres). */}

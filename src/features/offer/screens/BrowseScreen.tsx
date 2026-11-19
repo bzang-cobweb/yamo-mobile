@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { ItemPicture } from '@/features/list/components/ItemPicture';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
+import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
 import { List } from '@/shared/components/List';
@@ -30,7 +31,16 @@ export function BrowseScreen() {
   const theme = useTheme();
   const [searchText, setSearchText] = useState('');
   const [search, setSearch] = useState('');
-  const query = useListDefinition(BROWSE_LIST, search);
+  // Les filtres choisis, gardés tant que l'app est ouverte (décision 2026-11-19-contrat-filtres-vitrine).
+  const filters = useListFilters(BROWSE_LIST);
+  const query = useListDefinition(BROWSE_LIST, search, filters.values);
+  const filterFields = query.data?.filters;
+
+  useEffect(() => {
+    if (filterFields) {
+      setFilterFields(BROWSE_LIST, filterFields);
+    }
+  }, [filterFields]);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -100,8 +110,17 @@ export function BrowseScreen() {
       loadingMoreLabel={t('list.loading')}
       refreshing={refreshing}
       onRefresh={() => void refresh()}
-      empty={search ? t('list.noResults') : definition.empty}
+      empty={Object.keys(filters.values).length > 0 ? t('list.noFilterResults') : search ? t('list.noResults') : definition.empty}
       search={definition.search ? { value: searchText, onChange: setSearchText, placeholder: definition.search } : null}
+      filter={
+        definition.filters && definition.filters.length > 0
+          ? {
+              label: t('list.filters'),
+              count: activeFilterCount(definition.filters, filters.values),
+              onPress: () => router.push({ pathname: '/filters/[list]', params: { list: BROWSE_LIST } }),
+            }
+          : null
+      }
       contentContainerStyle={styles.content}
     />
   );

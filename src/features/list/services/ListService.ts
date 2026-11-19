@@ -1,5 +1,7 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
+import type { FormValues } from '@/features/form/types';
+
 import type { ListDefinition, ListResponse } from '../types';
 
 /** Point d'API d'un cœur de favori : `/v1/offers/12/favorite`. */
@@ -17,10 +19,16 @@ export class ListService {
    * compte : la première sans curseur, sinon celle qui suit `cursor` ; restreinte
    * à `search` si la recherche n'est pas vide (décision 2026-11-18-recherche-dans-la-liste).
    */
-  async get(name: string, cursor?: string | null, search?: string): Promise<ListDefinition> {
+  async get(name: string, cursor?: string | null, search?: string, filters: FormValues = {}): Promise<ListDefinition> {
     const params = [
       cursor ? `cursor=${encodeURIComponent(cursor)}` : null,
       search?.trim() ? `search=${encodeURIComponent(search.trim())}` : null,
+      // `filter[ville]=Douala`, `filter[type][]=studio` (décision 2026-11-19-contrat-filtres-vitrine).
+      ...Object.entries(filters).flatMap(([key, value]) =>
+        Array.isArray(value)
+          ? value.map((item) => `filter[${encodeURIComponent(key)}][]=${encodeURIComponent(item)}`)
+          : [`filter[${encodeURIComponent(key)}]=${encodeURIComponent(String(value))}`],
+      ),
     ].filter((param) => param !== null);
     const query = params.length > 0 ? `?${params.join('&')}` : '';
 
