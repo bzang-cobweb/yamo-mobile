@@ -12,7 +12,8 @@ export type OfferDetail = {
   /** La ville ; jamais la rue. */
   location: string | null;
   /** Indications sur l'adresse écrites par le propriétaire (décision 2026-11-19-description-adresse-offre) ; `null` (ou absent) : aucune. */
-  address_description?: string | null;
+  /** Indication propre à l'offre sur son adresse (décision 2026-11-19-contrat-adresse-offre-table). */
+  indication?: string | null;
   photos: string[];
   description: string | null;
   /** Caractéristiques lisibles, dans l'ordre. */

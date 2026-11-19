@@ -121,10 +121,10 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </View>
                 )}
 
-                {offer.address_description && (
+                {offer.indication && (
                   <View style={styles.section}>
                     <ThemedText type="smallBold">{t('offer.address')}</ThemedText>
-                    <ThemedText testID="offer-address-description">{offer.address_description}</ThemedText>
+                    <ThemedText testID="offer-indication">{offer.indication}</ThemedText>
                   </View>
                 )}
 

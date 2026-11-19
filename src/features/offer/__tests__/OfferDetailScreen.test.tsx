@@ -109,17 +109,17 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
   });
 
   it('prix, description, adresse (les indications du propriétaire), puis caractéristiques', async () => {
-    mockState = { data: { ...OFFER, address_description: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
+    mockState = { data: { ...OFFER, indication: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
     await show();
-    expect(screen.getByTestId('offer-address-description').props.children).toBe('Derrière le marché, portail bleu');
+    expect(screen.getByTestId('offer-indication').props.children).toBe('Derrière le marché, portail bleu');
     expect(screen.getByText('Adresse')).toBeTruthy();
-    const order = ['offer-price', 'offer-description', 'offer-address-description', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
+    const order = ['offer-price', 'offer-description', 'offer-indication', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
-    expect(screen.queryByTestId('offer-address-description')).toBeNull();
+    expect(screen.queryByTestId('offer-indication')).toBeNull();
   });
 
   it('le carrousel suit la photo affichée', async () => {
