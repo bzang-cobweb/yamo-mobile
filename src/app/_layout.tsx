@@ -77,6 +77,8 @@ function RootNavigator() {
           <Stack.Screen name="filters/[list]" />
           <Stack.Protected guard={user !== null}>
             <Stack.Screen name="(tabs)" />
+            {/* Un formulaire du profil, par-dessus les onglets (décision 2026-11-19-contrat-bouton-fixe-formulaires). */}
+            <Stack.Screen name="profile/[form]" />
             {/* Son avis sur une offre, ouvert depuis la fiche (décision 2026-11-19-contrat-avis-offres). */}
             <Stack.Screen name="offers/[id]/review" />
           </Stack.Protected>

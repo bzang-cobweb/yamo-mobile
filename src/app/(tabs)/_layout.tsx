@@ -10,19 +10,16 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
  * Pour un utilisateur connecté : barre fixe en haut (logo de l'application) sur
  * l'écran racine de chaque onglet, pas sur les formulaires du profil ; menu fixe en bas, Accueil (écran par défaut) et
  * Profil. Icônes seules ; leur nom, servi par l'API, est annoncé aux lecteurs
- * d'écran. Le menu est masqué sur les formulaires du profil (décision
- * 2026-11-19-contrat-bouton-fixe-formulaires) ; il reste sur les listes.
+ * d'écran. Les formulaires du profil (`app/profile/[form].tsx`) s'ouvrent hors des
+ * onglets, par-dessus ; les listes du profil gardent le menu.
  */
 export default function TabsLayout() {
   const { t } = useI18n();
   const theme = useTheme();
-  // `(tabs)/profile/[form]` : un formulaire du profil, sans barre du haut ; il
+  // `(tabs)/profile/lists/[list]` : une liste du profil, sans barre du haut ; elle
   // affiche son propre en-tête avec le bouton retour.
   const segments = useSegments();
   const inSubPage = segments.length > 2;
-  // Un formulaire du profil (`profile/[form]`) : pas de menu du bas, son bouton d'envoi
-  // est fixé à sa place (décision 2026-11-19-contrat-bouton-fixe-formulaires). Les listes le gardent.
-  const inForm = segments[1] === 'profile' && segments[2] === '[form]';
 
   return (
     <Tabs
@@ -55,10 +52,9 @@ export default function TabsLayout() {
           title: t('tabs.profile'),
           tabBarAccessibilityLabel: t('tabs.profile'),
           tabBarButtonTestID: 'tab-profile',
-          // Toucher l'onglet Profil depuis un formulaire revient au profil.
+          // Toucher l'onglet Profil depuis une liste revient au profil.
           popToTopOnBlur: true,
           headerShown: !inSubPage,
-          tabBarStyle: inForm ? { display: 'none' } : undefined,
           tabBarIcon: ({ color, size, focused }) => (
             <SymbolView
               name={{ ios: focused ? 'person.fill' : 'person', android: 'person', web: 'person' }}
