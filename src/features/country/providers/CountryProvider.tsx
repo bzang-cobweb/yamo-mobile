@@ -67,7 +67,6 @@ export function CountryProvider({ children }: PropsWithChildren) {
       country: localeChosen ? current : null,
       chosen: current,
       enter,
-      canChange: countries.length > 1,
     }),
     [chosen, countries, current, enter, localeChosen, query.isError, query.isFetching, query.isSuccess, refetch],
   );

@@ -12,13 +12,13 @@ import { useCountry } from '../context/CountryContext';
 /**
  * Drapeau du pays courant, dans la barre du haut (décision
  * 2026-11-18-accueil-offres-du-pays) : il ouvre directement la liste des pays,
- * avec recherche ; en choisir un autre change d'espace. Un seul pays ouvert : le
- * drapeau seul, sans liste.
+ * avec recherche ; en choisir un autre change d'espace. Même avec un seul pays
+ * ouvert, le sélecteur reste (décision 2026-11-19-selecteur-pays-toujours).
  */
 export function CountrySwitcher() {
   const { t } = useI18n();
   const theme = useTheme();
-  const { country, countries, canChange, enter } = useCountry();
+  const { country, countries, enter } = useCountry();
   const [open, setOpen] = useState(false);
 
   if (!country) {
@@ -30,16 +30,12 @@ export function CountrySwitcher() {
       <Pressable
         testID="country-switcher"
         accessibilityRole="button"
-        accessibilityLabel={canChange ? `${t('entry.changeCountry')} (${country.name})` : country.name}
-        accessibilityState={{ disabled: !canChange }}
-        disabled={!canChange}
+        accessibilityLabel={`${t('entry.changeCountry')} (${country.name})`}
         hitSlop={8}
         onPress={() => setOpen(true)}
         style={({ pressed }) => [styles.trigger, pressed && styles.pressed]}>
         <ThemedText style={styles.flag}>{country.flag}</ThemedText>
-        {canChange && (
-          <SymbolView name={{ ios: 'chevron.down', android: 'expand_more', web: 'expand_more' }} size={12} tintColor={theme.textSecondary} />
-        )}
+        <SymbolView name={{ ios: 'chevron.down', android: 'expand_more', web: 'expand_more' }} size={12} tintColor={theme.textSecondary} />
       </Pressable>
       <OptionsModal
         visible={open}

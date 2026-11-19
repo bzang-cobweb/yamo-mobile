@@ -146,7 +146,10 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
     // La langue affichée devient un choix gardé.
     expect(mockChooseLocale).toHaveBeenCalledWith('fr');
     expect(mockSetCountry).toHaveBeenLastCalledWith('CM');
-    expect(screen.getByTestId('country-switcher').props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    // Un seul pays : le sélecteur de la barre reste et ouvre la liste (décision 2026-11-19-selecteur-pays-toujours).
+    expect(screen.getByTestId('country-switcher').props.accessibilityState?.disabled).toBeFalsy();
+    await fireEvent.press(screen.getByTestId('country-switcher'));
+    expect(screen.getByTestId('country-switcher-option-CM')).toBeTruthy();
   });
 
   it('plusieurs pays : on cherche et choisit dans le sélecteur, puis on entre', async () => {

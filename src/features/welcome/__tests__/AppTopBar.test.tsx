@@ -35,7 +35,7 @@ jest.mock('@/shared/services/LocaleService', () => ({
 const CAMEROON = { code: 'CM', name: 'Cameroun', native_name: 'Cameroun', flag: '🇨🇲', currency: 'XAF', dial_code: '+237' };
 
 async function renderBar() {
-  const country = { country: CAMEROON, countries: [CAMEROON], canChange: false } as unknown as CountryContextValue;
+  const country = { country: CAMEROON, countries: [CAMEROON] } as unknown as CountryContextValue;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
 
   await render(

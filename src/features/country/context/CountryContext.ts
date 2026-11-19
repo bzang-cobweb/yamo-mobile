@@ -15,8 +15,6 @@ export type CountryContextValue = {
   chosen: Country | null;
   /** Entrer dans un pays : gardé sur l'appareil, envoyé à l'API, données rechargées. */
   enter: (code: string) => void;
-  /** Plusieurs pays ouverts : le drapeau de la barre du haut permet d'en changer. */
-  canChange: boolean;
 };
 
 export const CountryContext = createContext<CountryContextValue>({
@@ -27,7 +25,6 @@ export const CountryContext = createContext<CountryContextValue>({
   country: null,
   chosen: null,
   enter: () => undefined,
-  canChange: false,
 });
 
 export function useCountry(): CountryContextValue {
