@@ -181,7 +181,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
 /**
  * Le prix à gauche, le bouton à droite (« Réserver », « Demander une visite »). Un
  * visiteur passe d'abord par la connexion ; un membre ouvre le formulaire décrit par
- * Laravel, lié à l'offre. Sa propre offre : le prix seul.
+ * Laravel, lié à l'offre. Sa propre offre : le prix seul, au milieu.
  */
 function BookingBar({ offer }: { offer: OfferDetail }) {
   const theme = useTheme();
@@ -194,7 +194,8 @@ function BookingBar({ offer }: { offer: OfferDetail }) {
       testID="offer-booking-bar"
       style={[styles.bar, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background, paddingBottom: Math.max(insets.bottom, Spacing.three) }]}>
       <View style={[styles.barContent, { maxWidth: MaxContentWidth / 2 }]}>
-        <View style={styles.barPrice}>
+        {/* Sans bouton (sa propre offre) : le prix au milieu de la barre. */}
+        <View style={[styles.barPrice, !booking && styles.barPriceAlone]} testID="offer-booking-price">
           {offer.price && (
             <ThemedText type="smallBold" style={{ color: theme.primary }} testID="offer-price">
               {offer.price.value}
@@ -272,6 +273,7 @@ const styles = StyleSheet.create({
   bar: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
   barContent: { width: '100%', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   barPrice: { flex: 1 },
+  barPriceAlone: { alignItems: 'center' },
   bookButton: { paddingVertical: Spacing.three, paddingHorizontal: Spacing.four, borderRadius: 12, alignItems: 'center' },
   pressed: { opacity: 0.7 },
 });
