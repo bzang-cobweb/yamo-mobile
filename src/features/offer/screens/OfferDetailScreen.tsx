@@ -20,7 +20,6 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { OfferReviews } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { useOfferDetail } from '../hooks/useOfferDetail';
-import type { OfferDetail } from '../types';
 
 /**
  * Fiche d'une offre (`/offers/[id]`, décision 2026-11-18-fiche-offre), pour un
@@ -123,44 +122,58 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </View>
                 )}
 
-                {/* Localisation, caractéristiques et avis : des sections repliables
-                    (décision 2026-11-19-fiche-localisation-accordeon). */}
-                {/* L'adresse complète, pays compris, et son indication (décision 2026-11-19-fiche-localisation). */}
-                {offer.address && (
-                  <Accordion title={t('offer.location')} initiallyOpen={firstSection(offer) === 'location'} testID="offer-location-block">
-                    <View style={[styles.location, { borderBottomColor: theme.backgroundSelected }]}>
-                      <ThemedText testID="offer-address">{offer.address}</ThemedText>
-                      {offer.indication && (
-                        <ThemedText type="small" themeColor="textSecondary" testID="offer-indication">
-                          {offer.indication}
-                        </ThemedText>
-                      )}
-                    </View>
-                  </Accordion>
-                )}
+                {/* Les sections repliables, dans l'ordre et l'ouverture servis par Laravel
+                    (décision 2026-11-19-sections-fiche-laravel) ; une clé inconnue est ignorée. */}
+                {(offer.sections ?? []).map((section) => {
+                  switch (section.key) {
+                    // L'adresse complète, pays compris, et son indication (décision 2026-11-19-fiche-localisation).
+                    case 'location':
+                      return offer.address ? (
+                        <Accordion key={section.key} title={t('offer.location')} initiallyOpen={section.open} testID="offer-location-block">
+                          <View style={[styles.location, { borderBottomColor: theme.backgroundSelected }]}>
+                            <ThemedText testID="offer-address">{offer.address}</ThemedText>
+                            {offer.indication && (
+                              <ThemedText type="small" themeColor="textSecondary" testID="offer-indication">
+                                {offer.indication}
+                              </ThemedText>
+                            )}
+                          </View>
+                        </Accordion>
+                      ) : null;
+                    case 'facts':
+                      return (
+                        <Accordion key={section.key} title={t('offer.details')} initiallyOpen={section.open} testID="offer-facts">
+                          {offer.facts.map((fact) => (
+                            <FactRow key={fact.label} fact={fact} testID="offer-fact" />
+                          ))}
+                        </Accordion>
+                      );
+                    // Règles et autres informations (décision 2026-11-19-contrat-regles-informations).
+                    case 'rules':
+                      return (
+                        <Accordion key={section.key} title={t('offer.rules')} initiallyOpen={section.open} testID="offer-rules">
+                          {offer.rules?.map((rule) => (
+                            <FactRow key={rule.label} fact={rule} testID="offer-rule" />
+                          ))}
+                          {offer.information && (
+                            <ThemedText type="small" style={styles.information} testID="offer-information">
+                              {offer.information}
+                            </ThemedText>
+                          )}
+                        </Accordion>
+                      );
+                    case 'reviews':
+                      return offer.reviews ? (
+                        <Accordion key={section.key} title={t('offer.reviews')} initiallyOpen={section.open} testID="offer-reviews-block">
+                          <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />
+                        </Accordion>
+                      ) : null;
+                    default:
+                      return null;
+                  }
+                })}
 
-                {offer.facts.length > 0 && (
-                  <Accordion title={t('offer.details')} initiallyOpen={firstSection(offer) === 'facts'} testID="offer-facts">
-                    {offer.facts.map((fact) => (
-                      <FactRow key={fact.label} fact={fact} testID="offer-fact" />
-                    ))}
-                  </Accordion>
-                )}
-
-                {/* Règles et autres informations (décision 2026-11-19-contrat-regles-informations). */}
-                {((offer.rules?.length ?? 0) > 0 || offer.information) && (
-                  <Accordion title={t('offer.rules')} initiallyOpen={firstSection(offer) === 'rules'} testID="offer-rules">
-                    {offer.rules?.map((rule) => (
-                      <FactRow key={rule.label} fact={rule} testID="offer-rule" />
-                    ))}
-                    {offer.information && (
-                      <ThemedText type="small" style={styles.information} testID="offer-information">
-                        {offer.information}
-                      </ThemedText>
-                    )}
-                  </Accordion>
-                )}
-
+                {/* Le message d'un avis donné ou retiré. */}
                 {notice && (
                   <ThemedText
                     type="small"
@@ -169,12 +182,6 @@ export function OfferDetailScreen({ id }: { id: string }) {
                     testID="offer-notice">
                     {notice.message}
                   </ThemedText>
-                )}
-
-                {offer.reviews && (
-                  <Accordion title={t('offer.reviews')} initiallyOpen={firstSection(offer) === 'reviews'} testID="offer-reviews-block">
-                    <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />
-                  </Accordion>
                 )}
 
                 {offer.published_at && (
@@ -189,25 +196,6 @@ export function OfferDetailScreen({ id }: { id: string }) {
       </SafeAreaView>
     </ThemedView>
   );
-}
-
-/**
- * La première section repliable affichée, seule ouverte à l'arrivée sur la fiche
- * (décision 2026-11-19-premiere-section-ouverte) : localisation, caractéristiques,
- * règles, puis avis, selon ce que l'offre a.
- */
-function firstSection(offer: OfferDetail): 'location' | 'facts' | 'rules' | 'reviews' | null {
-  if (offer.address) {
-    return 'location';
-  }
-  if (offer.facts.length > 0) {
-    return 'facts';
-  }
-  if ((offer.rules?.length ?? 0) > 0 || offer.information) {
-    return 'rules';
-  }
-
-  return offer.reviews ? 'reviews' : null;
 }
 
 /** Une ligne « libellé — valeur », des caractéristiques comme des règles. */

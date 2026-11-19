@@ -36,8 +36,27 @@ jest.mock('react-native-safe-area-context', () => {
 let mockState: { data?: OfferDetail; isPending: boolean; error: unknown } = { isPending: true, error: null };
 const mockRefetch = jest.fn();
 jest.mock('../hooks/useOfferDetail', () => ({
-  useOfferDetail: () => ({ ...mockState, refetch: mockRefetch }),
+  useOfferDetail: () => ({ ...mockState, data: mockState.data && mockWithSections(mockState.data), refetch: mockRefetch }),
 }));
+
+/** Les sections que Laravel sert par défaut (localisation ouverte, puis caractéristiques, règles, avis), sauf si le test les donne. */
+function mockWithSections(offer: OfferDetail): OfferDetail {
+  if (offer.sections) {
+    return offer;
+  }
+  const present = [
+    ['location', Boolean(offer.address)],
+    ['facts', offer.facts.length > 0],
+    ['rules', (offer.rules?.length ?? 0) > 0 || Boolean(offer.information)],
+    ['reviews', Boolean(offer.reviews)],
+  ] as const;
+  const sections = present.filter(([, shown]) => shown).map(([key]) => ({ key, open: key === 'location' }));
+  if (sections.length > 0 && !sections.some((section) => section.open)) {
+    sections[0].open = true;
+  }
+
+  return { ...offer, sections };
+}
 
 const OFFER: OfferDetail = {
   id: '7',
@@ -152,6 +171,23 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-location-block')).toBeNull();
     // La première section affichée est alors « Caractéristiques » : c'est elle qui est ouverte.
     expect(screen.getByTestId('offer-facts-toggle').props.accessibilityState).toEqual({ expanded: true });
+  });
+
+  it('les sections suivent l’ordre et l’ouverture servis par Laravel ; une clé inconnue est ignorée', async () => {
+    // Décision 2026-11-19-sections-fiche-laravel.
+    mockState = {
+      data: { ...OFFER, address: 'Rue Njo-Njo 12, Douala, Cameroun', sections: [{ key: 'reviews', open: true }, { key: 'weather', open: true }, { key: 'facts', open: false }] },
+      isPending: false,
+      error: null,
+    };
+    await show();
+
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('"testID":"offer-reviews-block"')).toBeLessThan(json.indexOf('"testID":"offer-facts"'));
+    expect(screen.getByTestId('offer-reviews-block-toggle').props.accessibilityState).toEqual({ expanded: true });
+    expect(screen.getByTestId('offer-facts-toggle').props.accessibilityState).toEqual({ expanded: false });
+    // Pas servie : pas affichée, même avec une adresse.
+    expect(screen.queryByTestId('offer-location-block')).toBeNull();
   });
 
   it('règles et autres informations, dans leur section ; rien sans valeur', async () => {

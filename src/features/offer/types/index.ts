@@ -24,6 +24,8 @@ export type OfferDetail = {
   rules?: { label: string; value: string }[];
   /** Autres informations pratiques, texte libre ; retours à la ligne gardés. */
   information?: string | null;
+  /** Sections repliables, dans l'ordre, ouvertes ou non à l'arrivée ; servies par Laravel (décision 2026-11-19-sections-fiche-laravel). */
+  sections?: { key: string; open: boolean }[];
   published_at: string | null;
   /** Statut, servi au seul propriétaire. */
   status: { value: string; label: string } | null;
