@@ -25,6 +25,8 @@ const NOTIFICATION: AppNotification = {
   title: 'Demande de logement',
   tag: { label: 'En attente', tone: 'warning' },
   body: 'Paul Etoa demande un séjour pour « Studio photos ».',
+  actor: { id: '37', name: 'Paul Etoa', initials: 'PE', photo: null, online: true, link: '/members/37' },
+  summary: 'demande un séjour pour « Studio photos ».',
   message: 'Tournage d’un clip.',
   link: '/profile/lists/offer.bookings.received',
   links: [],
@@ -65,14 +67,20 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByText('Notification')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.getByTestId('notification-detail-date')).toHaveTextContent(/2026/);
+    // Qui agit, comme sur la carte ; le texte sans son nom.
+    expect(screen.getByTestId('notification-detail-avatar-online')).toBeTruthy();
+    expect(screen.getByTestId('notification-detail-actor')).toHaveTextContent('Paul Etoa');
+    expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
     expect(screen.getByText('Tournage d’un clip.')).toBeTruthy();
     await waitFor(() => expect(notificationService.read).toHaveBeenCalledWith('n1'));
   });
 
-  it('le membre, l’offre et le bouton ouvrent chacun leur écran', async () => {
+  it('le membre (nom, photo), l’offre et le bouton ouvrent chacun leur écran', async () => {
     await show();
 
     await fireEvent.press(await screen.findByText('Paul Etoa'));
+    expect(router.push).toHaveBeenLastCalledWith('/members/37');
+    await fireEvent.press(screen.getByTestId('notification-detail-avatar-online'));
     expect(router.push).toHaveBeenLastCalledWith('/members/37');
     await fireEvent.press(screen.getByText('Studio photos'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');

@@ -15,13 +15,15 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
+import { NotificationActor } from '../components/NotificationActor';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
 
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste :
- * - son titre, son statut, sa date complète ;
- * - son texte avec ses passages liés (le membre, l'offre) ;
+ * - son titre et son statut ;
+ * - qui agit, comme sur la carte (photo cerclée de vert en ligne, nom, date complète) ;
+ * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
  * - le message joint ;
  * - un bouton vers l'écran qu'elle désigne (« Réservations reçues »).
  *
@@ -74,12 +76,15 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                 {notification.title}
               </ThemedText>
               {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
-              {date && (
-                <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-date">
-                  {date}
-                </ThemedText>
-              )}
-              <NotificationText type="default" body={notification.body} links={notification.text_links ?? []} onLink={go} testID="notification-detail-text" />
+              {/* Qui agit, comme sur la carte : sa photo (cerclée de vert en ligne), son nom, la date complète dessous. */}
+              <NotificationActor actor={notification.actor} title={notification.title} date={date ?? ''} onOpen={go} testID="notification-detail" />
+              <NotificationText
+                type="default"
+                body={notification.actor && notification.summary ? notification.summary : notification.body}
+                links={notification.text_links ?? []}
+                onLink={go}
+                testID="notification-detail-text"
+              />
               {notification.message && <Quote text={notification.message} testID="notification-detail-message" />}
               {notification.link && APP_LINK.test(notification.link) && (
                 <Pressable
