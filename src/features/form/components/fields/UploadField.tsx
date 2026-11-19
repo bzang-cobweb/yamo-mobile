@@ -125,8 +125,18 @@ export function UploadField({ field, value, onChange, error, disabled }: FieldPr
     commit(latest.current.filter((item) => item !== id));
   }
 
-  function makeMain(id: string) {
-    commit([id, ...latest.current.filter((item) => item !== id)]);
+  /** Déplace une photo d'une place (`-1` : vers la gauche, `1` : vers la droite) ; la première est la principale. */
+  function move(id: string, step: -1 | 1) {
+    const next = [...latest.current];
+    const from = next.indexOf(id);
+    const to = from + step;
+
+    if (from < 0 || to < 0 || to >= next.length) {
+      return;
+    }
+
+    [next[from], next[to]] = [next[to], next[from]];
+    commit(next);
   }
 
   return (
@@ -147,26 +157,37 @@ export function UploadField({ field, value, onChange, error, disabled }: FieldPr
                   <ActivityIndicator color="#fff" />
                 </View>
               )}
-              {index === 0 ? (
+              {index === 0 && (
                 <View style={[styles.badge, { backgroundColor: theme.primary }]}>
-                  <ThemedText type="small" style={{ color: theme.onPrimary }}>
+                  <ThemedText style={[styles.badgeText, { color: theme.onPrimary }]}>
                     {t('form.uploadMain')}
                   </ThemedText>
                 </View>
-              ) : (
-                !sending && (
-                  <Pressable
-                    testID={`field-${field.name}-main-${index}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('form.uploadMakeMain')}
-                    disabled={disabled}
-                    hitSlop={Spacing.two}
-                    onPress={() => makeMain(id)}
-                    // Une étoile : le libellé complet est lu par l'accessibilité.
-                    style={[styles.round, styles.star]}>
-                    <ThemedText style={styles.starText}>☆</ThemedText>
-                  </Pressable>
-                )
+              )}
+              {/* Avancer ou reculer d'une place (décision 2026-11-19-nuit-ordre-photos-libelle). */}
+              {!sending && index > 0 && (
+                <Pressable
+                  testID={`field-${field.name}-left-${index}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('form.uploadMoveLeft')}
+                  disabled={disabled}
+                  hitSlop={Spacing.one}
+                  onPress={() => move(id, -1)}
+                  style={[styles.round, styles.left]}>
+                  <ThemedText style={styles.arrowText}>‹</ThemedText>
+                </Pressable>
+              )}
+              {!sending && index < value.length - 1 && (
+                <Pressable
+                  testID={`field-${field.name}-right-${index}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('form.uploadMoveRight')}
+                  disabled={disabled}
+                  hitSlop={Spacing.one}
+                  onPress={() => move(id, 1)}
+                  style={[styles.round, styles.right]}>
+                  <ThemedText style={styles.arrowText}>›</ThemedText>
+                </Pressable>
               )}
               {!sending && (
                 <Pressable
@@ -223,15 +244,18 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
+    // En haut à gauche : le bas porte les flèches, le haut droit le retrait.
     left: 4,
-    bottom: 4,
+    top: 4,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
+  badgeText: { fontSize: 11, lineHeight: 14, fontWeight: '600' },
   round: { position: 'absolute', width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  star: { top: 4, left: 4, backgroundColor: 'rgba(0,0,0,0.6)' },
-  starText: { color: '#fff', fontSize: 15, lineHeight: 18 },
+  left: { left: 4, bottom: 4, backgroundColor: 'rgba(0,0,0,0.6)' },
+  right: { right: 4, bottom: 4, backgroundColor: 'rgba(0,0,0,0.6)' },
+  arrowText: { color: '#fff', fontSize: 20, lineHeight: 22, fontWeight: '700' },
   remove: {
     position: 'absolute',
     top: 4,

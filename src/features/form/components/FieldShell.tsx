@@ -24,7 +24,8 @@ export function FieldShell({ field, error, children }: PropsWithChildren<{ field
 
   return (
     <View style={styles.container}>
-      {field.label !== null && (
+      {/* Un libellé masqué par l'API n'est pas affiché ; les contrôles du champ portent le leur. */}
+      {field.label !== null && !field.label_hidden && (
         <ThemedText type="smallBold" nativeID={`${field.name}-label`}>
           {field.label}
           {field.required && <ThemedText style={styles.required}> *</ThemedText>}

@@ -45,6 +45,8 @@ export type FormFieldDefinition = {
   name: string;
   type: FieldType;
   label: string | null;
+  /** Libellé à ne pas afficher (le titre d'étape le dit déjà) ; absent : affiché (décision 2026-11-19-nuit-ordre-photos-libelle). */
+  label_hidden?: boolean;
   placeholder: string | null;
   help: string | null;
   required: boolean;

@@ -61,7 +61,7 @@ function Harness({ definition, spy }: { definition: FormFieldDefinition; spy: (v
   );
 }
 
-async function show(definition = field()) {
+async function show(definition: FormFieldDefinition = field()) {
   const spy = jest.fn();
   await render(
     <I18nContext.Provider value={TEST_I18N}>
@@ -149,14 +149,21 @@ describe('UploadField (type « upload »)', () => {
     expect(screen.getByTestId('photos-error').props.children).toBe('Le fichier est trop lourd.');
   });
 
-  it('retirer une photo, en mettre une autre en premier', async () => {
+  it('retirer une photo, déplacer une photo d’une place', async () => {
     jest.spyOn(formService, 'upload').mockResolvedValue('id-a');
     picker.mockResolvedValue({ canceled: false, assets: [asset('a')] });
     const spy = await show();
     await fireEvent.press(screen.getByTestId('field-photos-add'));
     await waitFor(() => expect(spy).toHaveBeenLastCalledWith(['old', 'id-a']));
 
-    await fireEvent.press(screen.getByTestId('field-photos-main-1'));
+    // Pas de flèche vers l'extérieur.
+    expect(screen.queryByTestId('field-photos-left-0')).toBeNull();
+    expect(screen.queryByTestId('field-photos-right-1')).toBeNull();
+    await fireEvent.press(screen.getByTestId('field-photos-left-1'));
+    expect(spy).toHaveBeenLastCalledWith(['id-a', 'old']);
+    await fireEvent.press(screen.getByTestId('field-photos-right-0'));
+    expect(spy).toHaveBeenLastCalledWith(['old', 'id-a']);
+    await fireEvent.press(screen.getByTestId('field-photos-left-1'));
     expect(spy).toHaveBeenLastCalledWith(['id-a', 'old']);
 
     await fireEvent.press(screen.getByTestId('field-photos-remove-1'));
@@ -174,5 +181,14 @@ describe('UploadField (type « upload »)', () => {
     // Une photo déjà là, une seule permise : plus d'ajout possible.
     await show(field({ max_files: 1 }));
     expect(screen.queryByTestId('field-photos-add')).toBeNull();
+  });
+
+  it('un libellé masqué par l’API n’est pas affiché ; il l’est sinon', async () => {
+    // Le libellé (« Photos * ») est le texte `nativeID` `<nom>-label` de `FieldShell`.
+    await show({ ...field(), label_hidden: true } as FormFieldDefinition);
+    expect(JSON.stringify(screen.toJSON())).not.toContain('"nativeID":"photos-label"');
+
+    await show();
+    expect(JSON.stringify(screen.toJSON())).toContain('"nativeID":"photos-label"');
   });
 });
