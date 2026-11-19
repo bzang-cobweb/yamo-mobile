@@ -1,6 +1,6 @@
 import { usePathname, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router/js-tabs';
 import { SymbolView } from 'expo-symbols';
 
@@ -77,14 +77,21 @@ export default function TabsLayout() {
           title: t('tabs.notifications'),
           tabBarAccessibilityLabel: unread > 0 ? `${t('tabs.notifications')}, ${t('notifications.unread')}` : t('tabs.notifications'),
           tabBarButtonTestID: 'tab-notifications',
-          tabBarBadge: unread > 0 ? '' : undefined,
-          tabBarBadgeStyle: { backgroundColor: theme.primary, minWidth: 10, maxHeight: 10, borderRadius: 5, marginTop: 4 },
+          // Le point chevauche le coin haut droit de la cloche, comme une pastille sans chiffre.
           tabBarIcon: ({ color, size, focused }) => (
-            <SymbolView
-              name={{ ios: focused ? 'bell.fill' : 'bell', android: 'notifications', web: 'notifications' }}
-              tintColor={color}
-              size={size}
-            />
+            <View>
+              <SymbolView
+                name={{ ios: focused ? 'bell.fill' : 'bell', android: 'notifications', web: 'notifications' }}
+                tintColor={color}
+                size={size}
+              />
+              {unread > 0 && (
+                <View
+                  testID="tab-notifications-dot"
+                  style={[styles.dot, { backgroundColor: theme.primary, borderColor: theme.background }]}
+                />
+              )}
+            </View>
           ),
         }}
       />
@@ -109,3 +116,8 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  // Un point de 10, bordé du fond pour se détacher de la cloche.
+  dot: { position: 'absolute', top: 0, right: 0, width: 10, height: 10, borderRadius: 5, borderWidth: 1.5 },
+});
