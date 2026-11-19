@@ -109,7 +109,7 @@ export function NotificationsScreen() {
           <Pressable
             testID={`notification-${item.id}`}
             accessibilityRole="button"
-            accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}${item.tag ? `, ${item.tag.label}` : ''}. ${item.body}`}
+            accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}${item.tag ? `, ${item.tag.label}` : ''}. ${item.body}${item.message ? ` « ${item.message} »` : ''}`}
             onPress={() => open(item)}
             style={({ pressed }) => [
               styles.item,
@@ -123,6 +123,13 @@ export function NotificationsScreen() {
               <ThemedText type="small" themeColor="textSecondary">
                 {item.body}
               </ThemedText>
+              {item.message && (
+                <View style={[styles.message, { borderColor: theme.backgroundSelected }]} testID={`notification-${item.id}-message`}>
+                  <ThemedText type="small" style={styles.messageText}>
+                    « {item.message} »
+                  </ThemedText>
+                </View>
+              )}
               {item.links.map((link, index) => (
                 <Pressable
                   key={link.link}
@@ -155,6 +162,8 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', gap: Spacing.three, padding: Spacing.three, borderWidth: 1, borderRadius: 8 },
   dot: { width: 10, height: 10, borderRadius: 5, marginTop: Spacing.two },
   texts: { flex: 1, gap: Spacing.one },
+  message: { borderLeftWidth: 3, paddingLeft: Spacing.two },
+  messageText: { fontStyle: 'italic' },
   link: { alignSelf: 'flex-start' },
   pressed: { opacity: 0.7 },
 });

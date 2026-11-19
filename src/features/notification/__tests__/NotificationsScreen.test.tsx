@@ -21,8 +21,8 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], read: false, created_at: new Date().toISOString() },
-    { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', link: 'https://exemple.test', links: [], read: true, created_at: '2026-01-02T10:00:00Z' },
+    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], read: false, created_at: new Date().toISOString() },
+    { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
 };
@@ -53,6 +53,8 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(await screen.findByTestId('notification-a-tag')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
+    expect(screen.getByText('« Je viens pour le travail. »')).toBeTruthy();
+    expect(screen.queryByTestId('notification-b-message')).toBeNull();
     expect(screen.getByTestId('notification-a-unread')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-unread')).toBeNull();
     expect(screen.getByText('Tout marquer comme lu')).toBeTruthy();

@@ -10,6 +10,8 @@ export type AppNotification = {
   /** Statut en pastille sous le titre (« En attente », ton `warning`), ou `null`. */
   tag: StatusTagValue | null;
   body: string;
+  /** Message joint, saisi par un utilisateur (celui du membre, le motif d'un refus), ou `null`. */
+  message: string | null;
   /** Écran de l'app à ouvrir (`/profile/lists/offer.bookings`), ou `null`. */
   link: string | null;
   /** Liens en plus, sous le texte (« Voir l'annonce » → `/offers/12`). */
