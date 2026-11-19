@@ -73,6 +73,11 @@ const styles = StyleSheet.create({
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
+    // Une ombre autour du cœur, lisible sur une photo claire (décision 2026-11-19-ombre-coeur-onglets-offre).
+    shadowColor: '#000000',
+    shadowOpacity: 0.6,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
   },
   pressed: { opacity: 0.7 },
 });
