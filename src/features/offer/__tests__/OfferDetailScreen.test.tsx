@@ -400,10 +400,23 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     expect(router.push).toHaveBeenLastCalledWith({ pathname: '/offers/[id]/book', params: { id: OFFER.id } });
   });
 
-  it('sa propre offre : le prix seul, sans bouton', async () => {
-    mockState = { data: { ...OFFER, booking: null }, isPending: false, error: null };
+  it('sa propre offre : « Modifier » ouvre le formulaire de l’offre (décision 2026-11-19-fiche-bouton-modifier)', async () => {
+    mockState = { data: { ...OFFER, booking: null, edit: { label: 'Modifier', form: 'offer.offer' } }, isPending: false, error: null };
+    mockUser = { id: 3 };
+    await show();
+    const bar = screen.getByTestId('offer-booking-bar');
+    expect(within(bar).getByTestId('offer-price')).toBeTruthy();
+    expect(screen.queryByTestId('offer-booking')).toBeNull();
+
+    await fireEvent.press(within(bar).getByText('Modifier'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.offer', record: OFFER.id } });
+  });
+
+  it('ni réservation ni modification : le prix seul', async () => {
+    mockState = { data: { ...OFFER, booking: null, edit: null }, isPending: false, error: null };
     await show();
     expect(within(screen.getByTestId('offer-booking-bar')).getByTestId('offer-price')).toBeTruthy();
     expect(screen.queryByTestId('offer-booking')).toBeNull();
+    expect(screen.queryByTestId('offer-edit')).toBeNull();
   });
 });

@@ -39,6 +39,8 @@ export type OfferDetail = {
    * `null` (ou absent) : pas de bouton (sa propre offre).
    */
   booking?: { type: 'stay' | 'visit'; label: string; form: string } | null;
+  /** Pour son auteur, à la place de la réservation : « Modifier » et le formulaire de l'offre (décision 2026-11-19-fiche-bouton-modifier). */
+  edit?: { label: string; form: string } | null;
 };
 
 /**

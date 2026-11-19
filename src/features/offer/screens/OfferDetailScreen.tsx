@@ -171,7 +171,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
             </ScrollView>
           )}
           {/* Barre fixe en bas : le prix et le bouton de réservation (décision 2026-11-19-contrat-reservations). */}
-          {offer && (offer.price || offer.booking) && <BookingBar offer={offer} />}
+          {offer && (offer.price || offer.booking || offer.edit) && <BookingBar offer={offer} />}
         </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
@@ -181,13 +181,16 @@ export function OfferDetailScreen({ id }: { id: string }) {
 /**
  * Le prix à gauche, le bouton à droite (« Réserver », « Demander une visite »). Un
  * visiteur passe d'abord par la connexion ; un membre ouvre le formulaire décrit par
- * Laravel, lié à l'offre. Sa propre offre : le prix seul.
+ * Laravel, lié à l'offre. Sa propre offre : « Modifier », qui ouvre le formulaire de
+ * l'offre (décision 2026-11-19-fiche-bouton-modifier) ; après l'enregistrement, la
+ * fiche se recharge.
  */
 function BookingBar({ offer }: { offer: OfferDetail }) {
   const theme = useTheme();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const booking = offer.booking;
+  const edit = offer.edit;
 
   return (
     <View
@@ -211,6 +214,17 @@ function BookingBar({ offer }: { offer: OfferDetail }) {
             style={({ pressed }) => [styles.bookButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
             <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
               {booking.label}
+            </ThemedText>
+          </Pressable>
+        )}
+        {!booking && edit && (
+          <Pressable
+            testID="offer-edit"
+            accessibilityRole="button"
+            onPress={() => router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: offer.id } })}
+            style={({ pressed }) => [styles.bookButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
+            <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
+              {edit.label}
             </ThemedText>
           </Pressable>
         )}
