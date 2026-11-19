@@ -1,8 +1,8 @@
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 
-/** Un écran de l'app (`/members/37`) : jamais une adresse externe. */
-export const APP_LINK = /^\/[A-Za-z0-9._\-/]+$/;
+/** Un écran de l'app (`/members/37`, `/offers/22/calendar?month=2026-11`) : jamais une adresse externe. */
+export const APP_LINK = /^\/[A-Za-z0-9._\-/]+(?:\?[a-z_]+=[A-Za-z0-9._-]+)?$/;
 
 type TextLink = { text: string; link: string };
 

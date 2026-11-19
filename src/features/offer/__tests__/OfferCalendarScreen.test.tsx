@@ -116,4 +116,17 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
 
     expect(await screen.findByText('Un séjour accepté occupe ce jour.')).toBeTruthy();
   });
+
+  it('s’ouvre sur le mois demandé (« Traiter la demande » d’une notification)', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await render(
+      <QueryClientProvider client={client}>
+        <I18nContext.Provider value={TEST_I18N}>
+          <OfferCalendarScreen id="7" month="2026-12" />
+        </I18nContext.Provider>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(offerService.calendar).toHaveBeenCalledWith('7', '2026-12'));
+  });
 });

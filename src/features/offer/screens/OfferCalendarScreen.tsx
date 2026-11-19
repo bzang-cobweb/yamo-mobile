@@ -36,11 +36,11 @@ const LEGEND_COLORS: Record<string, string> = {
  * la légende, et, en touchant un jour, un panneau en bas avec ses demandes (Accepter,
  * Refuser) et « Bloquer ce jour » ou « Débloquer ». Tout est décrit par l'API.
  */
-export function OfferCalendarScreen({ id }: { id: string }) {
+export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: string; /** Mois ouvert d'abord (`AAAA-MM`) ; `null` : le mois courant. */ month?: string | null }) {
   const { t } = useI18n();
   const theme = useTheme();
   const queryClient = useQueryClient();
-  const [month, setMonth] = useState<string | null>(null);
+  const [month, setMonth] = useState<string | null>(initialMonth);
   const [selected, setSelected] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
