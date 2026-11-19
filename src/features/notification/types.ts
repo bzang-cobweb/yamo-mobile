@@ -10,6 +10,10 @@ export type AppNotification = {
   /** Statut en pastille sous le titre (« En attente », ton `warning`), ou `null`. */
   tag: StatusTagValue | null;
   body: string;
+  /** Qui agit, lu à l'affichage : photo, nom, en ligne, sa page ; `null` (ancienne notification). */
+  actor?: NotificationActor | null;
+  /** Le texte sans le nom de qui agit, pour la carte ; `null` : `body`. */
+  summary?: string | null;
   /** Message joint, saisi par un utilisateur (celui du membre, le motif d'un refus), ou `null`. */
   message: string | null;
   /** Écran de l'app à ouvrir (`/profile/lists/offer.bookings`), ou `null`. */
@@ -23,5 +27,8 @@ export type AppNotification = {
   read: boolean;
   created_at: string | null;
 };
+
+/** Qui agit dans une notification (décision 2026-11-19-page-membre). */
+export type NotificationActor = { id: string; name: string; initials: string; photo: string | null; online: boolean; link: string };
 
 export type NotificationPage = { items: AppNotification[]; next_cursor: string | null };

@@ -4,7 +4,8 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Vie
 
 import { NetworkError } from '@/shared/api/errors';
 import { Quote } from '@/shared/components/Quote';
-import { StatusTag } from '@/shared/components/StatusTag';
+import { Avatar } from '@/features/auth/components/Avatar';
+import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
@@ -116,10 +117,43 @@ export function NotificationsScreen() {
               pressed && styles.pressed,
             ]}>
             <View style={styles.texts}>
-              <ThemedText type={item.read ? 'default' : 'smallBold'}>{item.title}</ThemedText>
-              {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
-              <NotificationText body={item.body} links={item.text_links ?? []} onLink={(link) => open(item, link)} testID={`notification-${item.id}-text`} />
+              {/* 1. Qui agit (sa photo, cerclée de vert s'il est en ligne) et, sous son nom, la date. */}
+              <View style={styles.head}>
+                {item.actor && (
+                  <View
+                    style={[styles.ring, { borderColor: item.actor.online ? TONE_COLORS.success : 'transparent' }]}
+                    testID={`notification-${item.id}-avatar${item.actor.online ? '-online' : ''}`}>
+                    <Avatar user={{ initials: item.actor.initials, avatar_url: item.actor.photo }} size={AVATAR_SIZE} />
+                  </View>
+                )}
+                <View style={styles.headTexts}>
+                  {item.actor ? (
+                    <ThemedText
+                      type="smallBold"
+                      accessibilityRole="link"
+                      testID={`notification-${item.id}-actor`}
+                      onPress={() => item.actor && open(item, item.actor.link)}>
+                      {item.actor.name}
+                    </ThemedText>
+                  ) : (
+                    <ThemedText type="smallBold">{item.title}</ThemedText>
+                  )}
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {relativeTime(item.created_at, t, locale)}
+                  </ThemedText>
+                </View>
+              </View>
+              {/* 2. Le texte, sans le nom de qui agit. */}
+              <NotificationText
+                body={item.actor && item.summary ? item.summary : item.body}
+                links={item.text_links ?? []}
+                onLink={(link) => open(item, link)}
+                testID={`notification-${item.id}-text`}
+              />
+              {/* 3. Le message envoyé. */}
               {item.message && <Quote text={item.message} testID={`notification-${item.id}-message`} />}
+              {/* 4. Le statut. */}
+              {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
               {item.links.map((link, index) => (
                 <Pressable
                   key={link.link}
@@ -131,9 +165,6 @@ export function NotificationsScreen() {
                   <ThemedText type="linkPrimary">{link.label}</ThemedText>
                 </Pressable>
               ))}
-              <ThemedText type="small" themeColor="textSecondary">
-                {relativeTime(item.created_at, t, locale)}
-              </ThemedText>
             </View>
           </Pressable>
         )}
@@ -141,6 +172,9 @@ export function NotificationsScreen() {
     </ThemedView>
   );
 }
+
+/** Diamètre de la photo de qui agit. */
+const AVATAR_SIZE = 40;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -150,7 +184,10 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', paddingVertical: Spacing.five },
   more: { paddingVertical: Spacing.three },
   item: { flexDirection: 'row', gap: Spacing.three, padding: Spacing.three, borderWidth: 1, borderRadius: 8 },
-  texts: { flex: 1, gap: Spacing.one },
+  texts: { flex: 1, gap: Spacing.two },
+  head: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  headTexts: { flex: 1, gap: 2 },
+  ring: { borderWidth: 2, borderRadius: (AVATAR_SIZE + 8) / 2, padding: 2 },
   link: { alignSelf: 'flex-start' },
   pressed: { opacity: 0.7 },
 });

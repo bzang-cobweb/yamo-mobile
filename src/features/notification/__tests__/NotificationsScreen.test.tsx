@@ -21,7 +21,7 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
+    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', actor: { id: '4', name: 'Marie Curie', initials: 'MC', photo: null, online: true, link: '/members/4' }, summary: 'demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
     { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
@@ -79,14 +79,19 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
-  it('le nom du membre, dans le texte, ouvre sa page', async () => {
+  it('la carte : qui agit (cerclé de vert en ligne) et la date, puis le texte sans son nom, le message, le statut', async () => {
     await show();
-    await fireEvent.press(await screen.findByText('Marie Curie'));
 
-    expect(notificationService.read).toHaveBeenCalledWith('a');
-    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(await screen.findByTestId('notification-a-avatar-online')).toBeTruthy();
+    expect(screen.getByTestId('notification-a-actor')).toHaveTextContent('Marie Curie');
+    expect(screen.getByTestId('notification-a-text')).toHaveTextContent('demande un séjour.');
+    expect(screen.getByTestId('notification-a-text')).not.toHaveTextContent('Marie Curie');
+    // Sans qui agit (une ancienne notification) : son titre en tête, son texte entier.
+    expect(screen.queryByTestId('notification-b-actor')).toBeNull();
+    expect(screen.getByTestId('notification-b-text')).toHaveTextContent('Votre demande est acceptée.');
+
+    await fireEvent.press(screen.getByTestId('notification-a-actor'));
     expect(router.push).toHaveBeenCalledWith('/members/4');
-    expect(screen.getByText(/demande un séjour/)).toBeTruthy();
   });
 
   it('une notification lue ouvre sa page sans repartir à l’API', async () => {
