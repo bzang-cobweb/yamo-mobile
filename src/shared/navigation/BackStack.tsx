@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useNavigationContainerRef, useRootNavigationState } from 'expo-router';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, type PropsWithChildren } from 'react';
 
 type Entry = { id: number; run: () => void };
@@ -73,4 +73,68 @@ export function useBackStep(active: boolean, run: () => void): boolean {
   }, [active, context]);
 
   return context !== null;
+}
+
+/** Ce qu'il faut de l'état de navigation : des piles et des onglets imbriqués. */
+type NavState = { type?: string; key?: string; index?: number; routes: readonly { state?: unknown }[] };
+
+function asState(state: unknown): NavState | undefined {
+  return state && typeof state === 'object' && 'routes' in state ? (state as NavState) : undefined;
+}
+
+/**
+ * Combien d'écrans remonter pour revenir à l'écran de départ, piles imbriquées
+ * comprises (la pile principale, celle de l'onglet ouvert). Un onglet ne compte pas :
+ * seul celui qui est ouvert est parcouru.
+ */
+export function screensDeep(value: unknown): number {
+  const state = asState(value);
+
+  if (!state) {
+    return 0;
+  }
+
+  const index = state.index ?? 0;
+
+  if (state.type === 'stack') {
+    return index + state.routes.slice(0, index + 1).reduce((sum, route) => sum + screensDeep(route.state), 0);
+  }
+
+  return screensDeep(state.routes[index]?.state);
+}
+
+/** Les piles à ramener à leur premier écran pour revenir au départ, les plus profondes d'abord. */
+function stacksToReset(value: unknown): string[] {
+  const state = asState(value);
+
+  if (!state) {
+    return [];
+  }
+
+  const index = state.index ?? 0;
+
+  if (state.type === 'stack') {
+    return [...stacksToReset(state.routes[0]?.state), ...(index > 0 && state.key ? [state.key] : [])];
+  }
+
+  return stacksToReset(state.routes[index]?.state);
+}
+
+/**
+ * Fermer : revenir d'un coup à l'écran de départ (décision 2026-11-19-croix-fermer),
+ * quand on s'en est éloigné de plus d'un écran ; `null` sinon (la flèche suffit).
+ */
+export function useClose(): (() => void) | null {
+  const state = useRootNavigationState();
+  const container = useNavigationContainerRef();
+
+  if (screensDeep(state) < 2) {
+    return null;
+  }
+
+  return () => {
+    for (const key of stacksToReset(container.getRootState())) {
+      container.dispatch({ type: 'POP_TO_TOP', target: key });
+    }
+  };
 }

@@ -31,6 +31,8 @@ jest.mock('expo-router', () => {
   return {
     router: { back: jest.fn(), push: jest.fn(), dismissTo: jest.fn(), canGoBack: () => true },
     useFocusEffect: (effect: () => void | (() => void)) => useEffect(effect, [effect]),
+    useRootNavigationState: () => undefined,
+    useNavigationContainerRef: () => ({ getRootState: () => undefined, dispatch: jest.fn() }),
   };
 });
 

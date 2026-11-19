@@ -30,6 +30,7 @@ export const TEST_MESSAGES: Messages = {
   'auth.forgotPassword': 'Mot de passe oublié ?',
   'auth.forgotPasswordTitle': 'Mot de passe oublié',
   'nav.back': 'Retour',
+  'nav.close': 'Fermer',
   'auth.passwordReset': 'Mot de passe modifié, connectez-vous.',
   'auth.previousStep': 'Étape précédente',
   'auth.signIn': 'Se connecter',

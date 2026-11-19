@@ -11,7 +11,14 @@ import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { BackHeader } from '../BackHeader';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
-jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
+// L'état de navigation de toute l'app, tel que le test le pose.
+let mockRootState: unknown;
+const mockDispatch = jest.fn();
+jest.mock('expo-router', () => ({
+  router: { back: jest.fn() },
+  useRootNavigationState: () => mockRootState,
+  useNavigationContainerRef: () => ({ getRootState: () => mockRootState, dispatch: mockDispatch }),
+}));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('@/features/form/services/FormService', () => ({ formService: { validateStep: jest.fn() } }));
 
@@ -75,5 +82,50 @@ describe('BackHeader', () => {
 
     await fireEvent.press(screen.getByTestId('back-header-link'));
     expect(router.back).toHaveBeenCalledTimes(1);
+  });
+
+  describe('la croix (décision 2026-11-19-croix-fermer)', () => {
+    // Pile principale : les onglets, puis un formulaire ; dans l'onglet Profil, sa pile.
+    function state(profileIndex: number, rootIndex: number) {
+      const profile = { type: 'stack', key: 'profile-stack', index: profileIndex, routes: Array.from({ length: profileIndex + 1 }, () => ({})) };
+      const tabs = { type: 'tab', key: 'tabs', index: 1, routes: [{}, { state: profile }] };
+
+      return { type: 'stack', key: 'root', index: rootIndex, routes: [{ state: tabs }, ...Array.from({ length: rootIndex }, () => ({}))] };
+    }
+
+    afterEach(() => {
+      mockRootState = undefined;
+      mockDispatch.mockClear();
+    });
+
+    it('à un écran du départ : pas de croix, la flèche suffit', async () => {
+      mockRootState = state(0, 1);
+      await render(
+        <I18nContext.Provider value={TEST_I18N}>
+          <BackHeader title="Mes adresses" />
+        </I18nContext.Provider>,
+      );
+
+      expect(screen.queryByTestId('back-header-close')).toBeNull();
+    });
+
+    it('à plus d’un écran (une liste du profil, puis un formulaire) : la croix ramène au départ', async () => {
+      mockRootState = state(1, 1);
+      await render(
+        <I18nContext.Provider value={TEST_I18N}>
+          <BackHeader title="Modifier l'adresse" />
+        </I18nContext.Provider>,
+      );
+
+      const close = screen.getByTestId('back-header-close');
+      expect(close.props.accessibilityLabel).toBe('Fermer');
+      await fireEvent.press(close);
+
+      // La pile de l'onglet d'abord, puis la pile principale.
+      expect(mockDispatch.mock.calls.map(([action]) => action)).toEqual([
+        { type: 'POP_TO_TOP', target: 'profile-stack' },
+        { type: 'POP_TO_TOP', target: 'root' },
+      ]);
+    });
   });
 });

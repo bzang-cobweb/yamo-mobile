@@ -12,7 +12,7 @@ import { verificationService } from '../services/VerificationService';
 import type { AuthContextValue } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
-jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn() } , useRootNavigationState: () => undefined, useNavigationContainerRef: () => ({ getRootState: () => undefined, dispatch: jest.fn() }) }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('../utils/device-name', () => ({ deviceName: () => 'iPhone' }));
 jest.mock('../services/VerificationService', () => ({ verificationService: { verify: jest.fn(), resend: jest.fn() } }));

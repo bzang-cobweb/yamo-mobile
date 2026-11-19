@@ -12,7 +12,7 @@ import type { AuthContextValue } from '../types';
 import { takeProfileNotice } from '../utils/profile-notice';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
-jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn(), canGoBack: () => true } }));
+jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn(), canGoBack: () => true } , useRootNavigationState: () => undefined, useNavigationContainerRef: () => ({ getRootState: () => undefined, dispatch: jest.fn() }) }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
