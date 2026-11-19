@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { NetworkError } from '@/shared/api/errors';
@@ -22,11 +23,14 @@ type FormLoaderProps = {
 
 /**
  * Charge la définition d'un formulaire depuis l'API et l'affiche. Une nouvelle
- * définition (autre langue) repart de ses valeurs par défaut.
+ * définition (autre langue) repart de ses valeurs par défaut. Un champ qui
+ * recharge le formulaire (`reloads`, ex. la langue de saisie) le redemande avec
+ * sa valeur (décision 2026-11-19-contrat-langue-saisie-allemand).
  */
 export function FormLoader({ name, record, onSubmit, hideTitle = false }: FormLoaderProps) {
   const { t, locale } = useI18n();
-  const query = useFormDefinition(name, record);
+  const [params, setParams] = useState<Record<string, string>>({});
+  const query = useFormDefinition(name, record, params);
 
   if (query.isPending) {
     return (
@@ -52,7 +56,16 @@ export function FormLoader({ name, record, onSubmit, hideTitle = false }: FormLo
     );
   }
 
-  return <DynamicForm key={`${name}-${locale}`} definition={query.data} onSubmit={onSubmit} hideTitle={hideTitle} />;
+  return (
+    <DynamicForm
+      key={`${name}-${locale}-${JSON.stringify(params)}`}
+      definition={query.data}
+      onSubmit={onSubmit}
+      hideTitle={hideTitle}
+      record={record}
+      onReload={(field, value) => setParams((current) => ({ ...current, [field]: value }))}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

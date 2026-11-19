@@ -14,13 +14,14 @@ import { formService } from '../services/FormService';
  * celles d'avant.
  *
  * `record` : le formulaire lié à un enregistrement (une adresse de la liste).
+ * `params` : les valeurs des champs qui rechargent le formulaire (`reloads`).
  */
-export function useFormDefinition(name: string, record?: string) {
+export function useFormDefinition(name: string, record?: string, params: Record<string, string> = {}) {
   const { locale } = useI18n();
 
   return useQuery({
-    queryKey: ['form', name, record ?? null, locale],
-    queryFn: () => formService.get(name, record),
+    queryKey: ['form', name, record ?? null, locale, params],
+    queryFn: () => formService.get(name, record, params),
     gcTime: 0,
   });
 }

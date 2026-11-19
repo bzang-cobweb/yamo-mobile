@@ -90,7 +90,7 @@ describe('DynamicForm à étapes', () => {
     await fireEvent.press(screen.getByTestId('form-submit'));
 
     await waitFor(() => expect(screen.getByTestId('form-step-progress')).toHaveTextContent('Étape 2 sur 3'));
-    expect(formService.validateStep).toHaveBeenCalledWith('auth.register', 1, { name: 'marie', gender: '' });
+    expect(formService.validateStep).toHaveBeenCalledWith('auth.register', 1, { name: 'marie', gender: '' }, undefined);
     expect(screen.getByTestId('field-email')).toBeOnTheScreen();
     expect(screen.getByTestId('form-step-subtitle')).toHaveTextContent('Un e-mail, un téléphone ou les deux.');
     expect(onSubmit).not.toHaveBeenCalled();

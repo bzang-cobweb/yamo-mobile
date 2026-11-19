@@ -58,6 +58,8 @@ export type FormFieldDefinition = {
   locked?: boolean;
   /** Affiché (et envoyé) seulement quand le champ `field` vaut `value`. */
   visible_when?: { field: string; value: string } | null;
+  /** Changer la valeur recharge le formulaire avec `?<nom>=<valeur>` (décision 2026-11-19-contrat-langue-saisie-allemand). */
+  reloads?: boolean;
   /** Liste dépendante : nom du champ parent. */
   depends_on?: string | null;
   /** Nombre maximal de caractères (textarea : 1 000 par défaut), ou `null`. */

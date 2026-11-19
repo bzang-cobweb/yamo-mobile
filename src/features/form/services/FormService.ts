@@ -16,10 +16,12 @@ export class FormService {
   /**
    * `GET /api/v1/forms/{name}` — libellés dans la langue de la requête. `record`
    * lie le formulaire à un enregistrement (une adresse) : prérempli, et envoyé
-   * pour le modifier.
+   * pour le modifier. `params` : la valeur d'un champ qui recharge le formulaire
+   * (`?content_locale=de`, décision 2026-11-19-contrat-langue-saisie-allemand).
    */
-  async get(name: string, record?: string): Promise<FormDefinition> {
-    const query = record ? `?record=${encodeURIComponent(record)}` : '';
+  async get(name: string, record?: string, params: Record<string, string> = {}): Promise<FormDefinition> {
+    const pairs = [...(record ? [['record', record]] : []), ...Object.entries(params)];
+    const query = pairs.length > 0 ? `?${pairs.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&')}` : '';
 
     return (await this.client.get<FormResponse>(`/v1/forms/${encodeURIComponent(name)}${query}`)).data;
   }
@@ -27,9 +29,12 @@ export class FormService {
   /**
    * `POST /api/v1/forms/{name}/steps/{step}` — valide les champs d'une étape (à
    * partir de 1) sans rien enregistrer ; une étape invalide lève une `ApiError` 422.
+   * `record` : les étapes d'un formulaire lié à un enregistrement peuvent différer
+   * (l'étape « Langue » d'une offre modifiée, décision 2026-11-19-contrat-langue-saisie-allemand).
    */
-  async validateStep(name: string, step: number, values: FormValues): Promise<void> {
-    await this.client.post<void>(`/v1/forms/${encodeURIComponent(name)}/steps/${step}`, values);
+  async validateStep(name: string, step: number, values: FormValues, record?: string): Promise<void> {
+    const query = record ? `?record=${encodeURIComponent(record)}` : '';
+    await this.client.post<void>(`/v1/forms/${encodeURIComponent(name)}/steps/${step}${query}`, values);
   }
 
   /**

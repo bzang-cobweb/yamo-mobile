@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -20,6 +20,10 @@ type DynamicFormProps = {
   onSubmit: (values: FormValues) => Promise<void>;
   /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
   hideTitle?: boolean;
+  /** Un champ qui recharge le formulaire (`reloads`) a changé : le redemander avec sa valeur. */
+  onReload?: (field: string, value: string) => void;
+  /** L'enregistrement auquel le formulaire est lié : envoyé avec la validation d'une étape. */
+  record?: string;
 };
 
 /**
@@ -38,7 +42,7 @@ type DynamicFormProps = {
  * Pour repartir des valeurs par défaut (autre formulaire, autre langue), le
  * monter avec une `key` différente.
  */
-export function DynamicForm({ definition, onSubmit, hideTitle = false }: DynamicFormProps) {
+export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload, record }: DynamicFormProps) {
   const destructive = definition.submit.destructive === true;
   // L'alignement des titres vient de la définition du formulaire (décision 2026-11-19-alignement-titre-formulaire).
   const titleAlign = { textAlign: definition.title_align === 'center' ? 'center' : 'left' } as const;
@@ -75,6 +79,24 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
   }
 
   function change(name: string, value: FieldValue) {
+    // Un champ qui recharge le formulaire (la langue de saisie, décision 2026-11-19-contrat-langue-saisie-allemand) :
+    // les autres valeurs vont être remplacées ; si elles ont changé, on demande d'abord.
+    const reloading = definition.fields.find((field) => field.name === name)?.reloads === true;
+    if (reloading && onReload && typeof value === 'string' && value !== values[name]) {
+      const initial = initialValues(definition);
+      const edited = Object.keys(values).some((key) => key !== name && JSON.stringify(values[key]) !== JSON.stringify(initial[key]));
+      if (edited) {
+        Alert.alert(t('form.reloadConfirm'), undefined, [
+          { text: t('list.cancel'), style: 'cancel' },
+          { text: t('form.reloadContinue'), style: 'destructive', onPress: () => onReload(name, value) },
+        ]);
+      } else {
+        onReload(name, value);
+      }
+
+      return;
+    }
+
     // Liste dépendante : changer le parent vide ses enfants (ex. le pays vide la région).
     const children = definition.fields.filter((field) => field.depends_on === name).map((field) => field.name);
 
@@ -132,7 +154,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
       } else {
         // Étape intermédiaire : l'API valide ses seuls champs, puis l'étape suivante s'affiche.
         const names = new Set(namesOf(visibleFields));
-        await formService.validateStep(definition.name, step + 1, Object.fromEntries(Object.entries(all).filter(([name]) => names.has(name))));
+        await formService.validateStep(definition.name, step + 1, Object.fromEntries(Object.entries(all).filter(([name]) => names.has(name))), record);
         setStep(step + 1);
       }
     } catch (error) {
