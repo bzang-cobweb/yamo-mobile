@@ -6,14 +6,15 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { DateField } from '../components/fields/DateField';
 import type { FormFieldDefinition } from '../types';
 
+type MockPickerProps = { onChange: (event: { type: string }, date?: Date) => void; testID?: string; minimumDate?: Date; maximumDate?: Date; value?: Date };
+
 /** Les bornes reçues par le dernier calendrier affiché. */
 let mockBounds: { minimumDate?: Date; maximumDate?: Date; value?: Date } = {};
 
 /** Le sélecteur natif est remplacé par un bouton qui choisit le 12 avril 1990. */
 jest.mock('@react-native-community/datetimepicker', () => {
   const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  type PickerProps = { onChange: (event: { type: string }, date?: Date) => void; testID?: string; minimumDate?: Date; maximumDate?: Date; value?: Date };
-  const Picker = ({ onChange, testID, minimumDate, maximumDate, value }: PickerProps) => {
+  const Picker = ({ onChange, testID, minimumDate, maximumDate, value }: MockPickerProps) => {
     mockBounds = { minimumDate, maximumDate, value };
 
     return (
