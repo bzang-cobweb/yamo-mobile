@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Alert, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ApiError, NetworkError } from '@/shared/api/errors';
+import { useFixedFooter, type RevealTarget } from '@/shared/components/FixedFooterLayout';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useBackStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -39,6 +40,10 @@ type DynamicFormProps = {
  * Une action irréversible (`submit.destructive`, supprimer son compte…) a un
  * bouton d'envoi rouge.
  *
+ * Dans un écran à barre fixe (`FixedFooterLayout`), le bouton d'envoi y est placé,
+ * en bas de l'écran (décision 2026-11-19-contrat-bouton-fixe-formulaires) ; un envoi
+ * refusé fait défiler jusqu'au premier champ en erreur. Sinon, il reste sous les champs.
+ *
  * Pour repartir des valeurs par défaut (autre formulaire, autre langue), le
  * monter avec une `key` différente.
  */
@@ -47,7 +52,6 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
   // L'alignement des titres vient de la définition du formulaire (décision 2026-11-19-alignement-titre-formulaire).
   const titleAlign = { textAlign: definition.title_align === 'center' ? 'center' : 'left' } as const;
   const { t } = useI18n();
-  const theme = useTheme();
   const [values, setValues] = useState<FormValues>(() => initialValues(definition));
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -137,6 +141,54 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
     return fieldError(errors, field.name) ?? (field.type === 'phone' ? fieldError(errors, countryKey(field.name)) : undefined);
   }
 
+  // La barre fixe de l'écran, s'il en a une : le bouton d'envoi y va.
+  const footer = useFixedFooter();
+  const footerId = useId();
+  const root = useRef<RevealTarget>(null);
+  const fieldViews = useRef<Record<string, RevealTarget | null>>({});
+  // La dernière version de `submit` (elle lit l'état courant), pour le bouton de la barre.
+  const submitRef = useRef<() => Promise<void>>(async () => undefined);
+  const [revealError, setRevealError] = useState(0);
+  const busy = submitting || uploading;
+  const buttonLabel = submitting ? t('form.submitting') : isLastStep ? definition.submit.label : t('form.next');
+
+  useEffect(() => {
+    submitRef.current = submit;
+  });
+
+  useEffect(() => {
+    if (footer === null) {
+      return;
+    }
+    footer.set(
+      footerId,
+      <SubmitButton label={buttonLabel} busy={busy} submitting={submitting} destructive={destructive} onPress={() => void submitRef.current()} />,
+    );
+  }, [footer, footerId, buttonLabel, busy, submitting, destructive]);
+
+  // En partant (formulaire fermé), il rend la barre.
+  useEffect(() => () => footer?.set(footerId, null), [footer, footerId]);
+
+  // Une nouvelle étape s'affiche depuis son début.
+  useEffect(() => {
+    if (step > 0) {
+      footer?.reveal(root.current);
+    }
+  }, [footer, step]);
+
+  // Un envoi refusé : jusqu'au premier champ en erreur, dans l'ordre d'affichage.
+  useEffect(() => {
+    if (revealError === 0 || footer === null) {
+      return;
+    }
+    const first = visibleFields.find((field) => errorOf(field) !== undefined);
+    if (first) {
+      footer.reveal(fieldViews.current[first.name] ?? null);
+    }
+    // Seulement après un envoi refusé, pas à chaque frappe.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealError]);
+
   async function submit() {
     if (uploading) {
       return;
@@ -164,6 +216,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
         // Erreur qui ne vise aucun champ affiché (trop d'essais, champ ajouté par l'app…) : message général.
         const onFields = Object.keys(error.errors).some((key) => fieldNames.includes(key.split('.')[0]));
         setMessage(onFields ? null : (Object.values(error.errors)[0]?.[0] ?? error.message));
+        setRevealError((count) => count + 1);
       } else if (error instanceof NetworkError) {
         setMessage(t('offline.message'));
       } else {
@@ -175,7 +228,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
   }
 
   return (
-    <View style={styles.form} testID={`form-${definition.name}`}>
+    <View ref={root} collapsable={false} style={styles.form} testID={`form-${definition.name}`}>
       {((!hideTitle && definition.title !== null) || definition.subtitle !== null) && (
         <View style={styles.header}>
           {!hideTitle && definition.title !== null && (
@@ -210,20 +263,26 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
       )}
 
       {visibleFields.map((field) => (
-        <FormField
+        <View
           key={field.name}
-          field={shown(field)}
-          value={values[field.name]}
-          onChange={(value) => change(field.name, value)}
-          error={errorOf(field)}
-          errors={errors}
-          disabled={isDisabled(field)}
-          onSubmitEditing={submit}
-          country={field.type === 'phone' ? String(values[countryKey(field.name)] ?? '') : undefined}
-          onCountryChange={field.type === 'phone' ? (country) => change(countryKey(field.name), country) : undefined}
-          countryLocked={field.type === 'phone' && Boolean(field.locked)}
-          onFill={(filled) => Object.entries(filled).forEach(([name, filledValue]) => change(name, filledValue))}
-        />
+          collapsable={false}
+          ref={(view) => {
+            fieldViews.current[field.name] = view;
+          }}>
+          <FormField
+            field={shown(field)}
+            value={values[field.name]}
+            onChange={(value) => change(field.name, value)}
+            error={errorOf(field)}
+            errors={errors}
+            disabled={isDisabled(field)}
+            onSubmitEditing={submit}
+            country={field.type === 'phone' ? String(values[countryKey(field.name)] ?? '') : undefined}
+            onCountryChange={field.type === 'phone' ? (country) => change(countryKey(field.name), country) : undefined}
+            countryLocked={field.type === 'phone' && Boolean(field.locked)}
+            onFill={(filled) => Object.entries(filled).forEach(([name, filledValue]) => change(name, filledValue))}
+          />
+        </View>
       ))}
 
       {message && (
@@ -232,24 +291,8 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
         </ThemedText>
       )}
 
-      <Pressable
-        testID="form-submit"
-        accessibilityRole="button"
-        onPress={submit}
-        // Un fichier en cours d'envoi : l'étape et l'enregistrement attendent (décision 2026-11-19-contrat-champ-upload-photos).
-        disabled={submitting || uploading}
-        accessibilityState={{ disabled: submitting || uploading }}
-        style={({ pressed }) => [
-          styles.button,
-          { backgroundColor: destructive ? ERROR_COLOR : theme.primary },
-          (submitting || uploading) && styles.disabled,
-          pressed && styles.pressed,
-        ]}>
-        {submitting && <ActivityIndicator color={theme.onPrimary} />}
-        <ThemedText style={{ color: theme.onPrimary }}>
-          {submitting ? t('form.submitting') : isLastStep ? definition.submit.label : t('form.next')}
-        </ThemedText>
-      </Pressable>
+      {/* Sans barre fixe : le bouton sous les champs. */}
+      {footer === null && <SubmitButton label={buttonLabel} busy={busy} submitting={submitting} destructive={destructive} onPress={() => void submit()} />}
 
       {step > 0 && !hasBackHeader && (
         <Pressable testID="form-previous" accessibilityRole="button" disabled={submitting} onPress={previousStep}>
@@ -275,3 +318,30 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.8 },
 });
+
+/**
+ * Le bouton d'envoi : « Suivant » ou le libellé d'envoi ; rouge pour une action
+ * irréversible ; désactivé pendant un envoi (un fichier en cours d'envoi : l'étape
+ * et l'enregistrement attendent, décision 2026-11-19-contrat-champ-upload-photos).
+ */
+function SubmitButton({ label, busy, submitting, destructive, onPress }: { label: string; busy: boolean; submitting: boolean; destructive: boolean; onPress: () => void }) {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      testID="form-submit"
+      accessibilityRole="button"
+      onPress={onPress}
+      disabled={busy}
+      accessibilityState={{ disabled: busy }}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: destructive ? ERROR_COLOR : theme.primary },
+        busy && styles.disabled,
+        pressed && styles.pressed,
+      ]}>
+      {submitting && <ActivityIndicator color={theme.onPrimary} />}
+      <ThemedText style={{ color: theme.onPrimary }}>{label}</ThemedText>
+    </Pressable>
+  );
+}

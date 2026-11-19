@@ -1,11 +1,12 @@
 import type { PropsWithChildren } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { useFormDefinition } from '@/features/form/hooks/useFormDefinition';
 import type { FormValues } from '@/features/form/types';
 import { BackHeader } from '@/shared/components/BackHeader';
+import { FixedFooterLayout } from '@/shared/components/FixedFooterLayout';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
@@ -19,7 +20,8 @@ import { backToProfile, backWithNotice } from '../utils/profile-notice';
 
 /**
  * Mise en page d'un écran du profil : en-tête fixé en haut (flèche de retour, titre de
- * l'écran au centre), contenu qui défile dessous, au-dessus du clavier.
+ * l'écran au centre), contenu qui défile dessous, au-dessus du clavier, et la barre
+ * fixe du bouton d'envoi en bas.
  *
  * `scrolls={false}` : le contenu défile lui-même (une `List`), qui ne peut pas
  * être placée dans un `ScrollView` ; il reprend alors `profileContentStyle`.
@@ -30,15 +32,17 @@ export function ProfileScreenShell({ title, scrolls = true, children }: PropsWit
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <BackStackProvider>
           <BackHeader title={title} />
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
+          <View style={styles.safeArea}>
             {scrolls ? (
-              <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+              // Un formulaire y place son bouton, fixé en bas ; le menu du bas est masqué
+              // (décision 2026-11-19-contrat-bouton-fixe-formulaires).
+              <FixedFooterLayout contentStyle={styles.content} bottomInset>
                 {children}
-              </ScrollView>
+              </FixedFooterLayout>
             ) : (
               <View style={styles.safeArea}>{children}</View>
             )}
-          </KeyboardAvoidingView>
+          </View>
         </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
