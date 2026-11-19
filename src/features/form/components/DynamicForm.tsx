@@ -169,9 +169,11 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
   // En partant (formulaire fermé), il rend la barre.
   useEffect(() => () => footer?.set(footerId, null), [footer, footerId]);
 
-  // Une nouvelle étape s'affiche depuis son début.
+  // Une autre étape (suivante ou précédente) s'affiche depuis son début ; pas au premier affichage.
+  const shownStep = useRef(step);
   useEffect(() => {
-    if (step > 0) {
+    if (shownStep.current !== step) {
+      shownStep.current = step;
       footer?.reveal(root.current);
     }
   }, [footer, step]);
