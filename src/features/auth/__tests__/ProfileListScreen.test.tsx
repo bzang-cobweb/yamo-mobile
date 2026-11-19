@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { StyleSheet } from 'react-native';
 import { Alert, type AlertButton } from 'react-native';
 
 import type { ListDefinition, ListItem } from '@/features/list/types';
@@ -142,6 +143,33 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
     expect(screen.getByTestId('profile-list-item-7-photo').props.source).toEqual({ uri: 'https://api.test/storage/7.jpg' });
     expect(screen.queryByTestId('profile-list-item-8-photo')).toBeNull();
+  });
+
+  it('avec photo : en colonne, « Retirer » sur sa ligne ; sans photo, à droite du texte', async () => {
+    // Décision 2026-11-19-nuit-retirer-sous-image.
+    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg' }), item('8')]);
+    await renderScreen();
+
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-7').props.style).flexDirection).toBe('column');
+    expect(screen.getByTestId('profile-list-actions-7')).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-8').props.style).flexDirection).toBe('row');
+    expect(screen.queryByTestId('profile-list-actions-8')).toBeNull();
+    expect(screen.getByTestId('profile-list-delete-8')).toBeTruthy();
+  });
+
+  it('un écran et un formulaire : « Voir », « Éditer » et « Retirer » sur la ligne des actions', async () => {
+    // Décision 2026-11-19-nuit-voir-editer-retirer.
+    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg', link: '/offers/7' })]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-view-7'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/7');
+    await fireEvent.press(screen.getByTestId('profile-list-edit-7'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '7' } });
+    expect(screen.getByTestId('profile-list-delete-7')).toBeTruthy();
+    // Toucher la carte ouvre toujours le formulaire.
+    await fireEvent.press(screen.getByTestId('profile-list-item-7'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '7' } });
   });
 
   it('vide : affiche le texte servi par l’API', async () => {

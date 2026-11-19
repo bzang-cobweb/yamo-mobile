@@ -114,21 +114,48 @@ export function ProfileListScreen({ list }: { list: string }) {
 
   function renderItem(item: ListItem) {
     const edit = item.edit;
-    // Sans formulaire, l'écran de l'app que l'item désigne (« /offers/12 », décision 2026-11-19-contrat-vedette-favoris).
-    const link = !edit && item.link && ITEM_LINK.test(item.link) ? item.link : null;
+    // L'écran de l'app que l'item désigne (« /offers/12 », décision 2026-11-19-contrat-vedette-favoris).
+    const link = item.link && ITEM_LINK.test(item.link) ? item.link : null;
     const removable = item.delete !== null && profileSubmission(item.delete) !== null;
+    // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
+    const both = Boolean(edit && link);
+    // Avec une photo, ou des boutons : en colonne, la photo sur toute la largeur et les actions sur leur ligne
+    // (décision 2026-11-19-nuit-retirer-sous-image).
+    const stacked = Boolean(item.image) || both;
+
+    function openEdit() {
+      if (edit) {
+        router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: edit.record } });
+      }
+    }
+
+    function openLink() {
+      if (link) {
+        router.push(link as Href);
+      }
+    }
+
+    const removeButton = removable && item.delete && (
+      <Pressable
+        testID={`profile-list-delete-${item.id}`}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.delete.label} ${item.title}`}
+        hitSlop={Spacing.one}
+        onPress={() => confirmRemove(item)}
+        style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+        <ThemedText type="small" style={styles.error}>
+          {item.delete.label}
+        </ThemedText>
+      </Pressable>
+    );
 
     return (
-      <View style={[styles.row, { borderColor: theme.backgroundSelected }]}>
+      <View style={[styles.row, stacked && styles.stacked, { borderColor: theme.backgroundSelected }]} testID={`profile-list-row-${item.id}`}>
         <Pressable
           testID={`profile-list-item-${item.id}`}
           accessibilityRole={edit || link ? 'link' : undefined}
           disabled={!edit && !link}
-          onPress={() =>
-            edit
-              ? router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: edit.record } })
-              : link && router.push(link as Href)
-          }
+          onPress={() => (edit ? openEdit() : openLink())}
           style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
           {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
           <ItemPicture item={item} testID={`profile-list-item-${item.id}`} />
@@ -141,17 +168,34 @@ export function ProfileListScreen({ list }: { list: string }) {
           {/* La note et la phrase mise en avant, quand l'API les sert. */}
           <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
         </Pressable>
-        {removable && item.delete && (
-          <Pressable
-            testID={`profile-list-delete-${item.id}`}
-            accessibilityRole="button"
-            accessibilityLabel={`${item.delete.label} ${item.title}`}
-            onPress={() => confirmRemove(item)}
-            style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
-            <ThemedText type="small" style={styles.error}>
-              {item.delete.label}
-            </ThemedText>
-          </Pressable>
+        {stacked ? (
+          <View style={styles.actions} testID={`profile-list-actions-${item.id}`}>
+            {both && (
+              <>
+                <Pressable
+                  testID={`profile-list-view-${item.id}`}
+                  accessibilityRole="link"
+                  accessibilityLabel={`${t('list.view')} ${item.title}`}
+                  hitSlop={Spacing.one}
+                  onPress={openLink}
+                  style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+                  <ThemedText type="linkPrimary">{t('list.view')}</ThemedText>
+                </Pressable>
+                <Pressable
+                  testID={`profile-list-edit-${item.id}`}
+                  accessibilityRole="link"
+                  accessibilityLabel={`${t('list.edit')} ${item.title}`}
+                  hitSlop={Spacing.one}
+                  onPress={openEdit}
+                  style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+                  <ThemedText type="linkPrimary">{t('list.edit')}</ThemedText>
+                </Pressable>
+              </>
+            )}
+            {removeButton}
+          </View>
+        ) : (
+          removeButton
         )}
       </View>
     );
@@ -253,7 +297,11 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     borderRadius: 8,
   },
+  // Un item avec photo : en colonne.
+  stacked: { flexDirection: 'column', alignItems: 'stretch' },
   itemText: { flex: 1, gap: Spacing.half, paddingVertical: Spacing.one },
   delete: { padding: Spacing.one },
+  // La ligne des actions, sous le contenu, à droite.
+  actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
 });
