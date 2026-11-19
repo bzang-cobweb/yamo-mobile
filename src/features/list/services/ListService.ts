@@ -10,6 +10,11 @@ const FAVORITE_ENDPOINT = /^\/v1\/[a-z-]+\/\d+\/favorite$/;
 /** Écran de l'app qu'un item peut ouvrir : la fiche d'une entité, `/offers/12`. */
 export const ITEM_LINK = /^\/[a-z-]+\/\d+$/;
 
+/** `filter[nom]`, crochets encodés : `filter%5Bnom%5D`. */
+function filterName(key: string): string {
+  return `filter%5B${encodeURIComponent(key)}%5D`;
+}
+
 /** Listes servies par l'API. */
 export class ListService {
   constructor(private readonly client: ApiClient = apiClient) {}
@@ -24,11 +29,13 @@ export class ListService {
       cursor ? `cursor=${encodeURIComponent(cursor)}` : null,
       search?.trim() ? `search=${encodeURIComponent(search.trim())}` : null,
       // `filter[ville]=Douala`, `filter[type][]=studio` (décision 2026-11-19-contrat-filtres-vitrine).
+      // Les crochets sont encodés aussi : laissés bruts, l'adresse est invalide et iOS la
+      // réencode en entier, « Yaoundé » devenant « Yaound%25C3%25A9 », un filtre qui ne trouve rien.
       ...Object.entries(filters).flatMap(([key, value]) =>
         Array.isArray(value)
           ? // Une liste de groupes n'est pas un filtre : seules les valeurs simples partent.
-            value.filter((item): item is string => typeof item === 'string').map((item) => `filter[${encodeURIComponent(key)}][]=${encodeURIComponent(item)}`)
-          : [`filter[${encodeURIComponent(key)}]=${encodeURIComponent(String(value))}`],
+            value.filter((item): item is string => typeof item === 'string').map((item) => `${filterName(key)}%5B%5D=${encodeURIComponent(item)}`)
+          : [`${filterName(key)}=${encodeURIComponent(String(value))}`],
       ),
     ].filter((param) => param !== null);
     const query = params.length > 0 ? `?${params.join('&')}` : '';

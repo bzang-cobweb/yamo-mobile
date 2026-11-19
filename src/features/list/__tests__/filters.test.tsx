@@ -52,7 +52,21 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
 
     await new ListService(client as unknown as ApiClient).get('offer.browse', null, 'akwa', { city: 'Douala', property_type: ['studio', 'house'] });
 
-    expect(client.get).toHaveBeenCalledWith('/v1/lists/offer.browse?search=akwa&filter[city]=Douala&filter[property_type][]=studio&filter[property_type][]=house');
+    // Crochets encodés : une adresse valide, qu'iOS ne réencode pas.
+    expect(client.get).toHaveBeenCalledWith(
+      '/v1/lists/offer.browse?search=akwa&filter%5Bcity%5D=Douala&filter%5Bproperty_type%5D%5B%5D=studio&filter%5Bproperty_type%5D%5B%5D=house',
+    );
+  });
+
+  it('une ville accentuée part encodée une seule fois, dans une adresse valide', async () => {
+    const client = { get: jest.fn().mockResolvedValue({ data: {} }) };
+
+    await new ListService(client as unknown as ApiClient).get('offer.browse', null, '', { city: 'Yaoundé' });
+
+    const url = client.get.mock.calls[0][0] as string;
+    expect(url).toBe('/v1/lists/offer.browse?filter%5Bcity%5D=Yaound%C3%A9');
+    // Rien qu'iOS aurait à réencoder (il réencoderait aussi les « % » déjà là).
+    expect(url).toBe(encodeURI(decodeURI(url)));
   });
 
   it('l’écran des filtres : barre fixe en bas ; il applique les choix, ou les efface, puis revient', async () => {
