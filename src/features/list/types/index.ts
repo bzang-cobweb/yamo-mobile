@@ -6,6 +6,9 @@ import type { FormSubmit } from '@/features/form/types';
  */
 export type ListItemDelete = Omit<FormSubmit, 'label'> & { label: string; confirm: string };
 
+/** Cœur de favori : état, et point d'API relatif (`/v1/…`). */
+export type ListItemFavorite = { active: boolean; endpoint: string };
+
 /** Un item d'une liste : titre, sous-titre, photo, note, phrase mise en avant, formulaire d'édition, retrait. */
 export type ListItem = {
   id: string;
@@ -15,8 +18,15 @@ export type ListItem = {
   image: string | null;
   /** Note moyenne (1 à 5) et nombre de notes ; `null` : aucune (décision 2026-11-19-contrat-avis-offres). */
   rating: { average: number; count: number } | null;
-  /** Phrase mise en avant (le dernier avis), en gras sur sa ligne ; `null` : aucune. */
+  /** Phrase mise en avant, en gras sur sa ligne ; `null` : aucune. */
   highlight: string | null;
+  /**
+   * Cœur de favori sur la photo (décision 2026-11-19-contrat-vedette-favoris) : plein si
+   * `active` ; PUT sur `endpoint` ajoute, DELETE retire ; `null` (ou absent) : pas de cœur.
+   */
+  favorite?: ListItemFavorite | null;
+  /** Écran de l'app ouvert en touchant l'item (« /offers/12 ») ; `null` (ou absent) : aucun. */
+  link?: string | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */
   edit: { form: string; record: string } | null;
   delete: ListItemDelete | null;

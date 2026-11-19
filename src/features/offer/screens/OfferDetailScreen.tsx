@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { takeProfileNotice } from '@/features/auth/utils/profile-notice';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -93,6 +94,8 @@ export function OfferDetailScreen({ id }: { id: string }) {
             <ScrollView contentContainerStyle={styles.content} testID="offer-detail">
               <View style={{ width, alignSelf: 'center' }}>
                 <PhotoCarousel photos={offer.photos} width={width} />
+                {/* Le cœur d'un membre connecté, en haut à droite (décision 2026-11-19-contrat-vedette-favoris). */}
+                {offer.favorite && <FavoriteHeart favorite={offer.favorite} testID="offer-favorite" />}
               </View>
               <View style={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
                 {offer.status && (

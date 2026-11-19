@@ -2,11 +2,11 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { ItemPicture } from '@/features/list/components/ItemPicture';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
-import { ItemPhoto } from '@/shared/components/ItemPhoto';
 import { List } from '@/shared/components/List';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -82,8 +82,8 @@ export function BrowseScreen() {
           // La fiche de l'offre (décision 2026-11-18-fiche-offre).
           onPress={() => router.push({ pathname: '/offers/[id]', params: { id: item.id } })}
           style={({ pressed }) => [styles.card, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-          {/* La photo au-dessus du titre et du sous-titre ; sans photo, un emplacement neutre. */}
-          <ItemPhoto uri={item.image} placeholder testID={`browse-item-${item.id}-photo`} />
+          {/* La photo au-dessus du titre ; sans photo, un emplacement neutre ; le cœur d'un membre connecté. */}
+          <ItemPicture item={item} placeholder testID={`browse-item-${item.id}`} />
           <ThemedText type="smallBold">{item.title}</ThemedText>
           {item.subtitle && (
             <ThemedText type="small" themeColor="textSecondary">

@@ -176,6 +176,23 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '7' } });
   });
 
+  it('sans formulaire, toucher un item ouvre l’écran qu’il désigne (une offre en favori)', async () => {
+    mockList = list([
+      item('7', { edit: null, delete: null, link: '/offers/7' }),
+      item('8', { edit: null, delete: null, link: 'https://evil.test' }),
+      item('9', { edit: null, delete: null, link: '/profile/delete-account' }),
+    ]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-item-7'));
+    expect(router.push).toHaveBeenCalledWith('/offers/7');
+
+    // Un lien qui n'est pas un écran de l'app est ignoré.
+    await fireEvent.press(screen.getByTestId('profile-list-item-8'));
+    await fireEvent.press(screen.getByTestId('profile-list-item-9'));
+    expect(router.push).toHaveBeenCalledTimes(1);
+  });
+
   it('retirer un item : confirmation, envoi décrit, message, puis liste rechargée depuis le début', async () => {
     const alert = confirmAlert();
     mockRequest.mockResolvedValue(undefined);

@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
@@ -7,7 +7,8 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
-import { ItemPhoto } from '@/shared/components/ItemPhoto';
+import { ItemPicture } from '@/features/list/components/ItemPicture';
+import { ITEM_LINK } from '@/features/list/services/ListService';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { List } from '@/shared/components/List';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -114,18 +115,24 @@ export function ProfileListScreen({ list }: { list: string }) {
 
   function renderItem(item: ListItem) {
     const edit = item.edit;
+    // Sans formulaire, l'écran de l'app que l'item désigne (« /offers/12 », décision 2026-11-19-contrat-vedette-favoris).
+    const link = !edit && item.link && ITEM_LINK.test(item.link) ? item.link : null;
     const removable = item.delete !== null && profileSubmission(item.delete) !== null;
 
     return (
       <View style={[styles.row, { borderColor: theme.backgroundSelected }]}>
         <Pressable
           testID={`profile-list-item-${item.id}`}
-          accessibilityRole={edit ? 'link' : undefined}
-          disabled={!edit}
-          onPress={() => edit && router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: edit.record } })}
+          accessibilityRole={edit || link ? 'link' : undefined}
+          disabled={!edit && !link}
+          onPress={() =>
+            edit
+              ? router.push({ pathname: '/profile/[form]', params: { form: edit.form, record: edit.record } })
+              : link && router.push(link as Href)
+          }
           style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
-          {/* La photo de l'item, s'il en a une, au-dessus du titre. */}
-          <ItemPhoto uri={item.image} testID={`profile-list-item-${item.id}-photo`} />
+          {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
+          <ItemPicture item={item} testID={`profile-list-item-${item.id}`} />
           <ThemedText>{item.title}</ThemedText>
           {item.subtitle && (
             <ThemedText type="small" themeColor="textSecondary">
@@ -147,7 +154,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             </ThemedText>
           </Pressable>
         )}
-        {edit && (
+        {(edit || link) && (
           <SymbolView
             name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
             size={16}

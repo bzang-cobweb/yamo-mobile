@@ -1,4 +1,4 @@
-import type { ListItemDelete } from '@/features/list/types';
+import type { ListItemDelete, ListItemFavorite } from '@/features/list/types';
 
 /**
  * La fiche d'une offre, décrite par l'API (`GET /api/v1/offers/{id}`, décision
@@ -18,6 +18,8 @@ export type OfferDetail = {
   published_at: string | null;
   /** Statut, servi au seul propriétaire. */
   status: { value: string; label: string } | null;
+  /** Cœur de favori d'un membre connecté ; `null` : pas de cœur (visiteur, sa propre offre). */
+  favorite?: ListItemFavorite | null;
   /** Les avis ; `null` pour une offre non publiée (décision 2026-11-19-contrat-avis-offres). */
   reviews: OfferReviews | null;
 };

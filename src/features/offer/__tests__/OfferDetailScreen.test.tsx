@@ -150,6 +150,16 @@ describe('OfferDetailScreen : avis', () => {
     expect(screen.queryByTestId('offer-review-write')).toBeNull();
   });
 
+  it('un cœur sur la photo quand l’API en sert un ; aucun sinon', async () => {
+    mockState = { data: { ...OFFER, favorite: { active: false, endpoint: '/v1/offers/7/favorite' } }, isPending: false, error: null };
+    await show();
+    expect(screen.getByTestId('offer-favorite').props.accessibilityLabel).toBe('Ajouter aux favoris');
+
+    mockState = { data: OFFER, isPending: false, error: null };
+    await show();
+    expect(screen.queryByTestId('offer-favorite')).toBeNull();
+  });
+
   it('sans avis : le texte d’attente ; offre non publiée : pas de section', async () => {
     mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, average: null, count: 0, latest: [] } }, isPending: false, error: null };
     await show();

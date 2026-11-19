@@ -54,6 +54,8 @@ export const TEST_MESSAGES: Messages = {
   'offer.writeReview': 'Donner mon avis',
   'offer.editReview': 'Modifier mon avis',
   'offer.signInToReview': 'Connectez-vous pour donner votre avis.',
+  'list.addFavorite': 'Ajouter aux favoris',
+  'list.removeFavorite': 'Retirer des favoris',
   'list.ratingSummary': 'Note moyenne :average sur 5, :count avis',
   'form.ratingValue': ':value sur 5',
   'form.unit': 'En :unit',

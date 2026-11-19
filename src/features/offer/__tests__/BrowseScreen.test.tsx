@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { StyleSheet } from 'react-native';
@@ -123,6 +124,23 @@ describe('Accueil : offres du pays', () => {
 
     expect(screen.queryByTestId('browse-item-7-rating')).toBeNull();
     expect(screen.getByTestId('browse-item-7-highlight').props.children).toBe('25 000 FCFA / mois');
+  });
+
+  it('un cœur sur la photo quand l’API en sert un (membre connecté) ; aucun sinon', async () => {
+    mockList = {
+      ...list(),
+      items: [{ ...list().items[0], favorite: { active: true, endpoint: '/v1/offers/9/favorite' } }, list().items[1]],
+    };
+    await render(
+      <QueryClientProvider client={new QueryClient()}>
+        <I18nContext.Provider value={TEST_I18N}>
+          <BrowseScreen />
+        </I18nContext.Provider>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByTestId('browse-item-9-favorite').props.accessibilityLabel).toBe('Retirer des favoris');
+    expect(screen.queryByTestId('browse-item-7-favorite')).toBeNull();
   });
 
   it('toucher une offre ouvre sa fiche', async () => {
