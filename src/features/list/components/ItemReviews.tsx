@@ -10,7 +10,7 @@ import type { ListItem } from '../types';
 
 /**
  * Bas d'un item (décision 2026-11-19-acces-avis-backoffice) : la phrase mise en
- * avant, en gras et dans la couleur primaire, sur deux lignes au plus ; puis, en
+ * avant, en gras, sur deux lignes au plus ; puis, en
  * bas à droite, les étoiles de la note moyenne, seules (la note et le nombre
  * d'avis sont lus par l'accessibilité). Rien de ce que l'API ne sert pas.
  */
@@ -28,7 +28,7 @@ export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 
   return (
     <View style={styles.row}>
       {highlight ? (
-        <ThemedText type="smallBold" numberOfLines={2} style={[styles.highlight, { color: theme.primary }]} testID={testID ? `${testID}-highlight` : undefined}>
+        <ThemedText type="smallBold" numberOfLines={2} style={styles.highlight} testID={testID ? `${testID}-highlight` : undefined}>
           {highlight}
         </ThemedText>
       ) : (

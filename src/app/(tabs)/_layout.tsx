@@ -20,7 +20,15 @@ export default function TabsLayout() {
   const inSubPage = useSegments().length > 2;
 
   return (
-    <Tabs screenOptions={{ header: () => <AppTopBar />, tabBarShowLabel: false, tabBarActiveTintColor: theme.primary }}>
+    <Tabs
+      screenOptions={{
+        header: () => <AppTopBar />,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: theme.primary,
+        // La zone de contenu reste sur le fond du thème (blanc), pas le gris de la navigation
+        // (décision 2026-11-19-fond-blanc-filtres).
+        sceneStyle: { backgroundColor: theme.background },
+      }}>
       <Tabs.Screen
         name="index"
         options={{

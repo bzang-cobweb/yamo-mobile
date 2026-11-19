@@ -108,7 +108,7 @@ describe('Accueil : offres du pays', () => {
     expect(screen.getByTestId('browse-item-9').children[0]).toBe(screen.getByTestId('browse-item-9-photo'));
   });
 
-  it('détails et prix en gras, couleur primaire, puis les étoiles seules en bas à droite ; sans avis, pas d’étoiles', async () => {
+  it('détails et prix en gras, puis les étoiles seules en bas à droite ; sans avis, pas d’étoiles', async () => {
     await show(<BrowseScreen />);
 
     const rating = screen.getByTestId('browse-item-9-rating');
@@ -118,8 +118,7 @@ describe('Accueil : offres du pays', () => {
     const highlight = screen.getByTestId('browse-item-9-highlight');
     expect(highlight.props.children).toBe('4 chambres · 400 000 FCFA / mois');
     expect(highlight.props.numberOfLines).toBe(2);
-    expect(StyleSheet.flatten(highlight.props.style)).toEqual(expect.objectContaining({ fontWeight: 700, color: expect.any(String) }));
-    expect(StyleSheet.flatten(highlight.props.style).color).not.toBe(StyleSheet.flatten(screen.getByText('Maison à Bastos').props.style).color);
+    expect(StyleSheet.flatten(highlight.props.style).fontWeight).toBe(700);
     // Sur la même ligne : la phrase, puis les étoiles à droite.
     expect(rating.parent?.parent).toBe(highlight.parent?.parent ?? highlight.parent);
 
