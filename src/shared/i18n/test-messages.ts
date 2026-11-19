@@ -55,7 +55,7 @@ export const TEST_MESSAGES: Messages = {
   'offer.editReview': 'Modifier mon avis',
   'offer.signInToReview': 'Connectez-vous pour donner votre avis.',
   'list.filters': 'Filtres',
-  'list.applyFilters': 'Afficher les offres',
+  'list.applyFilters': 'Appliquer les filtres',
   'list.clearFilters': 'Effacer les filtres',
   'list.noFilterResults': 'Aucune offre ne correspond à ces filtres.',
   'list.addFavorite': 'Ajouter aux favoris',

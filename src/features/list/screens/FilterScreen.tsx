@@ -20,7 +20,7 @@ import { setFilterValues, useListFilters } from '../utils/filters';
  * Les filtres d'une liste (`/filters/[list]`, décision 2026-11-19-contrat-filtres-vitrine) :
  * les champs servis par l'API, préremplis avec les filtres en cours, qui défilent ;
  * en bas, dans une barre fixe (décision 2026-11-19-contrat-multiselect-intervalle-equipements),
- * « Afficher les offres » les applique et « Effacer les filtres » les remet à zéro,
+ * « Appliquer les filtres » les applique et « Effacer les filtres » les remet à zéro,
  * puis retour à la liste. Un filtre invalide est ignoré par l'API.
  */
 export function FilterScreen({ list }: { list: string }) {
