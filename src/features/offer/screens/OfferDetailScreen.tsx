@@ -141,16 +141,22 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 {offer.facts.length > 0 && (
                   <Accordion title={t('offer.details')} testID="offer-facts">
                     {offer.facts.map((fact) => (
-                      <View key={fact.label} style={[styles.fact, { borderBottomColor: theme.backgroundSelected }]} testID="offer-fact">
-                        <ThemedText type="small" themeColor="textSecondary" style={styles.factLabel}>
-                          {fact.label}
-                        </ThemedText>
-                        {/* Une valeur longue (les équipements) passe à la ligne ; le libellé reste visible. */}
-                        <ThemedText type="small" style={styles.factValue}>
-                          {fact.value}
-                        </ThemedText>
-                      </View>
+                      <FactRow key={fact.label} fact={fact} testID="offer-fact" />
                     ))}
+                  </Accordion>
+                )}
+
+                {/* Règles du logement et autres informations (décision 2026-11-19-contrat-regles-informations). */}
+                {((offer.rules?.length ?? 0) > 0 || offer.information) && (
+                  <Accordion title={t('offer.rules')} testID="offer-rules">
+                    {offer.rules?.map((rule) => (
+                      <FactRow key={rule.label} fact={rule} testID="offer-rule" />
+                    ))}
+                    {offer.information && (
+                      <ThemedText type="small" style={styles.information} testID="offer-information">
+                        {offer.information}
+                      </ThemedText>
+                    )}
                   </Accordion>
                 )}
 
@@ -184,6 +190,23 @@ export function OfferDetailScreen({ id }: { id: string }) {
   );
 }
 
+/** Une ligne « libellé — valeur », des caractéristiques comme des règles. */
+function FactRow({ fact, testID }: { fact: { label: string; value: string }; testID: string }) {
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.fact, { borderBottomColor: theme.backgroundSelected }]} testID={testID}>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.factLabel}>
+        {fact.label}
+      </ThemedText>
+      {/* Une valeur longue (les équipements) passe à la ligne ; le libellé reste visible. */}
+      <ThemedText type="small" style={styles.factValue}>
+        {fact.value}
+      </ThemedText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
@@ -196,5 +219,6 @@ const styles = StyleSheet.create({
   location: { gap: Spacing.one, paddingBottom: Spacing.two, borderBottomWidth: 1 },
   factLabel: { flexShrink: 0, maxWidth: '45%' },
   factValue: { flexShrink: 1, textAlign: 'right' },
+  information: { paddingTop: Spacing.two },
   error: { color: ERROR_COLOR },
 });

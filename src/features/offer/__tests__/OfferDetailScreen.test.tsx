@@ -140,6 +140,27 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-location-block')).toBeNull();
   });
 
+  it('règles du logement et autres informations, dans leur section ; rien sans valeur', async () => {
+    // Décision 2026-11-19-contrat-regles-informations.
+    mockState = {
+      data: { ...OFFER, rules: [{ label: 'Arrivée à partir de', value: '15:00' }, { label: 'Animaux acceptés', value: 'Non' }], information: 'Clés chez le gardien.\nParking.' },
+      isPending: false,
+      error: null,
+    };
+    await show();
+    expect(screen.getByText('Règles du logement')).toBeTruthy();
+    expect(screen.getAllByTestId('offer-rule')).toHaveLength(2);
+    expect(screen.getByText('15:00')).toBeTruthy();
+    expect(screen.getByTestId('offer-information').props.children).toBe('Clés chez le gardien.\nParking.');
+    // Après les caractéristiques.
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('"testID":"offer-fact"')).toBeLessThan(json.indexOf('"testID":"offer-rule"'));
+
+    mockState = { data: { ...OFFER, rules: [], information: null }, isPending: false, error: null };
+    await show();
+    expect(screen.queryByTestId('offer-rules')).toBeNull();
+  });
+
   it('le carrousel suit la photo affichée', async () => {
     await show();
 

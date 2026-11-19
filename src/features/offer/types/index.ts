@@ -20,6 +20,10 @@ export type OfferDetail = {
   description: string | null;
   /** Caractéristiques lisibles, dans l'ordre. */
   facts: { label: string; value: string }[];
+  /** Règles du logement renseignées (décision 2026-11-19-contrat-regles-informations). */
+  rules?: { label: string; value: string }[];
+  /** Autres informations pratiques, texte libre ; retours à la ligne gardés. */
+  information?: string | null;
   published_at: string | null;
   /** Statut, servi au seul propriétaire. */
   status: { value: string; label: string } | null;
