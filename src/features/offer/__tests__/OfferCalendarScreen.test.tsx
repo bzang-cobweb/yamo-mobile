@@ -6,6 +6,7 @@ import { profileFormService } from '@/features/auth/services/ProfileFormService'
 import { ApiError } from '@/shared/api/errors';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
+import { TONE_COLORS } from '@/shared/components/StatusTag';
 
 import { OfferCalendarScreen } from '../screens/OfferCalendarScreen';
 import { offerService } from '../services/OfferService';
@@ -74,7 +75,7 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(await screen.findByText('Décembre 2026')).toBeTruthy();
     expect(offerService.calendar).toHaveBeenCalledWith('7', null);
     expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-day-2026-12-01').props.style)).toMatchObject({ backgroundColor: '#2E9D5B' });
-    expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-day-2026-12-02').props.style)).toMatchObject({ borderWidth: 2 });
+    expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-day-2026-12-02').props.style)).toMatchObject({ backgroundColor: TONE_COLORS.danger });
     expect(screen.getByTestId('offer-calendar-dot-2026-12-03')).toBeTruthy();
     expect(screen.getByText('Séjour accepté')).toBeTruthy();
 

@@ -155,7 +155,7 @@ function cellColors(cell: MonthGridCell, theme: ReturnType<typeof useTheme>) {
     case 'pending':
       return { box: { backgroundColor: TONE_COLORS.warning }, text: white };
     case 'conflict':
-      return { box: { backgroundColor: TONE_COLORS.warning, borderWidth: 2, borderColor: TONE_COLORS.danger }, text: white };
+      return { box: { backgroundColor: TONE_COLORS.danger }, text: white };
     case 'blocked':
       return { box: { backgroundColor: TONE_COLORS.neutral }, text: { ...white, textDecorationLine: 'line-through' as const } };
     case 'past':

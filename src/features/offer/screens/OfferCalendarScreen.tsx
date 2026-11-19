@@ -26,7 +26,7 @@ import { useOfferCalendar, useOfferCalendarDay } from '../hooks/useOfferCalendar
 const LEGEND_COLORS: Record<string, string> = {
   accepted: TONE_COLORS.success,
   pending: TONE_COLORS.warning,
-  conflict: TONE_COLORS.warning,
+  conflict: TONE_COLORS.danger,
   blocked: TONE_COLORS.neutral,
 };
 
@@ -130,13 +130,7 @@ export function OfferCalendarScreen({ id }: { id: string }) {
                     {entry.kind === 'dot' ? (
                       <View style={[styles.legendDot, { backgroundColor: TONE_COLORS[entry.tone] ?? TONE_COLORS.neutral }]} />
                     ) : (
-                      <View
-                        style={[
-                          styles.legendBox,
-                          { backgroundColor: LEGEND_COLORS[entry.tone] ?? TONE_COLORS.neutral },
-                          entry.tone === 'conflict' && { borderWidth: 2, borderColor: TONE_COLORS.danger },
-                        ]}
-                      />
+                      <View style={[styles.legendBox, { backgroundColor: LEGEND_COLORS[entry.tone] ?? TONE_COLORS.neutral }]} />
                     )}
                     <ThemedText type="small">{entry.label}</ThemedText>
                   </View>
