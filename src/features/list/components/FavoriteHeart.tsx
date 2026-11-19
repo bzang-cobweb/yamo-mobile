@@ -14,7 +14,8 @@ export const HEART_COLOR = '#e5484d';
 
 /**
  * Cœur de favori, posé sur une photo (décision 2026-11-19-contrat-vedette-favoris) :
- * vide ou plein et rouge. Le toucher change aussitôt son état (mise à jour
+ * le cœur seul, sans fond (décision 2026-11-19-acces-avis-backoffice), vide et blanc,
+ * ou plein et rouge. Le toucher change aussitôt son état (mise à jour
  * optimiste), puis l'API confirme ; en cas d'échec, il revient et un message
  * s'affiche. Les listes et la fiche se rechargent ensuite.
  */
@@ -56,7 +57,7 @@ export function FavoriteHeart({ favorite, style, testID }: { favorite: ListItemF
       style={({ pressed }) => [styles.heart, pressed && styles.pressed, style]}>
       <SymbolView
         name={active ? { ios: 'heart.fill', android: 'favorite', web: 'favorite' } : { ios: 'heart', android: 'favorite_border', web: 'favorite_border' }}
-        size={22}
+        size={26}
         tintColor={active ? HEART_COLOR : '#ffffff'}
       />
     </Pressable>
@@ -70,10 +71,8 @@ const styles = StyleSheet.create({
     right: Spacing.two,
     width: 36,
     height: 36,
-    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
   },
   pressed: { opacity: 0.7 },
 });

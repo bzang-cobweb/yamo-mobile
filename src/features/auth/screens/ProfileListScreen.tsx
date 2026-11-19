@@ -1,5 +1,4 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
@@ -153,13 +152,6 @@ export function ProfileListScreen({ list }: { list: string }) {
               {item.delete.label}
             </ThemedText>
           </Pressable>
-        )}
-        {(edit || link) && (
-          <SymbolView
-            name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
-            size={16}
-            tintColor={theme.textSecondary}
-          />
         )}
       </View>
     );

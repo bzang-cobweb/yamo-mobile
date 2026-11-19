@@ -9,10 +9,10 @@ import { Spacing } from '@/shared/theme/theme';
 import type { ListItem } from '../types';
 
 /**
- * Sous le sous-titre d'un item (décision 2026-11-19-contrat-avis-offres) : la note
- * moyenne (« ★★★★★ 4,5 (12) »), puis la phrase mise en avant (pour une offre : ses
- * détails et son prix, décision 2026-11-19-item-titre-saisi-details), en gras, sur
- * sa ligne, sur deux lignes au plus. Rien de ce que l'API ne sert pas.
+ * Bas d'un item (décision 2026-11-19-acces-avis-backoffice) : la phrase mise en
+ * avant, en gras et dans la couleur primaire, sur deux lignes au plus ; puis, en
+ * bas à droite, les étoiles de la note moyenne, seules (la note et le nombre
+ * d'avis sont lus par l'accessibilité). Rien de ce que l'API ne sert pas.
  */
 export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 'highlight'>; testID?: string }) {
   const { t, locale } = useI18n();
@@ -26,28 +26,27 @@ export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 
   const average = rating ? rating.average.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '';
 
   return (
-    <>
+    <View style={styles.row}>
+      {highlight ? (
+        <ThemedText type="smallBold" numberOfLines={2} style={[styles.highlight, { color: theme.primary }]} testID={testID ? `${testID}-highlight` : undefined}>
+          {highlight}
+        </ThemedText>
+      ) : (
+        <View style={styles.highlight} />
+      )}
       {rating && (
         <View
-          style={styles.rating}
           accessible
           accessibilityLabel={t('list.ratingSummary', { average, count: String(rating.count) })}
           testID={testID ? `${testID}-rating` : undefined}>
           <Stars value={rating.average} emptyColor={theme.backgroundSelected} />
-          <ThemedText type="small" themeColor="textSecondary">
-            {`${average} (${rating.count})`}
-          </ThemedText>
         </View>
       )}
-      {highlight && (
-        <ThemedText type="smallBold" numberOfLines={2} testID={testID ? `${testID}-highlight` : undefined}>
-          {highlight}
-        </ThemedText>
-      )}
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  rating: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
+  row: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two },
+  highlight: { flex: 1 },
 });
