@@ -17,7 +17,7 @@ export const REVIEW_FORM = 'offer.review';
 
 /**
  * Section « Avis » de la fiche (décision 2026-11-19-contrat-avis-offres) : la
- * moyenne en étoiles et le nombre d'avis, les 5 derniers, puis « Donner mon avis »
+ * moyenne en étoiles et le nombre d'avis, les derniers servis par l'API, puis « Donner mon avis »
  * ou « Modifier mon avis » (formulaire `offer.review`) et « Supprimer mon avis ».
  * Un visiteur lit « Connectez-vous pour donner votre avis » ; le propriétaire ne
  * voit aucun bouton. `onChanged` : après un retrait, avec le message de l'API.
@@ -76,9 +76,9 @@ export function OfferReviews({ offerId, reviews, onChanged }: { offerId: string;
       {reviews.latest.map((review) => (
         <ReviewRow key={review.id} review={review} />
       ))}
-      {/* Plus d'un avis : le bouton vers la liste complète (décisions 2026-11-19-nuit-tous-les-avis
-          et 2026-11-19-fiche-localisation-accordeon). */}
-      {reviews.count > 1 && (
+      {/* Plus d'avis que ceux servis (leur nombre vient de Laravel) : le bouton vers la liste
+          complète (décision 2026-11-19-contrat-paiement-visibilite-avis). */}
+      {reviews.count > reviews.latest.length && (
         <Pressable
           testID="offer-reviews-all"
           accessibilityRole="button"

@@ -183,14 +183,14 @@ describe('OfferDetailScreen : avis', () => {
     expect(screen.queryByTestId('offer-review-write')).toBeNull();
   });
 
-  it('plus d’un avis : « Voir tous les avis » ouvre la liste complète ; un seul : pas de bouton', async () => {
-    // Décision 2026-11-19-fiche-localisation-accordeon.
-    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, count: 1, latest: OFFER.reviews!.latest.slice(0, 1) } }, isPending: false, error: null };
+  it('plus d’avis que ceux servis : « Voir tous les avis » ouvre la liste complète ; sinon, pas de bouton', async () => {
+    // Décision 2026-11-19-contrat-paiement-visibilite-avis : le nombre servi vient de Laravel.
     await show();
     expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
 
-    mockState = { data: OFFER, isPending: false, error: null };
+    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, latest: OFFER.reviews!.latest.slice(0, 1) } }, isPending: false, error: null };
     await show();
+    expect(screen.getAllByTestId('offer-review')).toHaveLength(1);
 
     expect(screen.getByText('Voir tous les avis')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('offer-reviews-all'));
