@@ -49,6 +49,7 @@ const OFFER: OfferDetail = {
   facts: [
     { label: 'Type de logement', value: 'Appartement' },
     { label: 'Surface', value: '85 m²' },
+    { label: 'Équipements', value: 'Wifi, Parking, Gardien / sécurité, Climatisation, Eau chaude' },
   ],
   published_at: '2026-11-18T10:00:00+00:00',
   status: null,
@@ -101,9 +102,13 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     // Le prix seul ; la ville est dans les caractéristiques (décision 2026-11-19-fiche-offre-ordre).
     expect(screen.queryByText('Loyer mensuel')).toBeNull();
     expect(screen.queryByTestId('offer-location')).toBeNull();
-    expect(screen.getAllByTestId('offer-fact')).toHaveLength(2);
+    expect(screen.getAllByTestId('offer-fact')).toHaveLength(3);
+    // Le libellé d'une valeur longue reste affiché (décision 2026-11-19-fiche-description-equipements).
+    expect(screen.getByText('Équipements')).toBeTruthy();
     expect(screen.getByText('85 m²')).toBeTruthy();
     expect(screen.getByTestId('offer-description').props.children).toBe('Proche des commerces.');
+    // Sans titre « Description » (décision 2026-11-19-fiche-description-equipements).
+    expect(screen.queryByText('Description')).toBeNull();
     expect(screen.getByTestId('offer-published').props.children).toMatch(/^Publiée le /);
     expect(screen.queryByTestId('offer-status')).toBeNull();
   });

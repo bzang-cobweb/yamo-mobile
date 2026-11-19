@@ -114,9 +114,9 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 )}
 
                 {/* Puis la description, l'adresse (les indications du propriétaire ; la ville est dans les caractéristiques), les caractéristiques. */}
+                {/* La description seule, sans titre (décision 2026-11-19-fiche-description-equipements). */}
                 {offer.description && (
                   <View style={styles.section}>
-                    <ThemedText type="smallBold">{t('offer.description')}</ThemedText>
                     <ThemedText testID="offer-description">{offer.description}</ThemedText>
                   </View>
                 )}
@@ -136,7 +136,10 @@ export function OfferDetailScreen({ id }: { id: string }) {
                         <ThemedText type="small" themeColor="textSecondary" style={styles.factLabel}>
                           {fact.label}
                         </ThemedText>
-                        <ThemedText type="small">{fact.value}</ThemedText>
+                        {/* Une valeur longue (les équipements) passe à la ligne ; le libellé reste visible. */}
+                        <ThemedText type="small" style={styles.factValue}>
+                          {fact.value}
+                        </ThemedText>
                       </View>
                     ))}
                   </View>
@@ -176,6 +179,7 @@ const styles = StyleSheet.create({
   body: { width: '100%', alignSelf: 'center', gap: Spacing.two, padding: Spacing.four },
   section: { gap: Spacing.one, marginTop: Spacing.three },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
-  factLabel: { flexShrink: 1 },
+  factLabel: { flexShrink: 0, maxWidth: '45%' },
+  factValue: { flexShrink: 1, textAlign: 'right' },
   error: { color: ERROR_COLOR },
 });
