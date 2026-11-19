@@ -137,14 +137,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                     case 'text':
                       return (
                         <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
-                          <View style={[styles.text, { borderBottomColor: theme.backgroundSelected }]}>
-                            <ThemedText testID={`offer-${section.key}-text`}>{section.text}</ThemedText>
-                            {section.note && (
-                              <ThemedText type="small" themeColor="textSecondary" testID={`offer-${section.key}-note`}>
-                                {section.note}
-                              </ThemedText>
-                            )}
-                          </View>
+                          <TextSection text={section.text ?? ''} note={section.note} testID={`offer-${section.key}`} />
                         </Accordion>
                       );
                     case 'reviews':
@@ -222,6 +215,26 @@ function BookingBar({ offer }: { offer: OfferDetail }) {
           </Pressable>
         )}
       </View>
+    </View>
+  );
+}
+
+/**
+ * Le contenu d'une section `text` (la localisation, un bloc d'informations) : le
+ * texte, sa note en dessous s'il y en a une, et le séparateur à la fin
+ * (décision 2026-11-19-sections-construites-laravel).
+ */
+function TextSection({ text, note, testID }: { text: string; note?: string | null; testID: string }) {
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.text, { borderBottomColor: theme.backgroundSelected }]}>
+      <ThemedText testID={`${testID}-text`}>{text}</ThemedText>
+      {note && (
+        <ThemedText type="small" themeColor="textSecondary" testID={`${testID}-note`}>
+          {note}
+        </ThemedText>
+      )}
     </View>
   );
 }
