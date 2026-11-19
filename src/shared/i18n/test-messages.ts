@@ -56,6 +56,7 @@ export const TEST_MESSAGES: Messages = {
   'offer.signInToReview': 'Connectez-vous pour donner votre avis.',
   'list.ratingSummary': 'Note moyenne :average sur 5, :count avis',
   'form.ratingValue': ':value sur 5',
+  'form.unit': 'En :unit',
   'entry.title': 'Bienvenue',
   'entry.subtitle': 'Choisissez votre pays et votre langue.',
   'entry.country': 'Quel pays ?',

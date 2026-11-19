@@ -85,7 +85,7 @@ describe('Champs conditionnels, sélecteur à boutons et option verrouillée', (
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ country_id: '1' }));
   });
 
-  it('l’unité d’un prix suit la case « Meublé » pendant la saisie', async () => {
+  it('l’unité d’un prix, dans l’aide, suit la case « Meublé » pendant la saisie', async () => {
     await renderForm({
       name: 'offer.offer',
       title: null,
@@ -95,17 +95,17 @@ describe('Champs conditionnels, sélecteur à boutons et option verrouillée', (
         field({
           name: 'price',
           type: 'number',
-          suffix: 'XAF / mois',
-          suffix_when: { field: 'furnished', suffixes: { true: 'XAF / jour', false: 'XAF / mois' } },
+          suffix: 'FCFA / mois',
+          suffix_when: { field: 'furnished', suffixes: { true: 'FCFA / jour', false: 'FCFA / mois' } },
         }),
         field({ name: 'furnished', type: 'switch', default: false }),
       ],
     });
 
-    expect(screen.getByTestId('field-price-suffix').props.children).toBe('XAF / mois');
+    expect(screen.getByTestId('price-help').props.children).toBe('En FCFA / mois');
 
     await fireEvent(screen.getByTestId('field-furnished'), 'valueChange', true);
 
-    expect(screen.getByTestId('field-price-suffix').props.children).toBe('XAF / jour');
+    expect(screen.getByTestId('price-help').props.children).toBe('En FCFA / jour');
   });
 });

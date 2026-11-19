@@ -59,6 +59,16 @@ describe('DynamicForm à étapes', () => {
     expect(screen.queryByTestId('form-previous')).toBeNull();
   });
 
+  it('les champs d’une étape suivent l’ordre de l’étape, pas celui du formulaire', async () => {
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <DynamicForm definition={{ ...register, steps: [{ title: 'Vous', fields: ['gender', 'name'] }, ...register.steps!.slice(1)] }} onSubmit={jest.fn()} />
+      </I18nContext.Provider>,
+    );
+
+    expect(screen.getAllByTestId(/^field-(name|gender)$/).map((node) => node.props.testID)).toEqual(['field-gender', 'field-name']);
+  });
+
   it('« Suivant » fait valider l’étape par l’API avec ses seuls champs, puis avance', async () => {
     jest.mocked(formService.validateStep).mockResolvedValue(undefined);
     const onSubmit = await renderForm();

@@ -50,8 +50,11 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
   const [step, setStep] = useState(0);
   const isLastStep = steps.length === 0 || step === steps.length - 1;
   const currentStep = steps[step];
+  // Les champs de l'étape, dans l'ordre où l'étape les cite.
   const visibleFields = (
-    currentStep ? definition.fields.filter((field) => currentStep.fields.includes(field.name)) : definition.fields
+    currentStep
+      ? currentStep.fields.flatMap((name) => definition.fields.filter((field) => field.name === name))
+      : definition.fields
   ).filter((field) => isVisible(field, values));
 
   function previousStep() {
@@ -78,7 +81,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
 
   /**
    * Le champ tel qu'affiché : options filtrées par le parent ; unité qui suit la
-   * valeur d'un autre champ (« XAF / jour » si « Meublé » est coché).
+   * valeur d'un autre champ (« FCFA / jour » si « Meublé » est coché).
    */
   function shown(field: FormFieldDefinition): FormFieldDefinition {
     let current = field;
