@@ -30,7 +30,9 @@ export type FieldType =
   /** Intervalle `[min, max]`, chaque borne facultative. */
   | 'range'
   /** Fichiers envoyés un à un ; valeur : la liste ordonnée de leurs identifiants (décision 2026-11-19-contrat-champ-upload-photos). */
-  | 'upload';
+  | 'upload'
+  /** Liste de groupes de sous-champs, ajoutés et retirés ; valeur : la liste des groupes (décision 2026-11-19-contrat-offer-informations). */
+  | 'repeater';
 
 export type FieldOption = {
   value: string;
@@ -74,6 +76,8 @@ export type FormFieldDefinition = {
   suggestions?: string | null;
   /** Champ de fichiers (`upload`) : limites déclarées par l'API ; `null` (ou absent) pour un autre type. */
   upload?: UploadSettings | null;
+  /** Liste de groupes (`repeater`) : sous-champs d'un groupe, nombre maximal, libellé du bouton d'ajout ; `null` (ou absent) pour un autre type. */
+  repeater?: RepeaterSettings | null;
   default: unknown;
   options: FieldOption[];
 };
@@ -94,6 +98,16 @@ export type UploadSettings = {
   endpoint: string;
   files: UploadedFileRef[];
 };
+
+/** Réglages d'une liste de groupes, déclarés par Laravel. */
+export type RepeaterSettings = {
+  fields: FormFieldDefinition[];
+  max_items: number;
+  add_label: string | null;
+};
+
+/** Un groupe d'une liste : sous-champ => valeur (un sous-champ `hidden` garde l'identifiant). */
+export type RepeaterItem = Record<string, string>;
 
 /** Une suggestion : la valeur du champ, son libellé, et les autres champs qu'elle remplit. */
 export type FieldSuggestion = { value: string; label: string; fill: Record<string, string> };
@@ -141,8 +155,8 @@ export type FormStep = {
 
 export type FormResponse = { data: FormDefinition };
 
-/** Valeur d'un champ : texte, booléen (case, interrupteur) ou liste (cases multiples). */
-export type FieldValue = string | boolean | string[];
+/** Valeur d'un champ : texte, booléen (case, interrupteur), liste (cases multiples) ou liste de groupes. */
+export type FieldValue = string | boolean | string[] | RepeaterItem[];
 
 export type FormValues = Record<string, FieldValue>;
 
@@ -165,4 +179,6 @@ export type FieldProps<V extends FieldValue = FieldValue> = {
   countryLocked?: boolean;
   /** Une suggestion choisie remplit d'autres champs (`{ zip, city }`). */
   onFill?: (values: Record<string, string>) => void;
+  /** Toutes les erreurs de l'API : une liste de groupes y lit celles de ses sous-champs (`informations.0.title`). */
+  errors?: FormErrors;
 };

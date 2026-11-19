@@ -148,20 +148,28 @@ export function OfferDetailScreen({ id }: { id: string }) {
                           ))}
                         </Accordion>
                       );
-                    // Règles et autres informations (décision 2026-11-19-contrat-regles-informations).
+                    // Règles (décision 2026-11-19-contrat-regles-informations).
                     case 'rules':
                       return (
                         <Accordion key={section.key} title={t('offer.rules')} initiallyOpen={section.open} testID="offer-rules">
                           {offer.rules?.map((rule) => (
                             <FactRow key={rule.label} fact={rule} testID="offer-rule" />
                           ))}
-                          {offer.information && (
-                            <ThemedText type="small" style={styles.information} testID="offer-information">
-                              {offer.information}
-                            </ThemedText>
-                          )}
                         </Accordion>
                       );
+                    // Un bloc d'informations par section, titrée par son titre (décision 2026-11-19-contrat-offer-informations).
+                    case 'informations':
+                      return (offer.informations ?? []).map((information) => (
+                        <Accordion
+                          key={`information-${information.id}`}
+                          title={information.title}
+                          initiallyOpen={section.open}
+                          testID={`offer-information-${information.id}`}>
+                          <ThemedText type="small" style={styles.information} testID="offer-information">
+                            {information.description}
+                          </ThemedText>
+                        </Accordion>
+                      ));
                     case 'reviews':
                       return offer.reviews ? (
                         <Accordion key={section.key} title={t('offer.reviews')} initiallyOpen={section.open} testID="offer-reviews-block">
@@ -227,6 +235,6 @@ const styles = StyleSheet.create({
   location: { gap: Spacing.one, paddingBottom: Spacing.two, borderBottomWidth: 1 },
   factLabel: { flexShrink: 0, maxWidth: '45%' },
   factValue: { flexShrink: 1, textAlign: 'right' },
-  information: { paddingTop: Spacing.two },
+  information: { paddingTop: Spacing.one },
   error: { color: ERROR_COLOR },
 });

@@ -22,8 +22,8 @@ export type OfferDetail = {
   facts: { label: string; value: string }[];
   /** Règles du logement renseignées (décision 2026-11-19-contrat-regles-informations). */
   rules?: { label: string; value: string }[];
-  /** Autres informations pratiques, texte libre ; retours à la ligne gardés. */
-  information?: string | null;
+  /** Blocs d'informations, dans l'ordre : titre et description (décision 2026-11-19-contrat-offer-informations). */
+  informations?: { id: string; title: string; description: string }[];
   /** Sections repliables, dans l'ordre, ouvertes ou non à l'arrivée ; servies par Laravel (décision 2026-11-19-sections-fiche-laravel). */
   sections?: { key: string; open: boolean }[];
   published_at: string | null;

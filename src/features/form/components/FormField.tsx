@@ -1,4 +1,4 @@
-import type { FieldProps, FieldValue } from '../types';
+import type { FieldProps, FieldValue, RepeaterItem } from '../types';
 import { CheckboxField } from './fields/CheckboxField';
 import { CheckboxGroupField } from './fields/CheckboxGroupField';
 import { CodeField } from './fields/CodeField';
@@ -9,6 +9,7 @@ import { MultiSelectField } from './fields/MultiSelectField';
 import { RadioField } from './fields/RadioField';
 import { RangeField } from './fields/RangeField';
 import { RatingField } from './fields/RatingField';
+import { RepeaterField } from './fields/RepeaterField';
 import { SegmentedField } from './fields/SegmentedField';
 import { SelectField } from './fields/SelectField';
 import { SwitchField } from './fields/SwitchField';
@@ -21,11 +22,12 @@ import { UploadField } from './fields/UploadField';
  * (décision 2026-11-15-contrat-mobile-features-formulaires). Ajouter un type :
  * un cas ici et son composant dans `fields/`.
  */
-export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange, countryLocked, onFill }: FieldProps<FieldValue>) {
+export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange, countryLocked, onFill, errors }: FieldProps<FieldValue>) {
   const common = { field, error, disabled };
   const asText = typeof value === 'string' ? value : '';
   const asBoolean = value === true;
-  const asList = Array.isArray(value) ? value : [];
+  const asList = Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  const asItems = Array.isArray(value) ? value.filter((item): item is RepeaterItem => typeof item === 'object' && item !== null) : [];
 
   switch (field.type) {
     case 'text':
@@ -72,6 +74,8 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
       return <RatingField {...common} value={asText} onChange={onChange} />;
     case 'upload':
       return <UploadField {...common} value={asList} onChange={onChange} />;
+    case 'repeater':
+      return <RepeaterField {...common} value={asItems} onChange={onChange} errors={errors} />;
     default: {
       // Type inconnu de cette version de l'app : rien n'est affiché plutôt qu'un champ faux.
       const unknown: never = field.type;

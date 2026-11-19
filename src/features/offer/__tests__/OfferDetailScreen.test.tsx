@@ -47,8 +47,9 @@ function mockWithSections(offer: OfferDetail): OfferDetail {
   const present = [
     ['location', Boolean(offer.address)],
     ['facts', offer.facts.length > 0],
-    ['rules', (offer.rules?.length ?? 0) > 0 || Boolean(offer.information)],
+    ['rules', (offer.rules?.length ?? 0) > 0],
     ['reviews', Boolean(offer.reviews)],
+    ['informations', (offer.informations?.length ?? 0) > 0],
   ] as const;
   const sections = present.filter(([, shown]) => shown).map(([key]) => ({ key, open: key === 'location' }));
   if (sections.length > 0 && !sections.some((section) => section.open)) {
@@ -190,10 +191,10 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-location-block')).toBeNull();
   });
 
-  it('règles et autres informations, dans leur section ; rien sans valeur', async () => {
+  it('règles dans leur section ; rien sans valeur', async () => {
     // Décision 2026-11-19-contrat-regles-informations.
     mockState = {
-      data: { ...OFFER, rules: [{ label: 'Arrivée à partir de', value: '15:00' }, { label: 'Animaux acceptés', value: 'Non' }], information: 'Clés chez le gardien.\nParking.' },
+      data: { ...OFFER, rules: [{ label: 'Arrivée à partir de', value: '15:00' }, { label: 'Animaux acceptés', value: 'Non' }] },
       isPending: false,
       error: null,
     };
@@ -202,14 +203,33 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByText('Règles')).toBeTruthy();
     expect(screen.getAllByTestId('offer-rule')).toHaveLength(2);
     expect(screen.getByText('15:00')).toBeTruthy();
-    expect(screen.getByTestId('offer-information').props.children).toBe('Clés chez le gardien.\nParking.');
     // Après les caractéristiques.
     const json = JSON.stringify(screen.toJSON());
     expect(json.indexOf('"testID":"offer-fact"')).toBeLessThan(json.indexOf('"testID":"offer-rule"'));
 
-    mockState = { data: { ...OFFER, rules: [], information: null }, isPending: false, error: null };
+    mockState = { data: { ...OFFER, rules: [] }, isPending: false, error: null };
     await show();
     expect(screen.queryByTestId('offer-rules')).toBeNull();
+  });
+
+  it('un bloc d’informations par section, titrée par son titre, après les avis', async () => {
+    // Décision 2026-11-19-contrat-offer-informations.
+    mockState = {
+      data: { ...OFFER, informations: [{ id: '4', title: 'Arrivée', description: 'Clés chez le gardien.\nAppeler la veille.' }, { id: '9', title: 'Parking', description: 'Dans la cour.' }] },
+      isPending: false,
+      error: null,
+    };
+    await show();
+
+    expect(screen.getByText('Arrivée')).toBeTruthy();
+    expect(screen.getByText('Parking')).toBeTruthy();
+    // Fermées à l'arrivée : la description s'ouvre avec la section.
+    expect(screen.queryAllByTestId('offer-information')).toHaveLength(0);
+    await fireEvent.press(screen.getByTestId('offer-information-4-toggle'));
+    expect(screen.getByTestId('offer-information').props.children).toBe('Clés chez le gardien.\nAppeler la veille.');
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('"testID":"offer-reviews-block"')).toBeLessThan(json.indexOf('"testID":"offer-information-4"'));
+    expect(json.indexOf('"testID":"offer-information-4"')).toBeLessThan(json.indexOf('"testID":"offer-information-9"'));
   });
 
   it('le carrousel suit la photo affichée', async () => {

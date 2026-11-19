@@ -26,7 +26,8 @@ export class ListService {
       // `filter[ville]=Douala`, `filter[type][]=studio` (décision 2026-11-19-contrat-filtres-vitrine).
       ...Object.entries(filters).flatMap(([key, value]) =>
         Array.isArray(value)
-          ? value.map((item) => `filter[${encodeURIComponent(key)}][]=${encodeURIComponent(item)}`)
+          ? // Une liste de groupes n'est pas un filtre : seules les valeurs simples partent.
+            value.filter((item): item is string => typeof item === 'string').map((item) => `filter[${encodeURIComponent(key)}][]=${encodeURIComponent(item)}`)
           : [`filter[${encodeURIComponent(key)}]=${encodeURIComponent(String(value))}`],
       ),
     ].filter((param) => param !== null);

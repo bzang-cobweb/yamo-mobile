@@ -194,6 +194,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
           value={values[field.name]}
           onChange={(value) => change(field.name, value)}
           error={errorOf(field)}
+          errors={errors}
           disabled={isDisabled(field)}
           onSubmitEditing={submit}
           country={field.type === 'phone' ? String(values[countryKey(field.name)] ?? '') : undefined}
