@@ -106,26 +106,26 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 <ThemedText type="subtitle" testID="offer-title">
                   {offer.title}
                 </ThemedText>
+                {/* Le prix seul, sans son libellé (décision 2026-11-19-fiche-offre-ordre). */}
                 {offer.price && (
-                  <View style={styles.price}>
-                    <ThemedText type="smallBold" style={{ color: theme.primary }} testID="offer-price">
-                      {offer.price.value}
-                    </ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {offer.price.label}
-                    </ThemedText>
+                  <ThemedText type="smallBold" style={{ color: theme.primary }} testID="offer-price">
+                    {offer.price.value}
+                  </ThemedText>
+                )}
+
+                {/* Puis la description, l'adresse (les indications du propriétaire ; la ville est dans les caractéristiques), les caractéristiques. */}
+                {offer.description && (
+                  <View style={styles.section}>
+                    <ThemedText type="smallBold">{t('offer.description')}</ThemedText>
+                    <ThemedText testID="offer-description">{offer.description}</ThemedText>
                   </View>
                 )}
-                {offer.location && (
-                  <ThemedText themeColor="textSecondary" testID="offer-location">
-                    {offer.location}
-                  </ThemedText>
-                )}
-                {/* Les indications du propriétaire, sous la ville. */}
+
                 {offer.address_description && (
-                  <ThemedText type="small" themeColor="textSecondary" testID="offer-address-description">
-                    {offer.address_description}
-                  </ThemedText>
+                  <View style={styles.section}>
+                    <ThemedText type="smallBold">{t('offer.address')}</ThemedText>
+                    <ThemedText testID="offer-address-description">{offer.address_description}</ThemedText>
+                  </View>
                 )}
 
                 {offer.facts.length > 0 && (
@@ -139,13 +139,6 @@ export function OfferDetailScreen({ id }: { id: string }) {
                         <ThemedText type="small">{fact.value}</ThemedText>
                       </View>
                     ))}
-                  </View>
-                )}
-
-                {offer.description && (
-                  <View style={styles.section}>
-                    <ThemedText type="smallBold">{t('offer.description')}</ThemedText>
-                    <ThemedText testID="offer-description">{offer.description}</ThemedText>
                   </View>
                 )}
 
@@ -181,7 +174,6 @@ const styles = StyleSheet.create({
   centered: { textAlign: 'center' },
   content: { paddingBottom: Spacing.five },
   body: { width: '100%', alignSelf: 'center', gap: Spacing.two, padding: Spacing.four },
-  price: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
   section: { gap: Spacing.one, marginTop: Spacing.three },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
   factLabel: { flexShrink: 1 },

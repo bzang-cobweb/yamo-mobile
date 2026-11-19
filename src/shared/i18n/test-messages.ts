@@ -48,6 +48,7 @@ export const TEST_MESSAGES: Messages = {
   'offer.publishedOn': 'Publiée le :date',
   'offer.photoPosition': ':current / :total',
   'offer.details': 'Caractéristiques',
+  'offer.address': 'Adresse',
   'offer.description': 'Description',
   'offer.reviews': 'Avis',
   'offer.noReviews': 'Aucun avis pour le moment.',

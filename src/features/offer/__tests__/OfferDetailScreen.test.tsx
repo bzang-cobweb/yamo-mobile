@@ -91,15 +91,16 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     mockUser = null;
   });
 
-  it('montre photos, titre, prix, ville, caractéristiques, description et date', async () => {
+  it('montre photos, titre, prix (sans libellé), description, caractéristiques et date', async () => {
     await show();
 
     expect(screen.getByTestId('offer-photo-0').props.source).toEqual({ uri: 'http://api.test/storage/7-0.jpg' });
     expect(screen.getByTestId('offer-photo-position').props.children).toBe('1 / 2');
     expect(screen.getByTestId('offer-title').props.children).toBe('Appartement 3 pièces à Bonapriso');
     expect(screen.getByTestId('offer-price').props.children).toBe('250 000 FCFA');
-    expect(screen.getByText('Loyer mensuel')).toBeTruthy();
-    expect(screen.getByTestId('offer-location').props.children).toBe('Douala');
+    // Le prix seul ; la ville est dans les caractéristiques (décision 2026-11-19-fiche-offre-ordre).
+    expect(screen.queryByText('Loyer mensuel')).toBeNull();
+    expect(screen.queryByTestId('offer-location')).toBeNull();
     expect(screen.getAllByTestId('offer-fact')).toHaveLength(2);
     expect(screen.getByText('85 m²')).toBeTruthy();
     expect(screen.getByTestId('offer-description').props.children).toBe('Proche des commerces.');
@@ -107,10 +108,14 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-status')).toBeNull();
   });
 
-  it('les indications sur l’adresse, sous la ville, quand le propriétaire en a écrit', async () => {
+  it('prix, description, adresse (les indications du propriétaire), puis caractéristiques', async () => {
     mockState = { data: { ...OFFER, address_description: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
     await show();
     expect(screen.getByTestId('offer-address-description').props.children).toBe('Derrière le marché, portail bleu');
+    expect(screen.getByText('Adresse')).toBeTruthy();
+    const order = ['offer-price', 'offer-description', 'offer-address-description', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
+    expect(order.every((position) => position >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
