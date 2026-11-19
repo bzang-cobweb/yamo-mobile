@@ -73,7 +73,8 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('notification-detail-avatar-online')).toBeTruthy();
     expect(screen.getByTestId('notification-detail-actor')).toHaveTextContent('Paul Etoa');
     expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
-    expect(screen.getByText('Tournage d’un clip.')).toBeTruthy();
+    // Le message, entier (pas tronqué comme sur la carte).
+    expect(screen.getByText('Tournage d’un clip.').props.numberOfLines).toBeUndefined();
     await waitFor(() => expect(notificationService.read).toHaveBeenCalledWith('n1'));
   });
 
