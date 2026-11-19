@@ -85,6 +85,25 @@ describe('Champs conditionnels, sélecteur à boutons et option verrouillée', (
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ country_id: '1' }));
   });
 
+  it('un champ qui dépend d’une case : affiché quand elle vaut « false », masqué sinon', async () => {
+    await renderForm({
+      name: 'offer.offer',
+      title: null,
+      subtitle: null,
+      submit: { label: 'Enregistrer' },
+      fields: [
+        field({ name: 'furnished', type: 'switch', default: false }),
+        field({ name: 'charges', type: 'number', visible_when: { field: 'furnished', value: 'false' } }),
+      ],
+    });
+
+    expect(screen.getByTestId('field-charges')).toBeTruthy();
+
+    await fireEvent(screen.getByTestId('field-furnished'), 'valueChange', true);
+
+    expect(screen.queryByTestId('field-charges')).toBeNull();
+  });
+
   it('l’unité d’un prix, dans l’aide, suit la case « Meublé » pendant la saisie', async () => {
     await renderForm({
       name: 'offer.offer',
