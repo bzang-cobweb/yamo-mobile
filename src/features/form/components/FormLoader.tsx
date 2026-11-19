@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useId, useLayoutEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { NetworkError } from '@/shared/api/errors';
+import { useFixedFooter } from '@/shared/components/FixedFooterLayout';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
 import { useFormDefinition } from '../hooks/useFormDefinition';
 import type { FormValues } from '../types';
-import { DynamicForm } from './DynamicForm';
+import { DynamicForm, SubmitButton } from './DynamicForm';
 import { ERROR_COLOR } from './FieldShell';
 
 type FormLoaderProps = {
@@ -31,6 +32,21 @@ export function FormLoader({ name, record, onSubmit, hideTitle = false }: FormLo
   const { t, locale } = useI18n();
   const [params, setParams] = useState<Record<string, string>>({});
   const query = useFormDefinition(name, record, params);
+  const footer = useFixedFooter();
+  const placeholderId = useId();
+  const pending = query.isPending;
+
+  // Pendant le chargement de la définition, la barre fixe est déjà là, avec un bouton
+  // désactivé qui tourne : elle ne surgit pas après coup. Le formulaire chargé y place
+  // son vrai bouton dans le même rendu.
+  useLayoutEffect(() => {
+    if (footer === null || !pending) {
+      return;
+    }
+    footer.set(placeholderId, <SubmitButton label={'\u00a0'} busy submitting destructive={false} onPress={() => undefined} testID="form-submit-loading" />);
+
+    return () => footer.set(placeholderId, null);
+  }, [footer, placeholderId, pending]);
 
   if (query.isPending) {
     return (

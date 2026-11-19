@@ -327,12 +327,26 @@ const styles = StyleSheet.create({
  * irréversible ; désactivé pendant un envoi (un fichier en cours d'envoi : l'étape
  * et l'enregistrement attendent, décision 2026-11-19-contrat-champ-upload-photos).
  */
-function SubmitButton({ label, busy, submitting, destructive, onPress }: { label: string; busy: boolean; submitting: boolean; destructive: boolean; onPress: () => void }) {
+export function SubmitButton({
+  label,
+  busy,
+  submitting,
+  destructive,
+  onPress,
+  testID = 'form-submit',
+}: {
+  label: string;
+  busy: boolean;
+  submitting: boolean;
+  destructive: boolean;
+  onPress: () => void;
+  testID?: string;
+}) {
   const theme = useTheme();
 
   return (
     <Pressable
-      testID="form-submit"
+      testID={testID}
       accessibilityRole="button"
       onPress={onPress}
       disabled={busy}

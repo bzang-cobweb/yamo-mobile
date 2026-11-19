@@ -1,8 +1,11 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { useState } from 'react';
 import { Pressable, Text } from 'react-native';
 
 import { DynamicForm } from '@/features/form/components/DynamicForm';
+import { FormLoader } from '@/features/form/components/FormLoader';
+import { formService } from '@/features/form/services/FormService';
 import type { FormDefinition } from '@/features/form/types';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -10,6 +13,7 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { FixedFooterLayout } from '../FixedFooterLayout';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
+jest.mock('@/features/form/services/FormService', () => ({ formService: { get: jest.fn(), validateStep: jest.fn() } }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }) }));
 
 function definition(name: string, label: string): FormDefinition {
@@ -69,5 +73,29 @@ describe('FixedFooterLayout (bouton d’envoi fixé en bas)', () => {
 
     await fireEvent.press(screen.getByTestId('toggle'));
     expect(within(screen.getByTestId('fixed-footer')).getByText('Enregistrer')).toBeTruthy();
+  });
+
+  it('pendant le chargement du formulaire, la barre est déjà là, bouton désactivé ; puis le vrai bouton la remplace', async () => {
+    let resolve: (value: FormDefinition) => void = () => undefined;
+    jest.mocked(formService.get).mockReturnValue(new Promise((done) => (resolve = done)));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await render(
+      <QueryClientProvider client={client}>
+        <I18nContext.Provider value={TEST_I18N}>
+          <FixedFooterLayout>
+            <FormLoader name="first" onSubmit={jest.fn()} />
+          </FixedFooterLayout>
+        </I18nContext.Provider>
+      </QueryClientProvider>,
+    );
+
+    const loading = within(screen.getByTestId('fixed-footer')).getByTestId('form-submit-loading');
+    expect(loading.props.accessibilityState).toEqual({ disabled: true });
+
+    await act(async () => resolve(definition('first', 'Enregistrer')));
+
+    expect(await within(screen.getByTestId('fixed-footer')).findByText('Enregistrer')).toBeTruthy();
+    expect(within(screen.getByTestId('fixed-footer')).queryByTestId('form-submit-loading')).toBeNull();
   });
 });
