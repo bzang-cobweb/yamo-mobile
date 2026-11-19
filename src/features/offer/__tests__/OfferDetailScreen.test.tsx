@@ -85,6 +85,16 @@ async function show() {
   );
 }
 
+/** Ouvre les sections repliées (seule la première est ouverte à l'arrivée). */
+async function openSections() {
+  for (const block of ['offer-location-block', 'offer-facts', 'offer-rules', 'offer-reviews-block']) {
+    const toggle = screen.queryByTestId(`${block}-toggle`);
+    if (toggle && !toggle.props.accessibilityState?.expanded) {
+      await fireEvent.press(toggle);
+    }
+  }
+}
+
 describe('OfferDetailScreen (fiche décrite par l’API)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -120,24 +130,28 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByText('Localisation')).toBeTruthy();
     expect(screen.getByTestId('offer-address').props.children).toBe('Rue Njo-Njo 12, Douala, Cameroun');
     expect(screen.getByTestId('offer-indication').props.children).toBe('Derrière le marché, portail bleu');
+    await openSections();
     const order = ['offer-price', 'offer-description', 'offer-address', 'offer-indication', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
 
-    // Localisation, caractéristiques et avis se replient (décision 2026-11-19-fiche-localisation-accordeon).
-    for (const block of ['offer-location-block', 'offer-facts', 'offer-reviews-block']) {
-      expect(screen.getByTestId(`${block}-toggle`).props.accessibilityState).toEqual({ expanded: true });
+    // Seule la première section est ouverte à l'arrivée (décision 2026-11-19-premiere-section-ouverte).
+    await show();
+    expect(screen.getByTestId('offer-location-block-toggle').props.accessibilityState).toEqual({ expanded: true });
+    for (const block of ['offer-facts', 'offer-reviews-block']) {
+      expect(screen.getByTestId(`${block}-toggle`).props.accessibilityState).toEqual({ expanded: false });
     }
-    await fireEvent.press(screen.getByTestId('offer-facts-toggle'));
     expect(screen.queryAllByTestId('offer-fact')).toHaveLength(0);
-    expect(screen.getByTestId('offer-address')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('offer-facts-toggle'));
     expect(screen.getAllByTestId('offer-fact').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('offer-address')).toBeTruthy();
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
     // Sans adresse : pas de bloc.
     expect(screen.queryByTestId('offer-location-block')).toBeNull();
+    // La première section affichée est alors « Caractéristiques » : c'est elle qui est ouverte.
+    expect(screen.getByTestId('offer-facts-toggle').props.accessibilityState).toEqual({ expanded: true });
   });
 
   it('règles et autres informations, dans leur section ; rien sans valeur', async () => {
@@ -148,6 +162,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
       error: null,
     };
     await show();
+    await openSections();
     expect(screen.getByText('Règles')).toBeTruthy();
     expect(screen.getAllByTestId('offer-rule')).toHaveLength(2);
     expect(screen.getByText('15:00')).toBeTruthy();
@@ -195,6 +210,7 @@ describe('OfferDetailScreen : avis', () => {
 
   it('visiteur : moyenne, nombre, derniers avis, et l’invitation à se connecter', async () => {
     await show();
+    await openSections();
 
     expect(screen.getByTestId('offer-reviews-summary').props.accessibilityLabel).toBe('Note moyenne 4,5 sur 5, 2 avis');
     expect(screen.getAllByTestId('offer-review')).toHaveLength(2);
@@ -207,10 +223,12 @@ describe('OfferDetailScreen : avis', () => {
   it('plus d’avis que ceux servis : « Voir tous les avis » ouvre la liste complète ; sinon, pas de bouton', async () => {
     // Décision 2026-11-19-contrat-paiement-visibilite-avis : le nombre servi vient de Laravel.
     await show();
+    await openSections();
     expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
 
     mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, latest: OFFER.reviews!.latest.slice(0, 1) } }, isPending: false, error: null };
     await show();
+    await openSections();
     expect(screen.getAllByTestId('offer-review')).toHaveLength(1);
 
     expect(screen.getByText('Voir tous les avis')).toBeTruthy();
@@ -221,20 +239,24 @@ describe('OfferDetailScreen : avis', () => {
   it('un cœur sur la photo quand l’API en sert un ; aucun sinon', async () => {
     mockState = { data: { ...OFFER, favorite: { active: false, endpoint: '/v1/offers/7/favorite' } }, isPending: false, error: null };
     await show();
+    await openSections();
     expect(screen.getByTestId('offer-favorite').props.accessibilityLabel).toBe('Ajouter aux favoris');
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
+    await openSections();
     expect(screen.queryByTestId('offer-favorite')).toBeNull();
   });
 
   it('sans avis : le texte d’attente ; offre non publiée : pas de section', async () => {
     mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, average: null, count: 0, latest: [] } }, isPending: false, error: null };
     await show();
+    await openSections();
     expect(screen.getByTestId('offer-reviews-empty').props.children).toBe('Aucun avis pour le moment.');
 
     mockState = { data: { ...OFFER, reviews: null }, isPending: false, error: null };
     await show();
+    await openSections();
     expect(screen.queryByTestId('offer-reviews')).toBeNull();
   });
 
@@ -242,6 +264,7 @@ describe('OfferDetailScreen : avis', () => {
     mockUser = { id: 3 };
     mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, can_review: true } }, isPending: false, error: null };
     await show();
+    await openSections();
 
     expect(screen.getByText('Donner mon avis')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('offer-review-write'));
@@ -249,6 +272,7 @@ describe('OfferDetailScreen : avis', () => {
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
+    await openSections();
     expect(screen.queryByTestId('offer-review-write')).toBeNull();
     expect(screen.queryByTestId('offer-reviews-sign-in')).toBeNull();
   });
@@ -262,6 +286,7 @@ describe('OfferDetailScreen : avis', () => {
     };
     const alert = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => buttons?.[1]?.onPress?.());
     await show();
+    await openSections();
 
     expect(screen.getByText('Modifier mon avis')).toBeTruthy();
     await act(async () => {

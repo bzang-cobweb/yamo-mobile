@@ -20,6 +20,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { OfferReviews } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { useOfferDetail } from '../hooks/useOfferDetail';
+import type { OfferDetail } from '../types';
 
 /**
  * Fiche d'une offre (`/offers/[id]`, décision 2026-11-18-fiche-offre), pour un
@@ -126,7 +127,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                     (décision 2026-11-19-fiche-localisation-accordeon). */}
                 {/* L'adresse complète, pays compris, et son indication (décision 2026-11-19-fiche-localisation). */}
                 {offer.address && (
-                  <Accordion title={t('offer.location')} testID="offer-location-block">
+                  <Accordion title={t('offer.location')} initiallyOpen={firstSection(offer) === 'location'} testID="offer-location-block">
                     <View style={[styles.location, { borderBottomColor: theme.backgroundSelected }]}>
                       <ThemedText testID="offer-address">{offer.address}</ThemedText>
                       {offer.indication && (
@@ -139,7 +140,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 )}
 
                 {offer.facts.length > 0 && (
-                  <Accordion title={t('offer.details')} testID="offer-facts">
+                  <Accordion title={t('offer.details')} initiallyOpen={firstSection(offer) === 'facts'} testID="offer-facts">
                     {offer.facts.map((fact) => (
                       <FactRow key={fact.label} fact={fact} testID="offer-fact" />
                     ))}
@@ -148,7 +149,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
 
                 {/* Règles et autres informations (décision 2026-11-19-contrat-regles-informations). */}
                 {((offer.rules?.length ?? 0) > 0 || offer.information) && (
-                  <Accordion title={t('offer.rules')} testID="offer-rules">
+                  <Accordion title={t('offer.rules')} initiallyOpen={firstSection(offer) === 'rules'} testID="offer-rules">
                     {offer.rules?.map((rule) => (
                       <FactRow key={rule.label} fact={rule} testID="offer-rule" />
                     ))}
@@ -171,7 +172,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 )}
 
                 {offer.reviews && (
-                  <Accordion title={t('offer.reviews')} testID="offer-reviews-block">
+                  <Accordion title={t('offer.reviews')} initiallyOpen={firstSection(offer) === 'reviews'} testID="offer-reviews-block">
                     <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />
                   </Accordion>
                 )}
@@ -188,6 +189,25 @@ export function OfferDetailScreen({ id }: { id: string }) {
       </SafeAreaView>
     </ThemedView>
   );
+}
+
+/**
+ * La première section repliable affichée, seule ouverte à l'arrivée sur la fiche
+ * (décision 2026-11-19-premiere-section-ouverte) : localisation, caractéristiques,
+ * règles, puis avis, selon ce que l'offre a.
+ */
+function firstSection(offer: OfferDetail): 'location' | 'facts' | 'rules' | 'reviews' | null {
+  if (offer.address) {
+    return 'location';
+  }
+  if (offer.facts.length > 0) {
+    return 'facts';
+  }
+  if ((offer.rules?.length ?? 0) > 0 || offer.information) {
+    return 'rules';
+  }
+
+  return offer.reviews ? 'reviews' : null;
 }
 
 /** Une ligne « libellé — valeur », des caractéristiques comme des règles. */
