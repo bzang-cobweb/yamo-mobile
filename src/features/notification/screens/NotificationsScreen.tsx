@@ -117,14 +117,18 @@ export function NotificationsScreen() {
               pressed && styles.pressed,
             ]}>
             <View style={styles.texts}>
-              {/* 1. Qui agit (sa photo, cerclée de vert s'il est en ligne) et, sous son nom, la date. */}
+              {/* 1. Qui agit (sa photo, cerclée de vert s'il est en ligne ; elle et son nom ouvrent sa page) et, sous son nom, la date. */}
               <View style={styles.head}>
                 {item.actor && (
-                  <View
-                    style={[styles.ring, { borderColor: item.actor.online ? TONE_COLORS.success : 'transparent' }]}
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={item.actor.name}
+                    hitSlop={Spacing.one}
+                    onPress={() => item.actor && open(item, item.actor.link)}
+                    style={({ pressed }) => [styles.ring, { borderColor: item.actor?.online ? TONE_COLORS.success : 'transparent' }, pressed && styles.pressed]}
                     testID={`notification-${item.id}-avatar${item.actor.online ? '-online' : ''}`}>
                     <Avatar user={{ initials: item.actor.initials, avatar_url: item.actor.photo }} size={AVATAR_SIZE} />
-                  </View>
+                  </Pressable>
                 )}
                 <View style={styles.headTexts}>
                   {item.actor ? (
