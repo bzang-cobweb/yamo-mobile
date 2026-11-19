@@ -21,8 +21,8 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], read: false, created_at: new Date().toISOString() },
-    { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], read: true, created_at: '2026-01-02T10:00:00Z' },
+    { id: 'a', title: 'Demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }], read: false, created_at: new Date().toISOString() },
+    { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
 };
@@ -76,6 +76,16 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(notificationService.read).toHaveBeenCalledWith('a');
     expect(router.push).toHaveBeenCalledTimes(1);
     expect(router.push).toHaveBeenCalledWith('/offers/12');
+  });
+
+  it('le nom du membre, dans le texte, ouvre sa page', async () => {
+    await show();
+    await fireEvent.press(await screen.findByText('Marie Curie'));
+
+    expect(notificationService.read).toHaveBeenCalledWith('a');
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith('/members/4');
+    expect(screen.getByText(/demande un séjour/)).toBeTruthy();
   });
 
   it('une adresse externe n’est jamais ouverte ; une notification lue ne repart pas à l’API', async () => {

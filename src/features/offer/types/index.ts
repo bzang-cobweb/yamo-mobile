@@ -119,3 +119,16 @@ export type OfferCalendarDayPanel = {
   action: ListItemAction | null;
   note: string | null;
 };
+
+/** La page publique d'un membre (décision 2026-11-19-page-membre) : jamais ses coordonnées. */
+export type MemberProfile = {
+  /** Titre de la barre du haut (« Profil »). */
+  title: string;
+  name: string;
+  initials: string;
+  photo: string | null;
+  /** « Membre depuis mars 2026 ». */
+  since: string;
+  description: string | null;
+  facts: { label: string; value: string }[];
+};

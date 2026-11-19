@@ -1,6 +1,6 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
-import type { OfferCalendarDayPanel, OfferCalendarMonth, OfferDetail, OfferDetailResponse, OfferReviewPage } from '../types';
+import type { MemberProfile, OfferCalendarDayPanel, OfferCalendarMonth, OfferDetail, OfferDetailResponse, OfferReviewPage } from '../types';
 
 /** Offres servies par l'API. Une méthode par appel. */
 export class OfferService {
@@ -28,6 +28,11 @@ export class OfferService {
   /** `GET /api/v1/offers/{id}/calendar/{date}` — le panneau d'un jour. */
   async calendarDay(id: string, date: string): Promise<OfferCalendarDayPanel> {
     return (await this.client.get<{ data: OfferCalendarDayPanel }>(`/v1/offers/${encodeURIComponent(id)}/calendar/${encodeURIComponent(date)}`)).data;
+  }
+
+  /** `GET /api/v1/members/{id}` — la page publique d'un membre (décision 2026-11-19-page-membre). */
+  async member(id: string): Promise<MemberProfile> {
+    return (await this.client.get<{ data: MemberProfile }>(`/v1/members/${encodeURIComponent(id)}`)).data;
   }
 }
 

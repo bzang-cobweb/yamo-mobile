@@ -16,6 +16,8 @@ export type AppNotification = {
   link: string | null;
   /** Liens en plus, sous le texte (« Voir l'annonce » → `/offers/12`). */
   links: { label: string; link: string }[];
+  /** Passages du texte qui ouvrent un écran (« Paul Etoa » → `/members/37`). */
+  text_links: { text: string; link: string }[];
   read: boolean;
   created_at: string | null;
 };
