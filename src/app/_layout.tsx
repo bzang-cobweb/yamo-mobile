@@ -79,6 +79,8 @@ function RootNavigator() {
             <Stack.Screen name="(tabs)" />
             {/* Un formulaire du profil, par-dessus les onglets (décision 2026-11-19-contrat-bouton-fixe-formulaires). */}
             <Stack.Screen name="profile/[form]" />
+            {/* Une liste du profil, par-dessus les onglets, sans menu du bas (décision 2026-11-19-contrat-reservations-logements-profil). */}
+            <Stack.Screen name="profile/lists/[list]" />
             {/* Son avis sur une offre, ouvert depuis la fiche (décision 2026-11-19-contrat-avis-offres). */}
             <Stack.Screen name="offers/[id]/review" />
             {/* Réserver ou demander une visite, depuis la fiche (décision 2026-11-19-contrat-reservations). */}

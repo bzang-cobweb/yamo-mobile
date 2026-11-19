@@ -79,7 +79,8 @@ export type UserResponse = { data: User };
  * L'app les affiche et les envoie sans les connaître d'avance, ce qui permet
  * d'ajouter un lien sans nouvelle version de l'app.
  */
-export type ProfileMenuItem = { key: string; label: string; form?: string; list?: string };
+/** Un lien du menu du profil, et son groupe (« Compte », « Voyageur », « Hôte » ; décision 2026-11-19-contrat-reservations-logements-profil). */
+export type ProfileMenuItem = { key: string; label: string; form?: string; list?: string; group?: { key: string; label: string } };
 
 export type AuthContextValue = {
   /** `true` tant que le jeton enregistré, l'utilisateur, les langues et les textes ne sont pas chargés. */

@@ -9,6 +9,21 @@ export type ListItemDelete = Omit<FormSubmit, 'label'> & { label: string; confir
 /** Cœur de favori : état, et point d'API relatif (`/v1/…`). */
 export type ListItemFavorite = { active: boolean; endpoint: string };
 
+/**
+ * Un bouton sur la carte (décision 2026-11-19-contrat-reservations-logements-profil) :
+ * il envoie `submission` (après `confirm`, s'il y en a une) ou ouvre le formulaire `form`.
+ */
+export type ListItemAction = {
+  label: string;
+  style: 'primary' | 'destructive' | 'default' | string;
+  confirm: string | null;
+  submission: Omit<FormSubmit, 'label'> | null;
+  form: { form: string; record: string } | null;
+};
+
+/** Un compteur sur la carte (« 2 demandes en attente ») qui ouvre `list` avec ces filtres. */
+export type ListItemCounter = { label: string; list: string; filter: Record<string, string> };
+
 /** Un item d'une liste : titre, sous-titre, photo, note, phrase mise en avant, formulaire d'édition, retrait. */
 export type ListItem = {
   id: string;
@@ -29,6 +44,12 @@ export type ListItem = {
   link?: string | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */
   edit: { form: string; record: string } | null;
+  /** Boutons de la carte ; vide ou absent : aucun. */
+  actions?: ListItemAction[];
+  /** Pastille de couleur (un statut) ; `null` (ou absent) : aucune (décision 2026-11-19-contrat-reservations-logements-profil). */
+  tag?: { label: string; tone: 'warning' | 'success' | 'danger' | 'neutral' | string } | null;
+  /** Compteur de la carte ; `null` (ou absent) : aucun. */
+  counter?: ListItemCounter | null;
   delete: ListItemDelete | null;
 };
 
@@ -43,6 +64,8 @@ export type ListDefinition = {
   empty: string | null;
   /** Bouton de création : libellé et formulaire ouvert ; `null` pour une liste en lecture seule. */
   create: { label: string; form: string } | null;
+  /** Bouton de la barre fixe en bas : un formulaire à ouvrir, ou un écran de l'app (`/`) ; `null` (ou absent) : aucun. */
+  footer?: { label: string; form: string | null; link: string | null } | null;
   /** Texte d'aide du champ de recherche ; `null` : liste non cherchable (décision 2026-11-18-recherche-dans-la-liste). */
   search: string | null;
   /** Filtres proposés, en champs de formulaire (`?filter[nom]=valeur`) ; vide ou absent : aucun (décision 2026-11-19-contrat-filtres-vitrine). */

@@ -1,10 +1,12 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
-import type { ListItem } from '@/features/list/types';
+import type { ListItem, ListItemAction, ListItemCounter } from '@/features/list/types';
+import { activeFilterCount, setFilterFields, setFilterValues, useListFilters } from '@/features/list/utils/filters';
 import { NetworkError } from '@/shared/api/errors';
 import { ItemPicture } from '@/features/list/components/ItemPicture';
 import { ITEM_LINK } from '@/features/list/services/ListService';
@@ -41,13 +43,27 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
  * Une liste cherchable (`search` servi par l'API) affiche un champ de recherche ;
  * la recherche part 300 ms après la dernière frappe, côté serveur (décision
  * 2026-11-18-recherche-dans-la-liste).
+ *
+ * Décrits par l'API aussi (décision 2026-11-19-contrat-reservations-logements-profil) :
+ * les filtres (lien « Filtres », comme l'accueil), un bouton fixe en bas (un
+ * formulaire, ou un écran de l'app), des boutons sur une carte (« Accepter »,
+ * « Refuser »), et un compteur de carte qui ouvre une autre liste déjà filtrée.
  */
 export function ProfileListScreen({ list }: { list: string }) {
   const { t } = useAuth();
   const theme = useTheme();
   const [searchText, setSearchText] = useState('');
   const search = useDebounced(searchText.trim(), SEARCH_DELAY);
-  const query = useListDefinition(list, search);
+  const filters = useListFilters(list);
+  const query = useListDefinition(list, search, filters.values);
+  const insets = useSafeAreaInsets();
+  const filterFields = query.data?.filters;
+
+  useEffect(() => {
+    if (filterFields) {
+      setFilterFields(list, filterFields);
+    }
+  }, [list, filterFields]);
   const { reload, refetch } = query;
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +113,49 @@ export function ProfileListScreen({ list }: { list: string }) {
     }
 
     await reload();
+  }
+
+  // Un bouton de carte : un envoi (après confirmation s'il en a une), ou un formulaire à ouvrir.
+  async function runAction(action: ListItemAction) {
+    if (action.form) {
+      router.push({ pathname: '/profile/[form]', params: { form: action.form.form, record: action.form.record } });
+
+      return;
+    }
+    const submission = action.submission ? profileSubmission({ ...action.submission, label: action.label }) : null;
+
+    if (submission === null) {
+      return;
+    }
+
+    setError(null);
+
+    try {
+      await profileFormService.submit(submission, {});
+      setNotice(submission.success.message);
+    } catch {
+      setNotice(null);
+      setError(t('error.unknown'));
+    }
+
+    await reload();
+  }
+
+  function pressAction(action: ListItemAction) {
+    if (action.confirm) {
+      Alert.alert(action.confirm, undefined, [
+        { text: t('list.cancel'), style: 'cancel' },
+        { text: action.label, style: action.style === 'destructive' ? 'destructive' : 'default', onPress: () => void runAction(action) },
+      ]);
+    } else {
+      void runAction(action);
+    }
+  }
+
+  // Le compteur ouvre sa liste avec ses filtres déjà choisis.
+  function openCounter(counter: ListItemCounter) {
+    setFilterValues(counter.list, counter.filter);
+    router.push({ pathname: '/profile/lists/[list]', params: { list: counter.list } });
   }
 
   function confirmRemove(item: ListItem) {
@@ -159,6 +218,13 @@ export function ProfileListScreen({ list }: { list: string }) {
           style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
           {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
           <ItemPicture item={item} testID={`profile-list-item-${item.id}`} />
+          {item.tag && (
+            <View style={[styles.tag, { backgroundColor: TAG_COLORS[item.tag.tone] ?? TAG_COLORS.neutral }]} testID={`profile-list-tag-${item.id}`}>
+              <ThemedText type="smallBold" style={styles.tagText}>
+                {item.tag.label}
+              </ThemedText>
+            </View>
+          )}
           <ThemedText>{item.title}</ThemedText>
           {item.subtitle && (
             <ThemedText type="small" themeColor="textSecondary">
@@ -168,6 +234,37 @@ export function ProfileListScreen({ list }: { list: string }) {
           {/* La note et la phrase mise en avant, quand l'API les sert. */}
           <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
         </Pressable>
+        {item.counter && (
+          <Pressable
+            testID={`profile-list-counter-${item.id}`}
+            accessibilityRole="link"
+            onPress={() => item.counter && openCounter(item.counter)}
+            style={({ pressed }) => [styles.counter, { backgroundColor: theme.backgroundSelected }, pressed && styles.pressed]}>
+            <ThemedText type="smallBold" style={{ color: theme.primary }}>
+              {item.counter.label}
+            </ThemedText>
+          </Pressable>
+        )}
+        {(item.actions ?? []).length > 0 && (
+          <View style={styles.cardActions}>
+            {(item.actions ?? []).map((action) => (
+              <Pressable
+                key={action.label}
+                testID={`profile-list-action-${item.id}-${action.style}`}
+                accessibilityRole="button"
+                onPress={() => pressAction(action)}
+                style={({ pressed }) => [
+                  styles.cardAction,
+                  action.style === 'primary' ? { backgroundColor: theme.primary } : { borderColor: action.style === 'destructive' ? ERROR_COLOR : theme.backgroundSelected, borderWidth: 1 },
+                  pressed && styles.pressed,
+                ]}>
+                <ThemedText type="smallBold" style={{ color: action.style === 'primary' ? theme.onPrimary : action.style === 'destructive' ? ERROR_COLOR : theme.text }}>
+                  {action.label}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        )}
         {stacked ? (
           <View style={styles.actions} testID={`profile-list-actions-${item.id}`}>
             {both && (
@@ -235,9 +332,18 @@ export function ProfileListScreen({ list }: { list: string }) {
         loadingMoreLabel={t('list.loading')}
         refreshing={refreshing}
         onRefresh={() => void refresh()}
-        empty={search ? t('list.noResults') : definition.empty}
+        empty={Object.keys(filters.values).length > 0 ? t('list.noFilterResults') : search ? t('list.noResults') : definition.empty}
         search={definition.search ? { value: searchText, onChange: setSearchText, placeholder: definition.search } : null}
-        contentContainerStyle={profileContentStyle}
+        filter={
+          definition.filters && definition.filters.length > 0
+            ? {
+                label: t('list.filters'),
+                count: activeFilterCount(definition.filters, filters.values),
+                onPress: () => router.push({ pathname: '/filters/[list]', params: { list } }),
+              }
+            : null
+        }
+        contentContainerStyle={[profileContentStyle, !definition.footer && { paddingBottom: Math.max(insets.bottom, Spacing.four) }]}
         create={
           definition.create
             ? {
@@ -264,9 +370,44 @@ export function ProfileListScreen({ list }: { list: string }) {
           ) : null
         }
       />
+      {/* Le bouton fixe en bas : un formulaire (« Ajouter un logement ») ou un écran (« Rechercher un logement »). */}
+      {definition.footer && (
+        <View
+          testID="profile-list-footer"
+          style={[styles.footer, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background, paddingBottom: Math.max(insets.bottom, Spacing.three) }]}>
+          <Pressable
+            testID="profile-list-footer-button"
+            accessibilityRole="button"
+            onPress={() => definition.footer && openFooter(definition.footer)}
+            style={({ pressed }) => [styles.footerButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
+            <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
+              {definition.footer.label}
+            </ThemedText>
+          </Pressable>
+        </View>
+      )}
     </ProfileScreenShell>
   );
 }
+
+/** Le bouton du bas : son formulaire, ou l'écran de l'app (l'accueil `/`, une fiche) ; jamais une adresse externe. */
+function openFooter(footer: { form: string | null; link: string | null }) {
+  if (footer.form) {
+    router.push({ pathname: '/profile/[form]', params: { form: footer.form } });
+  } else if (footer.link === '/') {
+    router.navigate('/');
+  } else if (footer.link && ITEM_LINK.test(footer.link)) {
+    router.push(footer.link as Href);
+  }
+}
+
+/** Les couleurs des pastilles de statut : en attente orange, acceptée verte, refusée rouge, sinon gris. */
+const TAG_COLORS: Record<string, string> = {
+  warning: '#E8890C',
+  success: '#2E9D5B',
+  danger: ERROR_COLOR,
+  neutral: '#8A8F98',
+};
 
 /** Pause après la dernière frappe avant d'envoyer la recherche. */
 export const SEARCH_DELAY = 300;
@@ -304,4 +445,11 @@ const styles = StyleSheet.create({
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
+  tag: { alignSelf: 'flex-start', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 10 },
+  tagText: { color: '#ffffff' },
+  counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
+  cardActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.two },
+  cardAction: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 8 },
+  footer: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
+  footerButton: { alignItems: 'center', paddingVertical: Spacing.three, borderRadius: 12 },
 });

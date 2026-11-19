@@ -17,7 +17,7 @@ jest.mock('@/features/welcome/hooks/useApplication', () => ({
   useApplication: () => ({ data: { name: 'Ya Mo', description: null, channels: mockChannels } }),
 }));
 
-type MenuItem = { key: string; label: string; form?: string; list?: string };
+type MenuItem = { key: string; label: string; form?: string; list?: string; group?: { key: string; label: string } };
 
 const DEFAULT_MENU: MenuItem[] = [
   { key: 'personal', label: 'Informations personnelles', form: 'auth.profile.personal' },
@@ -146,6 +146,26 @@ describe('ProfileScreen', () => {
     await fireEvent.press(screen.getByTestId('profile-link-addresses'));
 
     expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'auth.addresses' } });
+  });
+
+  it('range le menu en groupes titrés, un titre par groupe (décision 2026-11-19-contrat-reservations-logements-profil)', async () => {
+    const account = { key: 'account', label: 'Compte' };
+    const traveler = { key: 'traveler', label: 'Voyageur' };
+    mockMenu = [
+      { key: 'personal', label: 'Informations personnelles', form: 'auth.profile.personal', group: account },
+      { key: 'addresses', label: 'Mes adresses', list: 'auth.addresses', group: account },
+      { key: 'bookings', label: 'Mes réservations', list: 'offer.bookings', group: traveler },
+      { key: 'offers', label: 'Mes logements', list: 'offer.mine', group: { key: 'host', label: 'Hôte' } },
+    ];
+    await renderProfile();
+
+    expect(screen.getByTestId('profile-group-account')).toHaveTextContent('Compte');
+    expect(screen.getAllByText('Compte')).toHaveLength(1);
+    expect(screen.getByTestId('profile-group-traveler')).toHaveTextContent('Voyageur');
+    expect(screen.getByTestId('profile-group-host')).toHaveTextContent('Hôte');
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('profile-group-traveler')).toBeLessThan(json.indexOf('profile-link-bookings'));
+    expect(json.indexOf('profile-link-bookings')).toBeLessThan(json.indexOf('profile-group-host'));
   });
 
   it('ignore un lien sans formulaire (réponse d’un serveur plus ancien)', async () => {

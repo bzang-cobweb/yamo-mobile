@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { Alert, type AlertButton } from 'react-native';
 
 import type { ListDefinition, ListItem } from '@/features/list/types';
+import * as filterStore from '@/features/list/utils/filters';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { AuthContext } from '../context/AuthContext';
@@ -29,7 +30,7 @@ jest.mock('expo-router', () => {
   const { useEffect } = jest.requireActual<typeof import('react')>('react');
 
   return {
-    router: { back: jest.fn(), push: jest.fn(), dismissTo: jest.fn(), canGoBack: () => true },
+    router: { back: jest.fn(), push: jest.fn(), navigate: jest.fn(), dismissTo: jest.fn(), canGoBack: () => true },
     useFocusEffect: (effect: () => void | (() => void)) => useEffect(effect, [effect]),
     useRootNavigationState: () => undefined,
     useNavigationContainerRef: () => ({ getRootState: () => undefined, dispatch: jest.fn() }),
@@ -383,5 +384,79 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     await act(async () => jest.advanceTimersByTime(300));
 
     expect(searches()).toEqual(['', 'visa', '']);
+  });
+
+  describe('barre du bas, boutons de carte, compteur, filtres (décision 2026-11-19-contrat-reservations-logements-profil)', () => {
+    it('« Accepter » demande confirmation puis envoie ; « Refuser » ouvre son formulaire lié à la demande', async () => {
+      mockList = list([
+        item('5', {
+          edit: null,
+          delete: null,
+          actions: [
+            {
+              label: 'Accepter',
+              style: 'primary',
+              confirm: 'Accepter la demande de Marie ?',
+              submission: { method: 'POST', endpoint: '/v1/bookings/5/accept', destructive: false, success: { action: 'back', message: 'Demande acceptée.' } },
+              form: null,
+            },
+            { label: 'Refuser', style: 'destructive', confirm: null, submission: null, form: { form: 'offer.booking.refuse', record: '5' } },
+          ],
+        }),
+      ]);
+      mockRequest.mockResolvedValue({ data: null });
+      const alert = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons?: AlertButton[]) => {
+        buttons?.find((button) => button.text === 'Accepter')?.onPress?.();
+      });
+      await renderScreen();
+
+      await fireEvent.press(screen.getByTestId('profile-list-action-5-primary'));
+      expect(alert).toHaveBeenCalledWith('Accepter la demande de Marie ?', undefined, expect.any(Array));
+      await waitFor(() => expect(mockRequest).toHaveBeenCalledWith('/v1/bookings/5/accept', expect.objectContaining({ method: 'POST' })));
+      expect(await screen.findByText('Demande acceptée.')).toBeTruthy();
+      expect(mockReload).toHaveBeenCalled();
+
+      await fireEvent.press(screen.getByTestId('profile-list-action-5-destructive'));
+      expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.booking.refuse', record: '5' } });
+    });
+
+    it('le compteur ouvre sa liste avec ses filtres ; le bouton du bas ouvre son formulaire', async () => {
+      mockList = list([item('12', { counter: { label: '2 demandes en attente', list: 'offer.bookings.received', filter: { offer: '12', status: 'pending' } } })], {
+        create: null,
+        footer: { label: 'Ajouter un logement', form: 'offer.offer', link: null },
+      });
+      await renderScreen();
+
+      const setValues = jest.spyOn(filterStore, 'setFilterValues');
+      await fireEvent.press(screen.getByText('2 demandes en attente'));
+      expect(setValues).toHaveBeenCalledWith('offer.bookings.received', { offer: '12', status: 'pending' });
+      expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'offer.bookings.received' } });
+
+      await fireEvent.press(screen.getByTestId('profile-list-footer-button'));
+      expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.offer' } });
+    });
+
+    it('le bouton du bas peut ramener à l’accueil ; les filtres servis ouvrent l’écran des filtres', async () => {
+      mockList = list([item('1')], {
+        create: null,
+        footer: { label: 'Rechercher un logement', form: null, link: '/' },
+        filters: [{ name: 'status', type: 'segmented', label: 'Statut', placeholder: null, help: null, required: false, default: 'any', options: [] }],
+      });
+      await renderScreen();
+
+      await fireEvent.press(screen.getByTestId('profile-list-footer-button'));
+      expect(router.navigate).toHaveBeenCalledWith('/');
+      await fireEvent.press(screen.getByText('Filtres'));
+      expect(router.push).toHaveBeenCalledWith({ pathname: '/filters/[list]', params: { list: 'payments.cards' } });
+    });
+
+    it('le statut en pastille de couleur', async () => {
+      mockList = list([item('3', { tag: { label: 'En attente', tone: 'warning' } }), item('4')]);
+      await renderScreen();
+
+      expect(screen.getByTestId('profile-list-tag-3')).toHaveTextContent('En attente');
+      expect(StyleSheet.flatten(screen.getByTestId('profile-list-tag-3').props.style)).toMatchObject({ backgroundColor: '#E8890C' });
+      expect(screen.queryByTestId('profile-list-tag-4')).toBeNull();
+    });
   });
 });
