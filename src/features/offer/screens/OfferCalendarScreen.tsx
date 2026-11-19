@@ -121,6 +121,11 @@ export function OfferCalendarScreen({ id }: { id: string }) {
                     {data.address}
                   </ThemedText>
                 )}
+                {data.description && (
+                  <ThemedText type="small" style={[styles.centered, styles.description]} testID="offer-calendar-description">
+                    {data.description}
+                  </ThemedText>
+                )}
               </View>
               <MonthGrid
                 testID="offer-calendar"
@@ -204,6 +209,7 @@ const styles = StyleSheet.create({
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.four },
   heading: { gap: Spacing.one, alignItems: 'center' },
   centered: { textAlign: 'center' },
+  description: { paddingTop: Spacing.one },
   legend: { gap: Spacing.two },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   legendBox: { width: 18, height: 18, borderRadius: 4 },
