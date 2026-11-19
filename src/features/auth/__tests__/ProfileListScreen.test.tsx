@@ -463,7 +463,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       mockList = list([item('3', { quote: 'Je viens pour le travail.' }), item('4')]);
       await renderScreen();
 
-      expect(screen.getByTestId('profile-list-quote-3')).toHaveTextContent('« Je viens pour le travail. »');
+      expect(screen.getByTestId('profile-list-quote-3')).toHaveTextContent('Je viens pour le travail.');
       expect(screen.queryByTestId('profile-list-quote-4')).toBeNull();
     });
   });

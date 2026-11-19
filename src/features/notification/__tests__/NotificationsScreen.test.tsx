@@ -53,7 +53,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(await screen.findByTestId('notification-a-tag')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
-    expect(screen.getByText('« Je viens pour le travail. »')).toBeTruthy();
+    expect(screen.getByText('Je viens pour le travail.')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-message')).toBeNull();
     // Sans pastille : une non lue se lit à son fond, à son titre en gras et à « Non lue ».
     expect(screen.getByTestId('notification-a').props.accessibilityLabel).toMatch(/^Non lue : /);
@@ -90,7 +90,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(screen.queryByTestId('notification-b-actor')).toBeNull();
     expect(screen.getByTestId('notification-b-text')).toHaveTextContent('Votre demande est acceptée.');
     // Le message, sur une ligne.
-    expect(screen.getByText('« Je viens pour le travail. »').props.numberOfLines).toBe(1);
+    expect(screen.getByText('Je viens pour le travail.').props.numberOfLines).toBe(1);
 
     await fireEvent.press(screen.getByTestId('notification-a-actor'));
     expect(router.push).toHaveBeenCalledWith('/members/4');

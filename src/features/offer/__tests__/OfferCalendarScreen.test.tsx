@@ -98,7 +98,7 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     await fireEvent.press(await screen.findByTestId('offer-calendar-day-2026-12-03'));
     expect(await screen.findByText('Jeudi 3 décembre 2026')).toBeTruthy();
     expect(offerService.calendarDay).toHaveBeenCalledWith('7', '2026-12-03');
-    expect(screen.getByText('« J’arrive tard. »')).toBeTruthy();
+    expect(screen.getByText('J’arrive tard.')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();
 
     await fireEvent.press(screen.getByText('Bloquer ce jour'));

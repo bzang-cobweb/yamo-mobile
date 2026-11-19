@@ -65,7 +65,7 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByText('Notification')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.getByTestId('notification-detail-date')).toHaveTextContent(/2026/);
-    expect(screen.getByText('« Tournage d’un clip. »')).toBeTruthy();
+    expect(screen.getByText('Tournage d’un clip.')).toBeTruthy();
     await waitFor(() => expect(notificationService.read).toHaveBeenCalledWith('n1'));
   });
 
