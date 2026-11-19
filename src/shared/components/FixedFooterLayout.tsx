@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ComponentRef, type PropsWithChildren, type ReactNode } from 'react';
-import { Keyboard, Platform, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Keyboard, LayoutAnimation, Platform, ScrollView, StyleSheet, View, type KeyboardEvent, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -53,10 +53,14 @@ export function FixedFooterLayout({ contentStyle, bottomInset = false, testID, c
   useEffect(() => {
     const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (event) => {
       frame.current?.measureInWindow((_x: number, y: number, _width: number, height: number) => {
+        followKeyboard(event);
         setLift(Math.max(0, y + height - event.endCoordinates.screenY));
       });
     });
-    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setLift(0));
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', (event) => {
+      followKeyboard(event);
+      setLift(0);
+    });
 
     return () => {
       show.remove();
@@ -116,6 +120,21 @@ export function FixedFooterLayout({ contentStyle, bottomInset = false, testID, c
       </View>
     </FixedFooterContext.Provider>
   );
+}
+
+/**
+ * La barre monte et descend avec le clavier, au même rythme, au lieu de sauter :
+ * sans cela, à la fermeture elle retombe derrière le clavier qui descend encore et
+ * ne réapparaît qu'une fois celui-ci parti.
+ */
+function followKeyboard(event: KeyboardEvent) {
+  if (Platform.OS !== 'ios' || !event.duration) {
+    return;
+  }
+  LayoutAnimation.configureNext({
+    duration: event.duration,
+    update: { duration: event.duration, type: LayoutAnimation.Types[event.easing] ?? LayoutAnimation.Types.keyboard },
+  });
 }
 
 /** La barre suit la largeur maximale du contenu (centrée sur tablette). */
