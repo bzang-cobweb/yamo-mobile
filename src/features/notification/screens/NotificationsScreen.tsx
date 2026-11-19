@@ -178,7 +178,7 @@ export function NotificationsScreen() {
 }
 
 /** Diamètre de la photo de qui agit. */
-const AVATAR_SIZE = 40;
+const AVATAR_SIZE = 52;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
