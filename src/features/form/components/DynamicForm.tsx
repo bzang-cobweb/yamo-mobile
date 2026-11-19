@@ -10,7 +10,7 @@ import { Spacing } from '@/shared/theme/theme';
 
 import { formService } from '../services/FormService';
 import type { FieldValue, FormDefinition, FormErrors, FormFieldDefinition, FormValues } from '../types';
-import { countryKey, fieldError, initialValues, isVisible, submittedValues } from '../utils/values';
+import { countryKey, fieldError, hasPendingUploads, initialValues, isVisible, submittedValues } from '../utils/values';
 import { ERROR_COLOR } from './FieldShell';
 import { FormField } from './FormField';
 
@@ -48,6 +48,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const uploading = hasPendingUploads(values);
   const steps = definition.steps ?? [];
   const [step, setStep] = useState(0);
   const isLastStep = steps.length === 0 || step === steps.length - 1;
@@ -115,6 +116,10 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
   }
 
   async function submit() {
+    if (uploading) {
+      return;
+    }
+
     setSubmitting(true);
     setErrors({});
     setMessage(null);
@@ -208,11 +213,13 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false }: Dynamic
         testID="form-submit"
         accessibilityRole="button"
         onPress={submit}
-        disabled={submitting}
+        // Un fichier en cours d'envoi : l'étape et l'enregistrement attendent (décision 2026-11-19-contrat-champ-upload-photos).
+        disabled={submitting || uploading}
+        accessibilityState={{ disabled: submitting || uploading }}
         style={({ pressed }) => [
           styles.button,
           { backgroundColor: destructive ? ERROR_COLOR : theme.primary },
-          submitting && styles.disabled,
+          (submitting || uploading) && styles.disabled,
           pressed && styles.pressed,
         ]}>
         {submitting && <ActivityIndicator color={theme.onPrimary} />}

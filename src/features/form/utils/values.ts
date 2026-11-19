@@ -8,6 +8,7 @@ export function initialValue(field: FormFieldDefinition): FieldValue {
       return field.default === true;
     case 'checkbox_group':
     case 'multiselect':
+    case 'upload':
       return Array.isArray(field.default) ? field.default.map(String) : [];
     case 'range':
       // Deux bornes, vides au départ.
@@ -64,4 +65,15 @@ export function submittedValues(definition: FormDefinition, values: FormValues):
 /** Premier message d'erreur de l'API pour un champ (un groupe de cases reçoit aussi `tags.1`…). */
 export function fieldError(errors: Record<string, string[]>, name: string): string | undefined {
   return errors[name]?.[0] ?? Object.entries(errors).find(([key]) => key.startsWith(`${name}.`))?.[1][0];
+}
+
+/**
+ * Un fichier en cours d'envoi : sa place est tenue dans la valeur du champ par un
+ * identifiant provisoire, remplacé par celui de l'API à la fin de l'envoi.
+ */
+export const PENDING_UPLOAD = 'pending:';
+
+/** Un envoi de fichier est-il en cours ? L'étape et l'enregistrement attendent. */
+export function hasPendingUploads(values: FormValues): boolean {
+  return Object.values(values).some((value) => Array.isArray(value) && value.some((item) => item.startsWith(PENDING_UPLOAD)));
 }

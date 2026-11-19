@@ -14,6 +14,7 @@ import { SelectField } from './fields/SelectField';
 import { SwitchField } from './fields/SwitchField';
 import { TextareaField } from './fields/TextareaField';
 import { TextField } from './fields/TextField';
+import { UploadField } from './fields/UploadField';
 
 /**
  * Sert le bon composant selon le `type` du champ envoyé par l'API
@@ -69,6 +70,8 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
       return <RangeField {...common} value={asList} onChange={onChange} />;
     case 'rating':
       return <RatingField {...common} value={asText} onChange={onChange} />;
+    case 'upload':
+      return <UploadField {...common} value={asList} onChange={onChange} />;
     default: {
       // Type inconnu de cette version de l'app : rien n'est affiché plutôt qu'un champ faux.
       const unknown: never = field.type;

@@ -28,7 +28,9 @@ export type FieldType =
   /** Liste déroulante à choix multiples : la liste des options choisies. */
   | 'multiselect'
   /** Intervalle `[min, max]`, chaque borne facultative. */
-  | 'range';
+  | 'range'
+  /** Fichiers envoyés un à un ; valeur : la liste ordonnée de leurs identifiants (décision 2026-11-19-contrat-champ-upload-photos). */
+  | 'upload';
 
 export type FieldOption = {
   value: string;
@@ -68,8 +70,27 @@ export type FormFieldDefinition = {
    * avec `?q=` ; `null` (ou absent) : aucune (décision 2026-11-19-contrat-adresse-offre-recherche).
    */
   suggestions?: string | null;
+  /** Champ de fichiers (`upload`) : limites déclarées par l'API ; `null` (ou absent) pour un autre type. */
+  upload?: UploadSettings | null;
   default: unknown;
   options: FieldOption[];
+};
+
+/** Un fichier déjà enregistré : son identifiant (la valeur du champ) et son adresse. */
+export type UploadedFileRef = { id: string; url: string };
+
+/**
+ * Limites d'un champ de fichiers, déclarées par Laravel (décision
+ * 2026-11-19-contrat-champ-upload-photos) : types MIME acceptés, taille maximale
+ * d'un fichier (Ko), nombre maximal, adresse d'envoi (relative à l'API), fichiers
+ * déjà enregistrés.
+ */
+export type UploadSettings = {
+  accept: string[];
+  max_size_kb: number;
+  max_files: number;
+  endpoint: string;
+  files: UploadedFileRef[];
 };
 
 /** Une suggestion : la valeur du champ, son libellé, et les autres champs qu'elle remplit. */
