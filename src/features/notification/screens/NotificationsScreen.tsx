@@ -118,7 +118,6 @@ export function NotificationsScreen() {
               { borderColor: theme.backgroundSelected, backgroundColor: item.read ? theme.background : theme.backgroundElement },
               pressed && styles.pressed,
             ]}>
-            {!item.read && <View style={[styles.dot, { backgroundColor: theme.primary }]} testID={`notification-${item.id}-unread`} />}
             <View style={styles.texts}>
               <ThemedText type={item.read ? 'default' : 'smallBold'}>{item.title}</ThemedText>
               {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
@@ -199,7 +198,6 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', paddingVertical: Spacing.five },
   more: { paddingVertical: Spacing.three },
   item: { flexDirection: 'row', gap: Spacing.three, padding: Spacing.three, borderWidth: 1, borderRadius: 8 },
-  dot: { width: 10, height: 10, borderRadius: 5, marginTop: Spacing.two },
   texts: { flex: 1, gap: Spacing.one },
   link: { alignSelf: 'flex-start' },
   pressed: { opacity: 0.7 },

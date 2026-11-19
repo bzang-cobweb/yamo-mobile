@@ -55,8 +55,9 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
     expect(screen.getByText('« Je viens pour le travail. »')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-message')).toBeNull();
-    expect(screen.getByTestId('notification-a-unread')).toBeTruthy();
-    expect(screen.queryByTestId('notification-b-unread')).toBeNull();
+    // Sans pastille : une non lue se lit à son fond, à son titre en gras et à « Non lue ».
+    expect(screen.getByTestId('notification-a').props.accessibilityLabel).toMatch(/^Non lue : /);
+    expect(screen.getByTestId('notification-b').props.accessibilityLabel).not.toMatch(/^Non lue/);
     expect(screen.getByText('Tout marquer comme lu')).toBeTruthy();
   });
 
@@ -66,7 +67,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
 
     expect(notificationService.read).toHaveBeenCalledWith('a');
     expect(router.push).toHaveBeenCalledWith('/profile/lists/offer.bookings.received');
-    await waitFor(() => expect(screen.queryByTestId('notification-a-unread')).toBeNull());
+    await waitFor(() => expect(screen.getByTestId('notification-a').props.accessibilityLabel).not.toMatch(/^Non lue/));
   });
 
   it('« Voir l’annonce » marque la notification lue et ouvre la fiche de l’offre', async () => {
@@ -101,7 +102,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     await fireEvent.press(await screen.findByTestId('notifications-read-all'));
 
     expect(notificationService.readAll).toHaveBeenCalled();
-    await waitFor(() => expect(screen.queryByTestId('notification-a-unread')).toBeNull());
+    await waitFor(() => expect(screen.getByTestId('notification-a').props.accessibilityLabel).not.toMatch(/^Non lue/));
   });
 
   it('sans notification : le texte vide', async () => {
