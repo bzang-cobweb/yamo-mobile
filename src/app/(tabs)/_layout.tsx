@@ -69,16 +69,16 @@ export default function TabsLayout() {
           ),
         }}
       />
-      {/* Notifications, entre Accueil et Profil, avec la pastille des non lues, « 0 » compris
-          (décision 2026-11-19-contrat-centre-notifications). */}
+      {/* Notifications, entre Accueil et Profil : une pastille (un point, sans nombre) dès qu'il y a
+          des non lues (décisions 2026-11-19-contrat-centre-notifications et 2026-11-19-pastille-point). */}
       <Tabs.Screen
         name="notifications"
         options={{
           title: t('tabs.notifications'),
-          tabBarAccessibilityLabel: `${t('tabs.notifications')}, ${unread}`,
+          tabBarAccessibilityLabel: unread > 0 ? `${t('tabs.notifications')}, ${t('notifications.unread')}` : t('tabs.notifications'),
           tabBarButtonTestID: 'tab-notifications',
-          tabBarBadge: unread > 99 ? '99+' : unread,
-          tabBarBadgeStyle: { backgroundColor: theme.primary, color: theme.onPrimary },
+          tabBarBadge: unread > 0 ? '' : undefined,
+          tabBarBadgeStyle: { backgroundColor: theme.primary, minWidth: 10, maxHeight: 10, borderRadius: 5, marginTop: 4 },
           tabBarIcon: ({ color, size, focused }) => (
             <SymbolView
               name={{ ios: focused ? 'bell.fill' : 'bell', android: 'notifications', web: 'notifications' }}
