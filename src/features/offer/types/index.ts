@@ -11,6 +11,8 @@ export type OfferDetail = {
   price: { label: string; value: string } | null;
   /** La ville ; jamais la rue. */
   location: string | null;
+  /** Indications sur l'adresse écrites par le propriétaire (décision 2026-11-19-description-adresse-offre) ; `null` (ou absent) : aucune. */
+  address_description?: string | null;
   photos: string[];
   description: string | null;
   /** Caractéristiques lisibles, dans l'ordre. */

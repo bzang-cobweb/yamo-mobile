@@ -107,6 +107,16 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-status')).toBeNull();
   });
 
+  it('les indications sur l’adresse, sous la ville, quand le propriétaire en a écrit', async () => {
+    mockState = { data: { ...OFFER, address_description: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
+    await show();
+    expect(screen.getByTestId('offer-address-description').props.children).toBe('Derrière le marché, portail bleu');
+
+    mockState = { data: OFFER, isPending: false, error: null };
+    await show();
+    expect(screen.queryByTestId('offer-address-description')).toBeNull();
+  });
+
   it('le carrousel suit la photo affichée', async () => {
     await show();
 

@@ -121,6 +121,12 @@ export function OfferDetailScreen({ id }: { id: string }) {
                     {offer.location}
                   </ThemedText>
                 )}
+                {/* Les indications du propriétaire, sous la ville. */}
+                {offer.address_description && (
+                  <ThemedText type="small" themeColor="textSecondary" testID="offer-address-description">
+                    {offer.address_description}
+                  </ThemedText>
+                )}
 
                 {offer.facts.length > 0 && (
                   <View style={styles.section}>
