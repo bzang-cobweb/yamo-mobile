@@ -58,7 +58,8 @@ export function resetFilters() {
 
 /** Une valeur qui filtre : non vide, et différente de la valeur par défaut du champ (« Tous »). */
 function isActive(field: FormFieldDefinition | undefined, value: FieldValue | undefined): boolean {
-  if (value === undefined || value === '' || value === false || (Array.isArray(value) && value.length === 0)) {
+  // Une liste vide, ou un intervalle aux deux bornes vides, ne filtre rien.
+  if (value === undefined || value === '' || value === false || (Array.isArray(value) && value.every((item) => item === ''))) {
     return false;
   }
 
@@ -70,10 +71,7 @@ export function activeValues(fields: FormFieldDefinition[], values: FormValues):
   return Object.fromEntries(Object.entries(values).filter(([name, value]) => isActive(fields.find((field) => field.name === name), value)));
 }
 
-/**
- * Le nombre de filtres actifs, pour le badge : un minimum et un maximum du même
- * critère (`price_min`, `price_max`) comptent pour un.
- */
+/** Le nombre de filtres actifs, pour le badge ; un intervalle compte pour un. */
 export function activeFilterCount(fields: FormFieldDefinition[], values: FormValues): number {
-  return new Set(Object.keys(activeValues(fields, values)).map((name) => name.replace(/_(min|max)$/, ''))).size;
+  return Object.keys(activeValues(fields, values)).length;
 }

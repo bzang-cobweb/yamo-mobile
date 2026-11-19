@@ -7,7 +7,11 @@ export function initialValue(field: FormFieldDefinition): FieldValue {
     case 'switch':
       return field.default === true;
     case 'checkbox_group':
+    case 'multiselect':
       return Array.isArray(field.default) ? field.default.map(String) : [];
+    case 'range':
+      // Deux bornes, vides au départ.
+      return Array.isArray(field.default) ? [0, 1].map((index) => (field.default as unknown[])[index] == null ? '' : String((field.default as unknown[])[index])) : ['', ''];
     default:
       return field.default === null || field.default === undefined ? '' : String(field.default);
   }

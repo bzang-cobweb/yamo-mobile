@@ -25,10 +25,9 @@ function field(overrides: Partial<FormFieldDefinition> & Pick<FormFieldDefinitio
 
 const FIELDS: FormFieldDefinition[] = [
   field({ name: 'city', type: 'select', options: [{ value: 'Douala', label: 'Douala' }] }),
-  field({ name: 'price_min', type: 'number' }),
-  field({ name: 'price_max', type: 'number' }),
+  field({ name: 'price', type: 'range', suffix: 'FCFA' }),
   field({ name: 'furnished', type: 'segmented', default: 'any', options: [{ value: 'any', label: 'Tous' }, { value: 'true', label: 'Meublé' }] }),
-  field({ name: 'property_type', type: 'checkbox_group', options: [{ value: 'studio', label: 'Studio' }] }),
+  field({ name: 'property_type', type: 'multiselect', options: [{ value: 'studio', label: 'Studio' }, { value: 'house', label: 'Maison' }] }),
 ];
 
 describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)', () => {
@@ -37,12 +36,14 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
     resetFilters();
   });
 
-  it('le badge compte les filtres actifs ; un minimum et un maximum comptent pour un ; « Tous » ne compte pas', () => {
-    const values = { city: 'Douala', price_min: '1000', price_max: '9000', furnished: 'any', property_type: [] as string[] };
+  it('le badge compte les filtres actifs ; un intervalle compte pour un ; « Tous » et les vides ne comptent pas', () => {
+    const values = { city: 'Douala', price: ['1000', '9000'], furnished: 'any', property_type: [] as string[] };
 
     expect(activeFilterCount(FIELDS, values)).toBe(2);
-    expect(activeValues(FIELDS, values)).toEqual({ city: 'Douala', price_min: '1000', price_max: '9000' });
+    expect(activeValues(FIELDS, values)).toEqual({ city: 'Douala', price: ['1000', '9000'] });
     expect(activeFilterCount(FIELDS, { ...values, furnished: 'true', property_type: ['studio'] })).toBe(4);
+    expect(activeFilterCount(FIELDS, { price: ['', ''] })).toBe(0);
+    expect(activeFilterCount(FIELDS, { price: ['', '5000'] })).toBe(1);
     expect(activeFilterCount(FIELDS, {})).toBe(0);
   });
 
@@ -54,7 +55,7 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
     expect(client.get).toHaveBeenCalledWith('/v1/lists/offer.browse?search=akwa&filter[city]=Douala&filter[property_type][]=studio&filter[property_type][]=house');
   });
 
-  it('l’écran des filtres applique les choix, ou les efface, puis revient', async () => {
+  it('l’écran des filtres : barre fixe en bas ; il applique les choix, ou les efface, puis revient', async () => {
     setFilterFields('offer.browse', FIELDS);
     setFilterValues('offer.browse', { city: 'Douala' });
     const seen: { values: Record<string, unknown> }[] = [];
@@ -73,12 +74,30 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
 
     // Prérempli avec les filtres en cours.
     expect(screen.getByTestId('field-city')).toBeTruthy();
-    await fireEvent.changeText(screen.getByTestId('field-price_max'), '90000');
+    // Un intervalle à l'envers : erreur sous le champ, rien n'est appliqué.
+    await fireEvent.changeText(screen.getByTestId('field-price-min'), '100000');
+    await fireEvent.changeText(screen.getByTestId('field-price-max'), '50000');
     await act(async () => {
-      fireEvent.press(screen.getByTestId('form-submit'));
+      fireEvent.press(screen.getByTestId('filter-apply'));
+    });
+    expect(screen.getByTestId('price-error')).toHaveTextContent('Le maximum doit être au moins égal au minimum.');
+    expect(router.back).not.toHaveBeenCalled();
+    await fireEvent.changeText(screen.getByTestId('field-price-min'), '');
+
+    // Les boutons sont hors de la partie qui défile.
+    expect(screen.getByTestId('filter-bar')).toBeTruthy();
+    expect(screen.getAllByTestId(/^(filter-screen|filter-bar)$/).map((node) => node.props.testID)).toEqual(['filter-screen', 'filter-bar']);
+    await fireEvent.changeText(screen.getByTestId('field-price-max'), '90000');
+    await fireEvent.press(screen.getByTestId('field-property_type'));
+    await fireEvent.press(screen.getByTestId('field-property_type-option-house'));
+    await fireEvent.press(screen.getByTestId('field-property_type-option-studio'));
+    await fireEvent.press(screen.getByTestId('field-property_type-confirm'));
+    expect(screen.getByTestId('field-property_type')).toHaveTextContent('Studio, Maison');
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('filter-apply'));
     });
 
-    expect(seen[seen.length - 1].values).toEqual({ city: 'Douala', price_max: '90000' });
+    expect(seen[seen.length - 1].values).toEqual({ city: 'Douala', price: ['', '90000'], property_type: ['studio', 'house'] });
     expect(router.back).toHaveBeenCalledTimes(1);
 
     await act(async () => {

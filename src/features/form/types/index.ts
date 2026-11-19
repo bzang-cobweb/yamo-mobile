@@ -24,7 +24,11 @@ export type FieldType =
   /** Choix parmi quelques options, en boutons côte à côte (ex. « E-mail | Téléphone »). */
   | 'segmented'
   /** Note en étoiles, valeur « 1 » à « 5 » (décision 2026-11-19-contrat-avis-offres). */
-  | 'rating';
+  | 'rating'
+  /** Liste déroulante à choix multiples : la liste des options choisies. */
+  | 'multiselect'
+  /** Intervalle `[min, max]`, chaque borne facultative. */
+  | 'range';
 
 export type FieldOption = {
   value: string;

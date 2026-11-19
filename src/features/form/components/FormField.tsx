@@ -5,7 +5,9 @@ import { CodeField } from './fields/CodeField';
 import { DateField } from './fields/DateField';
 import { NumberField } from './fields/NumberField';
 import { PhoneField } from './fields/PhoneField';
+import { MultiSelectField } from './fields/MultiSelectField';
 import { RadioField } from './fields/RadioField';
+import { RangeField } from './fields/RangeField';
 import { RatingField } from './fields/RatingField';
 import { SegmentedField } from './fields/SegmentedField';
 import { SelectField } from './fields/SelectField';
@@ -61,6 +63,10 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
       return <SwitchField {...common} value={asBoolean} onChange={onChange} />;
     case 'segmented':
       return <SegmentedField {...common} value={asText} onChange={onChange} />;
+    case 'multiselect':
+      return <MultiSelectField {...common} value={asList} onChange={onChange} />;
+    case 'range':
+      return <RangeField {...common} value={asList} onChange={onChange} />;
     case 'rating':
       return <RatingField {...common} value={asText} onChange={onChange} />;
     default: {
