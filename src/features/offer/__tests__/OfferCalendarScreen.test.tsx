@@ -25,7 +25,7 @@ const DECEMBER: OfferCalendarMonth = {
   title: 'Calendrier',
   heading: 'Studio photos',
   address: 'Rue Njo-Njo, Bonapriso, 00237 Douala, Cameroun',
-  description: 'Studio lumineux pour vos séances photo.',
+  indication: 'Portail vert, 2e étage.',
   month: '2026-12',
   label: 'Décembre 2026',
   previous: '2026-11',
@@ -78,7 +78,7 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(await screen.findByText('Décembre 2026')).toBeTruthy();
     expect(screen.getByTestId('offer-calendar-heading')).toHaveTextContent('Studio photos');
     expect(screen.getByTestId('offer-calendar-address')).toHaveTextContent('Rue Njo-Njo, Bonapriso, 00237 Douala, Cameroun');
-    expect(screen.getByTestId('offer-calendar-description')).toHaveTextContent('Studio lumineux pour vos séances photo.');
+    expect(screen.getByTestId('offer-calendar-indication')).toHaveTextContent('Portail vert, 2e étage.');
     expect(screen.getByText('Calendrier')).toBeTruthy();
     expect(offerService.calendar).toHaveBeenCalledWith('7', null);
     expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-day-2026-12-01').props.style)).toMatchObject({ backgroundColor: '#2E9D5B' });

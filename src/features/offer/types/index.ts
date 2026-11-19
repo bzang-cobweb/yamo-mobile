@@ -99,8 +99,8 @@ export type OfferCalendarMonth = {
   heading: string;
   /** Son adresse, sous le titre ; `null` sans adresse. */
   address: string | null;
-  /** Sa description, sous l'adresse ; `null` sans description. */
-  description: string | null;
+  /** Les indications de l'adresse, dessous (« Portail vert, 2e étage ») ; `null` sans. */
+  indication: string | null;
   month: string;
   label: string;
   previous: string | null;
