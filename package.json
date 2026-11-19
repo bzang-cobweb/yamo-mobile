@@ -45,6 +45,7 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
+    "android:api": "sh scripts/android-api.sh",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
