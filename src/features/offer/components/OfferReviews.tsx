@@ -54,8 +54,8 @@ export function OfferReviews({ offerId, reviews, onChanged }: { offerId: string;
   }
 
   return (
+    // Le titre « Avis » est celui de la section repliable de la fiche (décision 2026-11-19-fiche-localisation-accordeon).
     <View style={styles.section} testID="offer-reviews">
-      <ThemedText type="smallBold">{t('offer.reviews')}</ThemedText>
 
       {reviews.average !== null ? (
         <View
@@ -76,14 +76,17 @@ export function OfferReviews({ offerId, reviews, onChanged }: { offerId: string;
       {reviews.latest.map((review) => (
         <ReviewRow key={review.id} review={review} />
       ))}
-      {/* Plus d'avis que ceux affichés : la liste complète (décision 2026-11-19-nuit-tous-les-avis). */}
-      {reviews.count > reviews.latest.length && (
+      {/* Plus d'un avis : le bouton vers la liste complète (décisions 2026-11-19-nuit-tous-les-avis
+          et 2026-11-19-fiche-localisation-accordeon). */}
+      {reviews.count > 1 && (
         <Pressable
           testID="offer-reviews-all"
-          accessibilityRole="link"
-          hitSlop={Spacing.two}
-          onPress={() => router.push({ pathname: '/offers/[id]/reviews', params: { id: offerId } })}>
-          <ThemedText type="linkPrimary">{t('offer.allReviews', { count: String(reviews.count) })}</ThemedText>
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/offers/[id]/reviews', params: { id: offerId } })}
+          style={({ pressed }) => [styles.button, { borderColor: theme.primary }, pressed && styles.pressed]}>
+          <ThemedText type="smallBold" style={{ color: theme.primary }}>
+            {t('offer.allReviews')}
+          </ThemedText>
         </Pressable>
       )}
 
@@ -141,7 +144,7 @@ export function ReviewRow({ review }: { review: Review }) {
 }
 
 const styles = StyleSheet.create({
-  section: { gap: Spacing.two, marginTop: Spacing.three },
+  section: { gap: Spacing.two },
   summary: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   review: { gap: Spacing.half, paddingVertical: Spacing.two, borderBottomWidth: 1 },
   reviewHead: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.two },

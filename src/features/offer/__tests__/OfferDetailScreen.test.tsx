@@ -114,15 +114,25 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
   });
 
   it('prix, description, localisation (adresse complète et indication), puis caractéristiques', async () => {
-    mockState = { data: { ...OFFER, address: 'Rue Njo-Njo 12, Douala', indication: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
+    mockState = { data: { ...OFFER, address: 'Rue Njo-Njo 12, Douala, Cameroun', indication: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
     await show();
     // Décision 2026-11-19-fiche-localisation.
     expect(screen.getByText('Localisation')).toBeTruthy();
-    expect(screen.getByTestId('offer-address').props.children).toBe('Rue Njo-Njo 12, Douala');
+    expect(screen.getByTestId('offer-address').props.children).toBe('Rue Njo-Njo 12, Douala, Cameroun');
     expect(screen.getByTestId('offer-indication').props.children).toBe('Derrière le marché, portail bleu');
     const order = ['offer-price', 'offer-description', 'offer-address', 'offer-indication', 'offer-fact'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+
+    // Localisation, caractéristiques et avis se replient (décision 2026-11-19-fiche-localisation-accordeon).
+    for (const block of ['offer-location-block', 'offer-facts', 'offer-reviews-block']) {
+      expect(screen.getByTestId(`${block}-toggle`).props.accessibilityState).toEqual({ expanded: true });
+    }
+    await fireEvent.press(screen.getByTestId('offer-facts-toggle'));
+    expect(screen.queryAllByTestId('offer-fact')).toHaveLength(0);
+    expect(screen.getByTestId('offer-address')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('offer-facts-toggle'));
+    expect(screen.getAllByTestId('offer-fact').length).toBeGreaterThan(0);
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
@@ -173,15 +183,16 @@ describe('OfferDetailScreen : avis', () => {
     expect(screen.queryByTestId('offer-review-write')).toBeNull();
   });
 
-  it('plus d’avis que ceux affichés : « Voir les N avis » ouvre la liste complète ; sinon, pas de lien', async () => {
-    // Décision 2026-11-19-nuit-tous-les-avis. Deux avis, tous affichés : pas de lien.
+  it('plus d’un avis : « Voir tous les avis » ouvre la liste complète ; un seul : pas de bouton', async () => {
+    // Décision 2026-11-19-fiche-localisation-accordeon.
+    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, count: 1, latest: OFFER.reviews!.latest.slice(0, 1) } }, isPending: false, error: null };
     await show();
     expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
 
-    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, count: 12 } }, isPending: false, error: null };
+    mockState = { data: OFFER, isPending: false, error: null };
     await show();
 
-    expect(screen.getByText('Voir les 12 avis')).toBeTruthy();
+    expect(screen.getByText('Voir tous les avis')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('offer-reviews-all'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/reviews', params: { id: OFFER.id } });
   });

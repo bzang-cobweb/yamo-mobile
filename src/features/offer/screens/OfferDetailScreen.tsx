@@ -8,6 +8,7 @@ import { takeProfileNotice } from '@/features/auth/utils/profile-notice';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
+import { Accordion } from '@/shared/components/Accordion';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
@@ -121,22 +122,24 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </View>
                 )}
 
-                {/* L'adresse complète et son indication (décision 2026-11-19-fiche-localisation). */}
+                {/* Localisation, caractéristiques et avis : des sections repliables
+                    (décision 2026-11-19-fiche-localisation-accordeon). */}
+                {/* L'adresse complète, pays compris, et son indication (décision 2026-11-19-fiche-localisation). */}
                 {offer.address && (
-                  <View style={styles.section} testID="offer-location-block">
-                    <ThemedText type="smallBold">{t('offer.location')}</ThemedText>
-                    <ThemedText testID="offer-address">{offer.address}</ThemedText>
-                    {offer.indication && (
-                      <ThemedText type="small" themeColor="textSecondary" testID="offer-indication">
-                        {offer.indication}
-                      </ThemedText>
-                    )}
-                  </View>
+                  <Accordion title={t('offer.location')} testID="offer-location-block">
+                    <View style={[styles.location, { borderBottomColor: theme.backgroundSelected }]}>
+                      <ThemedText testID="offer-address">{offer.address}</ThemedText>
+                      {offer.indication && (
+                        <ThemedText type="small" themeColor="textSecondary" testID="offer-indication">
+                          {offer.indication}
+                        </ThemedText>
+                      )}
+                    </View>
+                  </Accordion>
                 )}
 
                 {offer.facts.length > 0 && (
-                  <View style={styles.section}>
-                    <ThemedText type="smallBold">{t('offer.details')}</ThemedText>
+                  <Accordion title={t('offer.details')} testID="offer-facts">
                     {offer.facts.map((fact) => (
                       <View key={fact.label} style={[styles.fact, { borderBottomColor: theme.backgroundSelected }]} testID="offer-fact">
                         <ThemedText type="small" themeColor="textSecondary" style={styles.factLabel}>
@@ -148,7 +151,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                         </ThemedText>
                       </View>
                     ))}
-                  </View>
+                  </Accordion>
                 )}
 
                 {notice && (
@@ -161,7 +164,11 @@ export function OfferDetailScreen({ id }: { id: string }) {
                   </ThemedText>
                 )}
 
-                {offer.reviews && <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />}
+                {offer.reviews && (
+                  <Accordion title={t('offer.reviews')} testID="offer-reviews-block">
+                    <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />
+                  </Accordion>
+                )}
 
                 {offer.published_at && (
                   <ThemedText type="small" themeColor="textSecondary" testID="offer-published">
@@ -185,6 +192,8 @@ const styles = StyleSheet.create({
   body: { width: '100%', alignSelf: 'center', gap: Spacing.two, padding: Spacing.four },
   section: { gap: Spacing.one, marginTop: Spacing.three },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
+  // Le séparateur à la fin du bloc « Localisation ».
+  location: { gap: Spacing.one, paddingBottom: Spacing.two, borderBottomWidth: 1 },
   factLabel: { flexShrink: 0, maxWidth: '45%' },
   factValue: { flexShrink: 1, textAlign: 'right' },
   error: { color: ERROR_COLOR },
