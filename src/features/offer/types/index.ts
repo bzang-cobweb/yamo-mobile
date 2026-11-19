@@ -1,4 +1,4 @@
-import type { ListItemDelete, ListItemFavorite } from '@/features/list/types';
+import type { ListItem, ListItemAction, ListItemDelete, ListItemFavorite } from '@/features/list/types';
 
 /**
  * La fiche d'une offre, décrite par l'API (`GET /api/v1/offers/{id}`, décision
@@ -87,3 +87,28 @@ export type OfferReviews = {
 };
 
 export type OfferDetailResponse = { data: OfferDetail };
+
+/** Un jour du calendrier d'une offre (décision 2026-11-19-contrat-calendrier-offre). */
+export type OfferCalendarDay = { date: string; day: number; state: string; dot: string | null };
+
+/** Un mois du calendrier d'une offre, décrit par l'API. */
+export type OfferCalendarMonth = {
+  title: string;
+  month: string;
+  label: string;
+  previous: string | null;
+  next: string | null;
+  weekdays: string[];
+  offset: number;
+  days: OfferCalendarDay[];
+  legend: { kind: 'day' | 'dot' | string; tone: string; label: string }[];
+};
+
+/** Le panneau d'un jour : ses demandes en cartes, « Bloquer » ou « Débloquer », ou une note. */
+export type OfferCalendarDayPanel = {
+  title: string;
+  items: ListItem[];
+  empty: string;
+  action: ListItemAction | null;
+  note: string | null;
+};

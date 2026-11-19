@@ -284,6 +284,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
             onCountryChange={field.type === 'phone' ? (country) => change(countryKey(field.name), country) : undefined}
             countryLocked={field.type === 'phone' && Boolean(field.locked)}
             onFill={(filled) => Object.entries(filled).forEach(([name, filledValue]) => change(name, filledValue))}
+            afterValue={field.calendar?.after ? String(values[field.calendar.after] ?? '') : undefined}
           />
         </View>
       ))}

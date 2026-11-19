@@ -8,7 +8,7 @@ import { Spacing } from '@/shared/theme/theme';
 export type StatusTagValue = { label: string; tone: string };
 
 /** Les couleurs des pastilles de statut : en attente orange, acceptée verte, refusée rouge, sinon gris. */
-const TONE_COLORS: Record<string, string> = {
+export const TONE_COLORS: Record<string, string> = {
   warning: '#E8890C',
   success: '#2E9D5B',
   danger: ERROR_COLOR,

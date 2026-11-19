@@ -1,6 +1,6 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
-import type { OfferDetail, OfferDetailResponse, OfferReviewPage } from '../types';
+import type { OfferCalendarDayPanel, OfferCalendarMonth, OfferDetail, OfferDetailResponse, OfferReviewPage } from '../types';
 
 /** Offres servies par l'API. Une méthode par appel. */
 export class OfferService {
@@ -16,6 +16,18 @@ export class OfferService {
     const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
 
     return (await this.client.get<{ data: OfferReviewPage }>(`/v1/offers/${encodeURIComponent(id)}/reviews${query}`)).data;
+  }
+
+  /** `GET /api/v1/offers/{id}/calendar?month=AAAA-MM` — un mois de son calendrier, pour son propriétaire (décision 2026-11-19-contrat-calendrier-offre). */
+  async calendar(id: string, month: string | null): Promise<OfferCalendarMonth> {
+    const query = month ? `?month=${encodeURIComponent(month)}` : '';
+
+    return (await this.client.get<{ data: OfferCalendarMonth }>(`/v1/offers/${encodeURIComponent(id)}/calendar${query}`)).data;
+  }
+
+  /** `GET /api/v1/offers/{id}/calendar/{date}` — le panneau d'un jour. */
+  async calendarDay(id: string, date: string): Promise<OfferCalendarDayPanel> {
+    return (await this.client.get<{ data: OfferCalendarDayPanel }>(`/v1/offers/${encodeURIComponent(id)}/calendar/${encodeURIComponent(date)}`)).data;
   }
 }
 

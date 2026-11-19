@@ -8,7 +8,7 @@ import type { ListDefinition, ListResponse } from '../types';
 const FAVORITE_ENDPOINT = /^\/v1\/[a-z-]+\/\d+\/favorite$/;
 
 /** Écran de l'app qu'un item peut ouvrir : la fiche d'une entité, `/offers/12`. */
-export const ITEM_LINK = /^\/[a-z-]+\/\d+$/;
+export const ITEM_LINK = /^\/[a-z-]+\/\d+(?:\/[a-z-]+)?$/;
 
 /** `filter[nom]`, crochets encodés : `filter%5Bnom%5D`. */
 function filterName(key: string): string {

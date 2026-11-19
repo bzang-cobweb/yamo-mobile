@@ -7,10 +7,12 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { Quote } from '@/shared/components/Quote';
 import { StatusTag } from '@/shared/components/StatusTag';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
-import type { ListItem, ListItemAction, ListItemCounter } from '@/features/list/types';
+import type { ListItem, ListItemCounter } from '@/features/list/types';
 import { activeFilterCount, setFilterFields, setFilterValues, useListFilters } from '@/features/list/utils/filters';
 import { NetworkError } from '@/shared/api/errors';
+import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
 import { ItemPicture } from '@/features/list/components/ItemPicture';
+import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { ITEM_LINK } from '@/features/list/services/ListService';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { List } from '@/shared/components/List';
@@ -117,42 +119,8 @@ export function ProfileListScreen({ list }: { list: string }) {
     await reload();
   }
 
-  // Un bouton de carte : un envoi (après confirmation s'il en a une), ou un formulaire à ouvrir.
-  async function runAction(action: ListItemAction) {
-    if (action.form) {
-      router.push({ pathname: '/profile/[form]', params: { form: action.form.form, record: action.form.record } });
-
-      return;
-    }
-    const submission = action.submission ? profileSubmission({ ...action.submission, label: action.label }) : null;
-
-    if (submission === null) {
-      return;
-    }
-
-    setError(null);
-
-    try {
-      await profileFormService.submit(submission, {});
-      setNotice(submission.success.message);
-    } catch {
-      setNotice(null);
-      setError(t('error.unknown'));
-    }
-
-    await reload();
-  }
-
-  function pressAction(action: ListItemAction) {
-    if (action.confirm) {
-      Alert.alert(action.confirm, undefined, [
-        { text: t('list.cancel'), style: 'cancel' },
-        { text: action.label, style: action.style === 'destructive' ? 'destructive' : 'default', onPress: () => void runAction(action) },
-      ]);
-    } else {
-      void runAction(action);
-    }
-  }
+  // Un bouton de carte : un formulaire, un écran, ou un envoi après confirmation.
+  const { press: pressAction } = useItemActions({ onNotice: setNotice, onError: setError, onDone: reload });
 
   // Le compteur ouvre sa liste avec ses filtres déjà choisis.
   function openCounter(counter: ListItemCounter) {
@@ -242,26 +210,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             </ThemedText>
           </Pressable>
         )}
-        {(item.actions ?? []).length > 0 && (
-          <View style={styles.cardActions}>
-            {(item.actions ?? []).map((action) => (
-              <Pressable
-                key={action.label}
-                testID={`profile-list-action-${item.id}-${action.style}`}
-                accessibilityRole="button"
-                onPress={() => pressAction(action)}
-                style={({ pressed }) => [
-                  styles.cardAction,
-                  action.style === 'primary' ? { backgroundColor: theme.primary } : { borderColor: action.style === 'destructive' ? ERROR_COLOR : theme.backgroundSelected, borderWidth: 1 },
-                  pressed && styles.pressed,
-                ]}>
-                <ThemedText type="smallBold" style={{ color: action.style === 'primary' ? theme.onPrimary : action.style === 'destructive' ? ERROR_COLOR : theme.text }}>
-                  {action.label}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
-        )}
+        <ItemActionButtons actions={item.actions ?? []} testID={`profile-list-action-${item.id}`} onPress={pressAction} />
         {stacked ? (
           <View style={styles.actions} testID={`profile-list-actions-${item.id}`}>
             {both && (
@@ -435,8 +384,6 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
   counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
-  cardActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.two },
-  cardAction: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 8 },
   footer: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
   footerButton: { alignItems: 'center', paddingVertical: Spacing.three, borderRadius: 12 },
 });

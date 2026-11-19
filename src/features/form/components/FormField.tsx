@@ -2,6 +2,7 @@ import type { FieldProps, FieldValue, RepeaterItem } from '../types';
 import { CheckboxField } from './fields/CheckboxField';
 import { CheckboxGroupField } from './fields/CheckboxGroupField';
 import { CodeField } from './fields/CodeField';
+import { CalendarDateField } from './fields/CalendarDateField';
 import { DateField } from './fields/DateField';
 import { NumberField } from './fields/NumberField';
 import { PhoneField } from './fields/PhoneField';
@@ -22,7 +23,7 @@ import { UploadField } from './fields/UploadField';
  * (décision 2026-11-15-contrat-mobile-features-formulaires). Ajouter un type :
  * un cas ici et son composant dans `fields/`.
  */
-export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange, countryLocked, onFill, errors }: FieldProps<FieldValue>) {
+export function FormField({ field, value, onChange, error, disabled, onSubmitEditing, country, onCountryChange, countryLocked, onFill, errors, afterValue }: FieldProps<FieldValue>) {
   const common = { field, error, disabled };
   const asText = typeof value === 'string' ? value : '';
   const asBoolean = value === true;
@@ -61,7 +62,7 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
     case 'code':
       return <CodeField {...common} value={asText} onChange={onChange} onSubmitEditing={onSubmitEditing} />;
     case 'date':
-      return <DateField {...common} value={asText} onChange={onChange} />;
+      return field.calendar ? <CalendarDateField {...common} value={asText} onChange={onChange} afterValue={afterValue} /> : <DateField {...common} value={asText} onChange={onChange} />;
     case 'switch':
       return <SwitchField {...common} value={asBoolean} onChange={onChange} />;
     case 'segmented':

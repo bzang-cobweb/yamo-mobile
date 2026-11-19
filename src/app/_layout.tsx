@@ -85,6 +85,8 @@ function RootNavigator() {
             <Stack.Screen name="offers/[id]/review" />
             {/* Réserver ou demander une visite, depuis la fiche (décision 2026-11-19-contrat-reservations). */}
             <Stack.Screen name="offers/[id]/book" />
+            {/* Le calendrier de son offre, depuis « Mes logements » (décision 2026-11-19-contrat-calendrier-offre). */}
+            <Stack.Screen name="offers/[id]/calendar" />
           </Stack.Protected>
           {/* Invité : l'accueil d'abord (ancre de la pile), d'où partent la connexion et l'inscription. */}
           <Stack.Protected guard={user === null}>

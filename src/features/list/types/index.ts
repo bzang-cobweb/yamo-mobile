@@ -19,6 +19,8 @@ export type ListItemAction = {
   confirm: string | null;
   submission: Omit<FormSubmit, 'label'> | null;
   form: { form: string; record: string } | null;
+  /** Écran de l'app à ouvrir (« /offers/12/calendar ») ; `null` (ou absent) : aucun. */
+  link?: string | null;
 };
 
 /** Un compteur sur la carte (« 2 demandes en attente ») qui ouvre `list` avec ces filtres. */

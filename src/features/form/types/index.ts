@@ -66,6 +66,12 @@ export type FormFieldDefinition = {
   max_length?: number | null;
   /** Bornes du calendrier d'une date (`AAAA-MM-JJ` ou `null`) ; absentes : toute date (décision 2026-11-19-bornes-des-dates). */
   date_range?: { min: string | null; max: string | null } | null;
+  /**
+   * Grille de mois au lieu du sélecteur natif (décision 2026-11-19-contrat-calendrier-offre) :
+   * jours indisponibles grisés ; `after` : le champ du début d'une période (les jours
+   * comptent alors comme des nuits). Absente : sélecteur natif.
+   */
+  calendar?: { unavailable: string[]; after: string | null } | null;
   /** Unité affichée après la valeur (« m² »), ou `null` (décision 2026-11-18-fiche-offre). */
   suffix?: string | null;
   /**
@@ -185,4 +191,6 @@ export type FieldProps<V extends FieldValue = FieldValue> = {
   onFill?: (values: Record<string, string>) => void;
   /** Toutes les erreurs de l'API : une liste de groupes y lit celles de ses sous-champs (`informations.0.title`). */
   errors?: FormErrors;
+  /** Champ date d'une fin de période : la valeur du champ de début (`calendar.after`). */
+  afterValue?: string;
 };
