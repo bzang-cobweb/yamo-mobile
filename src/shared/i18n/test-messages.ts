@@ -79,6 +79,7 @@ export const TEST_MESSAGES: Messages = {
   'form.uploadRemove': 'Retirer',
   'form.repeaterRemove': 'Retirer ce bloc',
   'form.repeaterAdd': 'Ajouter',
+  'form.repeaterUntitled': 'Sans titre',
   'form.uploadSending': 'Envoi…',
   'form.uploadWrongType': 'Format non accepté.',
   'form.uploadTooLarge': 'Fichier trop lourd : :max au plus.',

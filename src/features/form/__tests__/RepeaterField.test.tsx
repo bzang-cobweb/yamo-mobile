@@ -54,6 +54,12 @@ describe('RepeaterField (liste de groupes décrite par Laravel)', () => {
     const items = [{ id: '4', title: 'Arrivée', description: 'Clés.' }, { id: '', title: 'Parking', description: 'Cour.' }];
     const onChange = await renderField(items);
 
+    // Fermés par défaut, titrés par leur titre (décision 2026-11-19-repeater-accordeon).
+    expect(screen.getByText('Arrivée')).toBeTruthy();
+    expect(screen.getByTestId('field-informations-item-0-toggle').props.accessibilityState).toEqual({ expanded: false });
+    expect(screen.queryByTestId('field-informations.0.title')).toBeNull();
+    await fireEvent.press(screen.getByTestId('field-informations-item-0-toggle'));
+    await fireEvent.press(screen.getByTestId('field-informations-item-1-toggle'));
     // L'identifiant n'est pas affiché.
     expect(screen.queryByTestId('field-informations.0.id')).toBeNull();
     await fireEvent.changeText(screen.getByTestId('field-informations.0.title'), 'Arrivée tardive');
@@ -65,7 +71,13 @@ describe('RepeaterField (liste de groupes décrite par Laravel)', () => {
     expect(screen.queryByTestId('field-informations-add')).toBeNull();
   });
 
-  it('affiche l’erreur d’un sous-champ sous lui', async () => {
+  it('un groupe sans titre s’appelle « Sans titre » ; un groupe en erreur est ouvert', async () => {
+    await renderField([{ id: '', title: '  ', description: 'x' }]);
+    expect(screen.getByText('Sans titre')).toBeTruthy();
+    expect(screen.getByTestId('field-informations-item-0-toggle').props.accessibilityState).toEqual({ expanded: false });
+  });
+
+  it('affiche l’erreur d’un sous-champ sous lui, groupe ouvert', async () => {
     await renderField([{ id: '', title: '', description: 'x' }], { 'informations.0.title': ['Le champ titre est obligatoire.'] });
 
     expect(screen.getByText('Le champ titre est obligatoire.')).toBeTruthy();

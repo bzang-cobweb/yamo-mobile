@@ -1,6 +1,6 @@
 import { SymbolView } from 'expo-symbols';
 import { useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -11,6 +11,10 @@ type Props = {
   title: string;
   /** Ouverte au premier affichage (par défaut : oui). */
   initiallyOpen?: boolean;
+  /** Ouverture tenue par le parent (avec `onToggle`) ; absente : la section la tient seule. */
+  open?: boolean;
+  onToggle?: (open: boolean) => void;
+  style?: StyleProp<ViewStyle>;
   /** Préfixe des identifiants de test : `<testID>-toggle`, `<testID>-content`. */
   testID?: string;
   children: ReactNode;
@@ -21,18 +25,24 @@ type Props = {
  * titre et une flèche ; le contenu s'affiche ou se replie au toucher du titre.
  * Chaque section s'ouvre et se ferme seule, indépendamment des autres.
  */
-export function Accordion({ title, initiallyOpen = true, testID, children }: Props) {
+export function Accordion({ title, initiallyOpen = true, open: controlled, onToggle, style, testID, children }: Props) {
   const theme = useTheme();
-  const [open, setOpen] = useState(initiallyOpen);
+  const [own, setOwn] = useState(initiallyOpen);
+  const open = controlled ?? own;
+
+  function toggle() {
+    setOwn(!open);
+    onToggle?.(!open);
+  }
 
   return (
-    <View style={styles.section} testID={testID}>
+    <View style={[styles.section, style]} testID={testID}>
       <Pressable
         testID={testID ? `${testID}-toggle` : undefined}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         hitSlop={Spacing.one}
-        onPress={() => setOpen((value) => !value)}
+        onPress={toggle}
         style={({ pressed }) => [styles.header, pressed && styles.pressed]}>
         <ThemedText type="smallBold">{title}</ThemedText>
         <SymbolView
