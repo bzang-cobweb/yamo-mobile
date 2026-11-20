@@ -25,7 +25,7 @@ import { formatStamp } from '../utils/stamp';
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
  * (décision 2026-11-20-suivi-conversation) :
  * - dans la barre du haut, le type de la notification (« Demande de logement ») ;
- * - en haut, une zone fixe, qui ne défile pas : la pastille du statut, centrée, puis le
+ * - en haut, une zone fixe, qui ne défile pas : la pastille du statut, à gauche, puis le
  *   texte de la demande, sans le nom de qui l'a faite (`summary`,
  *   à défaut `body`), et le total de la demande (`booking`, décision 2026-11-20-notification-generique) ;
  * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
@@ -77,10 +77,10 @@ export function NotificationDetailScreen({ id }: { id: string }) {
             </View>
           ) : (
             <>
-              {/* La zone fixe : la pastille centrée, le texte, le total. */}
+              {/* La zone fixe : la pastille à gauche, le texte, le total. */}
               <View style={[styles.head, { borderBottomColor: theme.backgroundSelected }]} testID="notification-detail-head">
                 <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
-                  {/* La pastille du statut avant le texte, centrée. */}
+                  {/* La pastille du statut avant le texte, à gauche. */}
                   {notification.tag && (
                     <View style={styles.tag} testID="notification-detail-tag-row">
                       <StatusTag tag={notification.tag} testID="notification-detail-tag" />
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
-  tag: { alignSelf: 'center' },
+  tag: { alignSelf: 'flex-start' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
