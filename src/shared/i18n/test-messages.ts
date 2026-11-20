@@ -13,6 +13,7 @@ export const TEST_MESSAGES: Messages = {
   'notifications.title': 'Notifications',
   'notifications.detail': 'Notification',
   'notifications.history': 'Suivi de la demande',
+  'notifications.you': 'Toi',
   'notifications.open': 'Ouvrir',
   'notifications.markAllRead': 'Tout marquer comme lu',
   'notifications.empty': "Aucune notification pour l'instant.",

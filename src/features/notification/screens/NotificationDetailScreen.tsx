@@ -19,6 +19,7 @@ import { NotificationConversation } from '../components/NotificationConversation
 import { NotificationType } from '../components/NotificationType';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
+import { formatStamp } from '../utils/stamp';
 
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
@@ -51,9 +52,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     }
   }
 
-  const date = notification?.created_at
-    ? new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' }).format(new Date(notification.created_at))
-    : null;
+  // L'heure seule le jour même (décision 2026-11-20-suivi-conversation).
+  const date = notification?.created_at ? formatStamp(notification.created_at, locale, 'full') : null;
 
   return (
     <ThemedView style={styles.container}>

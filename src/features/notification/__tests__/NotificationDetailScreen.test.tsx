@@ -67,6 +67,8 @@ describe('NotificationDetailScreen', () => {
       history: [
         { id: 's1', label: 'Demande envoyée', side: 'start', actor: { id: '37', name: 'Membre', initials: 'ME', photo: null, online: false, link: '/members/37' }, message: 'Bonjour !', created_at: '2026-11-20T09:00:00Z' },
         { id: 's2', label: 'Demande acceptée', side: 'end', actor: { id: '4', name: 'Propriétaire', initials: 'PR', photo: null, online: false, link: '/members/4' }, message: null, created_at: '2026-11-20T10:00:00Z' },
+        // Le lecteur (compte 1) : « Toi », sans photo.
+        { id: 's3', label: 'Demande annulée', side: 'start', actor: { id: '1', name: 'Moi Même', initials: 'MM', photo: null, online: false, link: '/members/1' }, message: null, created_at: '2026-11-20T11:00:00Z' },
       ],
     });
     await show();
@@ -83,6 +85,9 @@ describe('NotificationDetailScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/members/37');
     await fireEvent.press(screen.getByTestId('notification-history-1-avatar'));
     expect(router.push).toHaveBeenLastCalledWith('/members/4');
+    expect(screen.getByTestId('notification-history-2-actor')).toHaveTextContent('Toi');
+    expect(screen.queryByText('Moi Même')).toBeNull();
+    expect(screen.queryByTestId('notification-history-2-avatar')).toBeNull();
     // Le message et la date de la notification ouverte sont dans la conversation.
     expect(screen.queryByTestId('notification-detail-message')).toBeNull();
   });
