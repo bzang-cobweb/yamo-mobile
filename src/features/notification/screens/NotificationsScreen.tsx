@@ -26,8 +26,7 @@ import { APP_LINK, NotificationText } from '../components/NotificationText';
  * de qui agit, titre du logement) et des filtres (logement, statut du logement)
  * la restreignent (décision 2026-11-20-filtres-notifications). Toucher une
  * notification la marque lue et ouvre sa page (`/notifications/[id]`) ; les
- * passages liés de son texte (le nom d'un membre, de l'offre) ouvrent le leur ; « Tout marquer
- * comme lu » en tête. Rechargée à chaque retour sur l'onglet.
+ * passages liés de son texte (le nom d'un membre, de l'offre) ouvrent le leur . Rechargée à chaque retour sur l'onglet.
  */
 /** Le nom de la liste dans le magasin des filtres (`/filters/notifications`). */
 export const NOTIFICATIONS_FILTERS = 'notifications';
@@ -40,7 +39,7 @@ export function NotificationsScreen() {
   const filters = useListFilters(NOTIFICATIONS_FILTERS);
   const query = useNotifications(search, filters.values);
   const [refreshing, setRefreshing] = useState(false);
-  const { refetch, refreshCount, markRead, markAllRead } = query;
+  const { refetch, refreshCount, markRead } = query;
   const filterFields = query.data?.filters;
 
   useFocusEffect(
@@ -93,7 +92,6 @@ export function NotificationsScreen() {
   }
 
   const items = query.data?.items ?? [];
-  const hasUnread = items.some((item) => !item.read);
   const filterCount = activeFilterCount(filters.fields, filters.values);
   const narrowed = search !== '' || filterCount > 0;
 
@@ -169,14 +167,6 @@ export function NotificationsScreen() {
             filters.fields.length > 0 || (filterFields?.length ?? 0) > 0
               ? { label: t('list.filters'), count: filterCount, onPress: () => router.push({ pathname: '/filters/[list]', params: { list: NOTIFICATIONS_FILTERS } }) }
               : null
-          }
-          // « Tout marquer comme lu », juste avant « Filtres ».
-          beforeFilter={
-            hasUnread ? (
-              <Pressable accessibilityRole="button" testID="notifications-read-all" hitSlop={Spacing.two} onPress={() => void markAllRead()}>
-                <ThemedText type="linkPrimary">{t('notifications.markAllRead')}</ThemedText>
-              </Pressable>
-            ) : null
           }
           contentContainerStyle={styles.items}
         />

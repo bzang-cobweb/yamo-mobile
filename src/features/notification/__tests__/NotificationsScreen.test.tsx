@@ -62,7 +62,8 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     // Sans pastille : une non lue se lit à son fond, à son titre en gras et à « Non lue ».
     expect(screen.getByTestId('notification-a').props.accessibilityLabel).toMatch(/^Non lue : /);
     expect(screen.getByTestId('notification-b').props.accessibilityLabel).not.toMatch(/^Non lue/);
-    expect(screen.getByText('Tout marquer comme lu')).toBeTruthy();
+    // Plus de lien « Tout marquer comme lu ».
+    expect(screen.queryByText('Tout marquer comme lu')).toBeNull();
   });
 
   it('toucher une notification la marque lue et ouvre sa page', async () => {
@@ -108,20 +109,11 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(notificationService.read).not.toHaveBeenCalled();
   });
 
-  it('« Tout marquer comme lu »', async () => {
-    await show();
-    await fireEvent.press(await screen.findByTestId('notifications-read-all'));
-
-    expect(notificationService.readAll).toHaveBeenCalled();
-    await waitFor(() => expect(screen.getByTestId('notification-a').props.accessibilityLabel).not.toMatch(/^Non lue/));
-  });
-
   it('sans notification : le texte vide', async () => {
     jest.mocked(notificationService.list).mockResolvedValue({ items: [], next_cursor: null });
     await show();
 
     expect(await screen.findByTestId('notifications-list-empty')).toHaveTextContent("Aucune notification pour l'instant.");
-    expect(screen.queryByTestId('notifications-read-all')).toBeNull();
   });
 
   it('la recherche et les filtres servis par l’API restreignent la liste', async () => {
