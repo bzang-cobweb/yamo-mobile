@@ -87,20 +87,22 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
-  it('la carte : qui agit (cerclé de vert en ligne) et la date, le statut, puis le texte sans son nom, le message', async () => {
+  it('la carte : le type et le statut, le texte sans le nom, le nom puis le message, la date à droite ; sans photo', async () => {
     await show();
 
-    expect(await screen.findByTestId('notification-a-avatar-online')).toBeTruthy();
-    expect(screen.getByTestId('notification-a-actor')).toHaveTextContent('Marie Curie');
+    expect(await screen.findByTestId('notification-a-actor')).toHaveTextContent('Marie Curie');
+    expect(screen.queryByTestId('notification-a-avatar-online')).toBeNull();
+    expect(screen.queryByTestId('notification-a-avatar')).toBeNull();
+    expect(screen.getByTestId('notification-a-date').props.style).toEqual(expect.arrayContaining([{ textAlign: 'right' }]));
     expect(screen.getByTestId('notification-a-text')).toHaveTextContent('demande un séjour.');
     expect(screen.getByTestId('notification-a-text')).not.toHaveTextContent('Marie Curie');
-    // Sans qui agit (une ancienne notification) : son titre en tête, son texte entier.
+    // Sans qui agit (une ancienne notification) : pas de nom, son texte entier.
     expect(screen.queryByTestId('notification-b-actor')).toBeNull();
     expect(screen.getByTestId('notification-b-text')).toHaveTextContent('Votre demande est acceptée.');
     // Le message, sur une ligne.
     expect(screen.getByText('Je viens pour le travail.').props.numberOfLines).toBe(1);
 
-    // Ni le nom ni la photo de qui agit ne sont cliquables sur la carte.
+    // Le nom de qui agit n'est pas cliquable sur la carte.
     expect(screen.getByTestId('notification-a-actor').props.onPress).toBeUndefined();
   });
 

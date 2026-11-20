@@ -16,7 +16,6 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { useNotifications } from '../hooks/useNotifications';
 import type { AppNotification } from '../types';
 import { relativeTime } from '../utils/relativeTime';
-import { NotificationActor } from '../components/NotificationActor';
 import { NotificationType } from '../components/NotificationType';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 
@@ -108,23 +107,26 @@ export function NotificationsScreen() {
         pressed && styles.pressed,
       ]}>
       <View style={styles.texts}>
-        {/* 1. Qui agit (sa photo, cerclée de vert s'il est en ligne, sans lien) et, sous son nom, la date. */}
-        <NotificationActor
-          actor={item.actor}
-          date={relativeTime(item.created_at, t, locale)}
-          testID={`notification-${item.id}`}
-        />
-        {/* 2. Le type en gras, et dessous le statut réel de la demande. */}
+        {/* 1. Le type en gras, et dessous le statut réel de la demande (sans photo, décision 2026-11-20-carte-sans-photo). */}
         <NotificationType type={item.title} tag={item.tag} testID={`notification-${item.id}`} />
-        {/* 3. Le texte, sans le nom de qui agit. */}
+        {/* 2. Le texte, sans le nom de qui agit. */}
         <NotificationText
           body={item.actor && item.summary ? item.summary : item.body}
           links={item.text_links ?? []}
           onLink={(link) => open(item, link)}
           testID={`notification-${item.id}-text`}
         />
-        {/* 4. Le message envoyé, sur une ligne (« … » au-delà ; entier sur la page de la notification). */}
+        {/* 3. Le nom de qui agit (sans lien), puis son message, sur une ligne (« … » au-delà ; entier sur la page). */}
+        {item.actor && (
+          <ThemedText type="smallBold" testID={`notification-${item.id}-actor`}>
+            {item.actor.name}
+          </ThemedText>
+        )}
         {item.message && <Quote text={item.message} numberOfLines={1} testID={`notification-${item.id}-message`} />}
+        {/* 4. La date, après le message, alignée à droite. */}
+        <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`notification-${item.id}-date`}>
+          {relativeTime(item.created_at, t, locale)}
+        </ThemedText>
         {item.links.map((link, index) => (
           <Pressable
             key={link.link}
@@ -185,5 +187,6 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', gap: Spacing.three, padding: Spacing.three, borderWidth: 1, borderRadius: 8 },
   texts: { flex: 1, gap: Spacing.two },
   link: { alignSelf: 'flex-start' },
+  date: { textAlign: 'right' },
   pressed: { opacity: 0.7 },
 });
