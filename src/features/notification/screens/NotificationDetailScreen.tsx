@@ -19,6 +19,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { NotificationConversation } from '../components/NotificationConversation';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
+import type { NotificationBooking } from '../types';
 import { formatStamp } from '../utils/stamp';
 
 /**
@@ -93,6 +94,13 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     onLink={go}
                     testID="notification-detail-text"
                   />
+                  {/* Le titre de l'offre, avant les dates : « Studio · Location meublée · Douala »
+                      (décision 2026-11-20-titre-demande). */}
+                  {notification.booking && offerTitle(notification.booking.offer) !== '' && (
+                    <ThemedText type="smallBold" testID="notification-detail-offer">
+                      {offerTitle(notification.booking.offer)}
+                    </ThemedText>
+                  )}
                   {/* Les dates, après le texte, une par ligne : l'arrivée et le départ d'un séjour,
                       la date d'une visite (décision 2026-11-20-heures-arrivee-depart). */}
                   {(notification.booking?.dates ?? []).map((line, index) => (
@@ -156,6 +164,11 @@ export function NotificationDetailScreen({ id }: { id: string }) {
       </SafeAreaView>
     </ThemedView>
   );
+}
+
+/** « Studio · Location meublée · Douala » : le type de logement, le type de location, la ville, sans ceux qui manquent. */
+function offerTitle(offer: NotificationBooking['offer']): string {
+  return [offer.property_type, offer.rental_type, offer.city].filter((part): part is string => Boolean(part)).join(' · ');
 }
 
 const styles = StyleSheet.create({
