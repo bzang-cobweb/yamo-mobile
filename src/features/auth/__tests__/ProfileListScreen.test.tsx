@@ -150,7 +150,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
   it('« Retirer » à la fin de la carte, à droite, avec ou sans photo', async () => {
     // Décisions 2026-11-19-nuit-retirer-sous-image et 2026-11-21-retirer-en-fin-de-carte.
-    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg' }), item('8'), item('9', { delete: null })]);
+    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg' }), item('8'), item('9', { delete: null, edit: null })]);
     await renderScreen();
 
     for (const id of ['7', '8']) {
@@ -158,9 +158,20 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(StyleSheet.flatten(screen.getByTestId(`profile-list-actions-${id}`).props.style)).toMatchObject({ justifyContent: 'flex-end' });
       expect(screen.getByTestId(`profile-list-delete-${id}`)).toBeTruthy();
     }
-    // Sans « Retirer » ni photo : sur une ligne, sans ligne d'actions.
+    // Sans « Retirer », ni photo, ni formulaire : sur une ligne, sans ligne d'actions.
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-9').props.style).flexDirection).toBe('row');
     expect(screen.queryByTestId('profile-list-actions-9')).toBeNull();
+  });
+
+  it('« Éditer » avant « Retirer » ouvre le formulaire de l’item (décision 2026-11-21-editer-avant-retirer)', async () => {
+    mockList = list([item('8')]);
+    await renderScreen();
+
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('profile-list-edit-8')).toBeLessThan(json.indexOf('profile-list-delete-8'));
+    expect(screen.getByTestId('profile-list-edit-8')).toHaveTextContent('Éditer');
+    await fireEvent.press(screen.getByTestId('profile-list-edit-8'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '8' } });
   });
 
   it('un écran et un formulaire : « Voir », « Éditer » et « Retirer » sur la ligne des actions', async () => {

@@ -159,7 +159,7 @@ export function ProfileListScreen({ list }: { list: string }) {
     // Avec une photo, des boutons ou « Retirer » : en colonne, la photo sur toute la largeur et les actions
     // sur leur ligne, à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et
     // 2026-11-21-retirer-en-fin-de-carte).
-    const stacked = Boolean(item.image) || both || removable;
+    const stacked = Boolean(item.image) || both || removable || Boolean(edit);
 
     function openEdit() {
       if (edit) {
@@ -223,26 +223,27 @@ export function ProfileListScreen({ list }: { list: string }) {
         {stacked ? (
           <View style={styles.actions} testID={`profile-list-actions-${item.id}`}>
             {both && (
-              <>
-                <Pressable
-                  testID={`profile-list-view-${item.id}`}
-                  accessibilityRole="link"
-                  accessibilityLabel={`${t('list.view')} ${item.title}`}
-                  hitSlop={Spacing.one}
-                  onPress={openLink}
-                  style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
-                  <ThemedText type="linkPrimary">{t('list.view')}</ThemedText>
-                </Pressable>
-                <Pressable
-                  testID={`profile-list-edit-${item.id}`}
-                  accessibilityRole="link"
-                  accessibilityLabel={`${t('list.edit')} ${item.title}`}
-                  hitSlop={Spacing.one}
-                  onPress={openEdit}
-                  style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
-                  <ThemedText type="linkPrimary">{t('list.edit')}</ThemedText>
-                </Pressable>
-              </>
+              <Pressable
+                testID={`profile-list-view-${item.id}`}
+                accessibilityRole="link"
+                accessibilityLabel={`${t('list.view')} ${item.title}`}
+                hitSlop={Spacing.one}
+                onPress={openLink}
+                style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+                <ThemedText type="linkPrimary">{t('list.view')}</ThemedText>
+              </Pressable>
+            )}
+            {/* « Éditer » dès que l'item a un formulaire, avant « Retirer » (décision 2026-11-21-editer-avant-retirer). */}
+            {edit && (
+              <Pressable
+                testID={`profile-list-edit-${item.id}`}
+                accessibilityRole="link"
+                accessibilityLabel={`${t('list.edit')} ${item.title}`}
+                hitSlop={Spacing.one}
+                onPress={openEdit}
+                style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+                <ThemedText type="linkPrimary">{t('list.edit')}</ThemedText>
+              </Pressable>
             )}
             {removeButton}
           </View>
