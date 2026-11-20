@@ -97,9 +97,9 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
-                  {/* Le type de location, après le nom de l'offre. */}
+                  {/* Le type de location, en gras, après le nom de l'offre. */}
                   {notification.booking?.offer.rental_type && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-rental-type">
+                    <ThemedText type="smallBold" testID="notification-detail-rental-type">
                       {notification.booking.offer.rental_type}
                     </ThemedText>
                   )}
