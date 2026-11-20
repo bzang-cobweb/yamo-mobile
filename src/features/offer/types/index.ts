@@ -1,4 +1,5 @@
-import type { ListItem, ListItemAction, ListItemDelete, ListItemFavorite } from '@/features/list/types';
+import type { ListItemAction, ListItemDelete, ListItemFavorite } from '@/features/list/types';
+import type { NotificationActor } from '@/features/notification/types';
 
 /**
  * La fiche d'une offre, décrite par l'API (`GET /api/v1/offers/{id}`, décision
@@ -111,10 +112,28 @@ export type OfferCalendarMonth = {
   legend: { kind: 'day' | 'dot' | string; tone: string; label: string }[];
 };
 
+/**
+ * Une demande dans le panneau d'un jour, en carte de notification (décision
+ * 2026-11-20-calendrier-cartes) : qui demande, la pastille, le texte, le message,
+ * le total, et Accepter / Refuser.
+ */
+export type OfferCalendarCard = {
+  id: string;
+  actor: NotificationActor;
+  tag: { label: string; tone: string } | null;
+  summary: string;
+  text_links: { text: string; link: string }[];
+  message: string | null;
+  /** Le total (logement meublé), en gras ; `null` pour une visite. */
+  total: string | null;
+  created_at: string | null;
+  actions: ListItemAction[];
+};
+
 /** Le panneau d'un jour : ses demandes en cartes, « Bloquer » ou « Débloquer », ou une note. */
 export type OfferCalendarDayPanel = {
   title: string;
-  items: ListItem[];
+  items: OfferCalendarCard[];
   empty: string;
   action: ListItemAction | null;
   note: string | null;

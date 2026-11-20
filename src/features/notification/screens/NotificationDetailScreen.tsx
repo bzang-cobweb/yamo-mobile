@@ -84,6 +84,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                 onLink={go}
                 testID="notification-detail-text"
               />
+              {/* Le total de la demande (logement meublé), en gras. */}
+              {notification.total && (
+                <ThemedText style={styles.total} testID="notification-detail-total">
+                  {notification.total}
+                </ThemedText>
+              )}
               {/* Même ordre que la carte : le statut, le texte, puis le message, entier ici. */}
               {notification.message && <Quote text={notification.message} testID="notification-detail-message" />}
               {/* La date, après le message, alignée à droite. */}
@@ -114,4 +120,5 @@ const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
+  total: { fontWeight: '700' },
 });

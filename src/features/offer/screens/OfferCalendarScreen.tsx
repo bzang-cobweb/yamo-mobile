@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
-import type { ListItem } from '@/features/list/types';
+import { NotificationActor } from '@/features/notification/components/NotificationActor';
+import { APP_LINK, NotificationText } from '@/features/notification/components/NotificationText';
+import { relativeTime } from '@/features/notification/utils/relativeTime';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { MonthGrid } from '@/shared/components/MonthGrid';
@@ -21,6 +23,7 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { useOfferCalendar, useOfferCalendarDay } from '../hooks/useOfferCalendar';
+import type { OfferCalendarCard } from '../types';
 
 /** La couleur d'une case de la légende, comme dans la grille. */
 const LEGEND_COLORS: Record<string, string> = {
@@ -37,7 +40,7 @@ const LEGEND_COLORS: Record<string, string> = {
  * Refuser) et « Bloquer ce jour » ou « Débloquer ». Tout est décrit par l'API.
  */
 export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: string; /** Mois ouvert d'abord (`AAAA-MM`) ; `null` : le mois courant. */ month?: string | null }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const theme = useTheme();
   const queryClient = useQueryClient();
   const [month, setMonth] = useState<string | null>(initialMonth);
@@ -73,21 +76,30 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
     setSelected(date);
   }
 
-  function renderCard(item: ListItem) {
+  /** Une demande en carte de notification : qui demande (sans lien), la pastille, le texte, le message, le total, les boutons. */
+  function renderCard(card: OfferCalendarCard) {
     return (
-      <View key={item.id} style={[styles.card, { borderColor: theme.backgroundSelected }]} testID={`calendar-item-${item.id}`}>
-        {item.tag && <StatusTag tag={item.tag} />}
-        <ThemedText>{item.title}</ThemedText>
-        {item.subtitle && (
-          <ThemedText type="small" themeColor="textSecondary">
-            {item.subtitle}
+      <View key={card.id} style={[styles.card, { borderColor: theme.backgroundSelected }]} testID={`calendar-item-${card.id}`}>
+        <NotificationActor actor={card.actor} title="" date={relativeTime(card.created_at, t, locale)} testID={`calendar-item-${card.id}`} />
+        {card.tag && <StatusTag tag={card.tag} testID={`calendar-item-${card.id}-tag`} />}
+        <NotificationText body={card.summary} links={card.text_links} onLink={go} testID={`calendar-item-${card.id}-text`} />
+        {card.message && <Quote text={card.message} numberOfLines={3} />}
+        {card.total && (
+          <ThemedText type="smallBold" testID={`calendar-item-${card.id}-total`}>
+            {card.total}
           </ThemedText>
         )}
-        {item.quote && <Quote text={item.quote} />}
-        {item.highlight && <ThemedText type="smallBold">{item.highlight}</ThemedText>}
-        <ItemActionButtons actions={item.actions ?? []} testID={`calendar-action-${item.id}`} onPress={press} />
+        <ItemActionButtons actions={card.actions} testID={`calendar-action-${card.id}`} onPress={press} />
       </View>
     );
+  }
+
+  /** Un lien d'une carte (l'annonce) : le panneau se ferme, l'écran s'ouvre. */
+  function go(link: string) {
+    if (APP_LINK.test(link)) {
+      setSelected(null);
+      router.push(link as Href);
+    }
   }
 
   const panel = day.data;
@@ -220,5 +232,5 @@ const styles = StyleSheet.create({
   sheetTitle: { flex: 1 },
   sheetLoading: { paddingVertical: Spacing.four },
   sheetBody: { gap: Spacing.three, paddingBottom: Spacing.four },
-  card: { borderWidth: 1, borderRadius: 8, padding: Spacing.three, gap: Spacing.half },
+  card: { borderWidth: 1, borderRadius: 8, padding: Spacing.three, gap: Spacing.two },
 });

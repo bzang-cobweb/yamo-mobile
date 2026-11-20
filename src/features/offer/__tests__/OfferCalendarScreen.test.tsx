@@ -64,7 +64,19 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     jest.spyOn(offerService, 'calendar').mockResolvedValue(DECEMBER);
     jest.spyOn(offerService, 'calendarDay').mockResolvedValue({
       title: 'Jeudi 3 décembre 2026',
-      items: [{ id: '9', title: 'Studio', subtitle: 'Marie · Séjour', image: null, rating: null, highlight: '135 000 FCFA', quote: 'J’arrive tard.', tag: { label: 'En attente', tone: 'warning' }, actions: [], edit: null, delete: null }],
+      items: [
+        {
+          id: '9',
+          actor: { id: '37', name: 'Marie Curie', initials: 'MC', photo: null, online: false, link: '/members/37' },
+          tag: { label: 'Demande de logement en attente', tone: 'warning' },
+          summary: 'demande un séjour du 3 au 6 déc. (3 jours) pour « Studio », 45 000 FCFA / jour (2 personnes).',
+          text_links: [{ text: 'Studio', link: '/offers/7' }],
+          message: 'J’arrive tard.',
+          total: '135 000 FCFA',
+          created_at: '2026-11-19T10:00:00Z',
+          actions: [],
+        },
+      ],
       empty: 'Aucune demande ce jour-là.',
       action: BLOCK,
       note: null,
@@ -99,7 +111,12 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(await screen.findByText('Jeudi 3 décembre 2026')).toBeTruthy();
     expect(offerService.calendarDay).toHaveBeenCalledWith('7', '2026-12-03');
     expect(screen.getByText('J’arrive tard.')).toBeTruthy();
-    expect(screen.getByText('En attente')).toBeTruthy();
+    // En carte de notification : qui demande, la pastille, le texte, le total en gras.
+    expect(screen.getByTestId('calendar-item-9-actor')).toHaveTextContent('Marie Curie');
+    // Le membre n'est pas cliquable depuis la carte.
+    expect(screen.getByTestId('calendar-item-9-actor').props.onPress).toBeUndefined();
+    expect(screen.getByText('Demande de logement en attente')).toBeTruthy();
+    expect(screen.getByTestId('calendar-item-9-total')).toHaveTextContent('135 000 FCFA');
 
     await fireEvent.press(screen.getByText('Bloquer ce jour'));
     await waitFor(() => expect(submit).toHaveBeenCalledWith(expect.objectContaining({ method: 'PUT', endpoint: '/v1/offers/7/blocked-dates/2026-12-03' }), {}));

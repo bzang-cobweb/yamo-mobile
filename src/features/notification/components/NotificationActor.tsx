@@ -16,7 +16,7 @@ const AVATAR_SIZE = 52;
  * - la photo de qui agit, cerclée de vert s'il est en ligne ;
  * - à côté, son nom, et la date dessous.
  *
- * La photo et le nom ouvrent sa page. Sans qui agit (ancienne notification) : le
+ * La photo et le nom ouvrent sa page, si l'écran le permet (`onOpen`). Sans qui agit (ancienne notification) : le
  * titre à la place du nom.
  */
 export function NotificationActor({
@@ -31,7 +31,8 @@ export function NotificationActor({
   title: string;
   /** Sous le nom ; `null` : pas de date ici (la page la met après le message). */
   date: string | null;
-  onOpen: (link: string) => void;
+  /** Ouvre la page de qui agit (photo, nom) ; absent : ni la photo ni le nom ne sont cliquables. */
+  onOpen?: (link: string) => void;
   testID: string;
   /** Sous le nom, l'e-mail et le téléphone de qui agit (la page d'une notification). */
   contact?: boolean;
@@ -40,10 +41,11 @@ export function NotificationActor({
     <View style={styles.head}>
       {actor && (
         <Pressable
-          accessibilityRole="link"
+          accessibilityRole={onOpen ? 'link' : undefined}
           accessibilityLabel={actor.name}
           hitSlop={Spacing.one}
-          onPress={() => onOpen(actor.link)}
+          disabled={!onOpen}
+          onPress={() => onOpen?.(actor.link)}
           style={({ pressed }) => [styles.ring, { borderColor: actor.online ? TONE_COLORS.success : 'transparent' }, pressed && styles.pressed]}
           testID={`${testID}-avatar${actor.online ? '-online' : ''}`}>
           <Avatar user={{ initials: actor.initials, avatar_url: actor.photo }} size={AVATAR_SIZE} />
@@ -51,7 +53,7 @@ export function NotificationActor({
       )}
       <View style={styles.texts}>
         {actor ? (
-          <ThemedText type="smallBold" accessibilityRole="link" testID={`${testID}-actor`} onPress={() => onOpen(actor.link)}>
+          <ThemedText type="smallBold" accessibilityRole={onOpen ? 'link' : undefined} testID={`${testID}-actor`} onPress={onOpen ? () => onOpen(actor.link) : undefined}>
             {actor.name}
           </ThemedText>
         ) : (

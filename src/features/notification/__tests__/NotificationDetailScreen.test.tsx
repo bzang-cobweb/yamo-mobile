@@ -36,6 +36,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
+  total: '255 000 FCFA',
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -72,6 +73,8 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('notification-detail-date')).toHaveTextContent(/2026/);
     // Ses coordonnées sous son nom ; la date après le message, alignée à droite.
     expect(screen.getByTestId('notification-detail-email')).toHaveTextContent('paul@example.test');
+    expect(screen.getByTestId('notification-detail-total')).toHaveTextContent('255 000 FCFA');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-total').props.style)).toMatchObject({ fontWeight: '700' });
     expect(screen.getByTestId('notification-detail-phone')).toHaveTextContent('+237 6 90 00 00 99');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-date').props.style)).toMatchObject({ textAlign: 'right' });
     // Qui agit, comme sur la carte ; le texte sans son nom.

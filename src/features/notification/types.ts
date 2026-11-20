@@ -15,6 +15,8 @@ export type AppNotification = {
   actor?: NotificationActor | null;
   /** Le texte sans le nom de qui agit, pour la carte ; `null` : `body`. */
   summary?: string | null;
+  /** Le total de la demande (« 255 000 FCFA »), en gras sur la page ; `null` (ou absent) sans total. */
+  total?: string | null;
   /** Message joint, saisi par un utilisateur (celui du membre, le motif d'un refus), ou `null`. */
   message: string | null;
   /** Écran de l'app à ouvrir (`/profile/lists/offer.bookings`), ou `null`. */
