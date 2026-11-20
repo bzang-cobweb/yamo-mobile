@@ -110,12 +110,11 @@ export function NotificationsScreen() {
         pressed && styles.pressed,
       ]}>
       <View style={styles.texts}>
-        {/* 1. Qui agit (sa photo, cerclée de vert s'il est en ligne ; elle et son nom ouvrent sa page) et, sous son nom, la date. */}
+        {/* 1. Qui agit (sa photo, cerclée de vert s'il est en ligne, sans lien) et, sous son nom, la date. */}
         <NotificationActor
           actor={item.actor}
           title={item.title}
           date={relativeTime(item.created_at, t, locale)}
-          onOpen={(link) => open(item, link)}
           testID={`notification-${item.id}`}
         />
         {/* 2. Le statut, juste sous qui agit. */}

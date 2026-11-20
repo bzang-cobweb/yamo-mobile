@@ -39,18 +39,23 @@ export function NotificationActor({
 }) {
   return (
     <View style={styles.head}>
-      {actor && (
-        <Pressable
-          accessibilityRole={onOpen ? 'link' : undefined}
-          accessibilityLabel={actor.name}
-          hitSlop={Spacing.one}
-          disabled={!onOpen}
-          onPress={() => onOpen?.(actor.link)}
-          style={({ pressed }) => [styles.ring, { borderColor: actor.online ? TONE_COLORS.success : 'transparent' }, pressed && styles.pressed]}
-          testID={`${testID}-avatar${actor.online ? '-online' : ''}`}>
-          <Avatar user={{ initials: actor.initials, avatar_url: actor.photo }} size={AVATAR_SIZE} />
-        </Pressable>
-      )}
+      {actor &&
+        (onOpen ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={actor.name}
+            hitSlop={Spacing.one}
+            onPress={() => onOpen(actor.link)}
+            style={({ pressed }) => [styles.ring, { borderColor: actor.online ? TONE_COLORS.success : 'transparent' }, pressed && styles.pressed]}
+            testID={`${testID}-avatar${actor.online ? '-online' : ''}`}>
+            <Avatar user={{ initials: actor.initials, avatar_url: actor.photo }} size={AVATAR_SIZE} />
+          </Pressable>
+        ) : (
+          // Sans lien : une simple vue, l'appui revient à la carte (sa page).
+          <View style={[styles.ring, { borderColor: actor.online ? TONE_COLORS.success : 'transparent' }]} testID={`${testID}-avatar${actor.online ? '-online' : ''}`}>
+            <Avatar user={{ initials: actor.initials, avatar_url: actor.photo }} size={AVATAR_SIZE} />
+          </View>
+        ))}
       <View style={styles.texts}>
         {actor ? (
           <ThemedText type="smallBold" accessibilityRole={onOpen ? 'link' : undefined} testID={`${testID}-actor`} onPress={onOpen ? () => onOpen(actor.link) : undefined}>

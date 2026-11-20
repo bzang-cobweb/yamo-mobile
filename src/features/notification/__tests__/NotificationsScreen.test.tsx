@@ -96,11 +96,8 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     // Le message, sur une ligne.
     expect(screen.getByText('Je viens pour le travail.').props.numberOfLines).toBe(1);
 
-    await fireEvent.press(screen.getByTestId('notification-a-actor'));
-    expect(router.push).toHaveBeenCalledWith('/members/4');
-    await fireEvent.press(screen.getByTestId('notification-a-avatar-online'));
-    expect(router.push).toHaveBeenLastCalledWith('/members/4');
-    expect(router.push).toHaveBeenCalledTimes(2);
+    // Ni le nom ni la photo de qui agit ne sont cliquables sur la carte.
+    expect(screen.getByTestId('notification-a-actor').props.onPress).toBeUndefined();
   });
 
   it('une notification lue ouvre sa page sans repartir à l’API', async () => {
