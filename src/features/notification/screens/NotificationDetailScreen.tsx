@@ -100,6 +100,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {line}
                     </ThemedText>
                   ))}
+                  {/* La durée d'un séjour, avant le nombre de personnes. */}
+                  {notification.booking?.days_label && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-days">
+                      {notification.booking.days_label}
+                    </ThemedText>
+                  )}
                   {/* Le nombre de personnes, après le texte (un séjour). */}
                   {notification.booking?.guests_label && (
                     <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-guests">

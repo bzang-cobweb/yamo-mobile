@@ -53,6 +53,8 @@ export type NotificationBooking = {
    * « Départ le 7 déc. 2026 avant 11:00 » ; une visite « Visite le 28 nov. 2026 ou le 30 nov. 2026 ».
    */
   dates: string[];
+  /** La durée d'un séjour, rédigée (« 2 jours ») ; `null` pour une visite. */
+  days_label: string | null;
   guests: number | null;
   /** Le nombre de personnes, rédigé (« 2 personnes ») ; `null` pour une visite. */
   guests_label: string | null;
