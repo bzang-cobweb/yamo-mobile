@@ -113,7 +113,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     />
                   )}
                   {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à
-                      droite : personnes, chambres, arrivée, départ (ou visite), prix, durée, total en gras
+                      droite : personnes, chambres, arrivée, départ (ou visite), durée, prix, total en gras
                       (décision 2026-11-20-lignes-demande). */}
                   {(notification.booking?.lines ?? []).map((line) => (
                     <View key={line.key} style={styles.headRow} testID={`notification-detail-line-${line.key}`}>

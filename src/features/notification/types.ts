@@ -54,7 +54,7 @@ export type NotificationBooking = {
   /**
    * Les lignes à afficher, dans l'ordre, libellé et valeur rédigés (décision
    * 2026-11-20-lignes-demande) : `guests`, `bedrooms`, `arrival`, `departure` (ou `visit`,
-   * `second`), `price`, `days`, `total`.
+   * `second`), `days`, `price`, `total`.
    */
   lines: { key: string; label: string; value: string }[];
 };
