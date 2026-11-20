@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -103,8 +103,8 @@ describe('NotificationDetailScreen', () => {
     expect(await screen.findByText('Demande de logement')).toBeTruthy();
     expect(screen.queryByText('Notification')).toBeNull();
     expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
-    // La pastille en haut à droite, sur la ligne du texte.
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ flexDirection: 'row', alignItems: 'flex-start' });
+    // La pastille sous le titre, dans la barre du haut.
+    expect(within(screen.getByTestId('back-header')).getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
     // Le texte sans le nom de qui a fait la demande.
     expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
     expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
