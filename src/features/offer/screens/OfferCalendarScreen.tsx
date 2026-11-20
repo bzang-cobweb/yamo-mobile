@@ -7,7 +7,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
-import { NotificationActor } from '@/features/notification/components/NotificationActor';
 import { NotificationType } from '@/features/notification/components/NotificationType';
 import { APP_LINK, NotificationText } from '@/features/notification/components/NotificationText';
 import { relativeTime } from '@/features/notification/utils/relativeTime';
@@ -76,11 +75,14 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
     setSelected(date);
   }
 
-  /** Une demande en carte de notification : qui demande (sans lien), le type en gras et le statut dessous, le texte, le total, les boutons (sans le message). */
+  /**
+   * Une demande en carte de notification, comme dans la liste (décision 2026-11-20-carte-sans-photo), sans photo :
+   * le type en gras et le statut dessous, le texte, le total, le nom de qui demande (sans lien), la date à droite,
+   * les boutons (sans le message).
+   */
   function renderCard(card: OfferCalendarCard) {
     return (
       <View key={card.id} style={[styles.card, { borderColor: theme.backgroundSelected }]} testID={`calendar-item-${card.id}`}>
-        <NotificationActor actor={card.actor} date={relativeTime(card.created_at, t, locale)} testID={`calendar-item-${card.id}`} />
         <NotificationType type={card.type} tag={card.tag} testID={`calendar-item-${card.id}`} />
         <NotificationText body={card.summary} links={card.text_links} onLink={go} testID={`calendar-item-${card.id}-text`} />
         {card.total && (
@@ -88,6 +90,12 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
             {card.total}
           </ThemedText>
         )}
+        <ThemedText type="smallBold" testID={`calendar-item-${card.id}-actor`}>
+          {card.actor.name}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`calendar-item-${card.id}-date`}>
+          {relativeTime(card.created_at, t, locale)}
+        </ThemedText>
         <ItemActionButtons actions={card.actions} testID={`calendar-action-${card.id}`} onPress={press} />
       </View>
     );
@@ -232,4 +240,5 @@ const styles = StyleSheet.create({
   sheetLoading: { paddingVertical: Spacing.four },
   sheetBody: { gap: Spacing.three, paddingBottom: Spacing.four },
   card: { borderWidth: 1, borderRadius: 8, padding: Spacing.three, gap: Spacing.two },
+  date: { textAlign: 'right' },
 });

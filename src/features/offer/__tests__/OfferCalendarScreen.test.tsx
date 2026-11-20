@@ -115,6 +115,9 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(screen.queryByText('J’arrive tard.')).toBeNull();
     // En carte de notification : qui demande, la pastille, le texte, le total en gras.
     expect(screen.getByTestId('calendar-item-9-actor')).toHaveTextContent('Marie Curie');
+    // Sans photo, la date à droite (décision 2026-11-20-carte-sans-photo).
+    expect(screen.queryByTestId('calendar-item-9-avatar')).toBeNull();
+    expect(screen.getByTestId('calendar-item-9-date').props.style).toEqual(expect.arrayContaining([{ textAlign: 'right' }]));
     // Le membre n'est pas cliquable depuis la carte.
     expect(screen.getByTestId('calendar-item-9-actor').props.onPress).toBeUndefined();
     expect(screen.getByTestId('calendar-item-9-type')).toHaveTextContent('Demande de logement');
