@@ -8,12 +8,13 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { NotificationActor } from '@/features/notification/components/NotificationActor';
+import { NotificationType } from '@/features/notification/components/NotificationType';
 import { APP_LINK, NotificationText } from '@/features/notification/components/NotificationText';
 import { relativeTime } from '@/features/notification/utils/relativeTime';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { MonthGrid } from '@/shared/components/MonthGrid';
-import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
+import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -75,12 +76,12 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
     setSelected(date);
   }
 
-  /** Une demande en carte de notification : qui demande (sans lien), la pastille, le texte, le total, les boutons (sans le message). */
+  /** Une demande en carte de notification : qui demande (sans lien), le type en gras et le statut dessous, le texte, le total, les boutons (sans le message). */
   function renderCard(card: OfferCalendarCard) {
     return (
       <View key={card.id} style={[styles.card, { borderColor: theme.backgroundSelected }]} testID={`calendar-item-${card.id}`}>
-        <NotificationActor actor={card.actor} title="" date={relativeTime(card.created_at, t, locale)} testID={`calendar-item-${card.id}`} />
-        {card.tag && <StatusTag tag={card.tag} testID={`calendar-item-${card.id}-tag`} />}
+        <NotificationActor actor={card.actor} date={relativeTime(card.created_at, t, locale)} testID={`calendar-item-${card.id}`} />
+        <NotificationType type={card.type} tag={card.tag} testID={`calendar-item-${card.id}`} />
         <NotificationText body={card.summary} links={card.text_links} onLink={go} testID={`calendar-item-${card.id}-text`} />
         {card.total && (
           <ThemedText type="smallBold" testID={`calendar-item-${card.id}-total`}>

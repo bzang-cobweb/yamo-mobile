@@ -8,7 +8,6 @@ import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
-import { StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -16,14 +15,15 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { NotificationActor } from '../components/NotificationActor';
+import { NotificationType } from '../components/NotificationType';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
 
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste :
  * - à la place du titre, qui agit, comme sur la carte (photo cerclée de vert en
- *   ligne, nom), avec son e-mail et son téléphone ; sans qui agit, le titre ;
- * - son statut ;
+ *   ligne, nom), avec son e-mail et son téléphone ;
+ * - son type en gras, et dessous le statut réel de la demande ;
  * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
  * - le message joint, entier, puis la date complète, alignée à droite ;
  * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
@@ -74,9 +74,9 @@ export function NotificationDetailScreen({ id }: { id: string }) {
             // Sans marge ajoutée par iOS en haut du contenu (un vide au-dessus de la photo).
             <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
               {/* À la place du titre : qui agit, comme sur la carte (photo cerclée de vert en ligne, nom, date complète) ;
-                  sans qui agit (ancienne notification), le titre. */}
-              <NotificationActor actor={notification.actor} title={notification.title} date={null} contact onOpen={go} testID="notification-detail" />
-              {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
+                  puis le type en gras et le statut dessous. */}
+              <NotificationActor actor={notification.actor} date={null} contact onOpen={go} testID="notification-detail" />
+              <NotificationType type={notification.title} tag={notification.tag} testID="notification-detail" />
               <NotificationText
                 type="default"
                 body={notification.actor && notification.summary ? notification.summary : notification.body}

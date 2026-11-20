@@ -66,7 +66,8 @@ describe('NotificationDetailScreen', () => {
 
     // À la place du titre : qui agit.
     expect(await screen.findByTestId('notification-detail-actor')).toHaveTextContent('Paul Etoa');
-    expect(screen.queryByText('Demande de logement')).toBeNull();
+    // Le type en gras, sous qui agit, puis le statut.
+    expect(screen.getByTestId('notification-detail-type')).toHaveTextContent('Demande de logement');
     expect(notificationService.get).toHaveBeenCalledWith('n1');
     expect(screen.getByText('Notification')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();

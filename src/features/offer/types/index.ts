@@ -120,6 +120,8 @@ export type OfferCalendarMonth = {
 export type OfferCalendarCard = {
   id: string;
   actor: NotificationActor;
+  /** Le type, en gras au-dessus du statut (« Demande de logement »). */
+  type: string;
   tag: { label: string; tone: string } | null;
   summary: string;
   text_links: { text: string; link: string }[];

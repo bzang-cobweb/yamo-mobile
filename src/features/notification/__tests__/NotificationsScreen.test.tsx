@@ -55,6 +55,9 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     await show();
 
     expect(await screen.findByTestId('notification-a-tag')).toBeTruthy();
+    // Le type en gras, sur chaque notification, et le statut dessous.
+    expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Demande de logement');
+    expect(screen.getByTestId('notification-b-type')).toHaveTextContent('Demande de logement');
     expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
     expect(screen.getByText('Je viens pour le travail.')).toBeTruthy();

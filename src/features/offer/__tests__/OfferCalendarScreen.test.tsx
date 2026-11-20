@@ -68,7 +68,8 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
         {
           id: '9',
           actor: { id: '37', name: 'Marie Curie', initials: 'MC', photo: null, online: false, link: '/members/37' },
-          tag: { label: 'Demande de logement en attente', tone: 'warning' },
+          type: 'Demande de logement',
+          tag: { label: 'En attente', tone: 'warning' },
           summary: 'demande un séjour du 3 au 6 déc. (3 jours) pour « Studio », 45 000 FCFA / jour (2 personnes).',
           text_links: [{ text: 'Studio', link: '/offers/7' }],
           message: 'J’arrive tard.',
@@ -116,7 +117,8 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(screen.getByTestId('calendar-item-9-actor')).toHaveTextContent('Marie Curie');
     // Le membre n'est pas cliquable depuis la carte.
     expect(screen.getByTestId('calendar-item-9-actor').props.onPress).toBeUndefined();
-    expect(screen.getByText('Demande de logement en attente')).toBeTruthy();
+    expect(screen.getByTestId('calendar-item-9-type')).toHaveTextContent('Demande de logement');
+    expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.getByTestId('calendar-item-9-total')).toHaveTextContent('135 000 FCFA');
 
     await fireEvent.press(screen.getByText('Bloquer ce jour'));

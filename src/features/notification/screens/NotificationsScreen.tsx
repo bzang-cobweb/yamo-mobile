@@ -6,7 +6,6 @@ import { activeFilterCount, setFilterFields, useListFilters } from '@/features/l
 import { NetworkError } from '@/shared/api/errors';
 import { List } from '@/shared/components/List';
 import { Quote } from '@/shared/components/Quote';
-import { StatusTag } from '@/shared/components/StatusTag';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -18,6 +17,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import type { AppNotification } from '../types';
 import { relativeTime } from '../utils/relativeTime';
 import { NotificationActor } from '../components/NotificationActor';
+import { NotificationType } from '../components/NotificationType';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 
 /**
@@ -111,12 +111,11 @@ export function NotificationsScreen() {
         {/* 1. Qui agit (sa photo, cerclée de vert s'il est en ligne, sans lien) et, sous son nom, la date. */}
         <NotificationActor
           actor={item.actor}
-          title={item.title}
           date={relativeTime(item.created_at, t, locale)}
           testID={`notification-${item.id}`}
         />
-        {/* 2. Le statut, juste sous qui agit. */}
-        {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
+        {/* 2. Le type en gras, et dessous le statut réel de la demande. */}
+        <NotificationType type={item.title} tag={item.tag} testID={`notification-${item.id}`} />
         {/* 3. Le texte, sans le nom de qui agit. */}
         <NotificationText
           body={item.actor && item.summary ? item.summary : item.body}

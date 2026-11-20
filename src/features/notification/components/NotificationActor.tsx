@@ -16,19 +16,17 @@ const AVATAR_SIZE = 52;
  * - la photo de qui agit, cerclée de vert s'il est en ligne ;
  * - à côté, son nom, et la date dessous.
  *
- * La photo et le nom ouvrent sa page, si l'écran le permet (`onOpen`). Sans qui agit (ancienne notification) : le
- * titre à la place du nom.
+ * La photo et le nom ouvrent sa page, si l'écran le permet (`onOpen`). Sans qui agit (ancienne notification) :
+ * la date seule (le type est dessous, `NotificationType`).
  */
 export function NotificationActor({
   actor,
-  title,
   date,
   onOpen,
   testID,
   contact = false,
 }: {
   actor: Actor | null | undefined;
-  title: string;
   /** Sous le nom ; `null` : pas de date ici (la page la met après le message). */
   date: string | null;
   /** Ouvre la page de qui agit (photo, nom) ; absent : ni la photo ni le nom ne sont cliquables. */
@@ -57,12 +55,10 @@ export function NotificationActor({
           </View>
         ))}
       <View style={styles.texts}>
-        {actor ? (
+        {actor && (
           <ThemedText type="smallBold" accessibilityRole={onOpen ? 'link' : undefined} testID={`${testID}-actor`} onPress={onOpen ? () => onOpen(actor.link) : undefined}>
             {actor.name}
           </ThemedText>
-        ) : (
-          <ThemedText type="smallBold">{title}</ThemedText>
         )}
         {contact && actor?.email && (
           <ThemedText type="small" themeColor="textSecondary" accessibilityRole="link" testID={`${testID}-email`} onPress={() => void Linking.openURL(`mailto:${actor.email}`)}>
