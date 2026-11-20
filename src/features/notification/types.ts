@@ -56,6 +56,8 @@ export type NotificationBooking = {
   guests: number | null;
   /** Le nombre de personnes, rédigé (« 2 personnes ») ; `null` pour une visite. */
   guests_label: string | null;
+  /** Le prix du logement, rédigé (« 20 000 FCFA / jour ») ; `null` sans prix. */
+  price_label: string | null;
   total: string | null;
 };
 

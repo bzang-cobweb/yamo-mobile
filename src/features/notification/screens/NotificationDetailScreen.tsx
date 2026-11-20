@@ -106,6 +106,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.guests_label}
                     </ThemedText>
                   )}
+                  {/* Le prix du logement, avant le total. */}
+                  {notification.booking?.price_label && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-price">
+                      {notification.booking.price_label}
+                    </ThemedText>
+                  )}
                   {/* Le total de la demande (logement meublé), en gras. */}
                   {notification.booking?.total && (
                     <ThemedText style={styles.total} testID="notification-detail-total">
