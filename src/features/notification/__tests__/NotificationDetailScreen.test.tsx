@@ -61,14 +61,14 @@ describe('NotificationDetailScreen', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
-  it('le suivi comme une conversation : le membre à gauche, le propriétaire à droite (décision 2026-11-20-suivi-conversation)', async () => {
+  it('le suivi comme une conversation : l’autre à gauche, le lecteur à droite, « Toi » sans photo (décision 2026-11-20-suivi-conversation)', async () => {
     jest.spyOn(notificationService, 'get').mockResolvedValue({
       ...NOTIFICATION,
       history: [
-        { id: 's1', label: 'Demande envoyée', side: 'start', actor: { id: '37', name: 'Membre', initials: 'ME', photo: null, online: false, link: '/members/37' }, message: 'Bonjour !', created_at: '2026-11-20T09:00:00Z' },
-        { id: 's2', label: 'Demande acceptée', side: 'end', actor: { id: '4', name: 'Propriétaire', initials: 'PR', photo: null, online: false, link: '/members/4' }, message: null, created_at: '2026-11-20T10:00:00Z' },
+        { id: 's1', label: 'Demande envoyée', actor: { id: '37', name: 'Membre', initials: 'ME', photo: null, online: false, link: '/members/37' }, message: 'Bonjour !', created_at: '2026-11-20T09:00:00Z' },
+        { id: 's2', label: 'Demande acceptée', actor: { id: '4', name: 'Propriétaire', initials: 'PR', photo: null, online: false, link: '/members/4' }, message: null, created_at: '2026-11-20T10:00:00Z' },
         // Le lecteur (compte 1) : « Toi », sans photo.
-        { id: 's3', label: 'Demande annulée', side: 'start', actor: { id: '1', name: 'Moi Même', initials: 'MM', photo: null, online: false, link: '/members/1' }, message: null, created_at: '2026-11-20T11:00:00Z' },
+        { id: 's3', label: 'Demande annulée', actor: { id: '1', name: 'Moi Même', initials: 'MM', photo: null, online: false, link: '/members/1' }, message: null, created_at: '2026-11-20T11:00:00Z' },
       ],
     });
     await show();
@@ -78,7 +78,9 @@ describe('NotificationDetailScreen', () => {
     // Sans message : le libellé de l'étape.
     expect(screen.getByTestId('notification-history-1-message')).toHaveTextContent('Demande acceptée');
     expect(StyleSheet.flatten(screen.getByTestId('notification-history-0').props.style)).toMatchObject({ alignSelf: 'flex-start' });
-    expect(StyleSheet.flatten(screen.getByTestId('notification-history-1').props.style)).toMatchObject({ alignSelf: 'flex-end', flexDirection: 'row-reverse' });
+    // L'autre partie à gauche, même le propriétaire ; le lecteur à droite.
+    expect(StyleSheet.flatten(screen.getByTestId('notification-history-1').props.style)).toMatchObject({ alignSelf: 'flex-start' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-history-2').props.style)).toMatchObject({ alignSelf: 'flex-end' });
     expect(StyleSheet.flatten(screen.getByTestId('notification-history-1-date').props.style)).toMatchObject({ textAlign: 'right' });
     // Le nom et la photo ouvrent la page du membre.
     await fireEvent.press(screen.getByTestId('notification-history-0-actor'));

@@ -16,11 +16,11 @@ const AVATAR_SIZE = 32;
 /**
  * Le suivi d'une demande comme une conversation, sur la page d'une notification
  * (décisions 2026-11-20-suivi-demande et 2026-11-20-suivi-conversation) : ses
- * étapes, de la plus ancienne à la plus récente ; celles du membre à gauche (`start`),
- * celles du propriétaire à droite (`end`). Chacune : la photo de qui l'a faite dans un
- * petit cercle, son nom, dessous son message (à défaut le libellé de l'étape,
+ * étapes, de la plus ancienne à la plus récente. Celles du lecteur à droite, nommées
+ * « Toi », sans photo ; celles de l'autre partie à gauche : la photo de qui l'a faite
+ * dans un petit cercle, son nom. Dessous, le message (à défaut le libellé de l'étape,
  * « Demande acceptée »), puis la date, alignée à droite (l'heure seule le jour même).
- * Le nom et la photo ouvrent sa page (`onOpen`). Ses propres étapes : « Toi », sans photo.
+ * Le nom et la photo de l'autre ouvrent sa page (`onOpen`).
  */
 export function NotificationConversation({ steps, onOpen }: { steps: NotificationStep[]; onOpen: (link: string) => void }) {
   const { t, locale } = useI18n();
@@ -34,11 +34,10 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
   return (
     <View style={styles.block} testID="notification-history">
       {steps.map((step, index) => {
-        const end = step.side === 'end';
         const mine = user !== null && step.actor !== null && step.actor.id === String(user.id);
 
         return (
-          <View key={step.id} style={[styles.step, end && styles.stepEnd]} testID={`notification-history-${index}`}>
+          <View key={step.id} style={[styles.step, mine && styles.stepMine]} testID={`notification-history-${index}`}>
             {step.actor && !mine && (
               <Pressable
                 accessibilityRole="link"
@@ -79,8 +78,8 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
 const styles = StyleSheet.create({
   block: { gap: Spacing.three },
   step: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two, maxWidth: '85%', alignSelf: 'flex-start' },
-  // Le propriétaire à droite : la photo à droite de la bulle.
-  stepEnd: { flexDirection: 'row-reverse', alignSelf: 'flex-end' },
+  // Le lecteur à droite.
+  stepMine: { alignSelf: 'flex-end' },
   bubble: { flexShrink: 1, gap: Spacing.half, borderRadius: 12, paddingVertical: Spacing.two, paddingHorizontal: Spacing.three },
   date: { textAlign: 'right' },
   pressed: { opacity: 0.7 },

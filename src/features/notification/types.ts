@@ -41,8 +41,6 @@ export type AppNotification = {
 export type NotificationStep = {
   id: string;
   label: string;
-  /** `start` à gauche (le membre), `end` à droite (le propriétaire). */
-  side: 'start' | 'end';
   actor: NotificationActor | null;
   message: string | null;
   created_at: string | null;
