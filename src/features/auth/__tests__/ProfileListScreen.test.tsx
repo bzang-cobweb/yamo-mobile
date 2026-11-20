@@ -167,8 +167,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     mockList = list([item('8')]);
     await renderScreen();
 
-    const json = JSON.stringify(screen.toJSON());
-    expect(json.indexOf('profile-list-edit-8')).toBeLessThan(json.indexOf('profile-list-delete-8'));
+    // Dans l'ordre de l'écran : « Éditer » puis « Retirer ».
+    expect(screen.getAllByTestId(/^profile-list-(edit|delete)-8$/).map((node) => node.props.testID)).toEqual(['profile-list-edit-8', 'profile-list-delete-8']);
     expect(screen.getByTestId('profile-list-edit-8')).toHaveTextContent('Éditer');
     await fireEvent.press(screen.getByTestId('profile-list-edit-8'));
     expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '8' } });
