@@ -12,29 +12,29 @@ import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
+import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-import { NotificationActor } from '../components/NotificationActor';
-import { NotificationHistory } from '../components/NotificationHistory';
+import { NotificationConversation } from '../components/NotificationConversation';
 import { NotificationType } from '../components/NotificationType';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
 
 /**
- * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste :
- * - à la place du titre, qui agit, comme sur la carte (photo cerclée de vert en
- *   ligne, nom), avec son e-mail et son téléphone ;
- * - son type en gras, et dessous le statut réel de la demande ;
- * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
- * - le message joint, entier, puis la date complète, alignée à droite ;
- * - le suivi de la demande, de la plus ancienne étape à la plus récente, des deux côtés
- *   (décision 2026-11-20-suivi-demande) ;
+ * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
+ * (décision 2026-11-20-suivi-conversation) :
+ * - en haut, une zone fixe, qui ne défile pas : le type en gras et la pastille du
+ *   statut à droite ; le texte de la demande (le nom de qui l'a faite y ouvre sa page)
+ *   et son total (la première étape, décision 2026-11-20-entete-premiere-etape) ;
+ * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
+ *   à gauche, le propriétaire à droite ; le nom et la photo de chacun ouvrent sa page ; sans demande, le message joint et la date ;
  * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
  *
  * Ouverte, elle est marquée lue.
  */
 export function NotificationDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
+  const theme = useTheme();
   const query = useNotification(id);
   const markRead = useMarkRead();
   const notification = query.data;
@@ -74,36 +74,43 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               </Pressable>
             </View>
           ) : (
-            // Sans marge ajoutée par iOS en haut du contenu (un vide au-dessus de la photo).
-            <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
-              {/* À la place du titre : qui agit, comme sur la carte (photo cerclée de vert en ligne, nom, date complète) ;
-                  puis le type en gras et le statut dessous. */}
-              <NotificationActor actor={notification.actor} date={null} contact onOpen={go} testID="notification-detail" />
-              <NotificationType type={notification.title} tag={notification.tag} testID="notification-detail" />
-              <NotificationText
-                type="default"
-                body={notification.actor && notification.summary ? notification.summary : notification.body}
-                links={notification.text_links ?? []}
-                onLink={go}
-                testID="notification-detail-text"
-              />
-              {/* Le total de la demande (logement meublé), en gras. */}
-              {notification.total && (
-                <ThemedText style={styles.total} testID="notification-detail-total">
-                  {notification.total}
-                </ThemedText>
-              )}
-              {/* Même ordre que la carte : le statut, le texte, puis le message, entier ici. */}
-              {notification.message && <Quote text={notification.message} testID="notification-detail-message" />}
-              {/* La date, après le message, alignée à droite. */}
-              {date && (
-                <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID="notification-detail-date">
-                  {date}
-                </ThemedText>
-              )}
-              {/* Le suivi de la demande : toutes ses étapes, des deux côtés. */}
-              <NotificationHistory steps={notification.history ?? []} />
-            </ScrollView>
+            <>
+              {/* La zone fixe : le type et la pastille à droite, le texte, le total. */}
+              <View style={[styles.head, { borderBottomColor: theme.backgroundSelected }]} testID="notification-detail-head">
+                <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
+                  <NotificationType type={notification.title} tag={notification.tag} testID="notification-detail" />
+                  <NotificationText
+                    type="default"
+                    body={notification.body}
+                    links={notification.text_links ?? []}
+                    onLink={go}
+                    testID="notification-detail-text"
+                  />
+                  {/* Le total de la demande (logement meublé), en gras. */}
+                  {notification.total && (
+                    <ThemedText style={styles.total} testID="notification-detail-total">
+                      {notification.total}
+                    </ThemedText>
+                  )}
+                </View>
+              </View>
+              {/* Sans marge ajoutée par iOS en haut du contenu. */}
+              <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]} testID="notification-detail-scroll">
+                {(notification.history ?? []).length > 0 ? (
+                  <NotificationConversation steps={notification.history ?? []} onOpen={go} />
+                ) : (
+                  <>
+                    {notification.message && <Quote text={notification.message} testID="notification-detail-message" />}
+                    {/* La date, après le message, alignée à droite. */}
+                    {date && (
+                      <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID="notification-detail-date">
+                        {date}
+                      </ThemedText>
+                    )}
+                  </>
+                )}
+              </ScrollView>
+            </>
           )}
           {/* Le bouton dans la barre fixe du bas : « Traiter la demande » (le propriétaire), « Mes réservations » (le membre). */}
           {notification?.link && APP_LINK.test(notification.link) && (
@@ -123,6 +130,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   error: { color: ERROR_COLOR },
+  head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
+  headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
