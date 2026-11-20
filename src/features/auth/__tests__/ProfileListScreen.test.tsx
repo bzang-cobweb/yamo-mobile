@@ -436,6 +436,19 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.offer' } });
     });
 
+    it('un compteur vers un écran (les notifications) l’ouvre avec ses filtres', async () => {
+      mockList = list([
+        item('22', { counter: { label: '2 demandes en attente', list: 'notifications', filter: { type: 'Received', offer: '22' }, link: '/notifications' } }),
+      ]);
+      await renderScreen();
+
+      const setValues = jest.spyOn(filterStore, 'setFilterValues');
+      await fireEvent.press(screen.getByText('2 demandes en attente'));
+      expect(setValues).toHaveBeenCalledWith('notifications', { type: 'Received', offer: '22' });
+      expect(router.navigate).toHaveBeenCalledWith('/notifications');
+      expect(router.push).not.toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'notifications' } });
+    });
+
     it('le bouton du bas peut ramener à l’accueil ; les filtres servis ouvrent l’écran des filtres', async () => {
       mockList = list([item('1')], {
         create: null,

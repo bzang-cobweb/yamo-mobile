@@ -23,8 +23,15 @@ export type ListItemAction = {
   link?: string | null;
 };
 
-/** Un compteur sur la carte (« 2 demandes en attente ») qui ouvre `list` avec ces filtres. */
-export type ListItemCounter = { label: string; list: string; filter: Record<string, string> };
+/** Un compteur sur la carte (« 2 demandes en attente ») qui ouvre `list` (ou l'écran `link`) avec ces filtres. */
+export type ListItemCounter = {
+  label: string;
+  /** La liste ouverte, ou le nom des filtres de l'écran `link`. */
+  list: string;
+  filter: Record<string, string>;
+  /** Un écran de l'app à ouvrir à la place de la liste (« /notifications ») ; absent : la liste. */
+  link?: string | null;
+};
 
 /** Un item d'une liste : titre, sous-titre, photo, note, phrase mise en avant, message cité, formulaire d'édition, retrait. */
 export type ListItem = {

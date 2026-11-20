@@ -124,9 +124,15 @@ export function ProfileListScreen({ list }: { list: string }) {
   // Un bouton de carte : un formulaire, un écran, ou un envoi après confirmation.
   const { press: pressAction } = useItemActions({ onNotice: setNotice, onError: setError, onDone: reload });
 
-  // Le compteur ouvre sa liste avec ses filtres déjà choisis.
+  // Le compteur ouvre sa liste (ou son écran) avec ses filtres déjà choisis.
   function openCounter(counter: ListItemCounter) {
     setFilterValues(counter.list, counter.filter);
+    // Un écran de l'app (les notifications, déjà filtrées), sinon la liste.
+    if (counter.link && APP_SCREEN.test(counter.link)) {
+      router.navigate(counter.link as Href);
+
+      return;
+    }
     router.push({ pathname: '/profile/lists/[list]', params: { list: counter.list } });
   }
 
@@ -336,6 +342,9 @@ function openFooter(footer: { form: string | null; link: string | null }) {
     router.push(footer.link as Href);
   }
 }
+
+/** Un écran de l'app (« /notifications ») : jamais une adresse externe. */
+const APP_SCREEN = /^\/[a-z][a-z0-9/_-]*$/;
 
 export { SEARCH_DELAY };
 
