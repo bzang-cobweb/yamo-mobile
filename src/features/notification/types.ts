@@ -49,6 +49,8 @@ export type NotificationBooking = {
   check_in: string;
   check_out: string | null;
   guests: number | null;
+  /** Le nombre de personnes, rédigé (« 2 personnes ») ; `null` pour une visite. */
+  guests_label: string | null;
   total: string | null;
 };
 

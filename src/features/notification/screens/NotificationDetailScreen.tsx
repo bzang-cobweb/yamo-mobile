@@ -93,6 +93,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     onLink={go}
                     testID="notification-detail-text"
                   />
+                  {/* Le nombre de personnes, après le texte (un séjour). */}
+                  {notification.booking?.guests_label && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-guests">
+                      {notification.booking.guests_label}
+                    </ThemedText>
+                  )}
                   {/* Le total de la demande (logement meublé), en gras. */}
                   {notification.booking?.total && (
                     <ThemedText style={styles.total} testID="notification-detail-total">
