@@ -36,7 +36,19 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
-  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', rental_type: 'Location meublée', bedrooms: '2 chambres' }, dates: [{ label: 'Arrivée', value: '1 déc. 2026 à partir de 14:00' }, { label: 'Départ', value: '4 déc. 2026 au plus tard à 11:00' }], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
+  booking: {
+    id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', guests: 2,
+    offer: { title: 'Studio photos', rental_type: 'Location meublée' },
+    lines: [
+      { key: 'guests', label: 'Personnes', value: '2' },
+      { key: 'bedrooms', label: 'Chambres', value: '1' },
+      { key: 'arrival', label: 'Arrivée', value: '1 déc. 2026 à partir de 14:00' },
+      { key: 'departure', label: 'Départ', value: '4 déc. 2026 au plus tard à 11:00' },
+      { key: 'price', label: 'Prix', value: '85 000 FCFA / jour' },
+      { key: 'days', label: 'Durée', value: '3 jours' },
+      { key: 'total', label: 'Total', value: '255 000 FCFA' },
+    ],
+  },
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -110,23 +122,17 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
     // Le type de location, après le nom de l'offre.
     expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée');
-    // Un séjour : l'arrivée et le départ, puis le nombre de personnes, après le texte.
-    // Le libellé à gauche, la date à droite.
-    expect(screen.getByTestId('notification-detail-dates-0-label')).toHaveTextContent('Arrivée');
-    expect(screen.getByTestId('notification-detail-dates-0-value')).toHaveTextContent('1 déc. 2026 à partir de 14:00');
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-dates-0').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
-    expect(screen.getByTestId('notification-detail-dates-1-label')).toHaveTextContent('Départ');
-    expect(screen.getByTestId('notification-detail-dates-1-value')).toHaveTextContent('4 déc. 2026 au plus tard à 11:00');
-    // La durée, avant le nombre de personnes.
-    expect(screen.getByTestId('notification-detail-days')).toHaveTextContent('3 jours');
-    // Les chambres, à droite des personnes.
-    expect(screen.getByTestId('notification-detail-bedrooms')).toHaveTextContent('2 chambres');
-    expect(screen.getByTestId('notification-detail-guests')).toHaveTextContent('2 personnes');
-    // Une ligne : la durée à gauche, le total à droite.
-    expect(screen.getByTestId('notification-detail-price')).toHaveTextContent('85 000 FCFA / jour');
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-price-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
-    expect(screen.getByTestId('notification-detail-total')).toHaveTextContent('255 000 FCFA');
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-total').props.style)).toMatchObject({ fontWeight: '700' });
+    // Les lignes, dans l'ordre servi, le libellé à gauche et la valeur à droite (décision 2026-11-20-lignes-demande).
+    const keys = ['guests', 'bedrooms', 'arrival', 'departure', 'price', 'days', 'total'];
+    const json = JSON.stringify(screen.toJSON());
+    expect(keys.map((key) => json.indexOf(`"notification-detail-line-${key}"`))).toEqual([...keys.map((key) => json.indexOf(`"notification-detail-line-${key}"`))].sort((a, b) => a - b));
+    expect(screen.getByTestId('notification-detail-line-arrival-label')).toHaveTextContent('Arrivée');
+    expect(screen.getByTestId('notification-detail-line-arrival-value')).toHaveTextContent('1 déc. 2026 à partir de 14:00');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-line-price').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
+    expect(screen.getByTestId('notification-detail-line-price-value')).toHaveTextContent('85 000 FCFA / jour');
+    // Le total en gras.
+    expect(screen.getByTestId('notification-detail-line-total-value')).toHaveTextContent('255 000 FCFA');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-line-total-value').props.style)).toMatchObject({ fontWeight: '700' });
     expect(screen.getByTestId('notification-detail-head')).toBeTruthy();
     expect(screen.queryByTestId('notification-detail-actor')).toBeNull();
     expect(screen.queryByTestId('notification-detail-avatar-online')).toBeNull();

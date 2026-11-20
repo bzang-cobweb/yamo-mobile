@@ -40,7 +40,7 @@ export type AppNotification = {
   booking?: NotificationBooking | null;
 };
 
-/** Une demande, en léger : son total figé (« 255 000 FCFA »), `null` pour une visite. */
+/** Une demande, en léger : son offre et ses lignes à afficher. */
 export type NotificationBooking = {
   id: string;
   offer_id: string;
@@ -48,22 +48,15 @@ export type NotificationBooking = {
   status: 'pending' | 'accepted' | 'refused' | 'cancelled';
   check_in: string;
   check_out: string | null;
-  /** L'offre : son titre saisi et son type de location, rédigé (« Location meublée »). */
-  offer: { title: string | null; rental_type: string | null; bedrooms: string | null };
-  /**
-   * Les dates, une par ligne, libellé et valeur rédigés : un séjour « Arrivée » —
-   * « 5 déc. 2026 à partir de 14:00 », « Départ » — « 7 déc. 2026 au plus tard à 11:00 » ;
-   * une visite « Visite » — « 28 nov. 2026 », « Seconde date » — « 30 nov. 2026 ».
-   */
-  dates: { label: string; value: string }[];
-  /** La durée d'un séjour, rédigée (« 2 jours ») ; `null` pour une visite. */
-  days_label: string | null;
   guests: number | null;
-  /** Le nombre de personnes, rédigé (« 2 personnes ») ; `null` pour une visite. */
-  guests_label: string | null;
-  /** Le prix du logement, rédigé (« 20 000 FCFA / jour ») ; `null` sans prix. */
-  price_label: string | null;
-  total: string | null;
+  /** L'offre : son titre saisi et son type de location, rédigé (« Location meublée »). */
+  offer: { title: string | null; rental_type: string | null };
+  /**
+   * Les lignes à afficher, dans l'ordre, libellé et valeur rédigés (décision
+   * 2026-11-20-lignes-demande) : `guests`, `bedrooms`, `arrival`, `departure` (ou `visit`,
+   * `second`), `price`, `days`, `total`.
+   */
+  lines: { key: string; label: string; value: string }[];
 };
 
 /** Une étape du suivi d'une demande : « Demande acceptée », qui, son message, sa date. */

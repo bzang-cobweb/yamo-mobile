@@ -101,20 +101,6 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
-                  {/* Une ligne, après le nom de l'offre : le nombre de personnes à gauche (un séjour), le
-                      nombre de chambres du logement à droite. */}
-                  {(notification.booking?.guests_label || notification.booking?.offer.bedrooms) && (
-                    <View style={styles.headRow} testID="notification-detail-guests-row">
-                      <ThemedText type="small" themeColor="textSecondary" style={styles.headType} testID="notification-detail-guests">
-                        {notification.booking?.guests_label ?? ''}
-                      </ThemedText>
-                      {notification.booking?.offer.bedrooms && (
-                        <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-bedrooms">
-                          {notification.booking.offer.bedrooms}
-                        </ThemedText>
-                      )}
-                    </View>
-                  )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
                       (décision 2026-11-20-titre-demande). */}
                   {!notification.booking && (
@@ -126,37 +112,26 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       testID="notification-detail-text"
                     />
                   )}
-                  {/* Les dates, une par ligne, le libellé à gauche et la date à droite : l'arrivée et le
-                      départ d'un séjour, la date d'une visite (décision 2026-11-20-heures-arrivee-depart). */}
-                  {(notification.booking?.dates ?? []).map((line, index) => (
-                    <View key={line.label} style={styles.headRow} testID={`notification-detail-dates-${index}`}>
-                      <ThemedText type="small" themeColor="textSecondary" testID={`notification-detail-dates-${index}-label`}>
+                  {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à
+                      droite : personnes, chambres, arrivée, départ (ou visite), prix, durée, total en gras
+                      (décision 2026-11-20-lignes-demande). */}
+                  {(notification.booking?.lines ?? []).map((line) => (
+                    <View key={line.key} style={styles.headRow} testID={`notification-detail-line-${line.key}`}>
+                      <ThemedText
+                        type={line.key === 'total' ? 'smallBold' : 'small'}
+                        themeColor={line.key === 'total' ? undefined : 'textSecondary'}
+                        testID={`notification-detail-line-${line.key}-label`}>
                         {line.label}
                       </ThemedText>
-                      <ThemedText type="small" themeColor="textSecondary" style={styles.dateValue} testID={`notification-detail-dates-${index}-value`}>
+                      <ThemedText
+                        type="small"
+                        themeColor={line.key === 'total' ? undefined : 'textSecondary'}
+                        style={[styles.dateValue, line.key === 'total' && styles.total]}
+                        testID={`notification-detail-line-${line.key}-value`}>
                         {line.value}
                       </ThemedText>
                     </View>
                   ))}
-                  {/* Le prix du logement. */}
-                  {notification.booking?.price_label && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-price">
-                      {notification.booking.price_label}
-                    </ThemedText>
-                  )}
-                  {/* Une ligne : la durée d'un séjour à gauche, le total de la demande en gras à droite. */}
-                  {(notification.booking?.days_label || notification.booking?.total) && (
-                    <View style={styles.headRow} testID="notification-detail-price-row">
-                      <ThemedText type="small" themeColor="textSecondary" style={styles.headType} testID="notification-detail-days">
-                        {notification.booking?.days_label ?? ''}
-                      </ThemedText>
-                      {notification.booking?.total && (
-                        <ThemedText style={styles.total} testID="notification-detail-total">
-                          {notification.booking.total}
-                        </ThemedText>
-                      )}
-                    </View>
-                  )}
                 </View>
               </View>
               {/* Sans marge ajoutée par iOS en haut du contenu. */}
@@ -199,7 +174,7 @@ const styles = StyleSheet.create({
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   headType: { flex: 1 },
-  // La date à droite de son libellé, sur plusieurs lignes au besoin.
+  // La valeur à droite de son libellé, sur plusieurs lignes au besoin.
   dateValue: { flexShrink: 1, textAlign: 'right' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
