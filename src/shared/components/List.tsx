@@ -46,6 +46,8 @@ export type ListProps<T> = {
   create?: ListCreate | null;
   /** Lien des filtres, sous la recherche, aligné à droite, avec un badge (décision 2026-11-19-contrat-filtres-vitrine). */
   filter?: ListFilter | null;
+  /** Un lien sur la même ligne que « Filtres », juste avant (« Tout marquer comme lu »). */
+  beforeFilter?: ReactElement | null;
   /** Contenu en tête des items, qui défile avec eux (message, erreur). */
   header?: ReactElement | null;
   contentContainerStyle?: StyleProp<ViewStyle>;
@@ -78,6 +80,7 @@ export function List<T>({
   search,
   create,
   filter,
+  beforeFilter,
   header,
   contentContainerStyle,
   testID,
@@ -133,7 +136,7 @@ export function List<T>({
     />
   );
 
-  if (!search && !create && !filter) {
+  if (!search && !create && !filter && !beforeFilter) {
     return list;
   }
 
@@ -173,7 +176,12 @@ export function List<T>({
             <ThemedText type="linkPrimary">{create.label}</ThemedText>
           </Pressable>
         )}
-        {filter && <FilterLink filter={filter} testID={id('filter') ?? 'list-filter'} />}
+        {(filter || beforeFilter) && (
+          <View style={styles.filterRow}>
+            {beforeFilter}
+            {filter && <FilterLink filter={filter} testID={id('filter') ?? 'list-filter'} />}
+          </View>
+        )}
       </View>
       {list}
     </View>
@@ -196,6 +204,7 @@ const styles = StyleSheet.create({
   },
   search: { flex: 1, paddingVertical: Spacing.two, fontSize: 16 },
   create: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
+  filterRow: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.four },
   pressed: { opacity: 0.6 },
   header: { gap: Spacing.three, marginBottom: Spacing.three },
   empty: { textAlign: 'center' },

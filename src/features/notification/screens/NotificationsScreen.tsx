@@ -149,11 +149,6 @@ export function NotificationsScreen() {
       <View style={[styles.content, styles.top]}>
         <View style={styles.header}>
           <ThemedText type="subtitle">{t('notifications.title')}</ThemedText>
-          {hasUnread && (
-            <Pressable accessibilityRole="button" testID="notifications-read-all" hitSlop={Spacing.two} onPress={() => void markAllRead()}>
-              <ThemedText type="linkPrimary">{t('notifications.markAllRead')}</ThemedText>
-            </Pressable>
-          )}
         </View>
       </View>
       <View style={[styles.content, styles.list]}>
@@ -174,6 +169,14 @@ export function NotificationsScreen() {
             filters.fields.length > 0 || (filterFields?.length ?? 0) > 0
               ? { label: t('list.filters'), count: filterCount, onPress: () => router.push({ pathname: '/filters/[list]', params: { list: NOTIFICATIONS_FILTERS } }) }
               : null
+          }
+          // « Tout marquer comme lu », juste avant « Filtres ».
+          beforeFilter={
+            hasUnread ? (
+              <Pressable accessibilityRole="button" testID="notifications-read-all" hitSlop={Spacing.two} onPress={() => void markAllRead()}>
+                <ThemedText type="linkPrimary">{t('notifications.markAllRead')}</ThemedText>
+              </Pressable>
+            ) : null
           }
           contentContainerStyle={styles.items}
         />
