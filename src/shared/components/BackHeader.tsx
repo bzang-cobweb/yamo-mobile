@@ -1,5 +1,4 @@
 import { SymbolView } from 'expo-symbols';
-import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -11,8 +10,6 @@ import { Spacing } from '@/shared/theme/theme';
 type Props = {
   /** Titre de l'écran, affiché au centre (« Créer un compte »). */
   title: string;
-  /** Sous le titre, centré (la pastille du statut d'une notification) ; la barre s'agrandit. */
-  subtitle?: ReactNode;
 };
 
 /**
@@ -22,7 +19,7 @@ type Props = {
  * à l'étape précédente d'un formulaire à étapes, sinon à l'écran précédent
  * (`BackStackProvider`). Le placer hors du `ScrollView`.
  */
-export function BackHeader({ title, subtitle }: Props) {
+export function BackHeader({ title }: Props) {
   const theme = useTheme();
   const { t } = useI18n();
   const back = useBack();
@@ -31,13 +28,10 @@ export function BackHeader({ title, subtitle }: Props) {
   return (
     <View
       testID="back-header"
-      style={[styles.bar, subtitle ? styles.tall : null, { backgroundColor: theme.background, borderBottomColor: theme.backgroundSelected }]}>
-      <View style={styles.titles}>
-        <ThemedText type="smallBold" numberOfLines={1} style={styles.title} accessibilityRole="header" testID="back-header-title">
-          {title}
-        </ThemedText>
-        {subtitle}
-      </View>
+      style={[styles.bar, { backgroundColor: theme.background, borderBottomColor: theme.backgroundSelected }]}>
+      <ThemedText type="smallBold" numberOfLines={1} style={styles.title} accessibilityRole="header" testID="back-header-title">
+        {title}
+      </ThemedText>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('nav.back')}
@@ -69,11 +63,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  // Avec un sous-titre : la place du titre et de ce qu'il y a dessous.
-  tall: { height: 76 },
   // Centré sur toute la largeur, avec une marge pour ne jamais passer sous la flèche.
-  titles: { position: 'absolute', left: 56, right: 56, alignItems: 'center', gap: Spacing.one },
-  title: { textAlign: 'center' },
+  title: { position: 'absolute', left: 56, right: 56, textAlign: 'center' },
   back: { position: 'absolute', left: Spacing.three, padding: Spacing.one },
   close: { position: 'absolute', right: Spacing.three, padding: Spacing.one },
 });

@@ -24,9 +24,9 @@ import { formatStamp } from '../utils/stamp';
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
  * (décision 2026-11-20-suivi-conversation) :
- * - dans la barre du haut, le type de la notification (« Demande de logement ») et,
- *   dessous, la pastille du statut ;
- * - en haut, une zone fixe, qui ne défile pas : le texte de la demande, sans le nom de qui l'a faite (`summary`,
+ * - dans la barre du haut, le type de la notification (« Demande de logement ») ;
+ * - en haut, une zone fixe, qui ne défile pas : le texte de la demande, la pastille du
+ *   statut après, centrée, sans le nom de qui l'a faite (`summary`,
  *   à défaut `body`), et son total (la première étape, décision 2026-11-20-entete-premiere-etape) ;
  * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
  *   de l'autre partie à gauche, celles du lecteur à droite (« Toi ») ; sans demande, le message joint et la date ;
@@ -60,12 +60,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <BackStackProvider>
-          {/* Le type de la notification dans la barre du haut (« Demande de logement ») ; « Notification » en attendant ;
-              la pastille du statut dessous. */}
-          <BackHeader
-            title={notification?.title || t('notifications.detail')}
-            subtitle={notification?.tag ? <StatusTag tag={notification.tag} testID="notification-detail-tag" /> : undefined}
-          />
+          {/* Le type de la notification dans la barre du haut (« Demande de logement ») ; « Notification » en attendant. */}
+          <BackHeader title={notification?.title || t('notifications.detail')} />
           {query.isPending ? (
             <View style={styles.center}>
               <ActivityIndicator testID="notification-detail-loading" />
@@ -91,6 +87,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     onLink={go}
                     testID="notification-detail-text"
                   />
+                  {/* La pastille du statut après le texte, centrée. */}
+                  {notification.tag && (
+                    <View style={styles.tag} testID="notification-detail-tag-row">
+                      <StatusTag tag={notification.tag} testID="notification-detail-tag" />
+                    </View>
+                  )}
                   {/* Le total de la demande (logement meublé), en gras. */}
                   {notification.total && (
                     <ThemedText style={styles.total} testID="notification-detail-total">
@@ -137,6 +139,7 @@ const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
+  tag: { alignSelf: 'center' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
