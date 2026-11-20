@@ -9,6 +9,9 @@ import { FieldShell } from '../FieldShell';
 import { useInputStyle } from './inputStyle';
 import { OptionsModal } from './OptionsModal';
 
+/** Options affichées au plus dans une liste à rechercher. */
+export const SEARCHABLE_LIMIT = 10;
+
 /** Liste déroulante : la valeur choisie s'affiche ; un appui ouvre la liste des options. */
 export function SelectField({ field, value, onChange, error, disabled }: FieldProps<string>) {
   const { t } = useI18n();
@@ -40,6 +43,8 @@ export function SelectField({ field, value, onChange, error, disabled }: FieldPr
         onClose={() => setOpen(false)}
         testIDPrefix={`field-${field.name}`}
         searchable={Boolean(field.searchable)}
+        // Une liste à rechercher (un membre, un logement) : 10 options au plus, la recherche trouve les autres.
+        limit={field.searchable ? SEARCHABLE_LIMIT : undefined}
       />
     </FieldShell>
   );

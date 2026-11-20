@@ -4,8 +4,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormField } from '@/features/form/components/FormField';
-import type { FieldValue, FormValues } from '@/features/form/types';
-import { initialValue } from '@/features/form/utils/values';
+import type { FieldValue, FormFieldDefinition, FormValues } from '@/features/form/types';
+import { initialValue, isVisible } from '@/features/form/utils/values';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
@@ -18,20 +18,35 @@ import { setFilterValues, useListFilters } from '../utils/filters';
 
 /**
  * Les filtres d'une liste (`/filters/[list]`, décision 2026-11-19-contrat-filtres-vitrine) :
- * les champs servis par l'API, préremplis avec les filtres en cours, qui défilent ;
+ * les champs servis par l'API, préremplis avec les filtres en cours, qui défilent ; un
+ * champ conditionnel ne s'affiche (et ne s'applique) que si sa condition est remplie ;
  * en bas, dans une barre fixe (décision 2026-11-19-contrat-multiselect-intervalle-equipements),
  * « Appliquer les filtres » les applique et « Effacer les filtres » les remet à zéro,
  * puis retour à la liste. Un filtre invalide est ignoré par l'API.
  */
+/**
+ * Une liste déroulante de filtre commence par « Tous » (aucun filtre), choisi tant
+ * qu'on n'a rien choisi : même une liste d'une seule option n'est plus imposée.
+ */
+function withAll(field: FormFieldDefinition, label: string): FormFieldDefinition {
+  if (field.type !== 'select' || field.options.some((option) => option.value === '')) {
+    return field;
+  }
+
+  return { ...field, default: null, options: [{ value: '', label }, ...field.options] };
+}
+
 export function FilterScreen({ list }: { list: string }) {
   const { t } = useI18n();
   const theme = useTheme();
   const { fields, values: current } = useListFilters(list);
   const [values, setValues] = useState<FormValues>(() =>
-    Object.fromEntries(fields.map((field): [string, FieldValue] => [field.name, current[field.name] ?? initialValue(field)])),
+    Object.fromEntries(fields.map((field): [string, FieldValue] => [field.name, current[field.name] ?? initialValue(withAll(field, ''))])),
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Seuls les filtres dont la condition est remplie s'affichent (« Logement » pour un type de demande).
+  const visibleFields = fields.filter((field) => isVisible(field, values)).map((field) => withAll(field, t('list.all')));
 
   /** Un intervalle à l'envers (max sous le min) : erreur sous le champ, rien n'est appliqué. */
   function rangeErrors(): Record<string, string> {
@@ -55,7 +70,9 @@ export function FilterScreen({ list }: { list: string }) {
       return;
     }
 
-    setFilterValues(list, values);
+    // Un filtre masqué par sa condition (« Logement » sans type de demande) n'est pas appliqué.
+    const shown = new Set(visibleFields.map((field) => field.name));
+    setFilterValues(list, Object.fromEntries(Object.entries(values).filter(([name]) => shown.has(name))));
     router.back();
   }
 
@@ -70,7 +87,7 @@ export function FilterScreen({ list }: { list: string }) {
         <BackStackProvider>
           <BackHeader title={t('list.filters')} />
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="filter-screen">
-            {fields.map((field) => (
+            {visibleFields.map((field) => (
               <FormField
                 key={field.name}
                 field={{ ...field, required: false }}

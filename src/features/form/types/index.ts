@@ -57,7 +57,8 @@ export type FormFieldDefinition = {
   /** Option unique choisie d'office (ex. le seul pays actif) : non modifiable, mais envoyée. */
   locked?: boolean;
   /** Affiché (et envoyé) seulement quand le champ `field` vaut `value`. */
-  visible_when?: { field: string; value: string } | null;
+  /** Afficher seulement quand `field` vaut `value`, ou l'une des `values`. */
+  visible_when?: { field: string; value: string; values?: string[] } | null;
   /** Changer la valeur recharge le formulaire avec `?<nom>=<valeur>` (décision 2026-11-19-contrat-langue-saisie-allemand). */
   reloads?: boolean;
   /** Liste dépendante : nom du champ parent. */

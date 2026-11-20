@@ -119,4 +119,51 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
     });
     expect(seen[seen.length - 1].values).toEqual({});
   });
+
+  it('un filtre conditionnel ne s’affiche ni ne s’applique sans sa condition ; une liste à rechercher montre 10 options au plus', async () => {
+    const offers = Array.from({ length: 15 }, (_, index) => ({ value: String(index + 1), label: `Logement ${index + 1}` }));
+    setFilterFields('notifications', [
+      field({ name: 'type', type: 'select', options: [{ value: 'booking', label: 'Demande de logement' }, { value: 'other', label: 'Autre' }] }),
+      field({ name: 'offer', type: 'select', options: offers, searchable: true, visible_when: { field: 'type', value: 'booking', values: ['booking'] } }),
+    ]);
+    const seen: { values: Record<string, unknown> }[] = [];
+    function Probe() {
+      seen.push(useListFilters('notifications'));
+
+      return null;
+    }
+
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <FilterScreen list="notifications" />
+        <Probe />
+      </I18nContext.Provider>,
+    );
+
+    expect(screen.queryByTestId('field-offer')).toBeNull();
+    // Chaque liste commence par « Tous », choisi au départ.
+    expect(screen.getByTestId('field-type')).toHaveTextContent('Tous');
+    await fireEvent.press(screen.getByTestId('field-type'));
+    expect(screen.getAllByText('Tous').length).toBeGreaterThanOrEqual(2);
+    await fireEvent.press(screen.getByTestId('field-type-option-booking'));
+    // Le type choisi : « Logement » apparaît ; sa liste montre 10 options, la recherche trouve les autres.
+    await fireEvent.press(screen.getByTestId('field-offer'));
+    expect(screen.getAllByTestId(/^field-offer-option-/)).toHaveLength(10);
+    await fireEvent.changeText(screen.getByTestId('field-offer-search'), 'Logement 15');
+    await fireEvent.press(screen.getByTestId('field-offer-option-15'));
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('filter-apply'));
+    });
+    expect(seen[seen.length - 1].values).toEqual({ type: 'booking', offer: '15' });
+
+    // Un autre type : « Logement » disparaît et n'est plus appliqué.
+    setFilterValues('notifications', {});
+    await fireEvent.press(screen.getByTestId('field-type'));
+    await fireEvent.press(screen.getByTestId('field-type-option-other'));
+    expect(screen.queryByTestId('field-offer')).toBeNull();
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('filter-apply'));
+    });
+    expect(seen[seen.length - 1].values).toEqual({ type: 'other' });
+  });
 });

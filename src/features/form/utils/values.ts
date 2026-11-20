@@ -51,7 +51,12 @@ export function initialValues(definition: FormDefinition): FormValues {
 /** Le champ est-il affiché ? Non si sa condition (`visible_when`) n'est pas remplie. */
 export function isVisible(field: FormFieldDefinition, values: FormValues): boolean {
   // Une case vaut « true » ou « false » (décision 2026-11-19-charges-meuble-surface-facultative).
-  return !field.visible_when || String(values[field.visible_when.field] ?? '') === field.visible_when.value;
+  if (!field.visible_when) {
+    return true;
+  }
+  const value = String(values[field.visible_when.field] ?? '');
+
+  return (field.visible_when.values ?? [field.visible_when.value]).includes(value);
 }
 
 /**

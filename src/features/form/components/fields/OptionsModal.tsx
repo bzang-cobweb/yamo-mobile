@@ -23,20 +23,22 @@ type Props = {
   testIDPrefix: string;
   /** Recherche proposée même avec peu d'options. */
   searchable?: boolean;
+  /** Au plus ce nombre d'options affichées ; la recherche trouve les autres. Sans : toutes. */
+  limit?: number;
 };
 
 /** Fenêtre de choix commune aux listes déroulantes et au pays d'un téléphone. */
-export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false }: Props) {
+export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false, limit }: Props) {
   const { t } = useI18n();
   const theme = useTheme();
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
 
-    return needle === ''
-      ? options
-      : options.filter((option) => `${option.label} ${option.hint ?? ''}`.toLocaleLowerCase().includes(needle));
-  }, [options, query]);
+    const found = needle === '' ? options : options.filter((option) => `${option.label} ${option.hint ?? ''}`.toLocaleLowerCase().includes(needle));
+
+    return limit === undefined ? found : found.slice(0, limit);
+  }, [options, query, limit]);
 
   function close() {
     setQuery('');
