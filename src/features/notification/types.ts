@@ -48,8 +48,8 @@ export type NotificationBooking = {
   status: 'pending' | 'accepted' | 'refused' | 'cancelled';
   check_in: string;
   check_out: string | null;
-  /** L'offre, rédigée : son titre saisi, type de logement (« Studio »), type de location (« Location meublée »), ville. */
-  offer: { title: string | null; property_type: string | null; rental_type: string | null; city: string | null };
+  /** L'offre : son titre saisi et son type de location, rédigé (« Location meublée »). */
+  offer: { title: string | null; rental_type: string | null };
   /**
    * Les dates, une par ligne, rédigées : un séjour « Arrivée le 5 déc. 2026 à partir de 14:00 »,
    * « Départ le 7 déc. 2026 avant 11:00 » ; une visite « Visite le 28 nov. 2026 ou le 30 nov. 2026 ».

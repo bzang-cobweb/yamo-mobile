@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -36,7 +36,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
-  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', property_type: 'Studio', rental_type: 'Location meublée', city: null }, dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 avant 11:00'], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
+  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', rental_type: 'Location meublée' }, dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 avant 11:00'], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -105,11 +105,11 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
     // La pastille avant le texte, à gauche.
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ alignSelf: 'flex-start' });
-    // Le texte sans le nom de qui a fait la demande.
-    expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
-    expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
-    // Le titre de l'offre avant les dates, sans ce qui manque (la ville).
-    expect(screen.getByTestId('notification-detail-offer')).toHaveTextContent('Studio · Location meublée');
+    // Une demande : ni texte ni titre composé, ses lignes seulement (décision 2026-11-20-titre-demande).
+    expect(screen.queryByTestId('notification-detail-text')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
+    // Le type de location, après le nom de l'offre.
+    expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée');
     // Un séjour : l'arrivée et le départ, puis le nombre de personnes, après le texte.
     expect(screen.getByTestId('notification-detail-dates-0')).toHaveTextContent('Arrivée le 1 déc. 2026 à partir de 14:00');
     expect(screen.getByTestId('notification-detail-dates-1')).toHaveTextContent('Départ le 4 déc. 2026 avant 11:00');
@@ -131,6 +131,16 @@ describe('NotificationDetailScreen', () => {
     await waitFor(() => expect(notificationService.read).toHaveBeenCalledWith('n1'));
   });
 
+  it('sans demande : le texte, sans le nom de qui agit, et ses liens', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, booking: undefined });
+    await show();
+
+    expect(await screen.findByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
+    expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
+    await fireEvent.press(screen.getByText('Studio photos'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
+  });
+
   it('l’offre et le bouton ouvrent chacun leur écran', async () => {
     await show();
 
@@ -139,9 +149,6 @@ describe('NotificationDetailScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-link').props.style)).toMatchObject({ fontWeight: '700' });
 
-    // Le nom de l'offre dans le texte, aussi.
-    await fireEvent.press(within(screen.getByTestId('notification-detail-text')).getByText('Studio photos'));
-    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');
     expect(router.push).toHaveBeenLastCalledWith('/profile/lists/offer.bookings.received');
