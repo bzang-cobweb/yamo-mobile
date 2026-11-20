@@ -24,7 +24,7 @@ const AVATAR_SIZE = 32;
  * « Demande acceptée »), puis la date, alignée à droite (l'heure seule le jour même).
  * Le nom et la photo de l'autre ouvrent sa page (`onOpen`). Après la date d'une étape
  * du lecteur, des coches (décision 2026-11-20-coches-lecture) : une grise, l'autre ne
- * s'est pas connecté depuis ; deux grises, connecté sans l'avoir lue ; deux vertes, lue.
+ * s'est pas connecté depuis ; deux grises, connecté sans l'avoir lue ; une verte, lue.
  */
 export function NotificationConversation({ steps, onOpen }: { steps: NotificationStep[]; onOpen: (link: string) => void }) {
   const { t, locale } = useI18n();
@@ -84,7 +84,7 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
   );
 }
 
-/** Une coche (envoyée), deux (remise), deux vertes (lue). */
+/** Une coche (envoyée), deux (remise), une verte (lue). */
 function Ticks({ delivery, color, testID }: { delivery: 'sent' | 'delivered' | 'read'; color: string; testID: string }) {
   const { t } = useI18n();
   const tint = delivery === 'read' ? TONE_COLORS.success : color;
@@ -93,7 +93,7 @@ function Ticks({ delivery, color, testID }: { delivery: 'sent' | 'delivered' | '
   return (
     <View style={styles.ticks} accessible accessibilityLabel={t(`notifications.delivery.${delivery}`)} testID={`${testID}-${delivery}`}>
       <SymbolView name={check} size={12} tintColor={tint} weight="bold" />
-      {delivery !== 'sent' && <SymbolView name={check} size={12} tintColor={tint} weight="bold" style={styles.second} />}
+      {delivery === 'delivered' && <SymbolView name={check} size={12} tintColor={tint} weight="bold" style={styles.second} />}
     </View>
   );
 }
