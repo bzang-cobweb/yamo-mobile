@@ -93,12 +93,13 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     onLink={go}
                     testID="notification-detail-text"
                   />
-                  {/* Un séjour (meublé) : ses dates d'arrivée et de départ, après le texte. */}
-                  {notification.booking?.type === 'stay' && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-period">
-                      {notification.booking.period_label}
+                  {/* Les dates, après le texte, une par ligne : l'arrivée et le départ d'un séjour,
+                      la date d'une visite (décision 2026-11-20-heures-arrivee-depart). */}
+                  {(notification.booking?.dates ?? []).map((line, index) => (
+                    <ThemedText key={line} type="small" themeColor="textSecondary" testID={`notification-detail-dates-${index}`}>
+                      {line}
                     </ThemedText>
-                  )}
+                  ))}
                   {/* Le nombre de personnes, après le texte (un séjour). */}
                   {notification.booking?.guests_label && (
                     <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-guests">

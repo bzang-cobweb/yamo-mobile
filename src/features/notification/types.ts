@@ -48,8 +48,11 @@ export type NotificationBooking = {
   status: 'pending' | 'accepted' | 'refused' | 'cancelled';
   check_in: string;
   check_out: string | null;
-  /** Les dates, rédigées (« Du 5 déc. 2026 au 7 déc. 2026 », « Le 28 nov. 2026 »). */
-  period_label: string;
+  /**
+   * Les dates, une par ligne, rédigées : un séjour « Arrivée le 5 déc. 2026 à partir de 14:00 »,
+   * « Départ le 7 déc. 2026 avant 11:00 » ; une visite « Visite le 28 nov. 2026 ou le 30 nov. 2026 ».
+   */
+  dates: string[];
   guests: number | null;
   /** Le nombre de personnes, rédigé (« 2 personnes ») ; `null` pour une visite. */
   guests_label: string | null;

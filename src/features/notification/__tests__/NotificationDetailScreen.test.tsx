@@ -36,7 +36,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
-  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', period_label: 'Du 1 déc. 2026 au 4 déc. 2026', guests: 2, guests_label: '2 personnes', total: '255 000 FCFA' },
+  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 avant 11:00'], guests: 2, guests_label: '2 personnes', total: '255 000 FCFA' },
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -108,8 +108,9 @@ describe('NotificationDetailScreen', () => {
     // Le texte sans le nom de qui a fait la demande.
     expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
     expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
-    // Un séjour : ses dates, puis le nombre de personnes, après le texte.
-    expect(screen.getByTestId('notification-detail-period')).toHaveTextContent('Du 1 déc. 2026 au 4 déc. 2026');
+    // Un séjour : l'arrivée et le départ, puis le nombre de personnes, après le texte.
+    expect(screen.getByTestId('notification-detail-dates-0')).toHaveTextContent('Arrivée le 1 déc. 2026 à partir de 14:00');
+    expect(screen.getByTestId('notification-detail-dates-1')).toHaveTextContent('Départ le 4 déc. 2026 avant 11:00');
     expect(screen.getByTestId('notification-detail-guests')).toHaveTextContent('2 personnes');
     expect(screen.getByTestId('notification-detail-total')).toHaveTextContent('255 000 FCFA');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-total').props.style)).toMatchObject({ fontWeight: '700' });
