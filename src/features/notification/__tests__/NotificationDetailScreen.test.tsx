@@ -103,8 +103,8 @@ describe('NotificationDetailScreen', () => {
     expect(await screen.findByText('Demande de logement')).toBeTruthy();
     expect(screen.queryByText('Notification')).toBeNull();
     expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
-    // La pastille avant le texte, à gauche.
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ alignSelf: 'flex-start' });
+    // Une ligne : le type de location à gauche, la pastille à droite.
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
     // Une demande : ni texte ni titre composé, ses lignes seulement (décision 2026-11-20-titre-demande).
     expect(screen.queryByTestId('notification-detail-text')).toBeNull();
     expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
@@ -116,8 +116,9 @@ describe('NotificationDetailScreen', () => {
     // La durée, avant le nombre de personnes.
     expect(screen.getByTestId('notification-detail-days')).toHaveTextContent('3 jours');
     expect(screen.getByTestId('notification-detail-guests')).toHaveTextContent('2 personnes');
-    // Le prix, avant le total.
+    // Une ligne : le prix à gauche, le total à droite.
     expect(screen.getByTestId('notification-detail-price')).toHaveTextContent('85 000 FCFA / jour');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-price-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
     expect(screen.getByTestId('notification-detail-total')).toHaveTextContent('255 000 FCFA');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-total').props.style)).toMatchObject({ fontWeight: '700' });
     expect(screen.getByTestId('notification-detail-head')).toBeTruthy();

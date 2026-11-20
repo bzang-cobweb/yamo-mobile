@@ -25,8 +25,8 @@ import { formatStamp } from '../utils/stamp';
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
  * (décision 2026-11-20-suivi-conversation) :
  * - dans la barre du haut, le type de la notification (« Demande de logement ») ;
- * - en haut, une zone fixe, qui ne défile pas : la pastille du statut, à gauche, puis le
- *   texte de la demande, sans le nom de qui l'a faite (`summary`,
+ * - en haut, une zone fixe, qui ne défile pas : le type de location à gauche et la
+ *   pastille du statut à droite, puis le nom de l'offre ; sans demande, son texte, sans le nom de qui l'a faite (`summary`,
  *   à défaut `body`), et le total de la demande (`booking`, décision 2026-11-20-notification-generique) ;
  * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
  *   de l'autre partie à gauche, celles du lecteur à droite (« Toi ») ; sans demande, le message joint et la date ;
@@ -80,13 +80,17 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               {/* La zone fixe : la pastille à gauche, le texte, le total. */}
               <View style={[styles.head, { borderBottomColor: theme.backgroundSelected }]} testID="notification-detail-head">
                 <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
-                  {/* La pastille du statut avant le texte, à gauche. */}
-                  {notification.tag && (
-                    <View style={styles.tag} testID="notification-detail-tag-row">
-                      <StatusTag tag={notification.tag} testID="notification-detail-tag" />
+                  {/* Une ligne : le type de location en gras à gauche, la pastille du statut à droite
+                      (une notification sans demande : la pastille seule, à droite). */}
+                  {(notification.booking?.offer.rental_type || notification.tag) && (
+                    <View style={styles.headRow} testID="notification-detail-tag-row">
+                      <ThemedText type="smallBold" style={styles.headType} testID="notification-detail-rental-type">
+                        {notification.booking?.offer.rental_type ?? ''}
+                      </ThemedText>
+                      {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
                     </View>
                   )}
-                  {/* Le nom de l'offre, après la pastille : un lien vers sa fiche (décision 2026-11-20-titre-demande). */}
+                  {/* Le nom de l'offre, sous le type de location et la pastille : un lien vers sa fiche (décision 2026-11-20-titre-demande). */}
                   {notification.booking?.offer.title && (
                     <ThemedText
                       type="linkPrimary"
@@ -95,12 +99,6 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
                       testID="notification-detail-offer-link">
                       {notification.booking.offer.title}
-                    </ThemedText>
-                  )}
-                  {/* Le type de location, en gras, après le nom de l'offre. */}
-                  {notification.booking?.offer.rental_type && (
-                    <ThemedText type="smallBold" testID="notification-detail-rental-type">
-                      {notification.booking.offer.rental_type}
                     </ThemedText>
                   )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
@@ -133,17 +131,18 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.guests_label}
                     </ThemedText>
                   )}
-                  {/* Le prix du logement, avant le total. */}
-                  {notification.booking?.price_label && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-price">
-                      {notification.booking.price_label}
-                    </ThemedText>
-                  )}
-                  {/* Le total de la demande (logement meublé), en gras. */}
-                  {notification.booking?.total && (
-                    <ThemedText style={styles.total} testID="notification-detail-total">
-                      {notification.booking.total}
-                    </ThemedText>
+                  {/* Une ligne : le prix du logement à gauche, le total de la demande en gras à droite. */}
+                  {(notification.booking?.price_label || notification.booking?.total) && (
+                    <View style={styles.headRow} testID="notification-detail-price-row">
+                      <ThemedText type="small" themeColor="textSecondary" style={styles.headType} testID="notification-detail-price">
+                        {notification.booking.price_label ?? ''}
+                      </ThemedText>
+                      {notification.booking.total && (
+                        <ThemedText style={styles.total} testID="notification-detail-total">
+                          {notification.booking.total}
+                        </ThemedText>
+                      )}
+                    </View>
                   )}
                 </View>
               </View>
@@ -185,7 +184,8 @@ const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
-  tag: { alignSelf: 'flex-start' },
+  headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
+  headType: { flex: 1 },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
