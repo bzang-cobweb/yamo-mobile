@@ -163,6 +163,24 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-actions-9')).toBeNull();
   });
 
+  it('le statut sur la photo, à la place du cœur, quand l’API le demande (décision 2026-11-21-statut-a-la-place-du-coeur)', async () => {
+    mockList = list([
+      item('7', { image: 'https://api.test/storage/7.jpg', tag: { label: 'Publiée', tone: 'success', on_image: true } }),
+      item('8', { tag: { label: 'Brouillon', tone: 'neutral', on_image: true } }),
+      item('9', { image: 'https://api.test/storage/9.jpg', tag: { label: 'En attente', tone: 'warning' } }),
+    ]);
+    await renderScreen();
+
+    // Avec photo : sur la photo, en haut à droite.
+    expect(screen.getByTestId('profile-list-item-7-status')).toHaveTextContent('Publiée');
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7-status').props.style)).toMatchObject({ position: 'absolute' });
+    expect(screen.queryByTestId('profile-list-tag-7')).toBeNull();
+    // Sans photo, ou sans la demande de l'API : sous la photo, comme avant.
+    expect(screen.getByTestId('profile-list-tag-8')).toHaveTextContent('Brouillon');
+    expect(screen.getByTestId('profile-list-tag-9')).toHaveTextContent('En attente');
+    expect(screen.queryByTestId('profile-list-item-9-status')).toBeNull();
+  });
+
   it('« Éditer » avant « Retirer » ouvre le formulaire de l’item (décision 2026-11-21-editer-avant-retirer)', async () => {
     mockList = list([item('8')]);
     await renderScreen();

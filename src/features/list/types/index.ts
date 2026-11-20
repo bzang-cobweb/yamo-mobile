@@ -58,7 +58,8 @@ export type ListItem = {
   /** Boutons de la carte ; vide ou absent : aucun. */
   actions?: ListItemAction[];
   /** Pastille de couleur (un statut) ; `null` (ou absent) : aucune (décision 2026-11-19-contrat-reservations-logements-profil). */
-  tag?: { label: string; tone: 'warning' | 'success' | 'danger' | 'neutral' | string } | null;
+  /** `on_image` : sur la photo, à la place du cœur (décision 2026-11-21-statut-a-la-place-du-coeur). */
+  tag?: { label: string; tone: 'warning' | 'success' | 'danger' | 'neutral' | string; on_image?: boolean } | null;
   /** Compteur de la carte ; `null` (ou absent) : aucun. */
   counter?: ListItemCounter | null;
   delete: ListItemDelete | null;

@@ -11,6 +11,7 @@ import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { Accordion } from '@/shared/components/Accordion';
 import { BackHeader } from '@/shared/components/BackHeader';
+import { STATUS_ON_IMAGE, StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -97,15 +98,15 @@ export function OfferDetailScreen({ id }: { id: string }) {
             <ScrollView contentContainerStyle={styles.content} testID="offer-detail">
               <View style={{ width, alignSelf: 'center' }}>
                 <PhotoCarousel photos={offer.photos} width={width} />
-                {/* Le cœur d'un membre connecté, en haut à droite (décision 2026-11-19-contrat-vedette-favoris). */}
-                {offer.favorite && <FavoriteHeart favorite={offer.favorite} testID="offer-favorite" />}
+                {/* Le cœur d'un membre connecté, en haut à droite (décision 2026-11-19-contrat-vedette-favoris) ;
+                    pour le propriétaire, à cette place, le statut (décision 2026-11-21-statut-a-la-place-du-coeur). */}
+                {offer.favorite ? (
+                  <FavoriteHeart favorite={offer.favorite} testID="offer-favorite" />
+                ) : (
+                  offer.status && <StatusTag tag={offer.status} style={STATUS_ON_IMAGE} testID="offer-status" />
+                )}
               </View>
               <View style={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
-                {offer.status && (
-                  <ThemedText type="small" themeColor="textSecondary" testID="offer-status">
-                    {offer.status.label}
-                  </ThemedText>
-                )}
                 <ThemedText type="subtitle" testID="offer-title">
                   {offer.title}
                 </ThemedText>

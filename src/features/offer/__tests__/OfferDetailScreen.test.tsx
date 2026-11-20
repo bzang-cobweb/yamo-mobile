@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 
 import { ApiError } from '@/shared/api/errors';
 import type { ApiClient } from '@/shared/api/ApiClient';
@@ -255,11 +255,14 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
   });
 
   it('sans photo : un emplacement neutre ; le propriétaire voit le statut', async () => {
-    mockState = { data: { ...OFFER, photos: [], status: { value: 'draft', label: 'Brouillon' } }, isPending: false, error: null };
+    mockState = { data: { ...OFFER, photos: [], favorite: null, status: { value: 'draft', label: 'Brouillon', tone: 'neutral' } }, isPending: false, error: null };
     await show();
 
     expect(screen.getByTestId('offer-photos-empty')).toBeTruthy();
-    expect(screen.getByTestId('offer-status').props.children).toBe('Brouillon');
+    // En pastille sur la photo, à la place du cœur (décision 2026-11-21-statut-a-la-place-du-coeur).
+    expect(screen.getByTestId('offer-status')).toHaveTextContent('Brouillon');
+    expect(StyleSheet.flatten(screen.getByTestId('offer-status').props.style)).toMatchObject({ position: 'absolute', top: expect.any(Number), right: expect.any(Number) });
+    expect(screen.queryByTestId('offer-favorite')).toBeNull();
   });
 
   it('introuvable : le message, sans réessayer', async () => {

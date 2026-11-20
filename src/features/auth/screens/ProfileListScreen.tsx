@@ -154,6 +154,7 @@ export function ProfileListScreen({ list }: { list: string }) {
     // L'écran de l'app que l'item désigne (« /offers/12 », décision 2026-11-19-contrat-vedette-favoris).
     const link = item.link && ITEM_LINK.test(item.link) ? item.link : null;
     const removable = item.delete !== null && profileSubmission(item.delete) !== null;
+    const tagOnImage = Boolean(item.tag?.on_image && item.image && !item.favorite);
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
     // Avec une photo, des boutons ou « Retirer » : en colonne, la photo sur toute la largeur et les actions
@@ -196,8 +197,10 @@ export function ProfileListScreen({ list }: { list: string }) {
           onPress={() => (edit ? openEdit() : openLink())}
           style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
           {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
-          <ItemPicture item={item} testID={`profile-list-item-${item.id}`} />
-          {item.tag && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
+          {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
+              une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
+          <ItemPicture item={item} tag={tagOnImage ? item.tag : null} testID={`profile-list-item-${item.id}`} />
+          {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
           <ThemedText>{item.title}</ThemedText>
           {item.subtitle && (
             <ThemedText type="small" themeColor="textSecondary">

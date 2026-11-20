@@ -1,11 +1,14 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
-/** Une pastille de statut servie par l'API : son texte et son ton. */
-export type StatusTagValue = { label: string; tone: string };
+/**
+ * Une pastille de statut servie par l'API : son texte, son ton, et `on_image` quand elle va sur la
+ * photo, à la place du cœur (décision 2026-11-21-statut-a-la-place-du-coeur).
+ */
+export type StatusTagValue = { label: string; tone: string; on_image?: boolean };
 
 /** Les couleurs des pastilles de statut : en attente orange, acceptée verte, refusée rouge, sinon gris. */
 export const TONE_COLORS: Record<string, string> = {
@@ -19,9 +22,9 @@ export const TONE_COLORS: Record<string, string> = {
  * La pastille de couleur d'un statut (une demande, une annonce), la même dans les
  * listes du profil et dans les notifications.
  */
-export function StatusTag({ tag, testID }: { tag: StatusTagValue; testID?: string }) {
+export function StatusTag({ tag, style, testID }: { tag: StatusTagValue; style?: StyleProp<ViewStyle>; testID?: string }) {
   return (
-    <View style={[styles.tag, { backgroundColor: TONE_COLORS[tag.tone] ?? TONE_COLORS.neutral }]} testID={testID}>
+    <View style={[styles.tag, { backgroundColor: TONE_COLORS[tag.tone] ?? TONE_COLORS.neutral }, style]} testID={testID}>
       <ThemedText type="smallBold" style={styles.text}>
         {tag.label}
       </ThemedText>
@@ -32,4 +35,9 @@ export function StatusTag({ tag, testID }: { tag: StatusTagValue; testID?: strin
 const styles = StyleSheet.create({
   tag: { alignSelf: 'flex-start', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 10 },
   text: { color: '#ffffff' },
+  // Sur une photo, en haut à droite, à la place du cœur de favori.
+  onImage: { position: 'absolute', top: Spacing.two, right: Spacing.two },
 });
+
+/** La place d'une pastille sur une photo : celle du cœur de favori. */
+export const STATUS_ON_IMAGE = styles.onImage;

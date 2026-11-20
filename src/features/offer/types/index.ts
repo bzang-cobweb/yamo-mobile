@@ -29,7 +29,8 @@ export type OfferDetail = {
   sections?: OfferSection[];
   published_at: string | null;
   /** Statut, servi au seul propriétaire. */
-  status: { value: string; label: string } | null;
+  /** Pour le propriétaire : son statut, en pastille sur la photo (décision 2026-11-21-statut-a-la-place-du-coeur). */
+  status: { value: string; label: string; tone: string } | null;
   /** Cœur de favori d'un membre connecté ; `null` : pas de cœur (visiteur, sa propre offre). */
   favorite?: ListItemFavorite | null;
   /** Les avis ; `null` pour une offre non publiée (décision 2026-11-19-contrat-avis-offres). */
