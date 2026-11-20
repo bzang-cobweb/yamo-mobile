@@ -27,7 +27,7 @@ import { formatStamp } from '../utils/stamp';
  * - dans la barre du haut, le type de la notification (« Demande de logement ») ;
  * - en haut, une zone fixe, qui ne défile pas : la pastille du statut, centrée, puis le
  *   texte de la demande, sans le nom de qui l'a faite (`summary`,
- *   à défaut `body`), et son total (la première étape, décision 2026-11-20-entete-premiere-etape) ;
+ *   à défaut `body`), et le total de la demande (`booking`, décision 2026-11-20-notification-generique) ;
  * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
  *   de l'autre partie à gauche, celles du lecteur à droite (« Toi ») ; sans demande, le message joint et la date ;
  * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
@@ -94,9 +94,9 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     testID="notification-detail-text"
                   />
                   {/* Le total de la demande (logement meublé), en gras. */}
-                  {notification.total && (
+                  {notification.booking?.total && (
                     <ThemedText style={styles.total} testID="notification-detail-total">
-                      {notification.total}
+                      {notification.booking.total}
                     </ThemedText>
                   )}
                 </View>

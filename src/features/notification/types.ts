@@ -15,8 +15,6 @@ export type AppNotification = {
   actor?: NotificationActor | null;
   /** Le texte sans le nom de qui agit, pour la carte ; `null` : `body`. */
   summary?: string | null;
-  /** Le total de la demande (« 255 000 FCFA »), en gras sur la page ; `null` (ou absent) sans total. */
-  total?: string | null;
   /** Message joint, saisi par un utilisateur (celui du membre, le motif d'un refus), ou `null`. */
   message: string | null;
   /** Écran de l'app à ouvrir (`/profile/lists/offer.bookings`), ou `null`. */
@@ -35,6 +33,23 @@ export type AppNotification = {
    * à la plus récente, des deux côtés ; vide sans demande (décision 2026-11-20-suivi-demande).
    */
   history?: NotificationStep[];
+  /**
+   * Sur la page d'une notification du fil d'une demande : la demande, ajoutée par le
+   * module Offer (décision 2026-11-20-notification-generique) ; absent sinon.
+   */
+  booking?: NotificationBooking | null;
+};
+
+/** Une demande, en léger : son total figé (« 255 000 FCFA »), `null` pour une visite. */
+export type NotificationBooking = {
+  id: string;
+  offer_id: string;
+  type: 'stay' | 'visit';
+  status: 'pending' | 'accepted' | 'refused' | 'cancelled';
+  check_in: string;
+  check_out: string | null;
+  guests: number | null;
+  total: string | null;
 };
 
 /** Une étape du suivi d'une demande : « Demande acceptée », qui, son message, sa date. */
