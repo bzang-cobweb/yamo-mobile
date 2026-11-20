@@ -26,7 +26,7 @@ import { formatStamp } from '../utils/stamp';
  * (décision 2026-11-20-suivi-conversation) :
  * - dans la barre du haut, le type de la notification (« Demande de logement ») ;
  * - en haut, une zone fixe, qui ne défile pas : le texte de la demande, la pastille
- *   du statut après, alignée à droite, sans le nom de qui l'a faite (`summary`,
+ *   du statut en haut à droite, comme sur les cartes, sans le nom de qui l'a faite (`summary`,
  *   à défaut `body`), et son total (la première étape, décision 2026-11-20-entete-premiere-etape) ;
  * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
  *   de l'autre partie à gauche, celles du lecteur à droite (« Toi ») ; sans demande, le message joint et la date ;
@@ -80,19 +80,19 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               {/* La zone fixe : le type et la pastille à droite, le texte, le total. */}
               <View style={[styles.head, { borderBottomColor: theme.backgroundSelected }]} testID="notification-detail-head">
                 <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
-                  <NotificationText
-                    type="default"
-                    body={notification.summary ?? notification.body}
-                    links={notification.text_links ?? []}
-                    onLink={go}
-                    testID="notification-detail-text"
-                  />
-                  {/* La pastille du statut après le texte, alignée à droite. */}
-                  {notification.tag && (
-                    <View style={styles.tag} testID="notification-detail-tag-row">
-                      <StatusTag tag={notification.tag} testID="notification-detail-tag" />
+                  {/* Le texte de la demande, la pastille du statut en haut à droite, comme sur les cartes. */}
+                  <View style={styles.headRow} testID="notification-detail-tag-row">
+                    <View style={styles.headText}>
+                      <NotificationText
+                        type="default"
+                        body={notification.summary ?? notification.body}
+                        links={notification.text_links ?? []}
+                        onLink={go}
+                        testID="notification-detail-text"
+                      />
                     </View>
-                  )}
+                    {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
+                  </View>
                   {/* Le total de la demande (logement meublé), en gras. */}
                   {notification.total && (
                     <ThemedText style={styles.total} testID="notification-detail-total">
@@ -139,7 +139,8 @@ const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
-  tag: { alignSelf: 'flex-end' },
+  headRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
+  headText: { flex: 1 },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
