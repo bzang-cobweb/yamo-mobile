@@ -8,6 +8,7 @@ import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
+import { StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -16,7 +17,6 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { NotificationConversation } from '../components/NotificationConversation';
-import { NotificationType } from '../components/NotificationType';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
 import { formatStamp } from '../utils/stamp';
@@ -24,8 +24,9 @@ import { formatStamp } from '../utils/stamp';
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
  * (décision 2026-11-20-suivi-conversation) :
- * - en haut, une zone fixe, qui ne défile pas : le type en gras et la pastille du
- *   statut à droite ; le texte de la demande, sans le nom de qui l'a faite (`summary`,
+ * - dans la barre du haut, le type de la notification (« Demande de logement ») ;
+ * - en haut, une zone fixe, qui ne défile pas : la pastille du statut à droite du
+ *   texte de la demande, sans le nom de qui l'a faite (`summary`,
  *   à défaut `body`), et son total (la première étape, décision 2026-11-20-entete-premiere-etape) ;
  * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
  *   de l'autre partie à gauche, celles du lecteur à droite (« Toi ») ; sans demande, le message joint et la date ;
@@ -59,7 +60,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <BackStackProvider>
-          <BackHeader title={t('notifications.detail')} />
+          {/* Le type de la notification dans la barre du haut (« Demande de logement ») ; « Notification » en attendant. */}
+          <BackHeader title={notification?.title || t('notifications.detail')} />
           {query.isPending ? (
             <View style={styles.center}>
               <ActivityIndicator testID="notification-detail-loading" />
@@ -78,14 +80,19 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               {/* La zone fixe : le type et la pastille à droite, le texte, le total. */}
               <View style={[styles.head, { borderBottomColor: theme.backgroundSelected }]} testID="notification-detail-head">
                 <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
-                  <NotificationType type={notification.title} tag={notification.tag} testID="notification-detail" />
-                  <NotificationText
-                    type="default"
-                    body={notification.summary ?? notification.body}
-                    links={notification.text_links ?? []}
-                    onLink={go}
-                    testID="notification-detail-text"
-                  />
+                  {/* Le texte de la demande, la pastille du statut à droite. */}
+                  <View style={styles.headRow}>
+                    <View style={styles.headText}>
+                      <NotificationText
+                        type="default"
+                        body={notification.summary ?? notification.body}
+                        links={notification.text_links ?? []}
+                        onLink={go}
+                        testID="notification-detail-text"
+                      />
+                    </View>
+                    {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
+                  </View>
                   {/* Le total de la demande (logement meublé), en gras. */}
                   {notification.total && (
                     <ThemedText style={styles.total} testID="notification-detail-total">
@@ -132,6 +139,8 @@ const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
+  headRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
+  headText: { flex: 1 },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },

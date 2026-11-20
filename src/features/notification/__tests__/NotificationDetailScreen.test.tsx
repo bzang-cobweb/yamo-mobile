@@ -94,11 +94,13 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-message')).toBeNull();
   });
 
-  it('la zone fixe : le type, la pastille, le texte et le total, sans photo ni coordonnées ; ouverte, elle est marquée lue', async () => {
+  it('la barre du haut : le type ; la zone fixe : la pastille, le texte et le total, sans photo ni coordonnées ; ouverte, elle est marquée lue', async () => {
     await show();
 
-    expect(await screen.findByTestId('notification-detail-type')).toHaveTextContent('Demande de logement');
-    expect(screen.getByText('En attente')).toBeTruthy();
+    // Le type dans la barre du haut, à la place de « Notification ».
+    expect(await screen.findByText('Demande de logement')).toBeTruthy();
+    expect(screen.queryByText('Notification')).toBeNull();
+    expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
     // Le texte sans le nom de qui a fait la demande.
     expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
     expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
