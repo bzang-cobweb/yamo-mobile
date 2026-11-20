@@ -22,10 +22,10 @@ import { useMarkRead, useNotification } from '../hooks/useNotifications';
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste :
  * - à la place du titre, qui agit, comme sur la carte (photo cerclée de vert en
- *   ligne, nom, date complète) ; sans qui agit, le titre ;
+ *   ligne, nom), avec son e-mail et son téléphone ; sans qui agit, le titre ;
  * - son statut ;
  * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
- * - le message joint, entier ;
+ * - le message joint, entier, puis la date complète, alignée à droite ;
  * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
  *
  * Ouverte, elle est marquée lue.
@@ -71,10 +71,11 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               </Pressable>
             </View>
           ) : (
-            <ScrollView contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
+            // Sans marge ajoutée par iOS en haut du contenu (un vide au-dessus de la photo).
+            <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
               {/* À la place du titre : qui agit, comme sur la carte (photo cerclée de vert en ligne, nom, date complète) ;
                   sans qui agit (ancienne notification), le titre. */}
-              <NotificationActor actor={notification.actor} title={notification.title} date={date ?? ''} onOpen={go} testID="notification-detail" />
+              <NotificationActor actor={notification.actor} title={notification.title} date={null} contact onOpen={go} testID="notification-detail" />
               {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
               <NotificationText
                 type="default"
@@ -85,6 +86,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               />
               {/* Même ordre que la carte : le statut, le texte, puis le message, entier ici. */}
               {notification.message && <Quote text={notification.message} testID="notification-detail-message" />}
+              {/* La date, après le message, alignée à droite. */}
+              {date && (
+                <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID="notification-detail-date">
+                  {date}
+                </ThemedText>
+              )}
             </ScrollView>
           )}
           {/* Le bouton dans la barre fixe du bas : « Traiter la demande » (le propriétaire), « Mes réservations » (le membre). */}
@@ -106,4 +113,5 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   error: { color: ERROR_COLOR },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
+  date: { textAlign: 'right' },
 });

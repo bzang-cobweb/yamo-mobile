@@ -30,7 +30,17 @@ export type AppNotification = {
 };
 
 /** Qui agit dans une notification (décision 2026-11-19-page-membre). */
-export type NotificationActor = { id: string; name: string; initials: string; photo: string | null; online: boolean; link: string };
+export type NotificationActor = {
+  id: string;
+  name: string;
+  initials: string;
+  photo: string | null;
+  online: boolean;
+  link: string;
+  /** Sur la page d'une notification seulement : son e-mail et son téléphone (décision 2026-11-20-coordonnees-notification). */
+  email?: string | null;
+  phone?: string | null;
+};
 
 /** Une page de notifications, et les filtres de la liste (décision 2026-11-20-filtres-notifications). */
 export type NotificationPage = { items: AppNotification[]; next_cursor: string | null; filters?: FormFieldDefinition[] };

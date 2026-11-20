@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
@@ -25,7 +26,7 @@ const NOTIFICATION: AppNotification = {
   title: 'Demande de logement',
   tag: { label: 'En attente', tone: 'warning' },
   body: 'Paul Etoa demande un séjour pour « Studio photos ».',
-  actor: { id: '37', name: 'Paul Etoa', initials: 'PE', photo: null, online: true, link: '/members/37' },
+  actor: { id: '37', name: 'Paul Etoa', initials: 'PE', photo: null, online: true, link: '/members/37', email: 'paul@example.test', phone: '+237 6 90 00 00 99' },
   summary: 'demande un séjour pour « Studio photos ».',
   message: 'Tournage d’un clip.',
   link: '/profile/lists/offer.bookings.received',
@@ -69,6 +70,10 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByText('Notification')).toBeTruthy();
     expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.getByTestId('notification-detail-date')).toHaveTextContent(/2026/);
+    // Ses coordonnées sous son nom ; la date après le message, alignée à droite.
+    expect(screen.getByTestId('notification-detail-email')).toHaveTextContent('paul@example.test');
+    expect(screen.getByTestId('notification-detail-phone')).toHaveTextContent('+237 6 90 00 00 99');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-date').props.style)).toMatchObject({ textAlign: 'right' });
     // Qui agit, comme sur la carte ; le texte sans son nom.
     expect(screen.getByTestId('notification-detail-avatar-online')).toBeTruthy();
     expect(screen.getByTestId('notification-detail-actor')).toHaveTextContent('Paul Etoa');

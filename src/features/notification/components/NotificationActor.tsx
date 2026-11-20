@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/features/auth/components/Avatar';
 import { TONE_COLORS } from '@/shared/components/StatusTag';
@@ -19,7 +19,23 @@ const AVATAR_SIZE = 52;
  * La photo et le nom ouvrent sa page. Sans qui agit (ancienne notification) : le
  * titre à la place du nom.
  */
-export function NotificationActor({ actor, title, date, onOpen, testID }: { actor: Actor | null | undefined; title: string; date: string; onOpen: (link: string) => void; testID: string }) {
+export function NotificationActor({
+  actor,
+  title,
+  date,
+  onOpen,
+  testID,
+  contact = false,
+}: {
+  actor: Actor | null | undefined;
+  title: string;
+  /** Sous le nom ; `null` : pas de date ici (la page la met après le message). */
+  date: string | null;
+  onOpen: (link: string) => void;
+  testID: string;
+  /** Sous le nom, l'e-mail et le téléphone de qui agit (la page d'une notification). */
+  contact?: boolean;
+}) {
   return (
     <View style={styles.head}>
       {actor && (
@@ -41,9 +57,21 @@ export function NotificationActor({ actor, title, date, onOpen, testID }: { acto
         ) : (
           <ThemedText type="smallBold">{title}</ThemedText>
         )}
-        <ThemedText type="small" themeColor="textSecondary" testID={`${testID}-date`}>
-          {date}
-        </ThemedText>
+        {contact && actor?.email && (
+          <ThemedText type="small" themeColor="textSecondary" accessibilityRole="link" testID={`${testID}-email`} onPress={() => void Linking.openURL(`mailto:${actor.email}`)}>
+            {actor.email}
+          </ThemedText>
+        )}
+        {contact && actor?.phone && (
+          <ThemedText type="small" themeColor="textSecondary" accessibilityRole="link" testID={`${testID}-phone`} onPress={() => void Linking.openURL(`tel:${actor.phone?.replace(/\s/g, '')}`)}>
+            {actor.phone}
+          </ThemedText>
+        )}
+        {date !== null && (
+          <ThemedText type="small" themeColor="textSecondary" testID={`${testID}-date`}>
+            {date}
+          </ThemedText>
+        )}
       </View>
     </View>
   );
