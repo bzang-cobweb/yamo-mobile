@@ -72,6 +72,8 @@ export type FormFieldDefinition = {
    * comptent alors comme des nuits). Absente : sélecteur natif.
    */
   calendar?: { unavailable: string[]; after: string | null } | null;
+  /** Liste déroulante : une recherche en tête des options, quel que soit leur nombre ; absent : au-delà de 12. */
+  searchable?: boolean;
   /** Unité affichée après la valeur (« m² »), ou `null` (décision 2026-11-18-fiche-offre). */
   suffix?: string | null;
   /**

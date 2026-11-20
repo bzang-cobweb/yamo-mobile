@@ -17,6 +17,7 @@ import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { ITEM_LINK } from '@/features/list/services/ListService';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { List } from '@/shared/components/List';
+import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -336,21 +337,7 @@ function openFooter(footer: { form: string | null; link: string | null }) {
   }
 }
 
-/** Pause après la dernière frappe avant d'envoyer la recherche. */
-export const SEARCH_DELAY = 300;
-
-/** `value`, une fois qu'il n'a plus changé pendant `delay` ms. */
-function useDebounced(value: string, delay: number): string {
-  const [settled, setSettled] = useState(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setSettled(value), delay);
-
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return settled;
-}
+export { SEARCH_DELAY };
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },

@@ -15,6 +15,21 @@ function filterName(key: string): string {
   return `filter%5B${encodeURIComponent(key)}%5D`;
 }
 
+/**
+ * Les filtres choisis en paramètres d'adresse : `filter[ville]=Douala`,
+ * `filter[type][]=studio` (décision 2026-11-19-contrat-filtres-vitrine). Les crochets
+ * sont encodés aussi : laissés bruts, l'adresse est invalide et iOS la réencode en
+ * entier, « Yaoundé » devenant « Yaound%25C3%25A9 », un filtre qui ne trouve rien.
+ */
+export function filterParams(filters: FormValues): string[] {
+  return Object.entries(filters).flatMap(([key, value]) =>
+    Array.isArray(value)
+      ? // Une liste de groupes n'est pas un filtre : seules les valeurs simples partent.
+        value.filter((item): item is string => typeof item === 'string').map((item) => `${filterName(key)}%5B%5D=${encodeURIComponent(item)}`)
+      : [`${filterName(key)}=${encodeURIComponent(String(value))}`],
+  );
+}
+
 /** Listes servies par l'API. */
 export class ListService {
   constructor(private readonly client: ApiClient = apiClient) {}
@@ -28,15 +43,7 @@ export class ListService {
     const params = [
       cursor ? `cursor=${encodeURIComponent(cursor)}` : null,
       search?.trim() ? `search=${encodeURIComponent(search.trim())}` : null,
-      // `filter[ville]=Douala`, `filter[type][]=studio` (décision 2026-11-19-contrat-filtres-vitrine).
-      // Les crochets sont encodés aussi : laissés bruts, l'adresse est invalide et iOS la
-      // réencode en entier, « Yaoundé » devenant « Yaound%25C3%25A9 », un filtre qui ne trouve rien.
-      ...Object.entries(filters).flatMap(([key, value]) =>
-        Array.isArray(value)
-          ? // Une liste de groupes n'est pas un filtre : seules les valeurs simples partent.
-            value.filter((item): item is string => typeof item === 'string').map((item) => `${filterName(key)}%5B%5D=${encodeURIComponent(item)}`)
-          : [`${filterName(key)}=${encodeURIComponent(String(value))}`],
-      ),
+      ...filterParams(filters),
     ].filter((param) => param !== null);
     const query = params.length > 0 ? `?${params.join('&')}` : '';
 

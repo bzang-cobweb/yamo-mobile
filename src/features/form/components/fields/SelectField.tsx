@@ -39,6 +39,7 @@ export function SelectField({ field, value, onChange, error, disabled }: FieldPr
         onSelect={onChange}
         onClose={() => setOpen(false)}
         testIDPrefix={`field-${field.name}`}
+        searchable={Boolean(field.searchable)}
       />
     </FieldShell>
   );

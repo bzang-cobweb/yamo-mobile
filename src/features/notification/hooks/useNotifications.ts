@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from '@
 import { useCallback } from 'react';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import type { FormValues } from '@/features/form/types';
 import { useI18n } from '@/shared/i18n/I18nContext';
 
 import { notificationService } from '../services/NotificationService';
@@ -43,20 +44,25 @@ export function useNotification(id: string) {
 }
 
 /**
- * La liste par pages (la plus récente en tête), rechargée quand la langue change ;
+ * La liste par pages (la plus récente en tête), restreinte à la recherche et aux
+ * filtres, rechargée quand la langue change ;
  * marquer lue une notification, ou toutes, met à jour la liste et la pastille.
  */
-export function useNotifications() {
+export function useNotifications(search = '', filters: FormValues = {}) {
   const { locale } = useI18n();
   const queryClient = useQueryClient();
-  const queryKey = [...LIST_KEY, locale];
+  const queryKey = [...LIST_KEY, locale, search.trim(), filters];
 
   const query = useInfiniteQuery({
     queryKey,
-    queryFn: ({ pageParam }) => notificationService.list(pageParam),
+    queryFn: ({ pageParam }) => notificationService.list(pageParam, search, filters),
     initialPageParam: null as string | null,
     getNextPageParam: (last: NotificationPage) => last.next_cursor ?? undefined,
-    select: (data: InfiniteData<NotificationPage, string | null>): AppNotification[] => data.pages.flatMap((page) => page.items),
+    placeholderData: (previous) => previous,
+    select: (data: InfiniteData<NotificationPage, string | null>) => ({
+      items: data.pages.flatMap((page) => page.items),
+      filters: data.pages[0]?.filters ?? [],
+    }),
   });
 
   const refreshCount = useCallback(() => queryClient.invalidateQueries({ queryKey: UNREAD_KEY }), [queryClient]);

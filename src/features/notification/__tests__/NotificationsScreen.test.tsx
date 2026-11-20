@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
+import type { FormFieldDefinition } from '@/features/form/types';
+import { resetFilters, setFilterValues } from '@/features/list/utils/filters';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 
@@ -9,6 +11,7 @@ import { NotificationsScreen } from '../screens/NotificationsScreen';
 import { notificationService } from '../services/NotificationService';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
+jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('expo-router', () => {
   const { useEffect } = jest.requireActual<typeof import('react')>('react');
 
@@ -40,6 +43,7 @@ async function show() {
 
 describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications)', () => {
   beforeEach(() => {
+    resetFilters();
     jest.clearAllMocks();
     jest.mocked(notificationService.list).mockResolvedValue(PAGE);
     jest.mocked(notificationService.unreadCount).mockResolvedValue(1);
@@ -119,7 +123,26 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     jest.mocked(notificationService.list).mockResolvedValue({ items: [], next_cursor: null });
     await show();
 
-    expect(await screen.findByTestId('notifications-empty')).toHaveTextContent("Aucune notification pour l'instant.");
+    expect(await screen.findByTestId('notifications-list-empty')).toHaveTextContent("Aucune notification pour l'instant.");
     expect(screen.queryByTestId('notifications-read-all')).toBeNull();
+  });
+
+  it('la recherche et les filtres servis par l’API restreignent la liste', async () => {
+    const filters: FormFieldDefinition[] = [{ name: 'offer', type: 'select', label: 'Logement', placeholder: null, help: null, required: false, default: null, options: [{ value: '22', label: 'Studio photos' }] }];
+    jest.mocked(notificationService.list).mockResolvedValue({ ...PAGE, filters });
+    await show();
+
+    // Le lien « Filtres » ouvre l’écran des filtres de la liste « notifications ».
+    await fireEvent.press(await screen.findByText('Filtres'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/filters/[list]', params: { list: 'notifications' } });
+
+    // Une recherche, après la pause de frappe, puis un filtre choisi : les deux partent à l’API.
+    jest.mocked(notificationService.list).mockResolvedValue({ items: [], next_cursor: null, filters });
+    await fireEvent.changeText(screen.getByTestId('notifications-list-search'), 'paul');
+    await waitFor(() => expect(notificationService.list).toHaveBeenLastCalledWith(null, 'paul', {}));
+    setFilterValues('notifications', { offer: '22' });
+    await waitFor(() => expect(notificationService.list).toHaveBeenLastCalledWith(null, 'paul', { offer: '22' }));
+    expect(await screen.findByText('Aucune notification ne correspond à cette recherche.')).toBeTruthy();
+    expect(screen.getByTestId('notifications-list-filter-badge')).toHaveTextContent('1');
   });
 });

@@ -15,6 +15,8 @@ export const TEST_MESSAGES: Messages = {
   'notifications.open': 'Ouvrir',
   'notifications.markAllRead': 'Tout marquer comme lu',
   'notifications.empty': "Aucune notification pour l'instant.",
+  'notifications.search': 'Rechercher un membre ou un logement…',
+  'notifications.noResults': 'Aucune notification ne correspond à cette recherche.',
   'notifications.unread': 'Non lue',
   'notifications.justNow': "à l'instant",
   'notifications.minutesAgo': 'il y a :count min',
