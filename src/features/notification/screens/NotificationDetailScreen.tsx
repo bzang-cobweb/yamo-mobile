@@ -25,8 +25,8 @@ import { formatStamp } from '../utils/stamp';
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
  * (décision 2026-11-20-suivi-conversation) :
  * - en haut, une zone fixe, qui ne défile pas : le type en gras et la pastille du
- *   statut à droite ; le texte de la demande (le nom de qui l'a faite y ouvre sa page)
- *   et son total (la première étape, décision 2026-11-20-entete-premiere-etape) ;
+ *   statut à droite ; le texte de la demande, sans le nom de qui l'a faite (`summary`,
+ *   à défaut `body`), et son total (la première étape, décision 2026-11-20-entete-premiere-etape) ;
  * - dessous, ce qui défile : le suivi de la demande comme une conversation, le membre
  *   à gauche, le propriétaire à droite ; le nom et la photo de chacun ouvrent sa page ; sans demande, le message joint et la date ;
  * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
@@ -81,7 +81,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                   <NotificationType type={notification.title} tag={notification.tag} testID="notification-detail" />
                   <NotificationText
                     type="default"
-                    body={notification.body}
+                    body={notification.summary ?? notification.body}
                     links={notification.text_links ?? []}
                     onLink={go}
                     testID="notification-detail-text"

@@ -97,7 +97,9 @@ describe('NotificationDetailScreen', () => {
 
     expect(await screen.findByTestId('notification-detail-type')).toHaveTextContent('Demande de logement');
     expect(screen.getByText('En attente')).toBeTruthy();
-    expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('Paul Etoa demande un séjour pour « Studio photos ».');
+    // Le texte sans le nom de qui a fait la demande.
+    expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
+    expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
     expect(screen.getByTestId('notification-detail-total')).toHaveTextContent('255 000 FCFA');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-total').props.style)).toMatchObject({ fontWeight: '700' });
     expect(screen.getByTestId('notification-detail-head')).toBeTruthy();
@@ -112,12 +114,10 @@ describe('NotificationDetailScreen', () => {
     await waitFor(() => expect(notificationService.read).toHaveBeenCalledWith('n1'));
   });
 
-  it('le membre, l’offre et le bouton ouvrent chacun leur écran', async () => {
+  it('l’offre et le bouton ouvrent chacun leur écran', async () => {
     await show();
 
-    await fireEvent.press(await screen.findByText('Paul Etoa'));
-    expect(router.push).toHaveBeenLastCalledWith('/members/37');
-    await fireEvent.press(screen.getByText('Studio photos'));
+    await fireEvent.press(await screen.findByText('Studio photos'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');
