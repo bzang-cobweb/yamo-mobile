@@ -93,6 +93,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     onLink={go}
                     testID="notification-detail-text"
                   />
+                  {/* Un séjour (meublé) : ses dates d'arrivée et de départ, après le texte. */}
+                  {notification.booking?.type === 'stay' && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-period">
+                      {notification.booking.period_label}
+                    </ThemedText>
+                  )}
                   {/* Le nombre de personnes, après le texte (un séjour). */}
                   {notification.booking?.guests_label && (
                     <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-guests">
