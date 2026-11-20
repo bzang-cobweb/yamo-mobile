@@ -15,6 +15,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { NotificationActor } from '../components/NotificationActor';
+import { NotificationHistory } from '../components/NotificationHistory';
 import { NotificationType } from '../components/NotificationType';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
@@ -26,6 +27,8 @@ import { useMarkRead, useNotification } from '../hooks/useNotifications';
  * - son type en gras, et dessous le statut réel de la demande ;
  * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
  * - le message joint, entier, puis la date complète, alignée à droite ;
+ * - le suivi de la demande, de la plus ancienne étape à la plus récente, des deux côtés
+ *   (décision 2026-11-20-suivi-demande) ;
  * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
  *
  * Ouverte, elle est marquée lue.
@@ -98,6 +101,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                   {date}
                 </ThemedText>
               )}
+              {/* Le suivi de la demande : toutes ses étapes, des deux côtés. */}
+              <NotificationHistory steps={notification.history ?? []} />
             </ScrollView>
           )}
           {/* Le bouton dans la barre fixe du bas : « Traiter la demande » (le propriétaire), « Mes réservations » (le membre). */}

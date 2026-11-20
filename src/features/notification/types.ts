@@ -27,7 +27,22 @@ export type AppNotification = {
   text_links: { text: string; link: string }[];
   /** Libellé du bouton qui ouvre `link` (« Réservations reçues ») ; `null` : un libellé générique. */
   link_label: string | null;
+  /** Lue ; pour la carte d'une demande, toutes ses étapes le sont. */
   read: boolean;
+  created_at: string | null;
+  /**
+   * Sur la page d'une notification : le suivi de la demande, de la plus ancienne étape
+   * à la plus récente, des deux côtés ; vide sans demande (décision 2026-11-20-suivi-demande).
+   */
+  history?: NotificationStep[];
+};
+
+/** Une étape du suivi d'une demande : « Demande acceptée », qui, son message, sa date. */
+export type NotificationStep = {
+  id: string;
+  label: string;
+  actor: NotificationActor | null;
+  message: string | null;
   created_at: string | null;
 };
 

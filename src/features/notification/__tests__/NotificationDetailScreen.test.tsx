@@ -61,6 +61,31 @@ describe('NotificationDetailScreen', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
+  it('le suivi de la demande, de la plus ancienne étape à la plus récente (décision 2026-11-20-suivi-demande)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({
+      ...NOTIFICATION,
+      history: [
+        { id: 's1', label: 'Demande envoyée', actor: { id: '37', name: 'Membre', initials: 'ME', photo: null, online: false, link: '/members/37' }, message: 'Bonjour !', created_at: '2026-11-20T09:00:00Z' },
+        { id: 's2', label: 'Demande refusée', actor: { id: '4', name: 'Propriétaire', initials: 'PR', photo: null, online: false, link: '/members/4' }, message: 'Déjà réservé', created_at: '2026-11-20T10:00:00Z' },
+      ],
+    });
+    await show();
+
+    expect(await screen.findByText('Suivi de la demande')).toBeTruthy();
+    expect(screen.getByTestId('notification-history-0-label')).toHaveTextContent('Demande envoyée');
+    expect(screen.getByTestId('notification-history-0-actor')).toHaveTextContent('Membre');
+    expect(screen.getByTestId('notification-history-1-label')).toHaveTextContent('Demande refusée');
+    expect(screen.getByTestId('notification-history-1-message')).toHaveTextContent('Déjà réservé');
+    expect(screen.getByTestId('notification-history-1-date')).toBeTruthy();
+  });
+
+  it('sans demande, pas de suivi', async () => {
+    await show();
+
+    expect(await screen.findByTestId('notification-detail-actor')).toBeTruthy();
+    expect(screen.queryByTestId('notification-history')).toBeNull();
+  });
+
   it('qui agit à la place du titre, son statut, sa date, son texte, son message ; ouverte, elle est marquée lue', async () => {
     await show();
 
