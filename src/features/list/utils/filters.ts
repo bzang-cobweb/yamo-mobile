@@ -30,11 +30,7 @@ export function useListFilters(name: string): Entry {
   return useSyncExternalStore(subscribe, () => entries.get(name) ?? EMPTY);
 }
 
-/**
- * Les champs servis par l'API pour la liste ; les valeurs choisies sont gardées. À la
- * première réception, un filtre que l'API choisit d'emblée (`selected`, un type unique)
- * est appliqué comme un choix (décision 2026-11-20-type-unique-preselectionne).
- */
+/** Les champs servis par l'API pour la liste ; les valeurs choisies sont gardées. */
 export function setFilterFields(name: string, fields: FormFieldDefinition[]) {
   const current = entries.get(name);
 
@@ -42,10 +38,7 @@ export function setFilterFields(name: string, fields: FormFieldDefinition[]) {
     return;
   }
 
-  const preselected = current?.fields.length
-    ? {}
-    : Object.fromEntries(fields.filter((field) => field.selected !== undefined).map((field): [string, string] => [field.name, field.selected as string]));
-  entries.set(name, { fields, values: { ...preselected, ...(current?.values ?? {}) } });
+  entries.set(name, { fields, values: current?.values ?? {} });
   emit();
 }
 

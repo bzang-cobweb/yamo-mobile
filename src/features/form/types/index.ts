@@ -91,8 +91,6 @@ export type FormFieldDefinition = {
   upload?: UploadSettings | null;
   /** Liste de groupes (`repeater`) : sous-champs d'un groupe, nombre maximal, libellé du bouton d'ajout ; `null` (ou absent) pour un autre type. */
   repeater?: RepeaterSettings | null;
-  /** Un filtre de liste choisi d'emblée, appliqué à la première ouverture (décision 2026-11-20-type-unique-preselectionne). */
-  selected?: string;
   default: unknown;
   options: FieldOption[];
 };
