@@ -96,21 +96,12 @@ export function ProfileScreen() {
             </ThemedText>
           )}
           <View style={styles.links}>
-            {(menu.data ?? []).map((item, index, items) => {
+            {/* Une seule liste, sans titre de groupe (décision 2026-11-21-menu-profil-sans-groupes) :
+                les liens dans l'ordre servi. */}
+            {(menu.data ?? []).map((item) => {
               const href = menuHref(item);
-              // Le titre du groupe, devant son premier lien (décision 2026-11-19-contrat-reservations-logements-profil).
-              const startsGroup = item.group && item.group.key !== items[index - 1]?.group?.key;
 
-              return href === null ? null : (
-                <View key={item.key} style={styles.linkWithGroup}>
-                  {startsGroup && item.group && (
-                    <ThemedText type="smallBold" themeColor="textSecondary" style={styles.group} testID={`profile-group-${item.group.key}`}>
-                      {item.group.label}
-                    </ThemedText>
-                  )}
-                  <ProfileMenuLink href={href} label={item.label} testID={`profile-link-${item.key}`} />
-                </View>
-              );
+              return href === null ? null : <ProfileMenuLink key={item.key} href={href} label={item.label} testID={`profile-link-${item.key}`} />;
             })}
           </View>
           <SignOutButton />
@@ -134,6 +125,4 @@ const styles = StyleSheet.create({
   },
   identity: { alignItems: 'center', gap: Spacing.one },
   links: { gap: Spacing.two },
-  linkWithGroup: { gap: Spacing.two },
-  group: { marginTop: Spacing.three, textTransform: 'uppercase', letterSpacing: 0.5 },
 });

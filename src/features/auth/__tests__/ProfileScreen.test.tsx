@@ -148,7 +148,7 @@ describe('ProfileScreen', () => {
     expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'auth.addresses' } });
   });
 
-  it('range le menu en groupes titrés, un titre par groupe (décision 2026-11-19-contrat-reservations-logements-profil)', async () => {
+  it('une seule liste, sans titre de groupe, dans l’ordre servi (décision 2026-11-21-menu-profil-sans-groupes)', async () => {
     const account = { key: 'account', label: 'Compte' };
     const traveler = { key: 'traveler', label: 'Voyageur' };
     mockMenu = [
@@ -159,13 +159,12 @@ describe('ProfileScreen', () => {
     ];
     await renderProfile();
 
-    expect(screen.getByTestId('profile-group-account')).toHaveTextContent('Compte');
-    expect(screen.getAllByText('Compte')).toHaveLength(1);
-    expect(screen.getByTestId('profile-group-traveler')).toHaveTextContent('Voyageur');
-    expect(screen.getByTestId('profile-group-host')).toHaveTextContent('Hôte');
+    expect(screen.queryByText('Compte')).toBeNull();
+    expect(screen.queryByText('Voyageur')).toBeNull();
+    expect(screen.queryByText('Hôte')).toBeNull();
     const json = JSON.stringify(screen.toJSON());
-    expect(json.indexOf('profile-group-traveler')).toBeLessThan(json.indexOf('profile-link-bookings'));
-    expect(json.indexOf('profile-link-bookings')).toBeLessThan(json.indexOf('profile-group-host'));
+    const order = ['personal', 'addresses', 'bookings', 'offers'].map((key) => json.indexOf(`profile-link-${key}`));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
   });
 
   it('ignore un lien sans formulaire (réponse d’un serveur plus ancien)', async () => {
