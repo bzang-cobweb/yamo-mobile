@@ -110,8 +110,8 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     await fireEvent.press(await screen.findByTestId('offer-calendar-day-2026-12-03'));
     expect(await screen.findByText('Jeudi 3 décembre 2026')).toBeTruthy();
     expect(offerService.calendarDay).toHaveBeenCalledWith('7', '2026-12-03');
-    // Le message sur une ligne, comme sur une carte de notification.
-    expect(screen.getByText('J’arrive tard.').props.numberOfLines).toBe(1);
+    // Pas de message sur la carte du calendrier.
+    expect(screen.queryByText('J’arrive tard.')).toBeNull();
     // En carte de notification : qui demande, la pastille, le texte, le total en gras.
     expect(screen.getByTestId('calendar-item-9-actor')).toHaveTextContent('Marie Curie');
     // Le membre n'est pas cliquable depuis la carte.
