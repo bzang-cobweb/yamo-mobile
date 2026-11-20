@@ -44,6 +44,8 @@ export type NotificationStep = {
   actor: NotificationActor | null;
   message: string | null;
   created_at: string | null;
+  /** Pour une étape du lecteur : sa notification envoyée, remise (l'autre s'est connecté depuis), lue ; `null` sinon. */
+  delivery?: 'sent' | 'delivered' | 'read' | null;
 };
 
 /** Qui agit dans une notification (décision 2026-11-19-page-membre). */

@@ -68,7 +68,7 @@ describe('NotificationDetailScreen', () => {
         { id: 's1', label: 'Demande envoyée', actor: { id: '37', name: 'Membre', initials: 'ME', photo: null, online: false, link: '/members/37' }, message: 'Bonjour !', created_at: '2026-11-20T09:00:00Z' },
         { id: 's2', label: 'Demande acceptée', actor: { id: '4', name: 'Propriétaire', initials: 'PR', photo: null, online: false, link: '/members/4' }, message: null, created_at: '2026-11-20T10:00:00Z' },
         // Le lecteur (compte 1) : « Toi », sans photo.
-        { id: 's3', label: 'Demande annulée', actor: { id: '1', name: 'Moi Même', initials: 'MM', photo: null, online: false, link: '/members/1' }, message: null, created_at: '2026-11-20T11:00:00Z' },
+        { id: 's3', label: 'Demande annulée', actor: { id: '1', name: 'Moi Même', initials: 'MM', photo: null, online: false, link: '/members/1' }, message: null, created_at: '2026-11-20T11:00:00Z', delivery: 'delivered' },
       ],
     });
     await show();
@@ -81,7 +81,9 @@ describe('NotificationDetailScreen', () => {
     // L'autre partie à gauche, même le propriétaire ; le lecteur à droite.
     expect(StyleSheet.flatten(screen.getByTestId('notification-history-1').props.style)).toMatchObject({ alignSelf: 'flex-start' });
     expect(StyleSheet.flatten(screen.getByTestId('notification-history-2').props.style)).toMatchObject({ alignSelf: 'flex-end' });
-    expect(StyleSheet.flatten(screen.getByTestId('notification-history-1-date').props.style)).toMatchObject({ textAlign: 'right' });
+    // Les coches après la date d'une étape du lecteur seulement (décision 2026-11-20-coches-lecture).
+    expect(screen.getByTestId('notification-history-2-delivery-delivered').props.accessibilityLabel).toBe('Reçue');
+    expect(screen.queryByTestId('notification-history-1-delivery-sent')).toBeNull();
     // Le nom et la photo ouvrent la page du membre.
     await fireEvent.press(screen.getByTestId('notification-history-0-actor'));
     expect(router.push).toHaveBeenLastCalledWith('/members/37');
@@ -101,6 +103,8 @@ describe('NotificationDetailScreen', () => {
     expect(await screen.findByText('Demande de logement')).toBeTruthy();
     expect(screen.queryByText('Notification')).toBeNull();
     expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
+    // La pastille après le texte, alignée à droite.
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ alignSelf: 'flex-end' });
     // Le texte sans le nom de qui a fait la demande.
     expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
     expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');

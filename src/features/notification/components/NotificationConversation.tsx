@@ -1,7 +1,9 @@
+import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/features/auth/components/Avatar';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -20,7 +22,9 @@ const AVATAR_SIZE = 32;
  * « Toi », sans photo ; celles de l'autre partie à gauche : la photo de qui l'a faite
  * dans un petit cercle, son nom. Dessous, le message (à défaut le libellé de l'étape,
  * « Demande acceptée »), puis la date, alignée à droite (l'heure seule le jour même).
- * Le nom et la photo de l'autre ouvrent sa page (`onOpen`).
+ * Le nom et la photo de l'autre ouvrent sa page (`onOpen`). Après la date d'une étape
+ * du lecteur, des coches (décision 2026-11-20-coches-lecture) : une grise, l'autre ne
+ * s'est pas connecté depuis ; deux grises, connecté sans l'avoir lue ; deux vertes, lue.
  */
 export function NotificationConversation({ steps, onOpen }: { steps: NotificationStep[]; onOpen: (link: string) => void }) {
   const { t, locale } = useI18n();
@@ -62,15 +66,34 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
               <ThemedText type="small" testID={`notification-history-${index}-message`}>
                 {step.message ?? step.label}
               </ThemedText>
-              {step.created_at && (
-                <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`notification-history-${index}-date`}>
-                  {formatStamp(step.created_at, locale)}
-                </ThemedText>
+              {(step.created_at || (mine && step.delivery)) && (
+                <View style={styles.footer}>
+                  {step.created_at && (
+                    <ThemedText type="small" themeColor="textSecondary" testID={`notification-history-${index}-date`}>
+                      {formatStamp(step.created_at, locale)}
+                    </ThemedText>
+                  )}
+                  {mine && step.delivery && <Ticks delivery={step.delivery} color={theme.textSecondary} testID={`notification-history-${index}-delivery`} />}
+                </View>
               )}
             </View>
           </View>
         );
       })}
+    </View>
+  );
+}
+
+/** Une coche (envoyée), deux (remise), deux vertes (lue). */
+function Ticks({ delivery, color, testID }: { delivery: 'sent' | 'delivered' | 'read'; color: string; testID: string }) {
+  const { t } = useI18n();
+  const tint = delivery === 'read' ? TONE_COLORS.success : color;
+  const check = { ios: 'checkmark', android: 'check', web: 'check' } as const;
+
+  return (
+    <View style={styles.ticks} accessible accessibilityLabel={t(`notifications.delivery.${delivery}`)} testID={`${testID}-${delivery}`}>
+      <SymbolView name={check} size={12} tintColor={tint} weight="bold" />
+      {delivery !== 'sent' && <SymbolView name={check} size={12} tintColor={tint} weight="bold" style={styles.second} />}
     </View>
   );
 }
@@ -81,6 +104,10 @@ const styles = StyleSheet.create({
   // Le lecteur à droite.
   stepMine: { alignSelf: 'flex-end' },
   bubble: { flexShrink: 1, gap: Spacing.half, borderRadius: 12, paddingVertical: Spacing.two, paddingHorizontal: Spacing.three },
-  date: { textAlign: 'right' },
+  // La date à droite, les coches après.
+  footer: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.one },
+  ticks: { flexDirection: 'row' },
+  // La seconde coche chevauche la première.
+  second: { marginLeft: -6 },
   pressed: { opacity: 0.7 },
 });
