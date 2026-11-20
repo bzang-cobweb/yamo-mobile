@@ -23,8 +23,8 @@ import { useMarkRead, useNotification } from '../hooks/useNotifications';
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste :
  * - à la place du titre, qui agit, comme sur la carte (photo cerclée de vert en
  *   ligne, nom, date complète) ; sans qui agit, le titre ;
- * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
  * - son statut ;
+ * - son texte, sans le nom de qui agit, avec ses passages liés (l'offre) ;
  * - le message joint, entier ;
  * - dans la barre fixe du bas, un bouton vers l'écran qu'elle désigne (« Traiter la demande »).
  *
@@ -75,6 +75,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               {/* À la place du titre : qui agit, comme sur la carte (photo cerclée de vert en ligne, nom, date complète) ;
                   sans qui agit (ancienne notification), le titre. */}
               <NotificationActor actor={notification.actor} title={notification.title} date={date ?? ''} onOpen={go} testID="notification-detail" />
+              {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
               <NotificationText
                 type="default"
                 body={notification.actor && notification.summary ? notification.summary : notification.body}
@@ -82,8 +83,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                 onLink={go}
                 testID="notification-detail-text"
               />
-              {/* Même ordre que la carte : le texte, le statut, puis le message, entier ici. */}
-              {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
+              {/* Même ordre que la carte : le statut, le texte, puis le message, entier ici. */}
               {notification.message && <Quote text={notification.message} testID="notification-detail-message" />}
             </ScrollView>
           )}

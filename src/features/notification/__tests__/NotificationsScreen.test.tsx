@@ -83,7 +83,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
-  it('la carte : qui agit (cerclé de vert en ligne) et la date, puis le texte sans son nom, le statut, le message', async () => {
+  it('la carte : qui agit (cerclé de vert en ligne) et la date, le statut, puis le texte sans son nom, le message', async () => {
     await show();
 
     expect(await screen.findByTestId('notification-a-avatar-online')).toBeTruthy();

@@ -118,15 +118,15 @@ export function NotificationsScreen() {
           onOpen={(link) => open(item, link)}
           testID={`notification-${item.id}`}
         />
-        {/* 2. Le texte, sans le nom de qui agit. */}
+        {/* 2. Le statut, juste sous qui agit. */}
+        {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
+        {/* 3. Le texte, sans le nom de qui agit. */}
         <NotificationText
           body={item.actor && item.summary ? item.summary : item.body}
           links={item.text_links ?? []}
           onLink={(link) => open(item, link)}
           testID={`notification-${item.id}-text`}
         />
-        {/* 3. Le statut. */}
-        {item.tag && <StatusTag tag={item.tag} testID={`notification-${item.id}-tag`} />}
         {/* 4. Le message envoyé, sur une ligne (« … » au-delà ; entier sur la page de la notification). */}
         {item.message && <Quote text={item.message} numberOfLines={1} testID={`notification-${item.id}-message`} />}
         {item.links.map((link, index) => (
