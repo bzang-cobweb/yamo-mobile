@@ -18,7 +18,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-import { OfferReviews } from '../components/OfferReviews';
+import { OfferReviews, openReviewForm, reviewActions, useReviewRemoval } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { useOfferDetail } from '../hooks/useOfferDetail';
 import type { OfferDetail } from '../types';
@@ -143,7 +143,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                     case 'reviews':
                       return offer.reviews ? (
                         <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
-                          <OfferReviews offerId={offer.id} reviews={offer.reviews} onChanged={changed} />
+                          <OfferReviews offerId={offer.id} reviews={offer.reviews} />
                         </Accordion>
                       ) : null;
                     default:
@@ -170,8 +170,9 @@ export function OfferDetailScreen({ id }: { id: string }) {
               </View>
             </ScrollView>
           )}
-          {/* Barre fixe en bas : le prix et le bouton de réservation (décision 2026-11-19-contrat-reservations). */}
-          {offer && (offer.price || offer.booking || offer.edit) && <BookingBar offer={offer} />}
+          {/* Barre fixe en bas : les boutons d'avis, le prix et le bouton de réservation
+              (décisions 2026-11-19-contrat-reservations et 2026-11-20-boutons-avis-fiche). */}
+          {offer && <BookingBar offer={offer} onReviewChanged={changed} />}
         </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
@@ -183,19 +184,46 @@ export function OfferDetailScreen({ id }: { id: string }) {
  * visiteur passe d'abord par la connexion ; un membre ouvre le formulaire décrit par
  * Laravel, lié à l'offre. Sa propre offre : « Modifier », qui ouvre le formulaire de
  * l'offre (décision 2026-11-19-fiche-bouton-modifier) ; après l'enregistrement, la
- * fiche se recharge.
+ * fiche se recharge. Au-dessus, sur une ligne, les boutons d'avis que donne
+ * `reviewActions` (décision 2026-11-20-boutons-avis-fiche). Rien à montrer : pas de barre.
  */
-function BookingBar({ offer }: { offer: OfferDetail }) {
+function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewChanged: (message: string | null, failed?: boolean) => void }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const booking = offer.booking;
   const edit = offer.edit;
+  const empty = { average: null, count: 0, latest: [], mine: null, can_review: false, delete: null };
+  const reviews = offer.reviews ?? empty;
+  const removeReview = useReviewRemoval(reviews, onReviewChanged);
+  const actions = offer.reviews ? reviewActions(offer.reviews, user !== null).bar.filter((action) => action !== 'delete' || removeReview !== null) : [];
+
+  if (!offer.price && !booking && !edit && actions.length === 0) {
+    return null;
+  }
 
   return (
     <View
       testID="offer-booking-bar"
       style={[styles.bar, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background, paddingBottom: Math.max(insets.bottom, Spacing.three) }]}>
+      {actions.length > 0 && (
+        <View style={[styles.barReviews, { maxWidth: MaxContentWidth / 2 }]} testID="offer-review-bar">
+          {actions.map((action) => (
+            <Pressable
+              key={action}
+              testID={`offer-review-bar-${action}`}
+              accessibilityRole="button"
+              onPress={() => (action === 'delete' ? removeReview?.() : openReviewForm(offer.id))}
+              style={({ pressed }) => [styles.reviewButton, { borderColor: action === 'delete' ? ERROR_COLOR : theme.primary }, pressed && styles.pressed]}>
+              <ThemedText type="smallBold" style={{ color: action === 'delete' ? ERROR_COLOR : theme.primary }}>
+                {action === 'delete' ? (reviews.delete?.label ?? '') : action === 'edit' ? t('offer.editReview') : t('offer.writeReview')}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+      )}
+      {(offer.price || booking || edit) && (
       <View style={[styles.barContent, { maxWidth: MaxContentWidth / 2 }]}>
         <View style={styles.barPrice}>
           {offer.price && (
@@ -229,6 +257,7 @@ function BookingBar({ offer }: { offer: OfferDetail }) {
           </Pressable>
         )}
       </View>
+      )}
     </View>
   );
 }
@@ -286,6 +315,8 @@ const styles = StyleSheet.create({
   bar: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
   barContent: { width: '100%', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   barPrice: { flex: 1 },
+  barReviews: { width: '100%', alignSelf: 'center', flexDirection: 'row', gap: Spacing.two, marginBottom: Spacing.two },
+  reviewButton: { flex: 1, alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: Spacing.two },
   bookButton: { paddingVertical: Spacing.three, paddingHorizontal: Spacing.four, borderRadius: 12, alignItems: 'center' },
   pressed: { opacity: 0.7 },
 });

@@ -290,20 +290,16 @@ describe('OfferDetailScreen : avis', () => {
     expect(screen.queryByTestId('offer-review-write')).toBeNull();
   });
 
-  it('plus d’avis que ceux servis : « Voir tous les avis » ouvre la liste complète ; sinon, pas de bouton', async () => {
-    // Décision 2026-11-19-contrat-paiement-visibilite-avis : le nombre servi vient de Laravel.
+  it('des avis : « Voir tous les avis » ouvre la liste complète, même quand tous sont servis', async () => {
+    // Décision 2026-11-20-boutons-avis-fiche.
     await show();
     await openSections();
-    expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
-
-    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, latest: OFFER.reviews!.latest.slice(0, 1) } }, isPending: false, error: null };
-    await show();
-    await openSections();
-    expect(screen.getAllByTestId('offer-review')).toHaveLength(1);
 
     expect(screen.getByText('Voir tous les avis')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('offer-reviews-all'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/reviews', params: { id: OFFER.id } });
+    // Un visiteur n'a aucun bouton d'avis dans la barre.
+    expect(screen.queryByTestId('offer-review-bar')).toBeNull();
   });
 
   it('un cœur sur la photo quand l’API en sert un ; aucun sinon', async () => {
@@ -330,24 +326,53 @@ describe('OfferDetailScreen : avis', () => {
     expect(screen.queryByTestId('offer-reviews')).toBeNull();
   });
 
-  it('membre : « Donner mon avis » ouvre le formulaire de l’offre ; le propriétaire n’a pas de bouton', async () => {
+  it('aucun avis : « Donner mon avis » dans la section', async () => {
+    mockUser = { id: 3 };
+    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, average: null, count: 0, latest: [], can_review: true } }, isPending: false, error: null };
+    await show();
+    await openSections();
+
+    expect(screen.getByTestId('offer-review-write')).toHaveTextContent('Donner mon avis');
+    expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
+    expect(screen.queryByTestId('offer-review-bar')).toBeNull();
+    await fireEvent.press(screen.getByTestId('offer-review-write'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/review', params: { id: '7' } });
+  });
+
+  it('un seul avis, le sien : « Modifier mon avis » dans la section, sans suppression', async () => {
+    mockUser = { id: 3 };
+    const mine = { rating: 4, comment: 'Très bon accueil.' };
+    mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, count: 1, latest: OFFER.reviews!.latest.slice(1), can_review: true, mine, delete: DELETE } }, isPending: false, error: null };
+    await show();
+    await openSections();
+
+    expect(screen.getByTestId('offer-review-write')).toHaveTextContent('Modifier mon avis');
+    expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
+    expect(screen.queryByTestId('offer-review-bar')).toBeNull();
+    expect(screen.queryByText('Supprimer mon avis')).toBeNull();
+  });
+
+  it('des avis, aucun du membre : « Voir tous les avis » ; « Donner mon avis » dans la barre ; le propriétaire n’a pas de bouton', async () => {
     mockUser = { id: 3 };
     mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, can_review: true } }, isPending: false, error: null };
     await show();
     await openSections();
 
-    expect(screen.getByText('Donner mon avis')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('offer-review-write'));
+    expect(screen.getByTestId('offer-reviews-all')).toBeTruthy();
+    expect(screen.queryByTestId('offer-review-write')).toBeNull();
+    const bar = screen.getByTestId('offer-review-bar');
+    expect(within(bar).getByText('Donner mon avis')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('offer-review-bar-write'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/review', params: { id: '7' } });
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
     await openSections();
-    expect(screen.queryByTestId('offer-review-write')).toBeNull();
+    expect(screen.queryByTestId('offer-review-bar')).toBeNull();
     expect(screen.queryByTestId('offer-reviews-sign-in')).toBeNull();
   });
 
-  it('avec son avis : « Modifier mon avis », et le retirer après confirmation', async () => {
+  it('plusieurs avis dont le sien : « Voir tous les avis » ; « Modifier » et « Supprimer » dans la barre, après confirmation', async () => {
     mockUser = { id: 3 };
     mockState = {
       data: { ...OFFER, reviews: { ...OFFER.reviews!, can_review: true, mine: { rating: 4, comment: 'Très bon accueil.' }, delete: DELETE } },
@@ -358,9 +383,12 @@ describe('OfferDetailScreen : avis', () => {
     await show();
     await openSections();
 
-    expect(screen.getByText('Modifier mon avis')).toBeTruthy();
+    expect(screen.getByTestId('offer-reviews-all')).toBeTruthy();
+    expect(screen.queryByTestId('offer-review-write')).toBeNull();
+    expect(screen.queryByTestId('offer-review-delete')).toBeNull();
+    expect(screen.getByTestId('offer-review-bar-edit')).toHaveTextContent('Modifier mon avis');
     await act(async () => {
-      fireEvent.press(screen.getByTestId('offer-review-delete'));
+      fireEvent.press(screen.getByTestId('offer-review-bar-delete'));
     });
 
     expect(alert).toHaveBeenCalledWith('Supprimer votre avis sur cette offre ?', undefined, expect.any(Array));
