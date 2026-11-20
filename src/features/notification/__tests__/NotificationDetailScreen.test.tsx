@@ -41,7 +41,6 @@ const NOTIFICATION: AppNotification = {
     offer: { title: 'Studio photos', rental_type: 'Location meublée' },
     lines: [
       { key: 'guests', label: 'Personnes', value: '2' },
-      { key: 'bedrooms', label: 'Chambres', value: '1' },
       { key: 'arrival', label: 'Arrivée', value: '1 déc. 2026 à partir de 14:00' },
       { key: 'departure', label: 'Départ', value: '4 déc. 2026 au plus tard à 11:00' },
       { key: 'days', label: 'Durée', value: '3 jours' },
@@ -123,7 +122,7 @@ describe('NotificationDetailScreen', () => {
     // Le type de location, après le nom de l'offre.
     expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée');
     // Les lignes, dans l'ordre servi, le libellé à gauche et la valeur à droite (décision 2026-11-20-lignes-demande).
-    const keys = ['guests', 'bedrooms', 'arrival', 'departure', 'days', 'price', 'total'];
+    const keys = ['guests', 'arrival', 'departure', 'days', 'price', 'total'];
     const json = JSON.stringify(screen.toJSON());
     expect(keys.map((key) => json.indexOf(`"notification-detail-line-${key}"`))).toEqual([...keys.map((key) => json.indexOf(`"notification-detail-line-${key}"`))].sort((a, b) => a - b));
     expect(screen.getByTestId('notification-detail-line-arrival-label')).toHaveTextContent('Arrivée');

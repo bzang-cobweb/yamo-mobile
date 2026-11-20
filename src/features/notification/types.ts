@@ -53,7 +53,7 @@ export type NotificationBooking = {
   offer: { title: string | null; rental_type: string | null };
   /**
    * Les lignes à afficher, dans l'ordre, libellé et valeur rédigés (décision
-   * 2026-11-20-lignes-demande) : `guests`, `bedrooms`, `arrival`, `departure` (ou `visit`,
+   * 2026-11-20-lignes-demande) : `guests`, `arrival`, `departure` (ou `visit`,
    * `second`), `days`, `price`, `total`.
    */
   lines: { key: string; label: string; value: string }[];
