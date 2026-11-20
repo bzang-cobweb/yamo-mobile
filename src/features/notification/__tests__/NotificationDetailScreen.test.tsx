@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -36,7 +36,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
-  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { property_type: 'Studio', rental_type: 'Location meublée', city: null }, dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 avant 11:00'], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
+  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', property_type: 'Studio', rental_type: 'Location meublée', city: null }, dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 avant 11:00'], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -134,7 +134,13 @@ describe('NotificationDetailScreen', () => {
   it('l’offre et le bouton ouvrent chacun leur écran', async () => {
     await show();
 
-    await fireEvent.press(await screen.findByText('Studio photos'));
+    // Le nom de l'offre, après la pastille, ouvre sa fiche.
+    await fireEvent.press(await screen.findByTestId('notification-detail-offer-link'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-link').props.style)).toMatchObject({ fontWeight: '700' });
+
+    // Le nom de l'offre dans le texte, aussi.
+    await fireEvent.press(within(screen.getByTestId('notification-detail-text')).getByText('Studio photos'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');

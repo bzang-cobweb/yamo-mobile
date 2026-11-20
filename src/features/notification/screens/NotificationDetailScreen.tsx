@@ -87,6 +87,17 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       <StatusTag tag={notification.tag} testID="notification-detail-tag" />
                     </View>
                   )}
+                  {/* Le nom de l'offre, après la pastille : un lien vers sa fiche (décision 2026-11-20-titre-demande). */}
+                  {notification.booking?.offer.title && (
+                    <ThemedText
+                      type="linkPrimary"
+                      style={styles.offerLink}
+                      accessibilityRole="link"
+                      onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
+                      testID="notification-detail-offer-link">
+                      {notification.booking.offer.title}
+                    </ThemedText>
+                  )}
                   <NotificationText
                     type="default"
                     body={notification.summary ?? notification.body}
@@ -97,7 +108,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                   {/* Le titre de l'offre, avant les dates : « Studio · Location meublée · Douala »
                       (décision 2026-11-20-titre-demande). */}
                   {notification.booking && offerTitle(notification.booking.offer) !== '' && (
-                    <ThemedText type="smallBold" testID="notification-detail-offer">
+                    <ThemedText type="small" testID="notification-detail-offer">
                       {offerTitle(notification.booking.offer)}
                     </ThemedText>
                   )}
@@ -181,4 +192,6 @@ const styles = StyleSheet.create({
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
+  // Le nom de l'offre, en gras.
+  offerLink: { fontWeight: '700' },
 });
