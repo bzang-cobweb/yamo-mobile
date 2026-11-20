@@ -101,6 +101,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
+                  {/* Le nombre de personnes, après le nom de l'offre (un séjour). */}
+                  {notification.booking?.guests_label && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-guests">
+                      {notification.booking.guests_label}
+                    </ThemedText>
+                  )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
                       (décision 2026-11-20-titre-demande). */}
                   {!notification.booking && (
@@ -119,30 +125,24 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {line}
                     </ThemedText>
                   ))}
-                  {/* La durée d'un séjour, avant le nombre de personnes. */}
-                  {notification.booking?.days_label && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-days">
-                      {notification.booking.days_label}
-                    </ThemedText>
-                  )}
-                  {/* Le nombre de personnes, après le texte (un séjour). */}
-                  {notification.booking?.guests_label && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-guests">
-                      {notification.booking.guests_label}
-                    </ThemedText>
-                  )}
-                  {/* Une ligne : le prix du logement à gauche, le total de la demande en gras à droite. */}
-                  {(notification.booking?.price_label || notification.booking?.total) && (
+                  {/* Une ligne : la durée d'un séjour à gauche, le prix du logement à droite. */}
+                  {(notification.booking?.days_label || notification.booking?.price_label) && (
                     <View style={styles.headRow} testID="notification-detail-price-row">
-                      <ThemedText type="small" themeColor="textSecondary" style={styles.headType} testID="notification-detail-price">
-                        {notification.booking.price_label ?? ''}
+                      <ThemedText type="small" themeColor="textSecondary" style={styles.headType} testID="notification-detail-days">
+                        {notification.booking?.days_label ?? ''}
                       </ThemedText>
-                      {notification.booking.total && (
-                        <ThemedText style={styles.total} testID="notification-detail-total">
-                          {notification.booking.total}
+                      {notification.booking?.price_label && (
+                        <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-price">
+                          {notification.booking.price_label}
                         </ThemedText>
                       )}
                     </View>
+                  )}
+                  {/* Le total de la demande (logement meublé), en gras. */}
+                  {notification.booking?.total && (
+                    <ThemedText style={styles.total} testID="notification-detail-total">
+                      {notification.booking.total}
+                    </ThemedText>
                   )}
                 </View>
               </View>

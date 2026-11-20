@@ -36,7 +36,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
-  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', rental_type: 'Location meublée' }, dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 avant 11:00'], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
+  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', rental_type: 'Location meublée' }, dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 au plus tard à 11:00'], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -112,11 +112,11 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée');
     // Un séjour : l'arrivée et le départ, puis le nombre de personnes, après le texte.
     expect(screen.getByTestId('notification-detail-dates-0')).toHaveTextContent('Arrivée le 1 déc. 2026 à partir de 14:00');
-    expect(screen.getByTestId('notification-detail-dates-1')).toHaveTextContent('Départ le 4 déc. 2026 avant 11:00');
+    expect(screen.getByTestId('notification-detail-dates-1')).toHaveTextContent('Départ le 4 déc. 2026 au plus tard à 11:00');
     // La durée, avant le nombre de personnes.
     expect(screen.getByTestId('notification-detail-days')).toHaveTextContent('3 jours');
     expect(screen.getByTestId('notification-detail-guests')).toHaveTextContent('2 personnes');
-    // Une ligne : le prix à gauche, le total à droite.
+    // Une ligne : la durée à gauche, le prix à droite.
     expect(screen.getByTestId('notification-detail-price')).toHaveTextContent('85 000 FCFA / jour');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-price-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
     expect(screen.getByTestId('notification-detail-total')).toHaveTextContent('255 000 FCFA');
