@@ -162,11 +162,15 @@ describe('NotificationDetailScreen', () => {
     await screen.findByTestId('notification-detail-offer-link');
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
     expect(screen.getByTestId('notification-detail-offer-link').props.accessibilityState).toEqual({ expanded: false });
+    expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
     await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
     expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();
+    // Dépliées : le lien vers la fiche du logement, sous les lignes.
+    await fireEvent.press(screen.getByTestId('notification-detail-offer-view'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
+    expect(screen.getByTestId('notification-detail-offer-view')).toHaveTextContent('Voir le logement');
     await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
-    expect(router.push).not.toHaveBeenCalledWith('/offers/22');
 
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');

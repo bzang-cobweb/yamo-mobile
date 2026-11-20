@@ -143,6 +143,16 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       </ThemedText>
                     </View>
                   ))}
+                  {/* Sous les lignes dépliées, le lien vers la fiche du logement. */}
+                  {open && notification.booking && (
+                    <ThemedText
+                      type="linkPrimary"
+                      accessibilityRole="link"
+                      onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
+                      testID="notification-detail-offer-view">
+                      {t('offer.view')}
+                    </ThemedText>
+                  )}
                 </View>
               </View>
               {/* Sans marge ajoutée par iOS en haut du contenu. */}

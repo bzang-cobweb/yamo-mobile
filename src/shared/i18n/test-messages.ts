@@ -75,6 +75,7 @@ export const TEST_MESSAGES: Messages = {
   'offer.reviews': 'Avis',
   'offer.noReviews': 'Aucun avis pour le moment.',
   'offer.writeReview': 'Donner mon avis',
+  'offer.view': 'Voir le logement',
   'offer.editReview': 'Modifier mon avis',
   'offer.signInToReview': 'Connectez-vous pour donner votre avis.',
   'list.filters': 'Filtres',
