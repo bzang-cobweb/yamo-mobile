@@ -8,6 +8,8 @@ import type { StatusTagValue } from '@/shared/components/StatusTag';
 export type AppNotification = {
   id: string;
   title: string;
+  /** Le titre de sa carte dans la liste (« Location meublée » pour une demande) ; `null` (ou absent) : `title`. */
+  card_title?: string | null;
   /** Statut en pastille sous le titre (« En attente », ton `warning`), ou `null`. */
   tag: StatusTagValue | null;
   body: string;

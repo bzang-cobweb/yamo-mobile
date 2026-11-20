@@ -108,7 +108,7 @@ export function NotificationsScreen() {
       ]}>
       <View style={styles.texts}>
         {/* 1. Le type en gras, et dessous le statut réel de la demande (sans photo, décision 2026-11-20-carte-sans-photo). */}
-        <NotificationType type={item.title} tag={item.tag} testID={`notification-${item.id}`} />
+        <NotificationType type={item.card_title ?? item.title} tag={item.tag} testID={`notification-${item.id}`} />
         {/* 2. Le texte, sans le nom de qui agit. */}
         <NotificationText
           body={item.actor && item.summary ? item.summary : item.body}
