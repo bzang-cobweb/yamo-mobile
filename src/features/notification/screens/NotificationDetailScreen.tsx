@@ -102,13 +102,14 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       onPress={() => setOpen((value) => !value)}
                       style={({ pressed }) => [styles.headRow, pressed && styles.pressed]}
                       testID="notification-detail-offer-link">
-                      <ThemedText type="linkPrimary" style={[styles.offerLink, styles.headType]}>
+                      {/* Un titre, pas un lien : texte simple en gras ; la fiche s'ouvre par « Voir le logement ». */}
+                      <ThemedText style={[styles.offerLink, styles.headType]} testID="notification-detail-offer-title">
                         {notification.booking.offer.title}
                       </ThemedText>
                       <SymbolView
                         name={{ ios: open ? 'chevron.up' : 'chevron.down', android: open ? 'expand_less' : 'expand_more', web: open ? 'expand_less' : 'expand_more' }}
                         size={16}
-                        tintColor={theme.primary}
+                        tintColor={theme.text}
                       />
                     </Pressable>
                   )}

@@ -162,6 +162,8 @@ describe('NotificationDetailScreen', () => {
     await screen.findByTestId('notification-detail-offer-link');
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
     expect(screen.getByTestId('notification-detail-offer-link').props.accessibilityState).toEqual({ expanded: false });
+    // Le nom de l'offre est un titre, pas un lien : couleur du texte, en gras.
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
     await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
     expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();
