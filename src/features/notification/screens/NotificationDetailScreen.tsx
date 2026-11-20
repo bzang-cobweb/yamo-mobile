@@ -108,7 +108,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       </ThemedText>
                       <SymbolView
                         name={{ ios: open ? 'chevron.up' : 'chevron.down', android: open ? 'expand_less' : 'expand_more', web: open ? 'expand_less' : 'expand_more' }}
-                        size={18}
+                        size={16}
                         tintColor={theme.text}
                       />
                     </Pressable>
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
-  // Le nom de l'offre, en gras, un peu plus grand que le texte (16).
-  offerLink: { fontWeight: '700', fontSize: 18, lineHeight: 26 },
+  // Le nom de l'offre, en gras.
+  offerLink: { fontWeight: '700' },
   pressed: { opacity: 0.7 },
 });
