@@ -101,11 +101,19 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
-                  {/* Le nombre de personnes, après le nom de l'offre (un séjour). */}
-                  {notification.booking?.guests_label && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-guests">
-                      {notification.booking.guests_label}
-                    </ThemedText>
+                  {/* Une ligne, après le nom de l'offre : le nombre de personnes à gauche (un séjour), le
+                      nombre de chambres du logement à droite. */}
+                  {(notification.booking?.guests_label || notification.booking?.offer.bedrooms) && (
+                    <View style={styles.headRow} testID="notification-detail-guests-row">
+                      <ThemedText type="small" themeColor="textSecondary" style={styles.headType} testID="notification-detail-guests">
+                        {notification.booking?.guests_label ?? ''}
+                      </ThemedText>
+                      {notification.booking?.offer.bedrooms && (
+                        <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-bedrooms">
+                          {notification.booking.offer.bedrooms}
+                        </ThemedText>
+                      )}
+                    </View>
                   )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
                       (décision 2026-11-20-titre-demande). */}
