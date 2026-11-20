@@ -83,7 +83,7 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
         <NotificationActor actor={card.actor} title="" date={relativeTime(card.created_at, t, locale)} testID={`calendar-item-${card.id}`} />
         {card.tag && <StatusTag tag={card.tag} testID={`calendar-item-${card.id}-tag`} />}
         <NotificationText body={card.summary} links={card.text_links} onLink={go} testID={`calendar-item-${card.id}-text`} />
-        {card.message && <Quote text={card.message} numberOfLines={3} />}
+        {card.message && <Quote text={card.message} numberOfLines={1} testID={`calendar-item-${card.id}-message`} />}
         {card.total && (
           <ThemedText type="smallBold" testID={`calendar-item-${card.id}-total`}>
             {card.total}
