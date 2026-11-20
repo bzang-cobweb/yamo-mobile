@@ -1,5 +1,6 @@
 import { router, type Href } from 'expo-router';
-import { useEffect } from 'react';
+import { SymbolView } from 'expo-symbols';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -37,6 +38,8 @@ import { formatStamp } from '../utils/stamp';
 export function NotificationDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
   const theme = useTheme();
+  // Les lignes de la demande, ouvertes d'abord ; le nom de l'offre les plie ou les déplie.
+  const [open, setOpen] = useState(true);
   const query = useNotification(id);
   const markRead = useMarkRead();
   const notification = query.data;
@@ -90,16 +93,24 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
                     </View>
                   )}
-                  {/* Le nom de l'offre, sous le type de location et la pastille : un lien vers sa fiche (décision 2026-11-20-titre-demande). */}
+                  {/* Le nom de l'offre, sous le type de location et la pastille : le toucher plie ou déplie
+                      les lignes de la demande, ouvertes d'abord (décision 2026-11-20-lignes-demande). */}
                   {notification.booking?.offer.title && (
-                    <ThemedText
-                      type="linkPrimary"
-                      style={styles.offerLink}
-                      accessibilityRole="link"
-                      onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: open }}
+                      onPress={() => setOpen((value) => !value)}
+                      style={({ pressed }) => [styles.headRow, pressed && styles.pressed]}
                       testID="notification-detail-offer-link">
-                      {notification.booking.offer.title}
-                    </ThemedText>
+                      <ThemedText type="linkPrimary" style={[styles.offerLink, styles.headType]}>
+                        {notification.booking.offer.title}
+                      </ThemedText>
+                      <SymbolView
+                        name={{ ios: open ? 'chevron.up' : 'chevron.down', android: open ? 'expand_less' : 'expand_more', web: open ? 'expand_less' : 'expand_more' }}
+                        size={16}
+                        tintColor={theme.primary}
+                      />
+                    </Pressable>
                   )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
                       (décision 2026-11-20-titre-demande). */}
@@ -115,7 +126,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                   {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à
                       droite : personnes, arrivée, départ (ou visite), durée, prix, total en gras
                       (décision 2026-11-20-lignes-demande). */}
-                  {(notification.booking?.lines ?? []).map((line) => (
+                  {open && (notification.booking?.lines ?? []).map((line) => (
                     <View key={line.key} style={styles.headRow} testID={`notification-detail-line-${line.key}`}>
                       <ThemedText
                         type={line.key === 'total' ? 'smallBold' : 'small'}
@@ -181,4 +192,5 @@ const styles = StyleSheet.create({
   total: { fontWeight: '700' },
   // Le nom de l'offre, en gras.
   offerLink: { fontWeight: '700' },
+  pressed: { opacity: 0.7 },
 });

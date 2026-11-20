@@ -153,13 +153,17 @@ describe('NotificationDetailScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
   });
 
-  it('l’offre et le bouton ouvrent chacun leur écran', async () => {
+  it('le nom de l’offre plie les lignes ; le bouton ouvre son écran', async () => {
     await show();
 
-    // Le nom de l'offre, après la pastille, ouvre sa fiche.
-    await fireEvent.press(await screen.findByTestId('notification-detail-offer-link'));
-    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-link').props.style)).toMatchObject({ fontWeight: '700' });
+    // Le nom de l'offre plie puis déplie les lignes de la demande, ouvertes d'abord.
+    expect(await screen.findByTestId('notification-detail-line-total')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
+    expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
+    expect(screen.getByTestId('notification-detail-offer-link').props.accessibilityState).toEqual({ expanded: false });
+    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
+    expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();
+    expect(router.push).not.toHaveBeenCalledWith('/offers/22');
 
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');
