@@ -121,6 +121,8 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
     // Le type de location, après le nom de l'offre.
     expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée');
+    // Fermées d'abord : on les déplie.
+    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
     // Les lignes, dans l'ordre servi, le libellé à gauche et la valeur à droite (décision 2026-11-20-lignes-demande).
     const keys = ['guests', 'arrival', 'departure', 'days', 'price', 'total'];
     const json = JSON.stringify(screen.toJSON());
@@ -156,13 +158,14 @@ describe('NotificationDetailScreen', () => {
   it('le nom de l’offre plie les lignes ; le bouton ouvre son écran', async () => {
     await show();
 
-    // Le nom de l'offre plie puis déplie les lignes de la demande, ouvertes d'abord.
-    expect(await screen.findByTestId('notification-detail-line-total')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
+    // Le nom de l'offre déplie puis plie les lignes de la demande, fermées d'abord.
+    await screen.findByTestId('notification-detail-offer-link');
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
     expect(screen.getByTestId('notification-detail-offer-link').props.accessibilityState).toEqual({ expanded: false });
     await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
     expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
+    expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
     expect(router.push).not.toHaveBeenCalledWith('/offers/22');
 
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));

@@ -38,8 +38,8 @@ import { formatStamp } from '../utils/stamp';
 export function NotificationDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
   const theme = useTheme();
-  // Les lignes de la demande, ouvertes d'abord ; le nom de l'offre les plie ou les déplie.
-  const [open, setOpen] = useState(true);
+  // Les lignes de la demande, fermées d'abord ; le nom de l'offre les déplie ou les plie.
+  const [open, setOpen] = useState(false);
   const query = useNotification(id);
   const markRead = useMarkRead();
   const notification = query.data;
@@ -94,7 +94,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     </View>
                   )}
                   {/* Le nom de l'offre, sous le type de location et la pastille : le toucher plie ou déplie
-                      les lignes de la demande, ouvertes d'abord (décision 2026-11-20-lignes-demande). */}
+                      les lignes de la demande, fermées d'abord (décision 2026-11-20-lignes-demande). */}
                   {notification.booking?.offer.title && (
                     <Pressable
                       accessibilityRole="button"
