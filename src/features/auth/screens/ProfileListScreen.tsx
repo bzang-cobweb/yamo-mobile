@@ -156,9 +156,10 @@ export function ProfileListScreen({ list }: { list: string }) {
     const removable = item.delete !== null && profileSubmission(item.delete) !== null;
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
-    // Avec une photo, ou des boutons : en colonne, la photo sur toute la largeur et les actions sur leur ligne
-    // (décision 2026-11-19-nuit-retirer-sous-image).
-    const stacked = Boolean(item.image) || both;
+    // Avec une photo, des boutons ou « Retirer » : en colonne, la photo sur toute la largeur et les actions
+    // sur leur ligne, à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et
+    // 2026-11-21-retirer-en-fin-de-carte).
+    const stacked = Boolean(item.image) || both || removable;
 
     function openEdit() {
       if (edit) {

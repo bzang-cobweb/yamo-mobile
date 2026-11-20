@@ -148,16 +148,19 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-item-8-photo')).toBeNull();
   });
 
-  it('avec photo : en colonne, « Retirer » sur sa ligne ; sans photo, à droite du texte', async () => {
-    // Décision 2026-11-19-nuit-retirer-sous-image.
-    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg' }), item('8')]);
+  it('« Retirer » à la fin de la carte, à droite, avec ou sans photo', async () => {
+    // Décisions 2026-11-19-nuit-retirer-sous-image et 2026-11-21-retirer-en-fin-de-carte.
+    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg' }), item('8'), item('9', { delete: null })]);
     await renderScreen();
 
-    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-7').props.style).flexDirection).toBe('column');
-    expect(screen.getByTestId('profile-list-actions-7')).toBeTruthy();
-    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-8').props.style).flexDirection).toBe('row');
-    expect(screen.queryByTestId('profile-list-actions-8')).toBeNull();
-    expect(screen.getByTestId('profile-list-delete-8')).toBeTruthy();
+    for (const id of ['7', '8']) {
+      expect(StyleSheet.flatten(screen.getByTestId(`profile-list-row-${id}`).props.style).flexDirection).toBe('column');
+      expect(StyleSheet.flatten(screen.getByTestId(`profile-list-actions-${id}`).props.style)).toMatchObject({ justifyContent: 'flex-end' });
+      expect(screen.getByTestId(`profile-list-delete-${id}`)).toBeTruthy();
+    }
+    // Sans « Retirer » ni photo : sur une ligne, sans ligne d'actions.
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-9').props.style).flexDirection).toBe('row');
+    expect(screen.queryByTestId('profile-list-actions-9')).toBeNull();
   });
 
   it('un écran et un formulaire : « Voir », « Éditer » et « Retirer » sur la ligne des actions', async () => {
