@@ -103,7 +103,7 @@ describe('NotificationDetailScreen', () => {
     expect(await screen.findByText('Demande de logement')).toBeTruthy();
     expect(screen.queryByText('Notification')).toBeNull();
     expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
-    // La pastille après le texte, centrée.
+    // La pastille avant le texte, centrée.
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ alignSelf: 'center' });
     // Le texte sans le nom de qui a fait la demande.
     expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
