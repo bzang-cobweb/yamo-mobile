@@ -133,24 +133,24 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {line}
                     </ThemedText>
                   ))}
-                  {/* Une ligne : la durée d'un séjour à gauche, le prix du logement à droite. */}
-                  {(notification.booking?.days_label || notification.booking?.price_label) && (
+                  {/* Le prix du logement. */}
+                  {notification.booking?.price_label && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-price">
+                      {notification.booking.price_label}
+                    </ThemedText>
+                  )}
+                  {/* Une ligne : la durée d'un séjour à gauche, le total de la demande en gras à droite. */}
+                  {(notification.booking?.days_label || notification.booking?.total) && (
                     <View style={styles.headRow} testID="notification-detail-price-row">
                       <ThemedText type="small" themeColor="textSecondary" style={styles.headType} testID="notification-detail-days">
                         {notification.booking?.days_label ?? ''}
                       </ThemedText>
-                      {notification.booking?.price_label && (
-                        <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-price">
-                          {notification.booking.price_label}
+                      {notification.booking?.total && (
+                        <ThemedText style={styles.total} testID="notification-detail-total">
+                          {notification.booking.total}
                         </ThemedText>
                       )}
                     </View>
-                  )}
-                  {/* Le total de la demande (logement meublé), en gras. */}
-                  {notification.booking?.total && (
-                    <ThemedText style={styles.total} testID="notification-detail-total">
-                      {notification.booking.total}
-                    </ThemedText>
                   )}
                 </View>
               </View>

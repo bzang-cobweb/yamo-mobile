@@ -118,7 +118,7 @@ describe('NotificationDetailScreen', () => {
     // Les chambres, à droite des personnes.
     expect(screen.getByTestId('notification-detail-bedrooms')).toHaveTextContent('2 chambres');
     expect(screen.getByTestId('notification-detail-guests')).toHaveTextContent('2 personnes');
-    // Une ligne : la durée à gauche, le prix à droite.
+    // Une ligne : la durée à gauche, le total à droite.
     expect(screen.getByTestId('notification-detail-price')).toHaveTextContent('85 000 FCFA / jour');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-price-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
     expect(screen.getByTestId('notification-detail-total')).toHaveTextContent('255 000 FCFA');
