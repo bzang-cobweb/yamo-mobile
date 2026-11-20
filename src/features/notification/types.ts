@@ -51,10 +51,11 @@ export type NotificationBooking = {
   /** L'offre : son titre saisi et son type de location, rédigé (« Location meublée »). */
   offer: { title: string | null; rental_type: string | null; bedrooms: string | null };
   /**
-   * Les dates, une par ligne, rédigées : un séjour « Arrivée le 5 déc. 2026 à partir de 14:00 »,
-   * « Départ le 7 déc. 2026 avant 11:00 » ; une visite « Visite le 28 nov. 2026 ou le 30 nov. 2026 ».
+   * Les dates, une par ligne, libellé et valeur rédigés : un séjour « Arrivée » —
+   * « 5 déc. 2026 à partir de 14:00 », « Départ » — « 7 déc. 2026 au plus tard à 11:00 » ;
+   * une visite « Visite » — « 28 nov. 2026 », « Seconde date » — « 30 nov. 2026 ».
    */
-  dates: string[];
+  dates: { label: string; value: string }[];
   /** La durée d'un séjour, rédigée (« 2 jours ») ; `null` pour une visite. */
   days_label: string | null;
   guests: number | null;

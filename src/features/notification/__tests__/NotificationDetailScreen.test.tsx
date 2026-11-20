@@ -36,7 +36,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
-  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', rental_type: 'Location meublée', bedrooms: '2 chambres' }, dates: ['Arrivée le 1 déc. 2026 à partir de 14:00', 'Départ le 4 déc. 2026 au plus tard à 11:00'], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
+  booking: { id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', offer: { title: 'Studio photos', rental_type: 'Location meublée', bedrooms: '2 chambres' }, dates: [{ label: 'Arrivée', value: '1 déc. 2026 à partir de 14:00' }, { label: 'Départ', value: '4 déc. 2026 au plus tard à 11:00' }], days_label: '3 jours', guests: 2, guests_label: '2 personnes', price_label: '85 000 FCFA / jour', total: '255 000 FCFA' },
   read: false,
   created_at: '2026-11-19T20:00:00Z',
 };
@@ -111,8 +111,12 @@ describe('NotificationDetailScreen', () => {
     // Le type de location, après le nom de l'offre.
     expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée');
     // Un séjour : l'arrivée et le départ, puis le nombre de personnes, après le texte.
-    expect(screen.getByTestId('notification-detail-dates-0')).toHaveTextContent('Arrivée le 1 déc. 2026 à partir de 14:00');
-    expect(screen.getByTestId('notification-detail-dates-1')).toHaveTextContent('Départ le 4 déc. 2026 au plus tard à 11:00');
+    // Le libellé à gauche, la date à droite.
+    expect(screen.getByTestId('notification-detail-dates-0-label')).toHaveTextContent('Arrivée');
+    expect(screen.getByTestId('notification-detail-dates-0-value')).toHaveTextContent('1 déc. 2026 à partir de 14:00');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-dates-0').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
+    expect(screen.getByTestId('notification-detail-dates-1-label')).toHaveTextContent('Départ');
+    expect(screen.getByTestId('notification-detail-dates-1-value')).toHaveTextContent('4 déc. 2026 au plus tard à 11:00');
     // La durée, avant le nombre de personnes.
     expect(screen.getByTestId('notification-detail-days')).toHaveTextContent('3 jours');
     // Les chambres, à droite des personnes.

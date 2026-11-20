@@ -126,12 +126,17 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       testID="notification-detail-text"
                     />
                   )}
-                  {/* Les dates, après le texte, une par ligne : l'arrivée et le départ d'un séjour,
-                      la date d'une visite (décision 2026-11-20-heures-arrivee-depart). */}
+                  {/* Les dates, une par ligne, le libellé à gauche et la date à droite : l'arrivée et le
+                      départ d'un séjour, la date d'une visite (décision 2026-11-20-heures-arrivee-depart). */}
                   {(notification.booking?.dates ?? []).map((line, index) => (
-                    <ThemedText key={line} type="small" themeColor="textSecondary" testID={`notification-detail-dates-${index}`}>
-                      {line}
-                    </ThemedText>
+                    <View key={line.label} style={styles.headRow} testID={`notification-detail-dates-${index}`}>
+                      <ThemedText type="small" themeColor="textSecondary" testID={`notification-detail-dates-${index}-label`}>
+                        {line.label}
+                      </ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary" style={styles.dateValue} testID={`notification-detail-dates-${index}-value`}>
+                        {line.value}
+                      </ThemedText>
+                    </View>
                   ))}
                   {/* Le prix du logement. */}
                   {notification.booking?.price_label && (
@@ -194,6 +199,8 @@ const styles = StyleSheet.create({
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   headType: { flex: 1 },
+  // La date à droite de son libellé, sur plusieurs lignes au besoin.
+  dateValue: { flexShrink: 1, textAlign: 'right' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
