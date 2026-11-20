@@ -26,7 +26,7 @@ const NOTIFICATION: AppNotification = {
   title: 'Demande de logement',
   tag: { label: 'En attente', tone: 'warning' },
   body: 'Paul Etoa demande un séjour pour « Studio photos ».',
-  actor: { id: '37', name: 'Paul Etoa', initials: 'PE', photo: null, online: true, link: '/members/37', email: 'paul@example.test', phone: '+237 6 90 00 00 99' },
+  actor: { id: '37', name: 'Paul Etoa', initials: 'PE', photo: null, online: true, link: '/members/37' },
   summary: 'demande un séjour pour « Studio photos ».',
   message: 'Tournage d’un clip.',
   link: '/profile/lists/offer.bookings.received',
@@ -112,7 +112,6 @@ describe('NotificationDetailScreen', () => {
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-total').props.style)).toMatchObject({ fontWeight: '700' });
     expect(screen.getByTestId('notification-detail-head')).toBeTruthy();
     expect(screen.queryByTestId('notification-detail-actor')).toBeNull();
-    expect(screen.queryByTestId('notification-detail-email')).toBeNull();
     expect(screen.queryByTestId('notification-detail-avatar-online')).toBeNull();
     // Sans demande : le message, entier, puis la date à droite.
     expect(screen.getByText('Tournage d’un clip.').props.numberOfLines).toBeUndefined();
