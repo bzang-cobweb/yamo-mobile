@@ -58,6 +58,8 @@ export type ListItem = {
   favorite?: ListItemFavorite | null;
   /** Écran de l'app ouvert en touchant l'item (« /offers/12 ») ; `null` (ou absent) : aucun. */
   link?: string | null;
+  /** L'écran ouvert en touchant le titre seul (« /members/3 ») : le titre s'affiche en lien (décision 2026-11-21-demandes-lien-membre) ; absent : non. */
+  title_link?: string | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */
   edit: { form: string; record: string } | null;
   /** Boutons de la carte ; vide ou absent : aucun. */

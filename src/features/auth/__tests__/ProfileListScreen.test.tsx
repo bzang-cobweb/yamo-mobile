@@ -306,6 +306,16 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7').props.style).paddingRight).toBeGreaterThan(32);
   });
 
+  it('un titre avec son lien ouvre son écran ; le reste de la carte garde le sien (décision 2026-11-21-demandes-lien-membre)', async () => {
+    mockList = list([item('7', { edit: null, title: 'Awa Ndiaye', title_link: '/members/3', link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' })]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-title-link-7'));
+    expect(router.push).toHaveBeenLastCalledWith('/members/3');
+    await fireEvent.press(screen.getByTestId('profile-list-item-7'));
+    expect(router.push).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),

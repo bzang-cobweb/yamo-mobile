@@ -152,6 +152,16 @@ export function ProfileListScreen({ list }: { list: string }) {
     // Le statut sur la photo quand l'API le demande ; avec un cœur, en haut à gauche (décision 2026-11-21-reservations-statut-coeur).
     const tagOnImage = Boolean(item.tag?.on_image && item.image);
     const counters = item.counters?.length ? item.counters : item.counter ? [item.counter] : [];
+    // Le titre en lien vers son propre écran (le membre d'une demande), le reste de la carte gardant le sien
+    // (décision 2026-11-21-demandes-lien-membre).
+    const titleLink = item.title_link && ITEM_LINK.test(item.title_link) ? item.title_link : null;
+    const itemTitle = titleLink ? (
+      <ThemedText type="linkPrimary" accessibilityRole="link" onPress={() => router.push(titleLink as Href)} testID={`profile-list-title-link-${item.id}`}>
+        {item.title}
+      </ThemedText>
+    ) : (
+      <ThemedText>{item.title}</ThemedText>
+    );
     // Un compteur avec un ton : une pastille de cette couleur, pour information, sans lien (« 2 demandes en
     // attente », orange) : sur la photo, à la place du statut, qui revient quand il n'y en a plus ; sans photo, sous
     // le titre. Les autres compteurs restent des liens, en bas de la carte (décisions
@@ -230,7 +240,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                   des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
               <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
               {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
-              <ThemedText>{item.title}</ThemedText>
+              {itemTitle}
               {tonedUnderTitle}
               {item.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary">
@@ -256,7 +266,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                   des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
             <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
             {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
-            <ThemedText>{item.title}</ThemedText>
+            {itemTitle}
             {tonedUnderTitle}
             {item.subtitle && (
               <ThemedText type="small" themeColor="textSecondary">
