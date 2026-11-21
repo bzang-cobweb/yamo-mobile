@@ -3,29 +3,28 @@ import { Alert } from 'react-native';
 
 import { profileFormService, profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { ApiError } from '@/shared/api/errors';
+import { showToast } from '@/shared/components/Toast';
 import { useI18n } from '@/shared/i18n/I18nContext';
 
 import { ITEM_LINK } from '../services/ListService';
+import type { ListItemAction } from '../types';
 import { setFilterValues } from '../utils/filters';
 
 /** Un écran de l'app (« /notifications »), sans identifiant. */
 const APP_SCREEN = /^\/[a-z][a-z0-9/_-]*$/;
-import type { ListItemAction } from '../types';
 
 type Options = {
-  /** Message de réussite de l'envoi. */
-  onNotice: (message: string | null) => void;
-  /** Message d'erreur : celui de l'API (« Ces dates chevauchent… »), sinon générique. */
-  onError: (message: string | null) => void;
   /** Après un envoi, réussi ou non : recharger ce qui l'affiche. */
   onDone: () => Promise<unknown> | void;
 };
 
 /**
  * Le geste d'un bouton de carte : demander confirmation s'il en a une, puis ouvrir
- * son formulaire, ouvrir son écran (`link`), ou envoyer sa requête.
+ * son formulaire, ouvrir son écran (`link`), ou envoyer sa requête. Le message de l'envoi,
+ * réussite ou erreur (celle de l'API, « Ces dates chevauchent… », sinon générique), va dans
+ * le bandeau flottant (décision 2026-11-21-bandeau-messages).
  */
-export function useItemActions({ onNotice, onError, onDone }: Options) {
+export function useItemActions({ onDone }: Options) {
   const { t } = useI18n();
 
   async function run(action: ListItemAction) {
@@ -52,14 +51,11 @@ export function useItemActions({ onNotice, onError, onDone }: Options) {
       return;
     }
 
-    onError(null);
-
     try {
       await profileFormService.submit(submission, {});
-      onNotice(submission.success.message);
+      showToast(submission.success.message);
     } catch (error) {
-      onNotice(null);
-      onError(error instanceof ApiError ? (Object.values(error.errors)[0]?.[0] ?? error.message) : t('error.unknown'));
+      showToast(error instanceof ApiError ? (Object.values(error.errors)[0]?.[0] ?? error.message) : t('error.unknown'), 'danger');
     }
 
     await onDone();

@@ -8,6 +8,7 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
 import { StatusTag } from '@/shared/components/StatusTag';
+import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem, ListItemCounter } from '@/features/list/types';
 import { activeFilterCount, setFilterFields, setFilterValues, useListFilters } from '@/features/list/utils/filters';
@@ -25,7 +26,6 @@ import { Spacing } from '@/shared/theme/theme';
 
 import { useAuth } from '../hooks/useAuth';
 import { profileFormService, profileSubmission } from '../services/ProfileFormService';
-import { takeProfileNotice } from '../utils/profile-notice';
 import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
 
 /**
@@ -72,8 +72,6 @@ export function ProfileListScreen({ list }: { list: string }) {
     }
   }, [list, filterFields]);
   const { reload, refetch } = query;
-  const [notice, setNotice] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   // La carte dont le menu « Actions » est ouvert (décision 2026-11-21-actions-en-menu).
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -87,10 +85,6 @@ export function ProfileListScreen({ list }: { list: string }) {
         void reload();
       }
       shown.current = true;
-      setNotice(takeProfileNotice());
-      setError(null);
-
-      return () => setNotice(null);
     }, [reload]),
   );
 
@@ -111,21 +105,19 @@ export function ProfileListScreen({ list }: { list: string }) {
       return;
     }
 
-    setError(null);
-
+    // Le message, réussite ou erreur, dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
     try {
       await profileFormService.submit(submission, {});
-      setNotice(submission.success.message);
+      showToast(submission.success.message);
     } catch {
-      setNotice(null);
-      setError(t('error.unknown'));
+      showToast(t('error.unknown'), 'danger');
     }
 
     await reload();
   }
 
   // Un bouton de carte : un formulaire, un écran, ou un envoi après confirmation.
-  const { press: pressAction } = useItemActions({ onNotice: setNotice, onError: setError, onDone: reload });
+  const { press: pressAction } = useItemActions({ onDone: reload });
 
   // Le compteur ouvre sa liste (ou son écran) avec ses filtres déjà choisis.
   function openCounter(counter: ListItemCounter) {
@@ -413,22 +405,6 @@ export function ProfileListScreen({ list }: { list: string }) {
                   definition.create && router.push({ pathname: '/profile/[form]', params: { form: definition.create.form } }),
               }
             : null
-        }
-        header={
-          notice || error ? (
-            <>
-              {notice && (
-                <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="profile-list-notice">
-                  {notice}
-                </ThemedText>
-              )}
-              {error && (
-                <ThemedText type="small" style={styles.error} accessibilityRole="alert" testID="profile-list-error">
-                  {error}
-                </ThemedText>
-              )}
-            </>
-          ) : null
         }
       />
       {/* Le bouton fixe en bas : un formulaire (« Ajouter un logement ») ou un écran (« Rechercher un logement »). */}

@@ -10,7 +10,9 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { AuthContext } from '../context/AuthContext';
 import { ProfileListScreen } from '../screens/ProfileListScreen';
 import type { AuthContextValue } from '../types';
-import { backWithNotice, takeProfileNotice } from '../utils/profile-notice';
+import { currentToast, hideToast } from '@/shared/components/Toast';
+
+import { backWithNotice } from '../utils/profile-notice';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -119,7 +121,7 @@ function confirmAlert() {
 describe('ProfileListScreen (toute liste du profil, sans la connaître d’avance)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    takeProfileNotice();
+    hideToast();
     mockList = list([item('7'), item('8', { subtitle: null })]);
     mockPaging = { hasNextPage: false, isFetchingNextPage: false };
     mockHookCalls.length = 0;
@@ -329,7 +331,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(alert).toHaveBeenCalledWith('Retirer cette carte ?', undefined, expect.any(Array));
     await waitFor(() => expect(mockReload).toHaveBeenCalled());
     expect(mockRequest).toHaveBeenCalledWith('/v1/payments/cards/7', { method: 'DELETE', body: {} });
-    expect(screen.getByTestId('profile-list-notice').props.children).toBe('Carte retirée.');
+    // Le message dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
+    expect(currentToast()).toMatchObject({ message: 'Carte retirée.', tone: 'success' });
   });
 
   it('annuler la confirmation : rien n’est envoyé', async () => {
@@ -350,8 +353,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
     await fireEvent.press(screen.getByTestId('profile-list-delete-7'));
 
-    await waitFor(() => expect(screen.getByTestId('profile-list-error')).toBeTruthy());
-    expect(screen.queryByTestId('profile-list-notice')).toBeNull();
+    await waitFor(() => expect(currentToast()?.tone).toBe('danger'));
   });
 
   it.each([
@@ -422,13 +424,13 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(mockReload).toHaveBeenCalledTimes(1);
   });
 
-  it('au retour d’un formulaire enregistré, affiche son message une seule fois', async () => {
+  it('au retour d’un formulaire enregistré, son message est dans le bandeau, pas dans la liste', async () => {
     backWithNotice('Carte enregistrée.');
     await renderScreen();
 
     expect(router.back).toHaveBeenCalled();
-    expect(screen.getByTestId('profile-list-notice').props.children).toBe('Carte enregistrée.');
-    expect(takeProfileNotice()).toBeNull();
+    expect(currentToast()).toMatchObject({ message: 'Carte enregistrée.', tone: 'success' });
+    expect(screen.queryByText('Carte enregistrée.')).toBeNull();
   });
 
   it('liste non cherchable : pas de champ de recherche', async () => {
@@ -507,7 +509,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       await fireEvent.press(screen.getByTestId('profile-list-action-5-primary'));
       expect(alert).toHaveBeenCalledWith('Accepter la demande de Marie ?', undefined, expect.any(Array));
       await waitFor(() => expect(mockRequest).toHaveBeenCalledWith('/v1/bookings/5/accept', expect.objectContaining({ method: 'POST' })));
-      expect(await screen.findByText('Demande acceptée.')).toBeTruthy();
+      await waitFor(() => expect(currentToast()).toMatchObject({ message: 'Demande acceptée.', tone: 'success' }));
       expect(mockReload).toHaveBeenCalled();
 
       await fireEvent.press(screen.getByTestId('profile-list-action-5-destructive'));

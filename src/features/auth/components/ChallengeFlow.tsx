@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { FormLoader } from '@/features/form/components/FormLoader';
 import type { FormValues } from '@/features/form/types';
 import { ApiError } from '@/shared/api/errors';
+import { showToast } from '@/shared/components/Toast';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useBackStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -73,17 +74,17 @@ type CodeStepProps = {
 
 function CodeStep({ challenge, onBack, onSubmit }: CodeStepProps) {
   const { t } = useI18n();
-  const [notice, setNotice] = useState<string | null>(null);
   // Avec un en-tête de retour, sa flèche revient au formulaire ; sinon, un lien dans l'étape.
   const hasBackHeader = useBackStep(true, onBack);
 
+  // Le message du renvoi dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
   async function resend() {
     try {
       await verificationService.resend(challenge);
-      setNotice(t('auth.resent'));
+      showToast(t('auth.resent'));
     } catch (error) {
       // Trop tôt, défi expiré… : le message de l'API, sinon le message général.
-      setNotice(error instanceof ApiError ? (Object.values(error.errors)[0]?.[0] ?? error.message) : t('error.unknown'));
+      showToast(error instanceof ApiError ? (Object.values(error.errors)[0]?.[0] ?? error.message) : t('error.unknown'), 'danger');
     }
   }
 
@@ -103,11 +104,6 @@ function CodeStep({ challenge, onBack, onSubmit }: CodeStepProps) {
           </Pressable>
         )}
       </View>
-      {notice && (
-        <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="code-notice">
-          {notice}
-        </ThemedText>
-      )}
     </View>
   );
 }

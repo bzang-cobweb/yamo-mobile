@@ -7,7 +7,9 @@ import { AuthContext } from '../context/AuthContext';
 import { DELETE_ACCOUNT_FORM } from '../components/DeleteAccountLink';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import type { AuthContextValue, User } from '../types';
-import { backToProfile, takeProfileNotice } from '../utils/profile-notice';
+import { currentToast, hideToast } from '@/shared/components/Toast';
+
+import { backToProfile } from '../utils/profile-notice';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
@@ -88,7 +90,7 @@ async function renderProfile(user: User = jeanne) {
 describe('ProfileScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    takeProfileNotice();
+    hideToast();
     mockMenu = DEFAULT_MENU;
   });
 
@@ -103,18 +105,17 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-link-preferences')).toHaveTextContent('Préférences');
     expect(screen.getByTestId('sign-out')).toHaveTextContent('Se déconnecter');
     expect(screen.getByTestId('profile-delete-account')).toHaveTextContent('Supprimer mon compte');
-    expect(screen.queryByTestId('profile-notice')).toBeNull();
     expect(screen.queryByText('Profil')).toBeNull();
     expect(screen.queryByTestId('profile-phone')).toBeNull();
   });
 
-  it('au retour d’un formulaire enregistré, affiche le message servi par l’API, une seule fois', async () => {
+  it('au retour d’un formulaire enregistré, le message servi par l’API est dans le bandeau (décision 2026-11-21-bandeau-messages)', async () => {
     backToProfile('Mot de passe modifié.');
     await renderProfile();
 
     expect(router.dismissTo).toHaveBeenCalledWith('/profile');
-    expect(screen.getByTestId('profile-notice')).toHaveTextContent('Mot de passe modifié.');
-    expect(takeProfileNotice()).toBeNull();
+    expect(currentToast()).toMatchObject({ message: 'Mot de passe modifié.', tone: 'success' });
+    expect(screen.queryByText('Mot de passe modifié.')).toBeNull();
   });
 
   it('affiche le menu servi par l’API, dans son ordre et avec ses libellés', async () => {

@@ -7,6 +7,7 @@ import { ApiError } from '@/shared/api/errors';
 import type { ApiClient } from '@/shared/api/ApiClient';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
+import { currentToast } from '@/shared/components/Toast';
 
 import { OfferDetailScreen } from '../screens/OfferDetailScreen';
 import { OfferService } from '../services/OfferService';
@@ -396,7 +397,8 @@ describe('OfferDetailScreen : avis', () => {
 
     expect(alert).toHaveBeenCalledWith('Supprimer votre avis sur cette offre ?', undefined, expect.any(Array));
     expect(mockSubmit).toHaveBeenCalledWith(expect.objectContaining({ method: 'DELETE', endpoint: '/v1/offers/7/review' }), {});
-    expect(screen.getByTestId('offer-notice').props.children).toBe('Votre avis est supprimé.');
+    // Dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
+    expect(currentToast()).toMatchObject({ message: 'Votre avis est supprimé.', tone: 'success' });
     expect(mockRefetch).toHaveBeenCalled();
   });
 });

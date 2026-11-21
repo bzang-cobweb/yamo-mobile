@@ -4,6 +4,7 @@ import type { FormValues } from '@/features/form/types';
 import { ApiError } from '@/shared/api/errors';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
+import { currentToast } from '@/shared/components/Toast';
 
 import { ChallengeFlow } from '../components/ChallengeFlow';
 import { verificationService } from '../services/VerificationService';
@@ -92,11 +93,12 @@ describe('ChallengeFlow', () => {
     jest.mocked(verificationService.resend).mockResolvedValueOnce(undefined);
     await fireEvent.press(screen.getByTestId('code-resend'));
     expect(verificationService.resend).toHaveBeenCalledWith(email);
-    expect(screen.getByTestId('code-notice')).toHaveTextContent('Nouveau code envoyé.');
+    // Dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
+    expect(currentToast()).toMatchObject({ message: 'Nouveau code envoyé.', tone: 'success' });
 
     jest.mocked(verificationService.resend).mockRejectedValueOnce(new ApiError(422, 'tôt', { code: ['Attendez une minute.'] }));
     await fireEvent.press(screen.getByTestId('code-resend'));
-    expect(screen.getByTestId('code-notice')).toHaveTextContent('Attendez une minute.');
+    expect(currentToast()).toMatchObject({ message: 'Attendez une minute.', tone: 'danger' });
   });
 
   it('retour : revient au premier formulaire', async () => {

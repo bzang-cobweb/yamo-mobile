@@ -10,6 +10,7 @@ import { CountryProvider } from '@/features/country/providers/CountryProvider';
 import { EntryScreen } from '@/features/country/screens/EntryScreen';
 import { AuthProvider } from '@/features/auth/providers/AuthProvider';
 import { ConnectivityGate } from '@/shared/components/ConnectivityGate';
+import { ToastHost } from '@/shared/components/Toast';
 import { bindQueriesToNetwork, useIsOnline } from '@/shared/network/connectivity';
 
 /**
@@ -103,6 +104,8 @@ function RootNavigator() {
           </Stack.Protected>
         </Stack>
       )}
+      {/* Le bandeau des messages qui suivent une action, par-dessus tous les écrans (décision 2026-11-21-bandeau-messages). */}
+      <ToastHost />
     </ConnectivityGate>
   );
 }

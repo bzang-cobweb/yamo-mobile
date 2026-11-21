@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
+import { ToastHost } from '@/shared/components/Toast';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { NotificationType } from '@/features/notification/components/NotificationType';
 import { APP_LINK, NotificationText } from '@/features/notification/components/NotificationText';
@@ -44,8 +45,6 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
   const queryClient = useQueryClient();
   const [month, setMonth] = useState<string | null>(initialMonth);
   const [selected, setSelected] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const calendar = useOfferCalendar(id, month);
   const day = useOfferCalendarDay(id, selected);
   const data = calendar.data;
@@ -57,7 +56,8 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
     ]);
   }
 
-  const { press } = useItemActions({ onNotice: setNotice, onError: setError, onDone: refresh });
+  // Le message d'une réponse dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
+  const { press } = useItemActions({ onDone: refresh });
 
   // Un autre écran s'ouvre par-dessus : le panneau (une fenêtre native) se ferme ; au
   // retour, le mois se recharge (une demande a pu changer ailleurs).
@@ -70,8 +70,6 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
   );
 
   function open(date: string) {
-    setNotice(null);
-    setError(null);
     setSelected(date);
   }
 
@@ -184,16 +182,6 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
                   <ThemedText type="linkPrimary">{t('form.closeCalendar')}</ThemedText>
                 </Pressable>
               </View>
-              {notice && (
-                <ThemedText type="small" themeColor="textSecondary" testID="offer-calendar-notice">
-                  {notice}
-                </ThemedText>
-              )}
-              {error && (
-                <ThemedText type="small" style={styles.error} accessibilityRole="alert" testID="offer-calendar-day-error">
-                  {error}
-                </ThemedText>
-              )}
               {day.isPending || !panel ? (
                 <ActivityIndicator style={styles.sheetLoading} />
               ) : (
@@ -214,6 +202,8 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
                 </ScrollView>
               )}
             </ThemedView>
+            {/* Le bandeau par-dessus le panneau, une fenêtre native qui couvre celui de l'app. */}
+            <ToastHost announce={false} />
           </Modal>
         </BackStackProvider>
       </SafeAreaView>

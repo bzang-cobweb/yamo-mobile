@@ -9,7 +9,7 @@ import { AuthContext } from '../context/AuthContext';
 import { ProfileFormScreen } from '../screens/ProfileFormScreen';
 import { verificationService } from '../services/VerificationService';
 import type { AuthContextValue } from '../types';
-import { takeProfileNotice } from '../utils/profile-notice';
+import { currentToast, hideToast } from '@/shared/components/Toast';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-router', () => ({ router: { dismissTo: jest.fn(), back: jest.fn(), canGoBack: () => true } , useRootNavigationState: () => undefined, useNavigationContainerRef: () => ({ getRootState: () => undefined, dispatch: jest.fn() }) }));
@@ -73,7 +73,7 @@ async function renderScreen(record?: string) {
 describe('ProfileFormScreen (tout formulaire du profil, sans le connaître d’avance)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    takeProfileNotice();
+    hideToast();
     mockDefinition = definition();
   });
 
@@ -87,7 +87,7 @@ describe('ProfileFormScreen (tout formulaire du profil, sans le connaître d’a
     expect(mockRequest).toHaveBeenCalledWith('/v1/notifications', { method: 'PATCH', body: { enabled: true } });
     expect(auth.setUser).not.toHaveBeenCalled();
     expect(router.dismissTo).toHaveBeenCalledWith('/profile');
-    expect(takeProfileNotice()).toBe('Notifications enregistrées.');
+    expect(currentToast()?.message).toBe('Notifications enregistrées.');
   });
 
   it('le compte renvoyé est mis à jour dans l’app (langue comprise)', async () => {
@@ -114,7 +114,7 @@ describe('ProfileFormScreen (tout formulaire du profil, sans le connaître d’a
 
     expect(verificationService.verify).toHaveBeenCalledWith(challenge, '123456', expect.any(String));
     expect(auth.setUser).toHaveBeenCalledWith(user);
-    expect(takeProfileNotice()).toBe('Notifications enregistrées.');
+    expect(currentToast()?.message).toBe('Notifications enregistrées.');
   });
 
   it('suite « sign-out » : message, puis déconnexion', async () => {
@@ -143,7 +143,7 @@ describe('ProfileFormScreen (tout formulaire du profil, sans le connaître d’a
     expect(mockRequest).toHaveBeenCalledWith('/v1/auth/me/addresses/12', { method: 'PATCH', body: { enabled: true } });
     expect(router.back).toHaveBeenCalled();
     expect(router.dismissTo).not.toHaveBeenCalled();
-    expect(takeProfileNotice()).toBe('Adresse enregistrée.');
+    expect(currentToast()?.message).toBe('Adresse enregistrée.');
   });
 
   it('refusé par l’API : reste sur le formulaire (l’erreur y est affichée)', async () => {

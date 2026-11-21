@@ -1,5 +1,5 @@
 import { useFocusEffect, type Href } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,7 +15,6 @@ import { SignOutButton } from '../components/SignOutButton';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileMenu } from '../hooks/useProfileMenu';
 import type { ProfileMenuItem } from '../types';
-import { takeProfileNotice } from '../utils/profile-notice';
 
 /**
  * Un lien sans nom de formulaire ni de liste (réponse d'un serveur plus ancien,
@@ -49,20 +48,13 @@ export function ProfileScreen() {
   const menu = useProfileMenu();
   const { refetch } = menu;
   const hasUser = user !== null;
-  const [message, setMessage] = useState<string | null>(null);
-
-  // En revenant sur le profil, le menu se recharge et la confirmation d'un
-  // formulaire s'affiche ; en le quittant (vers un formulaire, un autre onglet),
-  // elle s'efface.
+  // En revenant sur le profil, le menu se recharge ; la confirmation d'un formulaire est dans
+  // le bandeau flottant (décision 2026-11-21-bandeau-messages).
   useFocusEffect(
     useCallback(() => {
       if (hasUser) {
         void refetch();
       }
-
-      setMessage(takeProfileNotice());
-
-      return () => setMessage(null);
     }, [hasUser, refetch]),
   );
 
@@ -90,11 +82,6 @@ export function ProfileScreen() {
               </ThemedText>
             )}
           </View>
-          {message && (
-            <ThemedText type="small" themeColor="textSecondary" accessibilityRole="alert" testID="profile-notice">
-              {message}
-            </ThemedText>
-          )}
           <View style={styles.links}>
             {/* Une seule liste, sans titre de groupe (décision 2026-11-21-menu-profil-sans-groupes) :
                 les liens dans l'ordre servi. */}

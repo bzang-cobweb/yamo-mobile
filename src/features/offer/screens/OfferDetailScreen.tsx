@@ -1,17 +1,17 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { takeProfileNotice } from '@/features/auth/utils/profile-notice';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { Accordion } from '@/shared/components/Accordion';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { STATUS_ON_IMAGE, StatusTag } from '@/shared/components/StatusTag';
+import { showToast } from '@/shared/components/Toast';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -36,20 +36,21 @@ import type { OfferDetail } from '../types';
  */
 export function OfferDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
-  const theme = useTheme();
   const query = useOfferDetail(id);
   const { width: windowWidth } = useWindowDimensions();
   const width = Math.min(windowWidth, MaxContentWidth / 2);
   const offer = query.data;
   const queryClient = useQueryClient();
-  const [notice, setNotice] = useState<{ message: string; failed: boolean } | null>(null);
   const shown = useRef(false);
   const { refetch } = query;
 
-  // Un avis donné ou retiré : la fiche, et les listes (note, dernier avis), sont à recharger.
+  // Un avis donné ou retiré : la fiche, et les listes (note, dernier avis), sont à recharger ; son
+  // message dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
   const changed = useCallback(
     (message: string | null, failed = false) => {
-      setNotice(message === null ? null : { message, failed });
+      if (message !== null) {
+        showToast(message, failed ? 'danger' : 'success');
+      }
       void refetch();
       void queryClient.invalidateQueries({ queryKey: ['list'] });
     },
@@ -58,13 +59,10 @@ export function OfferDetailScreen({ id }: { id: string }) {
 
   useFocusEffect(
     useCallback(() => {
-      // Le premier affichage charge déjà la fiche ; au retour du formulaire, son message.
+      // Le premier affichage charge déjà la fiche ; au retour (d'un avis, d'une demande), elle se recharge,
+      // le message du formulaire étant déjà dans le bandeau.
       if (shown.current) {
-        const message = takeProfileNotice();
-
-        if (message !== null) {
-          changed(message);
-        }
+        changed(null);
       }
       shown.current = true;
     }, [changed]),
@@ -151,17 +149,6 @@ export function OfferDetailScreen({ id }: { id: string }) {
                       return null;
                   }
                 })}
-
-                {/* Le message d'un avis donné ou retiré. */}
-                {notice && (
-                  <ThemedText
-                    type="small"
-                    style={notice.failed ? styles.error : { color: theme.primary }}
-                    accessibilityRole="alert"
-                    testID="offer-notice">
-                    {notice.message}
-                  </ThemedText>
-                )}
 
                 {offer.published_at && (
                   <ThemedText type="small" themeColor="textSecondary" testID="offer-published">
