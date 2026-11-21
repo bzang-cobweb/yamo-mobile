@@ -78,6 +78,8 @@ export type ListDefinition = {
   create: { label: string; form: string } | null;
   /** Bouton de la barre fixe en bas : un formulaire à ouvrir, ou un écran de l'app (`/`) ; `null` (ou absent) : aucun. */
   footer?: { label: string; form: string | null; link: string | null } | null;
+  /** Les actions des cartes dans un menu déroulant « Actions » (décision 2026-11-21-actions-en-menu) ; absent : non. */
+  menu?: boolean;
   /** Texte d'aide du champ de recherche ; `null` : liste non cherchable (décision 2026-11-18-recherche-dans-la-liste). */
   search: string | null;
   /** Filtres proposés, en champs de formulaire (`?filter[nom]=valeur`) ; vide ou absent : aucun (décision 2026-11-19-contrat-filtres-vitrine). */

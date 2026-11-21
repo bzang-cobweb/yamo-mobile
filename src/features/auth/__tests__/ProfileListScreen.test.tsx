@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { Alert, type AlertButton } from 'react-native';
@@ -163,6 +163,34 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-actions-9')).toBeNull();
   });
 
+  it('« Mes logements » : toutes les actions dans un menu « Actions » (décision 2026-11-21-actions-en-menu)', async () => {
+    mockList = {
+      ...list([item('7', { image: 'https://api.test/storage/7.jpg', link: '/offers/7', actions: [{ label: 'Calendrier', style: 'default', confirm: null, submission: null, form: null, link: '/offers/7/calendar' }] })]),
+      menu: true,
+    };
+    await renderScreen();
+
+    // Fermé : ni Voir, ni Éditer, ni boutons, ni Retirer sur la carte.
+    expect(screen.queryByTestId('profile-list-view-7')).toBeNull();
+    expect(screen.queryByTestId('profile-list-edit-7')).toBeNull();
+    expect(screen.queryByTestId('profile-list-delete-7')).toBeNull();
+    expect(screen.queryByText('Calendrier')).toBeNull();
+    expect(screen.getByTestId('profile-list-menu-7-toggle')).toHaveTextContent('Actions');
+
+    // Ouvert : Voir, Éditer, Calendrier, Retirer, dans cet ordre.
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    expect(within(screen.getByTestId('profile-list-menu-7-list')).getAllByRole('button').map((node) => node.props.testID)).toEqual([
+      'profile-list-menu-7-view',
+      'profile-list-menu-7-edit',
+      'profile-list-menu-7-action-0',
+      'profile-list-menu-7-delete',
+    ]);
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-action-0'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/7/calendar');
+    // Choisir une entrée referme le menu.
+    expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+  });
+
   it('le statut sur la photo, à la place du cœur, quand l’API le demande (décision 2026-11-21-statut-a-la-place-du-coeur)', async () => {
     mockList = list([
       item('7', { image: 'https://api.test/storage/7.jpg', tag: { label: 'Publiée', tone: 'success', on_image: true } }),
@@ -181,13 +209,15 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-item-9-status')).toBeNull();
   });
 
-  it('« Éditer » avant « Retirer » ouvre le formulaire de l’item (décision 2026-11-21-editer-avant-retirer)', async () => {
+  it('sans photo : la corbeille à droite du texte, « Éditer » en bas, vers le formulaire (décisions 2026-11-21-editer-avant-retirer et 2026-11-21-corbeille-a-droite)', async () => {
     mockList = list([item('8')]);
     await renderScreen();
 
-    // Dans l'ordre de l'écran : « Éditer » puis « Retirer ».
-    expect(screen.getAllByTestId(/^profile-list-(edit|delete)-8$/).map((node) => node.props.testID)).toEqual(['profile-list-edit-8', 'profile-list-delete-8']);
-    expect(screen.getByTestId('profile-list-edit-8')).toHaveTextContent('Éditer');
+    // La corbeille sur la ligne du texte, sans le mot « Retirer » ; « Éditer » sur la ligne des actions.
+    expect(within(screen.getByTestId('profile-list-row-8')).queryByText('Retirer')).toBeNull();
+    expect(screen.getByTestId('profile-list-delete-8').props.accessibilityLabel).toBe('Retirer Carte 8');
+    expect(within(screen.getByTestId('profile-list-actions-8')).queryByTestId('profile-list-delete-8')).toBeNull();
+    expect(within(screen.getByTestId('profile-list-actions-8')).getByTestId('profile-list-edit-8')).toHaveTextContent('Éditer');
     await fireEvent.press(screen.getByTestId('profile-list-edit-8'));
     expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '8' } });
   });

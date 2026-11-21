@@ -1,4 +1,5 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -74,6 +75,8 @@ export function ProfileListScreen({ list }: { list: string }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // La carte dont le menu « Actions » est ouvert (décision 2026-11-21-actions-en-menu).
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   // Au premier affichage, la requête part déjà : ne recharger qu'aux retours.
   const shown = useRef(false);
@@ -161,6 +164,12 @@ export function ProfileListScreen({ list }: { list: string }) {
     // sur leur ligne, à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et
     // 2026-11-21-retirer-en-fin-de-carte).
     const stacked = Boolean(item.image) || both || removable || Boolean(edit);
+    // Toutes les actions dans un menu déroulant « Actions », quand la liste le demande (« Mes logements »,
+    // décision 2026-11-21-actions-en-menu).
+    const menu = Boolean(definition?.menu);
+    const menuOpen = menu && openMenu === item.id;
+    // Sans photo ni menu : « Retirer » en icône corbeille, à droite du texte (décision 2026-11-21-corbeille-a-droite).
+    const removeIcon = removable && !item.image && !menu;
 
     function openEdit() {
       if (edit) {
@@ -182,35 +191,77 @@ export function ProfileListScreen({ list }: { list: string }) {
         hitSlop={Spacing.one}
         onPress={() => confirmRemove(item)}
         style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
-        <ThemedText type="small" style={styles.error}>
-          {item.delete.label}
-        </ThemedText>
+        {removeIcon ? (
+          <SymbolView name={{ ios: 'trash', android: 'delete', web: 'delete' }} size={18} tintColor={ERROR_COLOR} />
+        ) : (
+          <ThemedText type="small" style={styles.error}>
+            {item.delete.label}
+          </ThemedText>
+        )}
       </Pressable>
     );
 
+    // Les entrées du menu « Actions » : Voir, Éditer, les boutons de la carte, Retirer (en rouge).
+    const menuEntries = menu
+      ? [
+          ...(link ? [{ key: 'view', label: t('list.view'), danger: false, onPress: openLink }] : []),
+          ...(edit ? [{ key: 'edit', label: t('list.edit'), danger: false, onPress: openEdit }] : []),
+          ...(item.actions ?? []).map((action, index) => ({ key: `action-${index}`, label: action.label, danger: action.style === 'destructive', onPress: () => pressAction(action) })),
+          ...(removable && item.delete ? [{ key: 'delete', label: item.delete.label, danger: true, onPress: () => confirmRemove(item) }] : []),
+        ]
+      : [];
+
     return (
       <View style={[styles.row, stacked && styles.stacked, { borderColor: theme.backgroundSelected }]} testID={`profile-list-row-${item.id}`}>
-        <Pressable
-          testID={`profile-list-item-${item.id}`}
-          accessibilityRole={edit || link ? 'link' : undefined}
-          disabled={!edit && !link}
-          onPress={() => (edit ? openEdit() : openLink())}
-          style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
-          {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
-          {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
-              une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
-          <ItemPicture item={item} tag={tagOnImage ? item.tag : null} testID={`profile-list-item-${item.id}`} />
-          {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
-          <ThemedText>{item.title}</ThemedText>
-          {item.subtitle && (
-            <ThemedText type="small" themeColor="textSecondary">
-              {item.subtitle}
-            </ThemedText>
-          )}
-          {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
-          {/* La note et la phrase mise en avant, quand l'API les sert. */}
-          <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
-        </Pressable>
+        {removeIcon ? (
+          // Le texte, et la corbeille à sa droite (décision 2026-11-21-corbeille-a-droite).
+          <View style={styles.head}>
+            <Pressable
+              testID={`profile-list-item-${item.id}`}
+              accessibilityRole={edit || link ? 'link' : undefined}
+              disabled={!edit && !link}
+              onPress={() => (edit ? openEdit() : openLink())}
+              style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
+              {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
+              {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
+                  une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
+              <ItemPicture item={item} tag={tagOnImage ? item.tag : null} testID={`profile-list-item-${item.id}`} />
+              {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
+              <ThemedText>{item.title}</ThemedText>
+              {item.subtitle && (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {item.subtitle}
+                </ThemedText>
+              )}
+              {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
+              {/* La note et la phrase mise en avant, quand l'API les sert. */}
+              <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
+            </Pressable>
+            {removeButton}
+          </View>
+        ) : (
+          <Pressable
+            testID={`profile-list-item-${item.id}`}
+            accessibilityRole={edit || link ? 'link' : undefined}
+            disabled={!edit && !link}
+            onPress={() => (edit ? openEdit() : openLink())}
+            style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
+            {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
+            {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
+                une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
+            <ItemPicture item={item} tag={tagOnImage ? item.tag : null} testID={`profile-list-item-${item.id}`} />
+            {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
+            <ThemedText>{item.title}</ThemedText>
+            {item.subtitle && (
+              <ThemedText type="small" themeColor="textSecondary">
+                {item.subtitle}
+              </ThemedText>
+            )}
+            {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
+            {/* La note et la phrase mise en avant, quand l'API les sert. */}
+            <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
+          </Pressable>
+        )}
         {item.counter && (
           <Pressable
             testID={`profile-list-counter-${item.id}`}
@@ -222,36 +273,80 @@ export function ProfileListScreen({ list }: { list: string }) {
             </ThemedText>
           </Pressable>
         )}
-        <ItemActionButtons actions={item.actions ?? []} testID={`profile-list-action-${item.id}`} onPress={pressAction} />
-        {stacked ? (
-          <View style={styles.actions} testID={`profile-list-actions-${item.id}`}>
-            {both && (
+        {menu ? (
+          menuEntries.length > 0 && (
+            // Un seul bouton « Actions », à droite ; ouvert, ses entrées dessous (décision 2026-11-21-actions-en-menu).
+            <View style={styles.menu} testID={`profile-list-menu-${item.id}`}>
               <Pressable
-                testID={`profile-list-view-${item.id}`}
-                accessibilityRole="link"
-                accessibilityLabel={`${t('list.view')} ${item.title}`}
+                testID={`profile-list-menu-${item.id}-toggle`}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: menuOpen }}
+                accessibilityLabel={`${t('list.actions')} ${item.title}`}
                 hitSlop={Spacing.one}
-                onPress={openLink}
-                style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
-                <ThemedText type="linkPrimary">{t('list.view')}</ThemedText>
+                onPress={() => setOpenMenu(menuOpen ? null : item.id)}
+                style={({ pressed }) => [styles.menuToggle, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
+                <ThemedText type="smallBold">{t('list.actions')}</ThemedText>
+                <SymbolView
+                  name={{ ios: menuOpen ? 'chevron.up' : 'chevron.down', android: menuOpen ? 'expand_less' : 'expand_more', web: menuOpen ? 'expand_less' : 'expand_more' }}
+                  size={14}
+                  tintColor={theme.text}
+                />
               </Pressable>
-            )}
-            {/* « Éditer » dès que l'item a un formulaire, avant « Retirer » (décision 2026-11-21-editer-avant-retirer). */}
-            {edit && (
-              <Pressable
-                testID={`profile-list-edit-${item.id}`}
-                accessibilityRole="link"
-                accessibilityLabel={`${t('list.edit')} ${item.title}`}
-                hitSlop={Spacing.one}
-                onPress={openEdit}
-                style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
-                <ThemedText type="linkPrimary">{t('list.edit')}</ThemedText>
-              </Pressable>
-            )}
-            {removeButton}
-          </View>
+              {menuOpen && (
+                <View style={[styles.menuList, { borderColor: theme.backgroundSelected, backgroundColor: theme.background }]} testID={`profile-list-menu-${item.id}-list`}>
+                  {menuEntries.map((entry) => (
+                    <Pressable
+                      key={entry.key}
+                      testID={`profile-list-menu-${item.id}-${entry.key}`}
+                      accessibilityRole="button"
+                      onPress={() => {
+                        setOpenMenu(null);
+                        entry.onPress();
+                      }}
+                      style={({ pressed }) => [styles.menuEntry, pressed && { backgroundColor: theme.backgroundSelected }]}>
+                      <ThemedText type="small" style={entry.danger ? styles.error : undefined}>
+                        {entry.label}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+          )
         ) : (
-          removeButton
+          <>
+            <ItemActionButtons actions={item.actions ?? []} testID={`profile-list-action-${item.id}`} onPress={pressAction} />
+            {stacked ? (
+              <View style={styles.actions} testID={`profile-list-actions-${item.id}`}>
+                {both && (
+                  <Pressable
+                    testID={`profile-list-view-${item.id}`}
+                    accessibilityRole="link"
+                    accessibilityLabel={`${t('list.view')} ${item.title}`}
+                    hitSlop={Spacing.one}
+                    onPress={openLink}
+                    style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+                    <ThemedText type="linkPrimary">{t('list.view')}</ThemedText>
+                  </Pressable>
+                )}
+                {/* « Éditer » dès que l'item a un formulaire, avant « Retirer » (décision 2026-11-21-editer-avant-retirer). */}
+                {edit && (
+                  <Pressable
+                    testID={`profile-list-edit-${item.id}`}
+                    accessibilityRole="link"
+                    accessibilityLabel={`${t('list.edit')} ${item.title}`}
+                    hitSlop={Spacing.one}
+                    onPress={openEdit}
+                    style={({ pressed }) => [styles.delete, pressed && styles.pressed]}>
+                    <ThemedText type="linkPrimary">{t('list.edit')}</ThemedText>
+                  </Pressable>
+                )}
+                {!removeIcon && removeButton}
+              </View>
+            ) : (
+              !removeIcon && removeButton
+            )}
+          </>
         )}
       </View>
     );
@@ -370,6 +465,13 @@ const styles = StyleSheet.create({
   stacked: { flexDirection: 'column', alignItems: 'stretch' },
   itemText: { flex: 1, gap: Spacing.half, paddingVertical: Spacing.one },
   delete: { padding: Spacing.one },
+  // Le texte et la corbeille à sa droite.
+  head: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  // Le menu « Actions » : le bouton à droite, ses entrées dessous, à droite.
+  menu: { alignItems: 'flex-end', gap: Spacing.one },
+  menuToggle: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, borderWidth: 1, borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: Spacing.one },
+  menuList: { minWidth: 180, borderWidth: 1, borderRadius: 8, overflow: 'hidden' },
+  menuEntry: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
