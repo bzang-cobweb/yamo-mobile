@@ -249,7 +249,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             accessibilityRole={edit || link ? 'link' : undefined}
             disabled={!edit && !link}
             onPress={() => (edit ? openEdit() : openLink())}
-            style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
+            style={({ pressed }) => [styles.itemText, menu && !item.image && styles.besideMenu, pressed && styles.pressed]}>
             {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
             {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
                 une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
@@ -480,6 +480,8 @@ const styles = StyleSheet.create({
   // Un item avec photo : en colonne.
   stacked: { flexDirection: 'column', alignItems: 'stretch' },
   itemText: { flex: 1, gap: Spacing.half, paddingVertical: Spacing.one },
+  // Sans photo, avec le menu : le texte s'arrête avant le bouton rond (décision 2026-11-21-demandes-sans-photo).
+  besideMenu: { paddingRight: 32 + Spacing.two },
   delete: { padding: Spacing.one },
   // Le texte et la corbeille à sa droite.
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
