@@ -10,7 +10,6 @@ import { notificationService } from '../services/NotificationService';
 import type { AppNotification } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
-jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 // L'icône, rendue comme une vue qui garde son nom et son testID.
 jest.mock('expo-symbols', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -60,8 +59,12 @@ const NOTIFICATION: AppNotification = {
   created_at: '2026-11-19T20:00:00Z',
 };
 
+// Le cache du test affiché : vidé avant de rendre les vrais services, pour qu'aucune requête encore en
+// cours ne parte vers l'API une fois les doublures retirées.
+let client: QueryClient | null = null;
+
 async function show() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   await render(
     <QueryClientProvider client={client}>
       <I18nContext.Provider value={TEST_I18N}>
@@ -78,7 +81,12 @@ describe('NotificationDetailScreen', () => {
     jest.spyOn(notificationService, 'read').mockResolvedValue(undefined);
     jest.spyOn(notificationService, 'unreadCount').mockResolvedValue(0);
   });
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(async () => {
+    await client?.cancelQueries();
+    client?.clear();
+    client = null;
+    jest.restoreAllMocks();
+  });
 
   it('le suivi comme une conversation : l’autre à gauche, le lecteur à droite, « Toi » sans photo (décision 2026-11-20-suivi-conversation)', async () => {
     jest.spyOn(notificationService, 'get').mockResolvedValue({
