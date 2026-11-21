@@ -137,8 +137,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     />
                   )}
                   {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à
-                      droite : personnes, arrivée, départ (ou visite), durée, prix, total en gras
-                      (décision 2026-11-20-lignes-demande). */}
+                      droite : personnes, arrivée, départ (ou visite), durée, prix, total en gras, puis l'autre partie
+                      (décisions 2026-11-20-lignes-demande et 2026-11-21-detail-reservation-contact). */}
                   {open && (notification.booking?.lines ?? []).map((line) => (
                     <View key={line.key} style={styles.headRow} testID={`notification-detail-line-${line.key}`}>
                       <ThemedText
@@ -147,13 +147,27 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                         testID={`notification-detail-line-${line.key}-label`}>
                         {line.label}
                       </ThemedText>
-                      <ThemedText
-                        type="small"
-                        themeColor={line.key === 'total' ? undefined : 'textSecondary'}
-                        style={[styles.dateValue, line.key === 'total' && styles.total]}
-                        testID={`notification-detail-line-${line.key}-value`}>
-                        {line.value}
-                      </ThemedText>
+                      {/* Une valeur avec un lien : le nom de l'hôte ou du membre, vers sa page
+                          (décision 2026-11-21-detail-reservation-contact). */}
+                      {line.link && APP_LINK.test(line.link) ? (
+                        <ThemedText
+                          type="linkPrimary"
+                          accessibilityRole="link"
+                          onPress={() => line.link && go(line.link)}
+                          style={styles.dateValue}
+                          testID={`notification-detail-line-${line.key}-value`}>
+                          {line.value}
+                        </ThemedText>
+                      ) : (
+                        <ThemedText
+                          type="small"
+                          themeColor={line.key === 'total' ? undefined : 'textSecondary'}
+                          style={[styles.dateValue, line.key === 'total' && styles.total]}
+                          selectable
+                          testID={`notification-detail-line-${line.key}-value`}>
+                          {line.value}
+                        </ThemedText>
+                      )}
                     </View>
                   ))}
                   {/* Sous les lignes dépliées, le lien vers la fiche du logement. */}

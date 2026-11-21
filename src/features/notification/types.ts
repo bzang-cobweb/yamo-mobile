@@ -61,7 +61,8 @@ export type NotificationBooking = {
    * 2026-11-20-lignes-demande) : `guests`, `arrival`, `departure` (ou `visit`,
    * `second`), `days`, `price`, `total`.
    */
-  lines: { key: string; label: string; value: string }[];
+  /** `link` : un écran de l'app ouvert par la valeur (le nom de l'hôte ou du membre → `/members/12`). */
+  lines: { key: string; label: string; value: string; link?: string | null }[];
 };
 
 /** Une étape du suivi d'une demande : « Demande acceptée », qui, son message, sa date. */

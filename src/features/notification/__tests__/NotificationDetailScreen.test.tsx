@@ -46,6 +46,8 @@ const NOTIFICATION: AppNotification = {
       { key: 'days', label: 'Durée', value: '3 jours' },
       { key: 'price', label: 'Prix', value: '85 000 FCFA / jour' },
       { key: 'total', label: 'Total', value: '255 000 FCFA' },
+      { key: 'member', label: 'Membre', value: 'Léa Membre', link: '/members/5' },
+      { key: 'email', label: 'E-mail', value: 'lea@example.test' },
     ],
   },
   read: false,
@@ -173,6 +175,10 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
     await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
     expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();
+    // L'autre partie : son nom ouvre sa page ; l'e-mail est un texte (décision 2026-11-21-detail-reservation-contact).
+    expect(screen.getByTestId('notification-detail-line-email-value')).toHaveTextContent('lea@example.test');
+    await fireEvent.press(screen.getByTestId('notification-detail-line-member-value'));
+    expect(router.push).toHaveBeenLastCalledWith('/members/5');
     // Dépliées : le lien vers la fiche du logement, sous les lignes.
     await fireEvent.press(screen.getByTestId('notification-detail-offer-view'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
