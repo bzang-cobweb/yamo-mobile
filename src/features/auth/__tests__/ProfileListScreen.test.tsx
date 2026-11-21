@@ -28,6 +28,12 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 // L'écran est considéré comme affiché : l'effet de focus s'exécute au montage.
+// Le cœur lui-même est testé à part ; ici, sa place sur la photo.
+jest.mock('@/features/list/components/FavoriteHeart', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { FavoriteHeart: ({ testID }: { testID?: string }) => <View testID={testID} /> };
+});
 jest.mock('expo-router', () => {
   const { useEffect } = jest.requireActual<typeof import('react')>('react');
 
@@ -209,6 +215,15 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenLastCalledWith('/offers/7/calendar');
     // Choisir une entrée referme le menu.
     expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+  });
+
+  it('« Mes réservations » : le statut en haut à gauche de la photo, le cœur à droite (décision 2026-11-21-reservations-statut-coeur)', async () => {
+    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg', tag: { label: 'En attente', tone: 'warning', on_image: true }, favorite: { active: true, endpoint: '/v1/offers/3/favorite' } })]);
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-item-7-favorite')).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7-status').props.style)).toMatchObject({ position: 'absolute', left: expect.any(Number) });
+    expect(screen.queryByTestId('profile-list-tag-7')).toBeNull();
   });
 
   it('« Notifications » du menu ouvre les notifications avec ses filtres déjà choisis (décision 2026-11-21-lien-notifications)', async () => {

@@ -149,7 +149,8 @@ export function ProfileListScreen({ list }: { list: string }) {
     // L'écran de l'app que l'item désigne (« /offers/12 », décision 2026-11-19-contrat-vedette-favoris).
     const link = item.link && ITEM_LINK.test(item.link) ? item.link : null;
     const removable = item.delete !== null && profileSubmission(item.delete) !== null;
-    const tagOnImage = Boolean(item.tag?.on_image && item.image && !item.favorite);
+    // Le statut sur la photo quand l'API le demande ; avec un cœur, en haut à gauche (décision 2026-11-21-reservations-statut-coeur).
+    const tagOnImage = Boolean(item.tag?.on_image && item.image);
     const counters = item.counters?.length ? item.counters : item.counter ? [item.counter] : [];
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);

@@ -8,8 +8,9 @@ import { FavoriteHeart } from './FavoriteHeart';
 
 /**
  * La photo d'un item, et son cœur de favori en haut à droite quand l'API en sert un
- * (décision 2026-11-19-contrat-vedette-favoris) ; sans cœur, à cette place, la pastille
- * de statut `tag` quand elle est servie (décision 2026-11-21-statut-a-la-place-du-coeur).
+ * (décision 2026-11-19-contrat-vedette-favoris) ; la pastille de statut `tag` quand elle est
+ * servie : à la place du cœur sans cœur (décision 2026-11-21-statut-a-la-place-du-coeur), en haut
+ * à gauche avec un cœur ou `tagLeft` (décision 2026-11-21-reservations-statut-coeur).
  */
 export function ItemPicture({
   item,
@@ -32,11 +33,8 @@ export function ItemPicture({
   return (
     <View style={styles.wrap} testID={`${testID}-picture`}>
       <ItemPhoto uri={item.image} placeholder testID={`${testID}-photo`} />
-      {item.favorite ? (
-        <FavoriteHeart favorite={item.favorite} testID={`${testID}-favorite`} />
-      ) : (
-        tag && <StatusTag tag={tag} style={tagLeft ? STATUS_ON_IMAGE_LEFT : STATUS_ON_IMAGE} testID={`${testID}-status`} />
-      )}
+      {item.favorite && <FavoriteHeart favorite={item.favorite} testID={`${testID}-favorite`} />}
+      {tag && <StatusTag tag={tag} style={tagLeft || item.favorite ? STATUS_ON_IMAGE_LEFT : STATUS_ON_IMAGE} testID={`${testID}-status`} />}
     </View>
   );
 }
