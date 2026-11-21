@@ -24,7 +24,8 @@ export function RadioField({ field, value, onChange, error, disabled }: FieldPro
               accessibilityRole="radio"
               accessibilityState={{ checked, disabled }}
               disabled={disabled}
-              onPress={() => onChange(option.value)}
+              // Facultatif : un second toucher sur l'option cochée la décoche (décision 2026-11-21-choix-facultatif-effacable).
+              onPress={() => onChange(checked && !field.required ? '' : option.value)}
               style={styles.row}>
               <View style={[styles.circle, { borderColor: theme.text }]}>
                 {checked && <View style={[styles.dot, { backgroundColor: theme.text }]} />}

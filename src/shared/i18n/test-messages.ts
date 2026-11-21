@@ -63,6 +63,7 @@ export const TEST_MESSAGES: Messages = {
   'form.loading': 'Chargement du formulaire…',
   'form.submitting': 'Envoi…',
   'form.selectPlaceholder': 'Choisir…',
+  'form.none': 'Aucun',
   'form.showPassword': 'Afficher le mot de passe',
   'form.hidePassword': 'Masquer le mot de passe',
   'form.retry': 'Réessayer',

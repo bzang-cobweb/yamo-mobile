@@ -25,10 +25,12 @@ type Props = {
   searchable?: boolean;
   /** Au plus ce nombre d'options affichées ; la recherche trouve les autres. Sans : toutes. */
   limit?: number;
+  /** Un champ facultatif : une première ligne (« Aucun ») retire la valeur (décision 2026-11-21-choix-facultatif-effacable). */
+  clearable?: boolean;
 };
 
 /** Fenêtre de choix commune aux listes déroulantes et au pays d'un téléphone. */
-export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false, limit }: Props) {
+export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false, limit, clearable = false }: Props) {
   const { t } = useI18n();
   const theme = useTheme();
   const [query, setQuery] = useState('');
@@ -62,6 +64,24 @@ export function OptionsModal({ visible, title, options, selected, onSelect, onCl
             />
           )}
           <ScrollView keyboardShouldPersistTaps="handled">
+            {clearable && (
+              <Pressable
+                testID={`${testIDPrefix}-option-none`}
+                accessibilityRole="menuitem"
+                accessibilityState={{ selected: selected === '' }}
+                onPress={() => {
+                  onSelect('');
+                  close();
+                }}
+                style={({ pressed }) => [styles.option, pressed && styles.pressed]}>
+                <View style={styles.optionRow}>
+                  <ThemedText themeColor="textSecondary" style={styles.label}>
+                    {t('form.none')}
+                  </ThemedText>
+                  {selected === '' && <ThemedText type="smallBold">✓</ThemedText>}
+                </View>
+              </Pressable>
+            )}
             {filtered.map((option) => (
               <Pressable
                 key={option.value}
