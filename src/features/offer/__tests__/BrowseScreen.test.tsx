@@ -124,6 +124,8 @@ describe('Accueil : offres du pays', () => {
     expect(StyleSheet.flatten(screen.getByTestId('browse-item-9-reviews').props.style).flexDirection).toBeUndefined();
 
     expect(screen.queryByTestId('browse-item-7-rating')).toBeNull();
+    // Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo).
+    expect(StyleSheet.flatten(screen.getByTestId('browse-item-9-body').props.style)).toMatchObject({ paddingHorizontal: 8, paddingVertical: 4 });
     expect(screen.getByTestId('browse-item-7-highlight').props.children).toBe('25 000 FCFA / mois');
   });
 

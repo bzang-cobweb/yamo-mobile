@@ -187,6 +187,8 @@ export function List<T>({
 /** La marge intérieure d'une carte de liste et l'écart entre ses lignes, les mêmes partout (décision 2026-11-22-cartes-espacements-accueil). */
 export const CARD_PADDING = Spacing.two;
 export const CARD_GAP = Spacing.one;
+/** La zone sous la photo d'une carte : un retrait de 8 sur les côtés, 4 en haut et en bas (décision 2026-11-22-cartes-espace-sous-photo). */
+export const CARD_BODY = { gap: CARD_GAP, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one } as const;
 
 /** La hauteur minimale de la barre de recherche et la taille de sa loupe (décision 2026-11-21-recherche-plus-grande). */
 export const SEARCH_HEIGHT = 48;

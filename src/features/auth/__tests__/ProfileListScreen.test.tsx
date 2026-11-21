@@ -382,6 +382,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-7').props.style)).toMatchObject({ padding: 8, gap: 4 });
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7').props.style)).toMatchObject({ gap: 4 });
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-body-7').props.style)).toMatchObject({ paddingHorizontal: 8, paddingVertical: 4 });
     // Le titre en gras, à la taille de l'accueil (décision 2026-11-22-cartes-titre-gras).
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-title-7').props.style).fontWeight).toBe(700);
   });

@@ -8,7 +8,7 @@ import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
-import { CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
+import { CARD_BODY, CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -94,15 +94,18 @@ export function BrowseScreen() {
           style={({ pressed }) => [styles.card, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
           {/* La photo au-dessus du titre ; sans photo, un emplacement neutre ; le cœur d'un membre connecté. */}
           <ItemPicture item={item} placeholder testID={`browse-item-${item.id}`} />
-          <ThemedText type="smallBold">{item.title}</ThemedText>
-          {item.subtitle && (
-            <ThemedText type="small" themeColor="textSecondary">
-              {item.subtitle}
-            </ThemedText>
-          )}
-          {/* La note moyenne, puis le dernier avis en gras sur sa ligne (décision 2026-11-19-contrat-avis-offres). */}
-          {/* La note sur sa ligne, sous le prix, à droite (décision 2026-11-21-accueil-note-sous-le-prix). */}
-          <ItemReviews item={item} testID={`browse-item-${item.id}`} />
+          {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
+          <View style={CARD_BODY} testID={`browse-item-${item.id}-body`}>
+            <ThemedText type="smallBold">{item.title}</ThemedText>
+            {item.subtitle && (
+              <ThemedText type="small" themeColor="textSecondary">
+                {item.subtitle}
+              </ThemedText>
+            )}
+            {/* La note moyenne, puis le dernier avis en gras sur sa ligne (décision 2026-11-19-contrat-avis-offres). */}
+            {/* La note sur sa ligne, sous le prix, à droite (décision 2026-11-21-accueil-note-sous-le-prix). */}
+            <ItemReviews item={item} testID={`browse-item-${item.id}`} />
+          </View>
         </Pressable>
       )}
       hasMore={query.hasNextPage}

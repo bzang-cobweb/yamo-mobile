@@ -18,7 +18,7 @@ import { ItemPicture } from '@/features/list/components/ItemPicture';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { ITEM_LINK } from '@/features/list/services/ListService';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
-import { CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
+import { CARD_BODY, CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -273,6 +273,42 @@ export function ProfileListScreen({ list }: { list: string }) {
                   une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
                   des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
               <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
+              {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
+              <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
+                {tagsRow}
+                {itemTitle}
+                {item.subtitle && (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {item.subtitle}
+                  </ThemedText>
+                )}
+                {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
+                {item.detail && (
+                  <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-detail-${item.id}`}>
+                    {item.detail}
+                  </ThemedText>
+                )}
+                {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
+                {/* La note et la phrase mise en avant, quand l'API les sert. */}
+                <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
+              </View>
+            </Pressable>
+            {removeButton}
+          </View>
+        ) : (
+          <Pressable
+            testID={`profile-list-item-${item.id}`}
+            accessibilityRole={edit || link ? 'link' : undefined}
+            disabled={!edit && !link}
+            onPress={() => closeMenu() || (edit ? openEdit() : openLink())}
+            style={({ pressed }) => [styles.itemText, menu && !item.image && styles.besideMenu, pressed && styles.pressed]}>
+            {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
+            {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
+                une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
+                  des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
+            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
+            {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
+            <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
               {tagsRow}
               {itemTitle}
               {item.subtitle && (
@@ -289,37 +325,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
-            </Pressable>
-            {removeButton}
-          </View>
-        ) : (
-          <Pressable
-            testID={`profile-list-item-${item.id}`}
-            accessibilityRole={edit || link ? 'link' : undefined}
-            disabled={!edit && !link}
-            onPress={() => closeMenu() || (edit ? openEdit() : openLink())}
-            style={({ pressed }) => [styles.itemText, menu && !item.image && styles.besideMenu, pressed && styles.pressed]}>
-            {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
-            {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
-                une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
-                  des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
-            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
-            {tagsRow}
-            {itemTitle}
-            {item.subtitle && (
-              <ThemedText type="small" themeColor="textSecondary">
-                {item.subtitle}
-              </ThemedText>
-            )}
-            {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
-            {item.detail && (
-              <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-detail-${item.id}`}>
-                {item.detail}
-              </ThemedText>
-            )}
-            {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
-            {/* La note et la phrase mise en avant, quand l'API les sert. */}
-            <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
+            </View>
           </Pressable>
         )}
         {/* Ses compteurs, côte à côte : « 2 demandes en attente », « 1 notification non lue »
@@ -535,6 +541,8 @@ const styles = StyleSheet.create({
   // Un item avec photo : en colonne.
   stacked: { flexDirection: 'column', alignItems: 'stretch' },
   itemText: { flex: 1, gap: CARD_GAP },
+  // Sans photo, le texte sans retrait.
+  body: { gap: CARD_GAP },
   // Sans photo, avec le menu : le texte s'arrête avant le bouton rond (décision 2026-11-21-demandes-sans-photo).
   besideMenu: { paddingRight: 32 + Spacing.two },
   delete: { padding: Spacing.one },
