@@ -22,8 +22,8 @@ import { useMarkRead, useNotification } from '../hooks/useNotifications';
 import type { BookingLine } from '../types';
 import { formatStamp } from '../utils/stamp';
 
-/** La première date d'une demande (arrivée, visite) : « Voir plus » se place juste avant. */
-const FIRST_DATE_KEYS = ['arrival', 'visit'];
+/** Les lignes d'une demande toujours visibles, avant « Voir plus » (décision 2026-11-21-voir-plus-apres-deux-lignes). */
+const VISIBLE_LINES = 2;
 
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
@@ -69,11 +69,9 @@ export function NotificationDetailScreen({ id }: { id: string }) {
   // (décision 2026-11-21-detail-reservation-type-logement).
   const offerType = [notification?.booking?.offer.rental_type, notification?.booking?.offer.property_type].filter(Boolean).join(' · ');
 
-  // Les lignes avant la première date (adresse, contact, personnes) ; à partir de l'arrivée ou de la visite,
-  // la suite derrière « Voir plus » (décision 2026-11-21-voir-plus-avant-arrivee).
+  // Les deux premières lignes, puis la suite derrière « Voir plus ».
   const lines = notification?.booking?.lines ?? [];
-  const first = lines.findIndex((line) => FIRST_DATE_KEYS.includes(line.key));
-  const split = first === -1 ? lines.length : first;
+  const split = VISIBLE_LINES;
   const firstLines = lines.slice(0, split);
   const moreLines = lines.slice(split);
 
@@ -177,9 +175,9 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     />
                   )}
                   {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à droite :
-                      avant l'arrivée (ou la visite), toujours ; puis « Voir plus » déplie la suite : dates, durée,
-                      prix, total en gras (décisions 2026-11-20-lignes-demande, 2026-11-21-detail-reservation-voir-plus
-                      et 2026-11-21-voir-plus-avant-arrivee). */}
+                      les deux premières, toujours ; puis « Voir plus » déplie la suite : coordonnées, dates, durée, prix,
+                      total en gras (décisions 2026-11-20-lignes-demande, 2026-11-21-detail-reservation-voir-plus et
+                      2026-11-21-voir-plus-apres-une-ligne). */}
                   {firstLines.map(renderLine)}
                   {open && moreLines.map(renderLine)}
                   {/* À la fin, même dépliée, à droite, sans icône : « Voir plus » / « Voir moins »

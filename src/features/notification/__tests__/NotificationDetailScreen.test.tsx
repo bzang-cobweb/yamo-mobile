@@ -174,9 +174,10 @@ describe('NotificationDetailScreen', () => {
 
     // Jusqu'au départ, toujours visibles ; la suite derrière « Voir plus » (décision 2026-11-21-detail-reservation-voir-plus).
     await screen.findByTestId('notification-detail-more');
-    // Avant l'arrivée, toujours ; à partir de l'arrivée, derrière « Voir plus » (décision 2026-11-21-voir-plus-avant-arrivee).
-    expect(screen.getByTestId('notification-detail-line-guests')).toBeTruthy();
+    // Les deux premières lignes, toujours ; la suite derrière « Voir plus » (décision 2026-11-21-voir-plus-apres-deux-lignes).
+    expect(screen.getByTestId('notification-detail-line-member')).toBeTruthy();
     expect(screen.getByTestId('notification-detail-line-email')).toBeTruthy();
+    expect(screen.queryByTestId('notification-detail-line-guests')).toBeNull();
     expect(screen.queryByTestId('notification-detail-line-arrival')).toBeNull();
     expect(screen.queryByTestId('notification-detail-line-days')).toBeNull();
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
