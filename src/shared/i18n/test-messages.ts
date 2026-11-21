@@ -85,7 +85,7 @@ export const TEST_MESSAGES: Messages = {
   'list.clearFilters': 'Effacer les filtres',
   'list.view': 'Voir',
   'list.actions': 'Actions',
-  'list.edit': 'Éditer',
+  'list.edit': 'Modifier',
   'list.noFilterResults': 'Aucun résultat ne correspond à ces filtres.',
   'list.addFavorite': 'Ajouter aux favoris',
   'list.removeFavorite': 'Retirer des favoris',
