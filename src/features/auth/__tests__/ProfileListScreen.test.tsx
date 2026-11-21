@@ -190,15 +190,34 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     mockList = list([item('7', { counter: pending, counters: [pending, unread] })]);
     await renderScreen();
 
-    // Sous le titre, dans la partie touchable de la carte, en orange, le texte en blanc.
+    // Sans photo : sous le titre, en orange.
     const toned = screen.getByTestId('profile-list-toned-counters-7');
     expect(within(toned).getByTestId('profile-list-counter-7')).toHaveTextContent('2 demandes en attente');
-    expect(within(screen.getByTestId('profile-list-item-7')).getByTestId('profile-list-counter-7')).toBeTruthy();
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-counter-7').props.style).backgroundColor).toBe(TONE_COLORS.warning);
     // Sans ton : en bas, hors de la pastille.
     expect(within(toned).queryByTestId('profile-list-counter-7-1')).toBeNull();
     await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
     expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
+  });
+
+  it('avec une photo : la pastille des demandes en attente à la place du statut (décision 2026-11-21-pastille-sur-la-photo)', async () => {
+    const pending = { label: '2 demandes en attente', list: 'notifications', filter: { type: 'booking', status: 'pending', offer: '7' }, link: '/notifications', tone: 'warning' };
+    const tag = { label: 'Publiée', tone: 'success', on_image: true };
+    mockList = list([
+      item('7', { image: 'https://api.test/storage/7.jpg', tag, counter: pending, counters: [pending] }),
+      item('8', { image: 'https://api.test/storage/8.jpg', tag }),
+    ]);
+    await renderScreen();
+
+    // Sur la photo, à la place de « Publiée », et plus sous le titre.
+    expect(screen.getByTestId('profile-list-item-7-status')).toHaveTextContent('2 demandes en attente');
+    expect(within(screen.getByTestId('profile-list-item-7-picture')).getByTestId('profile-list-counter-7')).toBeTruthy();
+    expect(screen.queryByTestId('profile-list-toned-counters-7')).toBeNull();
+    expect(screen.queryByText('Publiée', { exact: true })).not.toBeNull();
+    await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
+    expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
+    // Sans demande en attente : le statut.
+    expect(screen.getByTestId('profile-list-item-8-status')).toHaveTextContent('Publiée');
   });
 
   it('« Mes logements » : toutes les actions dans un menu « Actions » (décision 2026-11-21-actions-en-menu)', async () => {

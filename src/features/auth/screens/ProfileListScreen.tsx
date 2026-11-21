@@ -173,9 +173,20 @@ export function ProfileListScreen({ list }: { list: string }) {
         </Pressable>
       );
     };
-    const tonedCounters = counters.some((counter) => counter.tone) && (
+    // Avec une photo, le premier compteur qui a un ton va dessus, à la place du statut, et se touche ; le statut
+    // revient quand il n'y en a plus (décision 2026-11-21-pastille-sur-la-photo).
+    const imageCounterIndex = item.image ? counters.findIndex((counter) => counter.tone) : -1;
+    const imageCounter = imageCounterIndex >= 0 ? counters[imageCounterIndex] : null;
+    const pictureTag = imageCounter ? { label: imageCounter.label, tone: imageCounter.tone ?? 'neutral' } : tagOnImage ? item.tag : null;
+    const pictureTagProps = imageCounter
+      ? {
+          onTagPress: () => openCounter(imageCounter),
+          tagTestID: imageCounterIndex === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${imageCounterIndex}`,
+        }
+      : {};
+    const tonedCounters = counters.some((counter, index) => counter.tone && index !== imageCounterIndex) && (
       <View style={styles.counters} testID={`profile-list-toned-counters-${item.id}`}>
-        {counters.map((counter, index) => (counter.tone ? renderCounter(counter, index) : null))}
+        {counters.map((counter, index) => (counter.tone && index !== imageCounterIndex ? renderCounter(counter, index) : null))}
       </View>
     );
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
@@ -243,8 +254,9 @@ export function ProfileListScreen({ list }: { list: string }) {
               style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
               {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
               {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
-                  une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
-              <ItemPicture item={item} tag={tagOnImage ? item.tag : null} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
+                  une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
+                  des demandes en attente (décision 2026-11-21-pastille-sur-la-photo). */}
+              <ItemPicture item={item} tag={pictureTag} tagLeft={menu} {...pictureTagProps} testID={`profile-list-item-${item.id}`} />
               {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
               <ThemedText>{item.title}</ThemedText>
               {tonedCounters}
@@ -268,8 +280,9 @@ export function ProfileListScreen({ list }: { list: string }) {
             style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
             {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
             {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
-                une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
-            <ItemPicture item={item} tag={tagOnImage ? item.tag : null} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
+                une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
+                  des demandes en attente (décision 2026-11-21-pastille-sur-la-photo). */}
+            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} {...pictureTagProps} testID={`profile-list-item-${item.id}`} />
             {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
             <ThemedText>{item.title}</ThemedText>
             {tonedCounters}
