@@ -386,6 +386,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-title-7').props.style).fontWeight).toBe(700);
   });
 
+  it('le type de demande et les dates sur leur ligne, sous le sous-titre (décision 2026-11-22-reservations-ligne-dates)', async () => {
+    mockList = list([item('7', { subtitle: 'Studio meublé à Akwa', detail: 'Séjour · du 2 déc. 2026 au 6 déc. 2026' })]);
+    await renderScreen();
+
+    expect(screen.getByText('Studio meublé à Akwa')).toBeTruthy();
+    expect(screen.getByTestId('profile-list-detail-7')).toHaveTextContent('Séjour · du 2 déc. 2026 au 6 déc. 2026');
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),

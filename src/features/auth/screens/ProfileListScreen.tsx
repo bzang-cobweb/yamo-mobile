@@ -280,6 +280,12 @@ export function ProfileListScreen({ list }: { list: string }) {
                   {item.subtitle}
                 </ThemedText>
               )}
+              {/* Sur sa ligne, sous le sous-titre : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
+              {item.detail && (
+                <ThemedText type="small" testID={`profile-list-detail-${item.id}`}>
+                  {item.detail}
+                </ThemedText>
+              )}
               {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
@@ -303,6 +309,12 @@ export function ProfileListScreen({ list }: { list: string }) {
             {item.subtitle && (
               <ThemedText type="small" themeColor="textSecondary">
                 {item.subtitle}
+              </ThemedText>
+            )}
+            {/* Sur sa ligne, sous le sous-titre : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
+            {item.detail && (
+              <ThemedText type="small" testID={`profile-list-detail-${item.id}`}>
+                {item.detail}
               </ThemedText>
             )}
             {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
