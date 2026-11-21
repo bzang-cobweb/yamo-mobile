@@ -10,6 +10,7 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { AuthContext } from '../context/AuthContext';
 import { ProfileListScreen } from '../screens/ProfileListScreen';
 import type { AuthContextValue } from '../types';
+import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { currentToast, hideToast } from '@/shared/components/Toast';
 
 import { backWithNotice } from '../utils/profile-notice';
@@ -180,6 +181,23 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByTestId('profile-list-counter-7')).toHaveTextContent('2 demandes en attente');
     expect(screen.getByTestId('profile-list-counter-7-1')).toHaveTextContent('1 notification non lue');
     await fireEvent.press(screen.getByTestId('profile-list-counter-7-1'));
+    expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
+  });
+
+  it('un compteur avec un ton : une pastille orange sous le titre (décision 2026-11-21-pastille-demandes-en-attente)', async () => {
+    const pending = { label: '2 demandes en attente', list: 'notifications', filter: { type: 'booking', status: 'pending', offer: '7' }, link: '/notifications', tone: 'warning' };
+    const unread = { label: '1 notification non lue', list: 'notifications', filter: { ...pending.filter, unread: 'yes' }, link: '/notifications' };
+    mockList = list([item('7', { counter: pending, counters: [pending, unread] })]);
+    await renderScreen();
+
+    // Sous le titre, dans la partie touchable de la carte, en orange, le texte en blanc.
+    const toned = screen.getByTestId('profile-list-toned-counters-7');
+    expect(within(toned).getByTestId('profile-list-counter-7')).toHaveTextContent('2 demandes en attente');
+    expect(within(screen.getByTestId('profile-list-item-7')).getByTestId('profile-list-counter-7')).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-counter-7').props.style).backgroundColor).toBe(TONE_COLORS.warning);
+    // Sans ton : en bas, hors de la pastille.
+    expect(within(toned).queryByTestId('profile-list-counter-7-1')).toBeNull();
+    await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
     expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
   });
 

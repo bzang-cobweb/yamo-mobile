@@ -34,6 +34,8 @@ export type ListItemCounter = {
   filter: Record<string, string>;
   /** Un écran de l'app à ouvrir à la place de la liste (« /notifications ») ; absent : la liste. */
   link?: string | null;
+  /** Sa couleur (`warning`, `success`…) : une pastille sous le titre ; absent : en bas de la carte (décision 2026-11-21-pastille-demandes-en-attente). */
+  tone?: string | null;
 };
 
 /** Un item d'une liste : titre, sous-titre, photo, note, phrase mise en avant, message cité, formulaire d'édition, retrait. */

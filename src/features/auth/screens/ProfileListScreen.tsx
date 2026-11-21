@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
-import { StatusTag } from '@/shared/components/StatusTag';
+import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem, ListItemCounter } from '@/features/list/types';
@@ -152,6 +152,32 @@ export function ProfileListScreen({ list }: { list: string }) {
     // Le statut sur la photo quand l'API le demande ; avec un cœur, en haut à gauche (décision 2026-11-21-reservations-statut-coeur).
     const tagOnImage = Boolean(item.tag?.on_image && item.image);
     const counters = item.counters?.length ? item.counters : item.counter ? [item.counter] : [];
+    // Un compteur avec un ton : une pastille de cette couleur, sous le titre (« 2 demandes en attente », orange) ;
+    // les autres restent en bas de la carte (décision 2026-11-21-pastille-demandes-en-attente).
+    const renderCounter = (counter: ListItemCounter, index: number) => {
+      const toned = Boolean(counter.tone);
+      return (
+        <Pressable
+          key={counter.label}
+          testID={index === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${index}`}
+          accessibilityRole="link"
+          onPress={() => openCounter(counter)}
+          style={({ pressed }) => [
+            styles.counter,
+            { backgroundColor: toned ? (TONE_COLORS[counter.tone ?? ''] ?? TONE_COLORS.neutral) : theme.backgroundSelected },
+            pressed && styles.pressed,
+          ]}>
+          <ThemedText type="smallBold" style={{ color: toned ? '#ffffff' : theme.primary }}>
+            {counter.label}
+          </ThemedText>
+        </Pressable>
+      );
+    };
+    const tonedCounters = counters.some((counter) => counter.tone) && (
+      <View style={styles.counters} testID={`profile-list-toned-counters-${item.id}`}>
+        {counters.map((counter, index) => (counter.tone ? renderCounter(counter, index) : null))}
+      </View>
+    );
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
     // Toutes les actions dans un menu déroulant « Actions », quand la liste le demande (« Mes logements »,
@@ -221,6 +247,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               <ItemPicture item={item} tag={tagOnImage ? item.tag : null} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
               {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
               <ThemedText>{item.title}</ThemedText>
+              {tonedCounters}
               {item.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.subtitle}
@@ -245,6 +272,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             <ItemPicture item={item} tag={tagOnImage ? item.tag : null} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
             {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
             <ThemedText>{item.title}</ThemedText>
+            {tonedCounters}
             {item.subtitle && (
               <ThemedText type="small" themeColor="textSecondary">
                 {item.subtitle}
@@ -257,21 +285,8 @@ export function ProfileListScreen({ list }: { list: string }) {
         )}
         {/* Ses compteurs, côte à côte : « 2 demandes en attente », « 1 notification non lue »
             (décision 2026-11-21-compteur-non-lues) ; un serveur plus ancien n'en sert qu'un (`counter`). */}
-        {counters.length > 0 && (
-          <View style={styles.counters}>
-            {counters.map((counter, index) => (
-              <Pressable
-                key={counter.label}
-                testID={index === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${index}`}
-                accessibilityRole="link"
-                onPress={() => openCounter(counter)}
-                style={({ pressed }) => [styles.counter, { backgroundColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-                <ThemedText type="smallBold" style={{ color: theme.primary }}>
-                  {counter.label}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
+        {counters.some((counter) => !counter.tone) && (
+          <View style={styles.counters}>{counters.map((counter, index) => (counter.tone ? null : renderCounter(counter, index)))}</View>
         )}
         {menu ? (
           menuEntries.length > 0 && (
