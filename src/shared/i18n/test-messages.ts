@@ -15,6 +15,7 @@ export const TEST_MESSAGES: Messages = {
   'notifications.detail': 'Notification',
   'notifications.history': 'Suivi de la demande',
   'notifications.you': 'Toi',
+  'notifications.edited': 'Modifié',
   'notifications.delivery.sent': 'Envoyée',
   'notifications.delivery.delivered': 'Reçue',
   'notifications.delivery.read': 'Lue',

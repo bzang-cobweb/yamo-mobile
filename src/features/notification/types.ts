@@ -69,6 +69,8 @@ export type NotificationStep = {
   message: string | null;
   created_at: string | null;
   /** Pour une étape du lecteur : sa notification envoyée, remise (l'autre s'est connecté depuis), lue ; `null` sinon. */
+  /** Une étape modifiée (« Demande modifiée ») : « Modifié » avant sa date. */
+  edited?: boolean;
   delivery?: 'sent' | 'delivered' | 'read' | null;
 };
 

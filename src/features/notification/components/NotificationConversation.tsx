@@ -17,7 +17,8 @@ import { formatStamp } from '../utils/stamp';
  * étapes, de la plus ancienne à la plus récente. Celles du lecteur à droite, nommées
  * « Toi » ; celles de l'autre partie à gauche, avec son nom, sans photo (décision
  * 2026-11-21-conversation-sans-photo). Dessous, le message (à défaut le libellé de l'étape,
- * « Demande acceptée »), puis la date, alignée à droite (l'heure seule le jour même).
+ * « Demande acceptée »), puis la date, alignée à droite (l'heure seule le jour même), précédée de
+ * « Modifié » pour une étape modifiée (décision 2026-11-21-etape-modifiee-date).
  * Le nom de l'autre ouvre sa page (`onOpen`). Après la date d'une étape
  * du lecteur, des coches (décision 2026-11-20-coches-lecture) : une grise, l'autre ne
  * s'est pas connecté depuis ; deux grises, connecté sans l'avoir lue ; deux vertes, lue.
@@ -55,7 +56,7 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
                 <View style={styles.footer}>
                   {step.created_at && (
                     <ThemedText type="small" themeColor="textSecondary" testID={`notification-history-${index}-date`}>
-                      {formatStamp(step.created_at, locale)}
+                      {step.edited ? `${t('notifications.edited')} ${formatStamp(step.created_at, locale)}` : formatStamp(step.created_at, locale)}
                     </ThemedText>
                   )}
                   {mine && step.delivery && <Ticks delivery={step.delivery} color={theme.textSecondary} testID={`notification-history-${index}-delivery`} />}
