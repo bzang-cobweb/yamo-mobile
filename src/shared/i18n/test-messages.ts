@@ -11,6 +11,7 @@ export const TEST_MESSAGES: Messages = {
   'tabs.profile': 'Profil',
   'tabs.notifications': 'Notifications',
   'notifications.title': 'Notifications',
+  'notifications.requests': 'Demandes',
   'notifications.detail': 'Notification',
   'notifications.history': 'Suivi de la demande',
   'notifications.you': 'Toi',

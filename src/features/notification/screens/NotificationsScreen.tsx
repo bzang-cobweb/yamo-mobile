@@ -181,7 +181,8 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
           <BackStackProvider>
-            <BackHeader title={t('notifications.title')} />
+            {/* « Demandes » : ouverte depuis une carte de « Mes logements » (décision 2026-11-21-demandes-depuis-logements). */}
+            <BackHeader title={t('notifications.requests')} />
             <View style={styles.top} />
             {list}
           </BackStackProvider>

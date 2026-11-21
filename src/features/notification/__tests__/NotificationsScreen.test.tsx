@@ -155,6 +155,8 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
 
     await waitFor(() => expect(screen.getAllByText('Demande de logement', { exact: false }).length).toBeGreaterThan(0));
     expect(screen.getByLabelText('Retour')).toBeTruthy();
+    // Titrée « Demandes » (décision 2026-11-21-demandes-depuis-logements).
+    expect(screen.getByTestId('back-header-title')).toHaveTextContent('Demandes');
     await fireEvent.press(screen.getByLabelText('Retour'));
     expect(router.back).toHaveBeenCalled();
   });
