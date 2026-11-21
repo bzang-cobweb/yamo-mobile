@@ -274,8 +274,9 @@ export function ProfileListScreen({ list }: { list: string }) {
         )}
         {menu ? (
           menuEntries.length > 0 && (
-            // Un seul bouton, trois petits points, à droite ; ouvert, ses entrées dessous (décisions
-            // 2026-11-21-actions-en-menu et 2026-11-21-menu-trois-points).
+            // Un seul bouton, trois petits points verticaux, flottant en bas à droite de la carte ; ouvert, ses
+            // entrées flottent au-dessus, sans pousser le contenu (décisions 2026-11-21-actions-en-menu et
+            // 2026-11-21-menu-flottant).
             <View style={styles.menu} testID={`profile-list-menu-${item.id}`}>
               <Pressable
                 testID={`profile-list-menu-${item.id}-toggle`}
@@ -285,11 +286,12 @@ export function ProfileListScreen({ list }: { list: string }) {
                 hitSlop={Spacing.one}
                 onPress={() => setOpenMenu(menuOpen ? null : item.id)}
                 style={({ pressed }) => [styles.menuToggle, pressed && styles.pressed]}>
-                {/* Trois petits points, sans texte (décision 2026-11-21-menu-trois-points). */}
-                <SymbolView name={{ ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' }} size={20} tintColor={theme.text} />
+                {/* Trois petits points verticaux, sans texte (décisions 2026-11-21-menu-trois-points et
+                    2026-11-21-menu-flottant). */}
+                <SymbolView name={{ ios: 'ellipsis', android: 'more_vert', web: 'more_vert' }} size={20} tintColor={theme.text} style={styles.vertical} />
               </Pressable>
               {menuOpen && (
-                <View style={[styles.menuList, { borderColor: theme.backgroundSelected, backgroundColor: theme.background }]} testID={`profile-list-menu-${item.id}-list`}>
+                <View style={[styles.menuList, { borderColor: theme.backgroundSelected, backgroundColor: theme.background, shadowColor: theme.text }]} testID={`profile-list-menu-${item.id}-list`}>
                   {menuEntries.map((entry) => (
                     <Pressable
                       key={entry.key}
@@ -464,10 +466,24 @@ const styles = StyleSheet.create({
   delete: { padding: Spacing.one },
   // Le texte et la corbeille à sa droite.
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  // Le menu « Actions » : le bouton à droite, ses entrées dessous, à droite.
-  menu: { alignItems: 'flex-end', gap: Spacing.one },
+  // Le menu des actions, flottant : le bouton en bas à droite de la carte, ses entrées au-dessus de lui.
+  menu: { position: 'absolute', right: Spacing.one, bottom: Spacing.one, alignItems: 'flex-end', zIndex: 2 },
   menuToggle: { padding: Spacing.two },
-  menuList: { minWidth: 180, borderWidth: 1, borderRadius: 8, overflow: 'hidden' },
+  // Trois points verticaux : l'icône « ellipsis » d'iOS, tournée d'un quart de tour.
+  vertical: { transform: [{ rotate: '90deg' }] },
+  menuList: {
+    position: 'absolute',
+    right: 0,
+    bottom: 40,
+    minWidth: 180,
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+  },
   menuEntry: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },

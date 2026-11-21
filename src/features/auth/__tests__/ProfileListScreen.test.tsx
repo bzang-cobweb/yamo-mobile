@@ -178,9 +178,12 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     // Trois petits points, sans texte ; « Actions » pour l'accessibilité (décision 2026-11-21-menu-trois-points).
     expect(screen.getByTestId('profile-list-menu-7-toggle')).not.toHaveTextContent('Actions');
     expect(screen.getByTestId('profile-list-menu-7-toggle').props.accessibilityLabel).toBe('Actions Carte 7');
+    // Flottant, en bas à droite de la carte (décision 2026-11-21-menu-flottant).
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-7').props.style)).toMatchObject({ position: 'absolute', right: expect.any(Number), bottom: expect.any(Number) });
 
     // Ouvert : Voir, Éditer, Calendrier, Retirer, dans cet ordre.
     await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-7-list').props.style)).toMatchObject({ position: 'absolute' });
     expect(within(screen.getByTestId('profile-list-menu-7-list')).getAllByRole('button').map((node) => node.props.testID)).toEqual([
       'profile-list-menu-7-view',
       'profile-list-menu-7-edit',
