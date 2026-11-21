@@ -224,7 +224,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
               {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
                   une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
-              <ItemPicture item={item} tag={tagOnImage ? item.tag : null} testID={`profile-list-item-${item.id}`} />
+              <ItemPicture item={item} tag={tagOnImage ? item.tag : null} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
               {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
               <ThemedText>{item.title}</ThemedText>
               {item.subtitle && (
@@ -248,7 +248,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
             {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
                 une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo. */}
-            <ItemPicture item={item} tag={tagOnImage ? item.tag : null} testID={`profile-list-item-${item.id}`} />
+            <ItemPicture item={item} tag={tagOnImage ? item.tag : null} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
             {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
             <ThemedText>{item.title}</ThemedText>
             {item.subtitle && (
@@ -274,9 +274,9 @@ export function ProfileListScreen({ list }: { list: string }) {
         )}
         {menu ? (
           menuEntries.length > 0 && (
-            // Un seul bouton, trois petits points verticaux, flottant en bas à droite de la carte ; ouvert, ses
-            // entrées flottent au-dessus, sans pousser le contenu (décisions 2026-11-21-actions-en-menu et
-            // 2026-11-21-menu-flottant).
+            // Un seul bouton, trois petits points verticaux, flottant en haut à droite de la photo sur une pastille
+            // ronde ; ouvert, ses entrées flottent dessous, par-dessus la photo (décisions 2026-11-21-actions-en-menu
+            // et 2026-11-21-menu-en-haut-a-droite).
             <View style={styles.menu} testID={`profile-list-menu-${item.id}`}>
               <Pressable
                 testID={`profile-list-menu-${item.id}-toggle`}
@@ -285,7 +285,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                 accessibilityLabel={`${t('list.actions')} ${item.title}`}
                 hitSlop={Spacing.one}
                 onPress={() => setOpenMenu(menuOpen ? null : item.id)}
-                style={({ pressed }) => [styles.menuToggle, pressed && styles.pressed]}>
+                style={({ pressed }) => [styles.menuToggle, { backgroundColor: theme.background, shadowColor: theme.text }, pressed && styles.pressed]}>
                 {/* Trois petits points verticaux, sans texte (décisions 2026-11-21-menu-trois-points et
                     2026-11-21-menu-flottant). */}
                 <SymbolView name={{ ios: 'ellipsis', android: 'more_vert', web: 'more_vert' }} size={20} tintColor={theme.text} style={styles.vertical} />
@@ -466,15 +466,27 @@ const styles = StyleSheet.create({
   delete: { padding: Spacing.one },
   // Le texte et la corbeille à sa droite.
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  // Le menu des actions, flottant : le bouton en bas à droite de la carte, ses entrées au-dessus de lui.
-  menu: { position: 'absolute', right: Spacing.one, bottom: Spacing.one, alignItems: 'flex-end', zIndex: 2 },
-  menuToggle: { padding: Spacing.two },
+  // Le menu des actions, flottant en haut à droite de la photo (marge de la carte + du texte, puis un retrait) ;
+  // ses entrées dessous, par-dessus la photo.
+  menu: { position: 'absolute', top: Spacing.two + Spacing.one + Spacing.two, right: Spacing.three + Spacing.two, alignItems: 'flex-end', zIndex: 2 },
+  // Une pastille ronde, pour rester lisible sur n'importe quelle photo.
+  menuToggle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+  },
   // Trois points verticaux : l'icône « ellipsis » d'iOS, tournée d'un quart de tour.
   vertical: { transform: [{ rotate: '90deg' }] },
   menuList: {
     position: 'absolute',
     right: 0,
-    bottom: 40,
+    top: 40,
     minWidth: 180,
     borderWidth: 1,
     borderRadius: 8,

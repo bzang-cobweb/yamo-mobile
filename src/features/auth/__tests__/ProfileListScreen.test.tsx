@@ -165,7 +165,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
   it('« Mes logements » : toutes les actions dans un menu « Actions » (décision 2026-11-21-actions-en-menu)', async () => {
     mockList = {
-      ...list([item('7', { image: 'https://api.test/storage/7.jpg', link: '/offers/7', actions: [{ label: 'Calendrier', style: 'default', confirm: null, submission: null, form: null, link: '/offers/7/calendar' }] })]),
+      ...list([item('7', { image: 'https://api.test/storage/7.jpg', link: '/offers/7', tag: { label: 'Publiée', tone: 'success', on_image: true }, actions: [{ label: 'Calendrier', style: 'default', confirm: null, submission: null, form: null, link: '/offers/7/calendar' }] })]),
       menu: true,
     };
     await renderScreen();
@@ -178,8 +178,9 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     // Trois petits points, sans texte ; « Actions » pour l'accessibilité (décision 2026-11-21-menu-trois-points).
     expect(screen.getByTestId('profile-list-menu-7-toggle')).not.toHaveTextContent('Actions');
     expect(screen.getByTestId('profile-list-menu-7-toggle').props.accessibilityLabel).toBe('Actions Carte 7');
-    // Flottant, en bas à droite de la carte (décision 2026-11-21-menu-flottant).
-    expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-7').props.style)).toMatchObject({ position: 'absolute', right: expect.any(Number), bottom: expect.any(Number) });
+    // Flottant, en haut à droite de la photo ; le statut passe en haut à gauche (décision 2026-11-21-menu-en-haut-a-droite).
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-7').props.style)).toMatchObject({ position: 'absolute', right: expect.any(Number), top: expect.any(Number) });
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7-status').props.style)).toMatchObject({ position: 'absolute', left: expect.any(Number) });
 
     // Ouvert : Voir, Éditer, Calendrier, Retirer, dans cet ordre.
     await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));

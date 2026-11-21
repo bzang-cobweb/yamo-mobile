@@ -37,7 +37,12 @@ const styles = StyleSheet.create({
   text: { color: '#ffffff' },
   // Sur une photo, en haut à droite, à la place du cœur de favori.
   onImage: { position: 'absolute', top: Spacing.two, right: Spacing.two },
+  // Sur une photo, en haut à gauche : le haut à droite porte le menu de la carte (décision 2026-11-21-menu-en-haut-a-droite).
+  onImageLeft: { position: 'absolute', top: Spacing.two, left: Spacing.two },
 });
 
 /** La place d'une pastille sur une photo : celle du cœur de favori. */
 export const STATUS_ON_IMAGE = styles.onImage;
+
+/** La place d'une pastille sur une photo dont le haut à droite porte le menu de la carte. */
+export const STATUS_ON_IMAGE_LEFT = styles.onImageLeft;

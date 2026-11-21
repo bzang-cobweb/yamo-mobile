@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { ItemPhoto } from '@/shared/components/ItemPhoto';
-import { STATUS_ON_IMAGE, StatusTag, type StatusTagValue } from '@/shared/components/StatusTag';
+import { STATUS_ON_IMAGE, STATUS_ON_IMAGE_LEFT, StatusTag, type StatusTagValue } from '@/shared/components/StatusTag';
 
 import type { ListItem } from '../types';
 import { FavoriteHeart } from './FavoriteHeart';
@@ -14,11 +14,14 @@ import { FavoriteHeart } from './FavoriteHeart';
 export function ItemPicture({
   item,
   tag = null,
+  tagLeft = false,
   placeholder = false,
   testID,
 }: {
   item: Pick<ListItem, 'image' | 'favorite'>;
   tag?: StatusTagValue | null;
+  /** La pastille en haut à gauche (le haut à droite porte le menu de la carte, décision 2026-11-21-menu-en-haut-a-droite). */
+  tagLeft?: boolean;
   placeholder?: boolean;
   testID: string;
 }) {
@@ -32,7 +35,7 @@ export function ItemPicture({
       {item.favorite ? (
         <FavoriteHeart favorite={item.favorite} testID={`${testID}-favorite`} />
       ) : (
-        tag && <StatusTag tag={tag} style={STATUS_ON_IMAGE} testID={`${testID}-status`} />
+        tag && <StatusTag tag={tag} style={tagLeft ? STATUS_ON_IMAGE_LEFT : STATUS_ON_IMAGE} testID={`${testID}-status`} />
       )}
     </View>
   );
