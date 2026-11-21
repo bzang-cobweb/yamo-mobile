@@ -153,7 +153,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     mockList = list([item('7', { image: 'https://api.test/storage/7.jpg' }), item('8'), item('9', { delete: null, edit: null })]);
     await renderScreen();
 
-    for (const id of ['7', '8']) {
+    for (const id of ['7']) {
       expect(StyleSheet.flatten(screen.getByTestId(`profile-list-row-${id}`).props.style).flexDirection).toBe('column');
       expect(StyleSheet.flatten(screen.getByTestId(`profile-list-actions-${id}`).props.style)).toMatchObject({ justifyContent: 'flex-end' });
       expect(screen.getByTestId(`profile-list-delete-${id}`)).toBeTruthy();
@@ -209,16 +209,17 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-item-9-status')).toBeNull();
   });
 
-  it('sans photo : la corbeille à droite du texte, « Éditer » en bas, vers le formulaire (décisions 2026-11-21-editer-avant-retirer et 2026-11-21-corbeille-a-droite)', async () => {
+  it('sans photo : la corbeille à droite du texte, sans « Éditer » ; toucher la carte ouvre le formulaire (décisions 2026-11-21-corbeille-a-droite et 2026-11-21-sans-editer-adresses)', async () => {
     mockList = list([item('8')]);
     await renderScreen();
 
-    // La corbeille sur la ligne du texte, sans le mot « Retirer » ; « Éditer » sur la ligne des actions.
+    // La corbeille sur la ligne du texte, sans le mot « Retirer » ; ni « Éditer », ni ligne d'actions.
     expect(within(screen.getByTestId('profile-list-row-8')).queryByText('Retirer')).toBeNull();
     expect(screen.getByTestId('profile-list-delete-8').props.accessibilityLabel).toBe('Retirer Carte 8');
-    expect(within(screen.getByTestId('profile-list-actions-8')).queryByTestId('profile-list-delete-8')).toBeNull();
-    expect(within(screen.getByTestId('profile-list-actions-8')).getByTestId('profile-list-edit-8')).toHaveTextContent('Éditer');
-    await fireEvent.press(screen.getByTestId('profile-list-edit-8'));
+    expect(screen.queryByTestId('profile-list-edit-8')).toBeNull();
+    expect(screen.queryByTestId('profile-list-actions-8')).toBeNull();
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-8').props.style).flexDirection).toBe('row');
+    await fireEvent.press(screen.getByTestId('profile-list-item-8'));
     expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'payments.card', record: '8' } });
   });
 

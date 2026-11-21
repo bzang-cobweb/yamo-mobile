@@ -160,16 +160,15 @@ export function ProfileListScreen({ list }: { list: string }) {
     const tagOnImage = Boolean(item.tag?.on_image && item.image && !item.favorite);
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
-    // Avec une photo, des boutons ou « Retirer » : en colonne, la photo sur toute la largeur et les actions
-    // sur leur ligne, à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et
-    // 2026-11-21-retirer-en-fin-de-carte).
-    const stacked = Boolean(item.image) || both || removable || Boolean(edit);
     // Toutes les actions dans un menu déroulant « Actions », quand la liste le demande (« Mes logements »,
     // décision 2026-11-21-actions-en-menu).
     const menu = Boolean(definition?.menu);
     const menuOpen = menu && openMenu === item.id;
     // Sans photo ni menu : « Retirer » en icône corbeille, à droite du texte (décision 2026-11-21-corbeille-a-droite).
     const removeIcon = removable && !item.image && !menu;
+    // Avec une photo, « Voir » et « Éditer », ou « Retirer » en texte : en colonne, les actions sur leur ligne,
+    // à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et 2026-11-21-retirer-en-fin-de-carte).
+    const stacked = Boolean(item.image) || both || (removable && !removeIcon);
 
     function openEdit() {
       if (edit) {
@@ -329,8 +328,9 @@ export function ProfileListScreen({ list }: { list: string }) {
                     <ThemedText type="linkPrimary">{t('list.view')}</ThemedText>
                   </Pressable>
                 )}
-                {/* « Éditer » dès que l'item a un formulaire, avant « Retirer » (décision 2026-11-21-editer-avant-retirer). */}
-                {edit && (
+                {/* « Éditer » avec « Voir » seulement : sans écran, toucher la carte ouvre le formulaire
+                    (décision 2026-11-21-sans-editer-adresses). */}
+                {both && (
                   <Pressable
                     testID={`profile-list-edit-${item.id}`}
                     accessibilityRole="link"
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   itemText: { flex: 1, gap: Spacing.half, paddingVertical: Spacing.one },
   delete: { padding: Spacing.one },
   // Le texte et la corbeille à sa droite.
-  head: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   // Le menu « Actions » : le bouton à droite, ses entrées dessous, à droite.
   menu: { alignItems: 'flex-end', gap: Spacing.one },
   menuToggle: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, borderWidth: 1, borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: Spacing.one },
