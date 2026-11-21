@@ -7,8 +7,11 @@ import type { ListDefinition, ListResponse } from '../types';
 /** Point d'API d'un cœur de favori : `/v1/offers/12/favorite`. */
 const FAVORITE_ENDPOINT = /^\/v1\/[a-z-]+\/\d+\/favorite$/;
 
-/** Écran de l'app qu'un item peut ouvrir : la fiche d'une entité, `/offers/12`. */
-export const ITEM_LINK = /^\/[a-z-]+\/\d+(?:\/[a-z-]+)?$/;
+/**
+ * Écran de l'app qu'un item peut ouvrir : la fiche d'une entité, `/offers/12`, ou la page d'une
+ * notification, `/notifications/<uuid>` (une réservation, décision 2026-11-21-reservation-comme-notification).
+ */
+export const ITEM_LINK = /^\/[a-z-]+\/(?:\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/[a-z-]+)?$/;
 
 /** `filter[nom]`, crochets encodés : `filter%5Bnom%5D`. */
 function filterName(key: string): string {

@@ -239,6 +239,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking', offer: '7' });
   });
 
+  it('une réservation ouvre la page de sa notification (décision 2026-11-21-reservation-comme-notification)', async () => {
+    mockList = list([item('7', { edit: null, link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' }), item('8', { edit: null, link: '/notifications/../../etc' })]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-item-7'));
+    expect(router.push).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
+    // Un lien qui n'est pas un identifiant n'ouvre rien.
+    jest.mocked(router.push).mockClear();
+    await fireEvent.press(screen.getByTestId('profile-list-item-8'));
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
   it('le statut sur la photo, à la place du cœur, quand l’API le demande (décision 2026-11-21-statut-a-la-place-du-coeur)', async () => {
     mockList = list([
       item('7', { image: 'https://api.test/storage/7.jpg', tag: { label: 'Publiée', tone: 'success', on_image: true } }),
