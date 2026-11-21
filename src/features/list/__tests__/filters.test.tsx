@@ -167,6 +167,40 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
     expect(seen[seen.length - 1].values).toEqual({ type: 'other' });
   });
 
+  it('un filtre caché filtre sans s’afficher, ne compte pas et reste après « Réinitialiser » (décision 2026-11-21-demandes-filtre-logement-cache)', async () => {
+    const fields = [field({ name: 'status', type: 'select', options: [{ value: 'pending', label: 'En attente' }] }), field({ name: 'offer', type: 'hidden' })];
+    setFilterFields('offer.bookings.received', fields);
+    setFilterValues('offer.bookings.received', { offer: '7' });
+    expect(activeFilterCount(fields, { offer: '7' })).toBe(0);
+    expect(activeFilterCount(fields, { offer: '7', status: 'pending' })).toBe(1);
+    const seen: { values: Record<string, unknown> }[] = [];
+    function Probe() {
+      seen.push(useListFilters('offer.bookings.received'));
+
+      return null;
+    }
+
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <FilterScreen list="offer.bookings.received" />
+        <Probe />
+      </I18nContext.Provider>,
+    );
+
+    expect(screen.getByTestId('field-status')).toBeTruthy();
+    expect(screen.queryByTestId('field-offer')).toBeNull();
+    await fireEvent.press(screen.getByTestId('field-status'));
+    await fireEvent.press(screen.getByTestId('field-status-option-pending'));
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('filter-apply'));
+    });
+    expect(seen[seen.length - 1].values).toEqual({ offer: '7', status: 'pending' });
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('filter-clear'));
+    });
+    expect(seen[seen.length - 1].values).toEqual({ offer: '7' });
+  });
+
   it('enlever les filtres d’une liste garde ses champs et ne touche pas les autres (décision 2026-11-21-onglet-notifications-sans-filtres)', async () => {
     setFilterFields('notifications', FIELDS);
     setFilterValues('notifications', { city: 'Douala', furnished: 'true' });

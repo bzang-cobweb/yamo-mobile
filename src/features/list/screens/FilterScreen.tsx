@@ -14,7 +14,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-import { setFilterValues, useListFilters } from '../utils/filters';
+import { fixedValues, isFixedFilter, setFilterValues, useListFilters } from '../utils/filters';
 
 /**
  * Les filtres d'une liste (`/filters/[list]`, décision 2026-11-19-contrat-filtres-vitrine) :
@@ -77,7 +77,8 @@ export function FilterScreen({ list }: { list: string }) {
   }
 
   function clear() {
-    setFilterValues(list, {});
+    // Les filtres cachés restent : ils ne se choisissent pas ici.
+    setFilterValues(list, fixedValues(fields, current));
     router.back();
   }
 
@@ -87,7 +88,8 @@ export function FilterScreen({ list }: { list: string }) {
         <BackStackProvider>
           <BackHeader title={t('list.filters')} />
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="filter-screen">
-            {visibleFields.map((field) => (
+            {/* Un filtre caché filtre sans s'afficher (décision 2026-11-21-demandes-filtre-logement-cache). */}
+            {visibleFields.filter((field) => !isFixedFilter(field)).map((field) => (
               <FormField
                 key={field.name}
                 field={{ ...field, required: false }}

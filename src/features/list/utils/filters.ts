@@ -83,7 +83,21 @@ export function activeValues(fields: FormFieldDefinition[], values: FormValues):
   return Object.fromEntries(Object.entries(values).filter(([name, value]) => isActive(fields.find((field) => field.name === name), value)));
 }
 
-/** Le nombre de filtres actifs, pour le badge ; un intervalle compte pour un. */
+/**
+ * Un filtre caché (`hidden`) : choisi par l'écran qui ouvre la liste (« Demandes » d'un logement), il filtre
+ * sans s'afficher, ne compte pas dans le badge et reste après « Réinitialiser » (décision
+ * 2026-11-21-demandes-filtre-logement-cache).
+ */
+export function isFixedFilter(field: FormFieldDefinition): boolean {
+  return field.type === 'hidden';
+}
+
+/** Les valeurs des filtres cachés. */
+export function fixedValues(fields: FormFieldDefinition[], values: FormValues): FormValues {
+  return Object.fromEntries(Object.entries(values).filter(([name]) => fields.some((field) => field.name === name && isFixedFilter(field))));
+}
+
+/** Le nombre de filtres actifs, pour le badge, sans les filtres cachés ; un intervalle compte pour un. */
 export function activeFilterCount(fields: FormFieldDefinition[], values: FormValues): number {
-  return Object.keys(activeValues(fields, values)).length;
+  return Object.keys(activeValues(fields, values)).filter((name) => !fields.some((field) => field.name === name && isFixedFilter(field))).length;
 }
