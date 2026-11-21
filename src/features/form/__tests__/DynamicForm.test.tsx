@@ -164,6 +164,17 @@ describe('DynamicForm', () => {
     expect(screen.getByTestId('form-subtitle')).toHaveTextContent('Accédez à votre compte yamo.');
   });
 
+  it('le titre dans la barre du haut : le sous-titre prend le style de titre (décision 2026-11-22-formulaire-sous-titre-style-titre)', async () => {
+    await render(
+      <DynamicForm definition={{ ...everyType, title: 'Réserver', subtitle: 'Studio meublé à Bonanjo' }} onSubmit={jest.fn()} hideTitle />,
+    );
+
+    expect(screen.queryByTestId('form-title')).toBeNull();
+    const subtitle = screen.getByTestId('form-subtitle');
+    expect(subtitle).toHaveTextContent('Studio meublé à Bonanjo');
+    expect(subtitle.props.accessibilityRole).toBe('header');
+  });
+
   it('sans titre ni sous-titre, n’affiche aucun en-tête', async () => {
     await render(<DynamicForm definition={everyType} onSubmit={jest.fn()} />);
 

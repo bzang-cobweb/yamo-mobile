@@ -239,11 +239,18 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
               {definition.title}
             </ThemedText>
           )}
-          {definition.subtitle !== null && (
-            <ThemedText themeColor="textSecondary" style={titleAlign} testID="form-subtitle">
-              {definition.subtitle}
-            </ThemedText>
-          )}
+          {/* Le titre dans la barre du haut : le sous-titre (le titre de l'offre d'une demande) prend le style de titre,
+              en tête du contenu (décision 2026-11-22-formulaire-sous-titre-style-titre) ; sinon, en gris sous le titre. */}
+          {definition.subtitle !== null &&
+            (hideTitle ? (
+              <ThemedText type="subtitle" accessibilityRole="header" style={titleAlign} testID="form-subtitle">
+                {definition.subtitle}
+              </ThemedText>
+            ) : (
+              <ThemedText themeColor="textSecondary" style={titleAlign} testID="form-subtitle">
+                {definition.subtitle}
+              </ThemedText>
+            ))}
         </View>
       )}
 
