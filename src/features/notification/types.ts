@@ -62,8 +62,7 @@ export type NotificationBooking = {
    * 2026-11-20-lignes-demande) : `guests`, `arrival`, `departure` (ou `visit`,
    * `second`), `days`, `price`, `total`.
    */
-  /** `link` : un écran de l'app ouvert par la valeur (le nom de l'hôte ou du membre → `/members/12`). */
-  lines: { key: string; label: string; value: string; link?: string | null }[];
+  lines: BookingLine[];
 };
 
 /** Une étape du suivi d'une demande : « Demande acceptée », qui, son message, sa date. */
@@ -91,3 +90,6 @@ export type NotificationActor = {
 
 /** Une page de notifications, et les filtres de la liste (décision 2026-11-20-filtres-notifications). */
 export type NotificationPage = { items: AppNotification[]; next_cursor: string | null; filters?: FormFieldDefinition[] };
+
+/** Une ligne d'une demande ; `link` : un écran de l'app ouvert par la valeur (le nom de l'hôte ou du membre → `/members/12`). */
+export type BookingLine = { key: string; label: string; value: string; link?: string | null };

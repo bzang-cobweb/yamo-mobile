@@ -1,5 +1,4 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,7 +19,11 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { NotificationConversation } from '../components/NotificationConversation';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
+import type { BookingLine } from '../types';
 import { formatStamp } from '../utils/stamp';
+
+/** Les dates d'une demande : les lignes jusqu'à la dernière restent visibles. */
+const DATE_KEYS = ['arrival', 'departure', 'visit', 'second'];
 
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
@@ -66,6 +69,46 @@ export function NotificationDetailScreen({ id }: { id: string }) {
   // (décision 2026-11-21-detail-reservation-type-logement).
   const offerType = [notification?.booking?.offer.rental_type, notification?.booking?.offer.property_type].filter(Boolean).join(' · ');
 
+  // Les lignes jusqu'à la dernière date (arrivée, départ, visite, seconde date) ; la suite derrière « Voir plus ».
+  const lines = notification?.booking?.lines ?? [];
+  const split = lines.reduce((at, line, index) => (DATE_KEYS.includes(line.key) ? index + 1 : at), 0) || lines.length;
+  const firstLines = lines.slice(0, split);
+  const moreLines = lines.slice(split);
+
+  function renderLine(line: BookingLine) {
+    return (
+      <View key={line.key} style={styles.headRow} testID={`notification-detail-line-${line.key}`}>
+        <ThemedText
+          type={line.key === 'total' ? 'smallBold' : 'small'}
+          themeColor={line.key === 'total' ? undefined : 'textSecondary'}
+          testID={`notification-detail-line-${line.key}-label`}>
+          {line.label}
+        </ThemedText>
+        {/* Une valeur avec un lien : le nom de l'hôte ou du membre, vers sa page
+            (décision 2026-11-21-detail-reservation-contact). */}
+        {line.link && APP_LINK.test(line.link) ? (
+          <ThemedText
+            type="linkPrimary"
+            accessibilityRole="link"
+            onPress={() => line.link && go(line.link)}
+            style={styles.dateValue}
+            testID={`notification-detail-line-${line.key}-value`}>
+            {line.value}
+          </ThemedText>
+        ) : (
+          <ThemedText
+            type="small"
+            themeColor={line.key === 'total' ? undefined : 'textSecondary'}
+            style={[styles.dateValue, line.key === 'total' && styles.total]}
+            selectable
+            testID={`notification-detail-line-${line.key}-value`}>
+            {line.value}
+          </ThemedText>
+        )}
+      </View>
+    );
+  }
+
   function go(link: string) {
     if (APP_LINK.test(link)) {
       router.push(link as Href);
@@ -109,25 +152,11 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
                     </View>
                   )}
-                  {/* Le nom de l'offre, sous le type de location et la pastille : le toucher plie ou déplie
-                      les lignes de la demande, fermées d'abord (décision 2026-11-20-lignes-demande). */}
+                  {/* Le nom de l'offre, sous le type de location et la pastille : un titre, pas un bouton. */}
                   {notification.booking?.offer.title && (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityState={{ expanded: open }}
-                      onPress={() => setOpen((value) => !value)}
-                      style={({ pressed }) => [styles.headRow, pressed && styles.pressed]}
-                      testID="notification-detail-offer-link">
-                      {/* Un titre, pas un lien : texte simple en gras ; la fiche s'ouvre par « Voir le logement ». */}
-                      <ThemedText style={[styles.offerLink, styles.headType]} testID="notification-detail-offer-title">
-                        {notification.booking.offer.title}
-                      </ThemedText>
-                      <SymbolView
-                        name={{ ios: open ? 'chevron.up' : 'chevron.down', android: open ? 'expand_less' : 'expand_more', web: open ? 'expand_less' : 'expand_more' }}
-                        size={16}
-                        tintColor={theme.text}
-                      />
-                    </Pressable>
+                    <ThemedText style={styles.offerLink} testID="notification-detail-offer-title">
+                      {notification.booking.offer.title}
+                    </ThemedText>
                   )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
                       (décision 2026-11-20-titre-demande). */}
@@ -140,42 +169,24 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       testID="notification-detail-text"
                     />
                   )}
-                  {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à
-                      droite : personnes, arrivée, départ (ou visite), durée, prix, total en gras, puis l'autre partie
-                      (décisions 2026-11-20-lignes-demande et 2026-11-21-detail-reservation-contact). */}
-                  {open && (notification.booking?.lines ?? []).map((line) => (
-                    <View key={line.key} style={styles.headRow} testID={`notification-detail-line-${line.key}`}>
-                      <ThemedText
-                        type={line.key === 'total' ? 'smallBold' : 'small'}
-                        themeColor={line.key === 'total' ? undefined : 'textSecondary'}
-                        testID={`notification-detail-line-${line.key}-label`}>
-                        {line.label}
-                      </ThemedText>
-                      {/* Une valeur avec un lien : le nom de l'hôte ou du membre, vers sa page
-                          (décision 2026-11-21-detail-reservation-contact). */}
-                      {line.link && APP_LINK.test(line.link) ? (
-                        <ThemedText
-                          type="linkPrimary"
-                          accessibilityRole="link"
-                          onPress={() => line.link && go(line.link)}
-                          style={styles.dateValue}
-                          testID={`notification-detail-line-${line.key}-value`}>
-                          {line.value}
-                        </ThemedText>
-                      ) : (
-                        <ThemedText
-                          type="small"
-                          themeColor={line.key === 'total' ? undefined : 'textSecondary'}
-                          style={[styles.dateValue, line.key === 'total' && styles.total]}
-                          selectable
-                          testID={`notification-detail-line-${line.key}-value`}>
-                          {line.value}
-                        </ThemedText>
-                      )}
-                    </View>
-                  ))}
-                  {/* Sous les lignes dépliées, le lien vers la fiche du logement. */}
-                  {open && notification.booking && (
+                  {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à droite :
+                      jusqu'au départ (ou la dernière date de visite), toujours ; puis « Voir plus » déplie la suite :
+                      l'autre partie, durée, prix, total en gras (décisions 2026-11-20-lignes-demande et
+                      2026-11-21-detail-reservation-voir-plus). */}
+                  {firstLines.map(renderLine)}
+                  {moreLines.length > 0 && (
+                    <ThemedText
+                      type="linkPrimary"
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: open }}
+                      onPress={() => setOpen((value) => !value)}
+                      testID="notification-detail-more">
+                      {t(open ? 'notifications.less' : 'notifications.more')}
+                    </ThemedText>
+                  )}
+                  {open && moreLines.map(renderLine)}
+                  {/* Après la suite dépliée (ou sans suite), le lien vers la fiche du logement. */}
+                  {notification.booking && (open || moreLines.length === 0) && (
                     <ThemedText
                       type="linkPrimary"
                       accessibilityRole="link"

@@ -129,8 +129,8 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
     // Le type de location, après le nom de l'offre.
     expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée · Studio');
-    // Fermées d'abord : on les déplie.
-    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
+    // La suite derrière « Voir plus » : on la déplie.
+    await fireEvent.press(screen.getByTestId('notification-detail-more'));
     // Les lignes, dans l'ordre servi, le libellé à gauche et la valeur à droite (décision 2026-11-20-lignes-demande).
     const keys = ['guests', 'arrival', 'departure', 'days', 'price', 'total'];
     const json = JSON.stringify(screen.toJSON());
@@ -163,27 +163,32 @@ describe('NotificationDetailScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
   });
 
-  it('le nom de l’offre plie les lignes ; le bouton ouvre son écran', async () => {
+  it('les lignes jusqu’au départ, puis « Voir plus » déplie la suite ; le bouton ouvre son écran', async () => {
     await show();
 
-    // Le nom de l'offre déplie puis plie les lignes de la demande, fermées d'abord.
-    await screen.findByTestId('notification-detail-offer-link');
+    // Jusqu'au départ, toujours visibles ; la suite derrière « Voir plus » (décision 2026-11-21-detail-reservation-voir-plus).
+    await screen.findByTestId('notification-detail-more');
+    expect(screen.getByTestId('notification-detail-line-departure')).toBeTruthy();
+    expect(screen.queryByTestId('notification-detail-line-days')).toBeNull();
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
-    expect(screen.getByTestId('notification-detail-offer-link').props.accessibilityState).toEqual({ expanded: false });
-    // Le nom de l'offre est un titre, pas un lien : couleur du texte, en gras.
+    expect(screen.getByTestId('notification-detail-more')).toHaveTextContent('Voir plus');
+    expect(screen.getByTestId('notification-detail-more').props.accessibilityState).toEqual({ expanded: false });
+    // Le nom de l'offre est un titre, pas un lien ni un bouton : couleur du texte, en gras.
+    expect(screen.getByTestId('notification-detail-offer-title').props.onPress).toBeUndefined();
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
-    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
+    await fireEvent.press(screen.getByTestId('notification-detail-more'));
     expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();
+    expect(screen.getByTestId('notification-detail-more')).toHaveTextContent('Voir moins');
     // L'autre partie : son nom ouvre sa page ; l'e-mail est un texte (décision 2026-11-21-detail-reservation-contact).
     expect(screen.getByTestId('notification-detail-line-email-value')).toHaveTextContent('lea@example.test');
     await fireEvent.press(screen.getByTestId('notification-detail-line-member-value'));
     expect(router.push).toHaveBeenLastCalledWith('/members/5');
-    // Dépliées : le lien vers la fiche du logement, sous les lignes.
+    // Dépliée : le lien vers la fiche du logement, sous les lignes.
     await fireEvent.press(screen.getByTestId('notification-detail-offer-view'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
     expect(screen.getByTestId('notification-detail-offer-view')).toHaveTextContent('Voir le logement');
-    await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
+    await fireEvent.press(screen.getByTestId('notification-detail-more'));
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
 
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
