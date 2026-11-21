@@ -327,6 +327,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking' });
   });
 
+  it('sans photo : le statut et la pastille d’un compteur sur une ligne, au-dessus du titre (décision 2026-11-21-demandes-pastille-non-lues-total)', async () => {
+    const unread = { label: '2 notifications non lues', list: 'notifications', filter: {}, link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d', tone: 'danger' };
+    mockList = list([item('7', { tag: { label: 'En attente', tone: 'warning' }, counter: unread, counters: [unread] })]);
+    await renderScreen();
+
+    const row = screen.getByTestId('profile-list-tags-7');
+    expect(within(row).getByTestId('profile-list-tag-7')).toHaveTextContent('En attente');
+    expect(within(row).getByTestId('profile-list-badge-7')).toHaveTextContent('2 notifications non lues');
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-badge-7').props.style).backgroundColor).toBe(TONE_COLORS.danger);
+    expect(screen.queryByTestId('profile-list-counter-7')).toBeNull();
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),

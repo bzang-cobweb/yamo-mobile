@@ -166,13 +166,22 @@ export function ProfileListScreen({ list }: { list: string }) {
       <ThemedText>{item.title}</ThemedText>
     );
     // Un compteur avec un ton : une pastille de cette couleur, pour information, sans lien (« 2 demandes en
-    // attente », orange) : sur la photo, à la place du statut, qui revient quand il n'y en a plus ; sans photo, sous
-    // le titre. Les autres compteurs restent des liens, en bas de la carte (décisions
+    // attente », orange) : sur la photo, à la place du statut, qui revient quand il n’y en a plus ; sans photo, à côté
+    // du statut. Les autres compteurs restent des liens, en bas de la carte (décisions
     // 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien).
     const tonedCounter = counters.find((counter) => counter.tone) ?? null;
     const tonedTag = tonedCounter ? { label: tonedCounter.label, tone: tonedCounter.tone ?? 'neutral' } : null;
     const pictureTag = tonedTag && item.image ? tonedTag : tagOnImage ? item.tag : null;
-    const tonedUnderTitle = tonedTag && !item.image && <StatusTag tag={tonedTag} testID={`profile-list-badge-${item.id}`} />;
+    // Sans photo : le statut et la pastille d'un compteur sur une ligne, au-dessus du titre (décision
+    // 2026-11-21-demandes-pastille-non-lues-total).
+    const plainTag = item.tag && !tagOnImage ? item.tag : null;
+    const badge = tonedTag && !item.image ? tonedTag : null;
+    const tagsRow = (plainTag || badge) && (
+      <View style={styles.tags} testID={`profile-list-tags-${item.id}`}>
+        {plainTag && <StatusTag tag={plainTag} testID={`profile-list-tag-${item.id}`} />}
+        {badge && <StatusTag tag={badge} testID={`profile-list-badge-${item.id}`} />}
+      </View>
+    );
     const linkCounters = counters.filter((counter) => !counter.tone);
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
@@ -242,9 +251,8 @@ export function ProfileListScreen({ list }: { list: string }) {
                   une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
                   des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
               <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
-              {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
+              {tagsRow}
               {itemTitle}
-              {tonedUnderTitle}
               {item.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.subtitle}
@@ -268,9 +276,8 @@ export function ProfileListScreen({ list }: { list: string }) {
                 une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
                   des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
             <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
-            {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
+            {tagsRow}
             {itemTitle}
-            {tonedUnderTitle}
             {item.subtitle && (
               <ThemedText type="small" themeColor="textSecondary">
                 {item.subtitle}
@@ -534,5 +541,6 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   counters: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   heading: { gap: Spacing.half },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });
