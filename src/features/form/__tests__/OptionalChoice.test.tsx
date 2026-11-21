@@ -31,6 +31,15 @@ describe('un choix facultatif', () => {
     expect(onChange).toHaveBeenCalledWith('');
   });
 
+  it('liste déroulante qui a déjà une option vide (« Tous » d’un filtre) : pas de « Aucun » en plus', async () => {
+    const definition = field('select', false);
+    await show(<SelectField field={{ ...definition, options: [{ value: '', label: 'Tous' }, ...definition.options] }} value="" onChange={jest.fn()} />);
+
+    await fireEvent.press(screen.getByTestId('field-smoking'));
+
+    expect(screen.queryByTestId('field-smoking-option-none')).toBeNull();
+  });
+
   it('liste déroulante obligatoire : pas de « Aucun »', async () => {
     await show(<SelectField field={field('select', true)} value="no" onChange={jest.fn()} />);
 

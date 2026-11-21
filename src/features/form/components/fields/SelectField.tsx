@@ -45,8 +45,9 @@ export function SelectField({ field, value, onChange, error, disabled }: FieldPr
         searchable={Boolean(field.searchable)}
         // Une liste à rechercher (un membre, un logement) : 10 options au plus, la recherche trouve les autres.
         limit={field.searchable ? SEARCHABLE_LIMIT : undefined}
-        // Facultatif : la valeur choisie peut être retirée (décision 2026-11-21-choix-facultatif-effacable).
-        clearable={!field.required}
+        // Facultatif : la valeur choisie peut être retirée (décision 2026-11-21-choix-facultatif-effacable),
+        // sauf si une option vide le permet déjà (« Tous » d'un filtre).
+        clearable={!field.required && !field.options.some((option) => option.value === '')}
       />
     </FieldShell>
   );
