@@ -158,6 +158,7 @@ export function ProfileListScreen({ list }: { list: string }) {
     const link = item.link && ITEM_LINK.test(item.link) ? item.link : null;
     const removable = item.delete !== null && profileSubmission(item.delete) !== null;
     const tagOnImage = Boolean(item.tag?.on_image && item.image && !item.favorite);
+    const counters = item.counters?.length ? item.counters : item.counter ? [item.counter] : [];
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
     // Toutes les actions dans un menu déroulant « Actions », quand la liste le demande (« Mes logements »,
@@ -261,16 +262,23 @@ export function ProfileListScreen({ list }: { list: string }) {
             <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
           </Pressable>
         )}
-        {item.counter && (
-          <Pressable
-            testID={`profile-list-counter-${item.id}`}
-            accessibilityRole="link"
-            onPress={() => item.counter && openCounter(item.counter)}
-            style={({ pressed }) => [styles.counter, { backgroundColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-            <ThemedText type="smallBold" style={{ color: theme.primary }}>
-              {item.counter.label}
-            </ThemedText>
-          </Pressable>
+        {/* Ses compteurs, côte à côte : « 2 demandes en attente », « 1 notification non lue »
+            (décision 2026-11-21-compteur-non-lues) ; un serveur plus ancien n'en sert qu'un (`counter`). */}
+        {counters.length > 0 && (
+          <View style={styles.counters}>
+            {counters.map((counter, index) => (
+              <Pressable
+                key={counter.label}
+                testID={index === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${index}`}
+                accessibilityRole="link"
+                onPress={() => openCounter(counter)}
+                style={({ pressed }) => [styles.counter, { backgroundColor: theme.backgroundSelected }, pressed && styles.pressed]}>
+                <ThemedText type="smallBold" style={{ color: theme.primary }}>
+                  {counter.label}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
         )}
         {menu ? (
           menuEntries.length > 0 && (
@@ -500,5 +508,6 @@ const styles = StyleSheet.create({
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
+  counters: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });

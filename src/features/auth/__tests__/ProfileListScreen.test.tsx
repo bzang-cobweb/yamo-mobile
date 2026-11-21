@@ -163,6 +163,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-actions-9')).toBeNull();
   });
 
+  it('plusieurs compteurs côte à côte, chacun vers ses filtres (décision 2026-11-21-compteur-non-lues)', async () => {
+    const pending = { label: '2 demandes en attente', list: 'notifications', filter: { type: 'booking', status: 'pending', offer: '7' }, link: '/notifications' };
+    const unread = { label: '1 notification non lue', list: 'notifications', filter: { ...pending.filter, unread: 'yes' }, link: '/notifications' };
+    mockList = list([item('7', { counter: pending, counters: [pending, unread] })]);
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-counter-7')).toHaveTextContent('2 demandes en attente');
+    expect(screen.getByTestId('profile-list-counter-7-1')).toHaveTextContent('1 notification non lue');
+    await fireEvent.press(screen.getByTestId('profile-list-counter-7-1'));
+    expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
+  });
+
   it('« Mes logements » : toutes les actions dans un menu « Actions » (décision 2026-11-21-actions-en-menu)', async () => {
     mockList = {
       ...list([item('7', { image: 'https://api.test/storage/7.jpg', link: '/offers/7', tag: { label: 'Publiée', tone: 'success', on_image: true }, actions: [{ label: 'Calendrier', style: 'default', confirm: null, submission: null, form: null, link: '/offers/7/calendar' }] })]),

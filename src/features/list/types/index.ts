@@ -62,6 +62,8 @@ export type ListItem = {
   tag?: { label: string; tone: 'warning' | 'success' | 'danger' | 'neutral' | string; on_image?: boolean } | null;
   /** Compteur de la carte ; `null` (ou absent) : aucun. */
   counter?: ListItemCounter | null;
+  /** Ses compteurs, dans l'ordre (le premier est `counter`) ; vide ou absent : `counter` seul (décision 2026-11-21-compteur-non-lues). */
+  counters?: ListItemCounter[];
   delete: ListItemDelete | null;
 };
 
