@@ -38,7 +38,7 @@ const NOTIFICATION: AppNotification = {
   link_label: 'Traiter la demande',
   booking: {
     id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', guests: 2,
-    offer: { title: 'Studio photos', rental_type: 'Location meublée' },
+    offer: { title: 'Studio photos', rental_type: 'Location meublée', property_type: 'Studio' },
     lines: [
       { key: 'guests', label: 'Personnes', value: '2' },
       { key: 'arrival', label: 'Arrivée', value: '1 déc. 2026 à partir de 14:00' },
@@ -128,7 +128,7 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-text')).toBeNull();
     expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
     // Le type de location, après le nom de l'offre.
-    expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée');
+    expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée · Studio');
     // Fermées d'abord : on les déplie.
     await fireEvent.press(screen.getByTestId('notification-detail-offer-link'));
     // Les lignes, dans l'ordre servi, le libellé à gauche et la valeur à droite (décision 2026-11-20-lignes-demande).

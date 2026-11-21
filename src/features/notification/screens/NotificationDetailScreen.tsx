@@ -62,6 +62,10 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     }
   }, [notification, markRead]);
 
+  // Le type de location et, à côté, le type de logement : « Location · Appartement »
+  // (décision 2026-11-21-detail-reservation-type-logement).
+  const offerType = [notification?.booking?.offer.rental_type, notification?.booking?.offer.property_type].filter(Boolean).join(' · ');
+
   function go(link: string) {
     if (APP_LINK.test(link)) {
       router.push(link as Href);
@@ -97,10 +101,10 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                 <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
                   {/* Une ligne : le type de location en gras à gauche, la pastille du statut à droite
                       (une notification sans demande : la pastille seule, à droite). */}
-                  {(notification.booking?.offer.rental_type || notification.tag) && (
+                  {(offerType || notification.tag) && (
                     <View style={styles.headRow} testID="notification-detail-tag-row">
                       <ThemedText type="smallBold" style={styles.headType} testID="notification-detail-rental-type">
-                        {notification.booking?.offer.rental_type ?? ''}
+                        {offerType}
                       </ThemedText>
                       {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
                     </View>

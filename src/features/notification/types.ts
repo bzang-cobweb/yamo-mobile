@@ -55,7 +55,8 @@ export type NotificationBooking = {
   check_out: string | null;
   guests: number | null;
   /** L'offre : son titre saisi et son type de location, rédigé (« Location meublée »). */
-  offer: { title: string | null; rental_type: string | null };
+  /** `property_type` : le type de logement (« Appartement »), à côté du type de location ; absent d'un serveur plus ancien. */
+  offer: { title: string | null; rental_type: string | null; property_type?: string | null };
   /**
    * Les lignes à afficher, dans l'ordre, libellé et valeur rédigés (décision
    * 2026-11-20-lignes-demande) : `guests`, `arrival`, `departure` (ou `visit`,
