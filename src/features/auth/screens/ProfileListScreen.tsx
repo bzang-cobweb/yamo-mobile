@@ -410,13 +410,21 @@ export function ProfileListScreen({ list }: { list: string }) {
               }
             : null
         }
-        // Sous les filtres, en tête des items : l'intitulé servi (le logement des « Demandes », décision
-        // 2026-11-21-demandes-titre-sous-filtres).
+        // Sous les filtres, en tête des items : l'intitulé servi, son titre en gras et dessous son sous-titre (le
+        // logement des « Demandes » et sa ligne du type, décisions 2026-11-21-demandes-titre-sous-filtres et
+        // 2026-11-21-demandes-d-une-offre).
         header={
           definition.heading ? (
-            <ThemedText type="smallBold" testID="profile-list-heading">
-              {definition.heading}
-            </ThemedText>
+            <View style={styles.heading} testID="profile-list-heading">
+              <ThemedText type="smallBold" testID="profile-list-heading-title">
+                {definition.heading.title}
+              </ThemedText>
+              {definition.heading.subtitle && (
+                <ThemedText type="small" themeColor="textSecondary" testID="profile-list-heading-subtitle">
+                  {definition.heading.subtitle}
+                </ThemedText>
+              )}
+            </View>
           ) : null
         }
         contentContainerStyle={[profileContentStyle, !definition.footer && { paddingBottom: Math.max(insets.bottom, Spacing.four) }]}
@@ -508,5 +516,6 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
   counters: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  heading: { gap: Spacing.half },
   counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });

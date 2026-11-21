@@ -275,11 +275,12 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking', offer: '7' });
   });
 
-  it('l’intitulé servi s’affiche sous les filtres, en tête des items (décision 2026-11-21-demandes-titre-sous-filtres)', async () => {
-    mockList = { ...list([item('7')]), heading: 'Studio meublé à Akwa' };
+  it('l’intitulé servi s’affiche sous les filtres, en tête des items, avec son sous-titre (décisions 2026-11-21-demandes-titre-sous-filtres et 2026-11-21-demandes-d-une-offre)', async () => {
+    mockList = { ...list([item('7')]), heading: { title: 'Studio meublé à Akwa', subtitle: 'Location meublée · Studio · Douala' } };
     await renderScreen();
 
-    expect(screen.getByTestId('profile-list-heading')).toHaveTextContent('Studio meublé à Akwa');
+    expect(screen.getByTestId('profile-list-heading-title')).toHaveTextContent('Studio meublé à Akwa');
+    expect(screen.getByTestId('profile-list-heading-subtitle')).toHaveTextContent('Location meublée · Studio · Douala');
   });
 
   it('sans intitulé, rien sous les filtres', async () => {
