@@ -45,6 +45,12 @@ describe('List (données locales, sans API)', () => {
     expect(screen.queryByTestId('fruits-empty')).toBeNull();
   });
 
+  it('deux cartes séparées de 16 points (décision 2026-11-21-ecart-cartes)', async () => {
+    await renderList();
+
+    expect(StyleSheet.flatten(screen.getAllByTestId('list-separator')[0].props.style)).toMatchObject({ height: 16 });
+  });
+
   it('vide : affiche le texte donné', async () => {
     await renderList({ items: [], empty: 'Aucun fruit.' });
 

@@ -181,7 +181,7 @@ export function List<T>({
 }
 
 function Separator() {
-  return <View style={styles.separator} />;
+  return <View style={styles.separator} testID="list-separator" />;
 }
 
 const styles = StyleSheet.create({
@@ -200,5 +200,6 @@ const styles = StyleSheet.create({
   header: { gap: Spacing.three, marginBottom: Spacing.three },
   empty: { textAlign: 'center' },
   footer: { paddingVertical: Spacing.three },
-  separator: { height: Spacing.two },
+  // L'écart entre deux cartes, dans toutes les listes (décision 2026-11-21-ecart-cartes).
+  separator: { height: Spacing.three },
 });
