@@ -91,6 +91,8 @@ function RootNavigator() {
             <Stack.Screen name="members/[id]" />
             {/* La page d'une notification, depuis l'onglet « Notifications ». */}
             <Stack.Screen name="notifications/[id]" />
+            {/* Les notifications déjà filtrées, depuis une carte de « Mes logements », avec un retour (décision 2026-11-21-notifications-avec-retour). */}
+            <Stack.Screen name="notifications/filtered" />
           </Stack.Protected>
           {/* Invité : l'accueil d'abord (ancre de la pile), d'où partent la connexion et l'inscription. */}
           <Stack.Protected guard={user === null}>

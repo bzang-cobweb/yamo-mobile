@@ -15,7 +15,17 @@ jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('expo-router', () => {
   const { useEffect } = jest.requireActual<typeof import('react')>('react');
 
-  return { router: { push: jest.fn() }, useFocusEffect: (effect: () => void) => useEffect(effect, [effect]) };
+  return {
+    router: { push: jest.fn(), back: jest.fn(), canGoBack: () => true },
+    useFocusEffect: (effect: () => void) => useEffect(effect, [effect]),
+    useRootNavigationState: () => undefined,
+    useNavigationContainerRef: () => ({ getRootState: () => undefined, dispatch: jest.fn() }),
+  };
+});
+jest.mock('react-native-safe-area-context', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
 });
 jest.mock('@/features/auth/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 } }) }));
 jest.mock('../services/NotificationService', () => ({
@@ -30,12 +40,12 @@ const PAGE = {
   next_cursor: null,
 };
 
-async function show() {
+async function show(back = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   await render(
     <QueryClientProvider client={client}>
       <I18nContext.Provider value={TEST_I18N}>
-        <NotificationsScreen />
+        <NotificationsScreen back={back} />
       </I18nContext.Provider>
     </QueryClientProvider>,
   );
@@ -138,5 +148,14 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     await waitFor(() => expect(notificationService.list).toHaveBeenLastCalledWith(null, 'paul', { offer: '22' }));
     expect(await screen.findByText('Aucune notification ne correspond à cette recherche.')).toBeTruthy();
     expect(screen.getByTestId('notifications-list-filter-badge')).toHaveTextContent('1');
+  });
+
+  it('ouvert depuis une carte : un en-tête avec son bouton retour (décision 2026-11-21-notifications-avec-retour)', async () => {
+    await show(true);
+
+    await waitFor(() => expect(screen.getAllByText('Demande de logement', { exact: false }).length).toBeGreaterThan(0));
+    expect(screen.getByLabelText('Retour')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Retour'));
+    expect(router.back).toHaveBeenCalled();
   });
 });

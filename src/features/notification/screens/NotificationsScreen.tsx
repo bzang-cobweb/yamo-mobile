@@ -1,8 +1,11 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
+import { BackHeader } from '@/shared/components/BackHeader';
+import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { NetworkError } from '@/shared/api/errors';
 import { List } from '@/shared/components/List';
 import { Quote } from '@/shared/components/Quote';
@@ -30,7 +33,11 @@ import { APP_LINK, NotificationText } from '../components/NotificationText';
 /** Le nom de la liste dans le magasin des filtres (`/filters/notifications`). */
 export const NOTIFICATIONS_FILTERS = 'notifications';
 
-export function NotificationsScreen() {
+/**
+ * `back` : ouvert depuis une carte de « Mes logements » (un compteur, « Notifications »), déjà filtré,
+ * par-dessus les onglets, avec un en-tête et son bouton retour (décision 2026-11-21-notifications-avec-retour).
+ */
+export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
   const { t, locale } = useI18n();
   const theme = useTheme();
   const [searchText, setSearchText] = useState('');
@@ -143,13 +150,7 @@ export function NotificationsScreen() {
     );
   }
 
-  return (
-    <ThemedView style={styles.container}>
-      <View style={[styles.content, styles.top]}>
-        <View style={styles.header}>
-          <ThemedText type="subtitle">{t('notifications.title')}</ThemedText>
-        </View>
-      </View>
+  const list = (
       <View style={[styles.content, styles.list]}>
         <List
           testID="notifications-list"
@@ -172,6 +173,31 @@ export function NotificationsScreen() {
           contentContainerStyle={styles.items}
         />
       </View>
+  );
+
+  if (back) {
+    // Par-dessus les onglets : l'en-tête et son bouton retour, vers la carte d'où l'on vient.
+    return (
+      <ThemedView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+          <BackStackProvider>
+            <BackHeader title={t('notifications.title')} />
+            <View style={styles.top} />
+            {list}
+          </BackStackProvider>
+        </SafeAreaView>
+      </ThemedView>
+    );
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <View style={[styles.content, styles.top]}>
+        <View style={styles.header}>
+          <ThemedText type="subtitle">{t('notifications.title')}</ThemedText>
+        </View>
+      </View>
+      {list}
     </ThemedView>
   );
 }
