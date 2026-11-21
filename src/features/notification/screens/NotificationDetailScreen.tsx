@@ -1,5 +1,4 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -181,7 +180,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       2026-11-21-detail-reservation-voir-plus). */}
                   {firstLines.map(renderLine)}
                   {open && moreLines.map(renderLine)}
-                  {/* À la fin, même dépliée, à droite : « Voir plus » (+) / « Voir moins » (−)
+                  {/* À la fin, même dépliée, à droite, sans icône : « Voir plus » / « Voir moins »
                       (décision 2026-11-21-detail-reservation-voir-plus). */}
                   {moreLines.length > 0 && (
                     <Pressable
@@ -190,12 +189,6 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       onPress={() => setOpen((value) => !value)}
                       style={({ pressed }) => [styles.more, pressed && styles.pressed]}
                       testID="notification-detail-more">
-                      <SymbolView
-                        name={open ? { ios: 'minus', android: 'remove', web: 'remove' } : { ios: 'plus', android: 'add', web: 'add' }}
-                        size={14}
-                        tintColor={theme.primary}
-                        testID="notification-detail-more-icon"
-                      />
                       <ThemedText type="linkPrimary" testID="notification-detail-more-label">
                         {t(open ? 'notifications.less' : 'notifications.more')}
                       </ThemedText>
