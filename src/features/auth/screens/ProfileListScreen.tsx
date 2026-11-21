@@ -18,7 +18,7 @@ import { ItemPicture } from '@/features/list/components/ItemPicture';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { ITEM_LINK } from '@/features/list/services/ListService';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
-import { List } from '@/shared/components/List';
+import { CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -502,19 +502,19 @@ export { SEARCH_DELAY };
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
   error: { color: ERROR_COLOR },
-  // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
+  // Sans fond, une bordure (décision 2026-11-18-liste-bordure) ; les espacements de la carte de l'accueil : 8 de
+  // marge intérieure, 4 entre les lignes (décision 2026-11-22-cartes-espacements-accueil).
   row: {
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    gap: CARD_GAP,
+    padding: CARD_PADDING,
     borderRadius: 8,
   },
   // Un item avec photo : en colonne.
   stacked: { flexDirection: 'column', alignItems: 'stretch' },
-  itemText: { flex: 1, gap: Spacing.half, paddingVertical: Spacing.one },
+  itemText: { flex: 1, gap: CARD_GAP },
   // Sans photo, avec le menu : le texte s'arrête avant le bouton rond (décision 2026-11-21-demandes-sans-photo).
   besideMenu: { paddingRight: 32 + Spacing.two },
   delete: { padding: Spacing.one },
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   // Le menu des actions, flottant en haut à droite de la photo (marge de la carte + du texte, puis un retrait) ;
   // ses entrées dessous, par-dessus la photo.
-  menu: { position: 'absolute', top: Spacing.two + Spacing.one + Spacing.two, right: Spacing.three + Spacing.two, alignItems: 'flex-end', zIndex: 2 },
+  menu: { position: 'absolute', top: CARD_PADDING + Spacing.two, right: CARD_PADDING + Spacing.two, alignItems: 'flex-end', zIndex: 2 },
   // Une pastille ronde, pour rester lisible sur n'importe quelle photo.
   menuToggle: {
     width: 32,

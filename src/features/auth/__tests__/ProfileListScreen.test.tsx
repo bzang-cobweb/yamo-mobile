@@ -376,6 +376,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7-rating').props.style).alignSelf).toBe('flex-end');
   });
 
+  it('les espacements de la carte de l’accueil : 8 de marge, 4 entre les lignes (décision 2026-11-22-cartes-espacements-accueil)', async () => {
+    mockList = list([item('7', { image: 'https://api.test/storage/7.jpg', link: '/offers/7' })]);
+    await renderScreen();
+
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-7').props.style)).toMatchObject({ padding: 8, gap: 4 });
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7').props.style)).toMatchObject({ gap: 4 });
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),

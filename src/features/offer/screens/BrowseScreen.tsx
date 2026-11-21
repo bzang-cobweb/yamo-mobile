@@ -8,7 +8,7 @@ import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
-import { List } from '@/shared/components/List';
+import { CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -132,5 +132,5 @@ const styles = StyleSheet.create({
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four },
   pressed: { opacity: 0.7 },
   // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
-  card: { borderRadius: 8, borderWidth: 1, padding: Spacing.two, gap: Spacing.one },
+  card: { borderRadius: 8, borderWidth: 1, padding: CARD_PADDING, gap: CARD_GAP },
 });
