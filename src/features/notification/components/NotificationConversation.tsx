@@ -1,7 +1,6 @@
 import { SymbolView } from 'expo-symbols';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { Avatar } from '@/features/auth/components/Avatar';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -12,17 +11,14 @@ import { Spacing } from '@/shared/theme/theme';
 import type { NotificationStep } from '../types';
 import { formatStamp } from '../utils/stamp';
 
-/** Diamètre de la photo de qui a fait l'étape. */
-const AVATAR_SIZE = 32;
-
 /**
  * Le suivi d'une demande comme une conversation, sur la page d'une notification
  * (décisions 2026-11-20-suivi-demande et 2026-11-20-suivi-conversation) : ses
  * étapes, de la plus ancienne à la plus récente. Celles du lecteur à droite, nommées
- * « Toi », sans photo ; celles de l'autre partie à gauche : la photo de qui l'a faite
- * dans un petit cercle, son nom. Dessous, le message (à défaut le libellé de l'étape,
+ * « Toi » ; celles de l'autre partie à gauche, avec son nom, sans photo (décision
+ * 2026-11-21-conversation-sans-photo). Dessous, le message (à défaut le libellé de l'étape,
  * « Demande acceptée »), puis la date, alignée à droite (l'heure seule le jour même).
- * Le nom et la photo de l'autre ouvrent sa page (`onOpen`). Après la date d'une étape
+ * Le nom de l'autre ouvre sa page (`onOpen`). Après la date d'une étape
  * du lecteur, des coches (décision 2026-11-20-coches-lecture) : une grise, l'autre ne
  * s'est pas connecté depuis ; deux grises, connecté sans l'avoir lue ; deux vertes, lue.
  */
@@ -42,17 +38,6 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
 
         return (
           <View key={step.id} style={[styles.step, mine && styles.stepMine]} testID={`notification-history-${index}`}>
-            {step.actor && !mine && (
-              <Pressable
-                accessibilityRole="link"
-                accessibilityLabel={step.actor.name}
-                hitSlop={Spacing.one}
-                onPress={() => step.actor && onOpen(step.actor.link)}
-                style={({ pressed }) => pressed && styles.pressed}
-                testID={`notification-history-${index}-avatar`}>
-                <Avatar user={{ initials: step.actor.initials, avatar_url: step.actor.photo }} size={AVATAR_SIZE} />
-              </Pressable>
-            )}
             <View style={[styles.bubble, { backgroundColor: theme.backgroundElement }]} testID={`notification-history-${index}-bubble`}>
               {mine ? (
                 <ThemedText type="smallBold" testID={`notification-history-${index}-actor`}>
@@ -109,5 +94,4 @@ const styles = StyleSheet.create({
   ticks: { flexDirection: 'row' },
   // La seconde coche chevauche la première.
   second: { marginLeft: -6 },
-  pressed: { opacity: 0.7 },
 });

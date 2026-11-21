@@ -95,11 +95,14 @@ describe('NotificationDetailScreen', () => {
     // Les coches après la date d'une étape du lecteur seulement (décision 2026-11-20-coches-lecture).
     expect(screen.getByTestId('notification-history-2-delivery-delivered').props.accessibilityLabel).toBe('Reçue');
     expect(screen.queryByTestId('notification-history-1-delivery-sent')).toBeNull();
-    // Le nom et la photo ouvrent la page du membre.
+    // Le nom ouvre la page du membre.
     await fireEvent.press(screen.getByTestId('notification-history-0-actor'));
     expect(router.push).toHaveBeenLastCalledWith('/members/37');
-    await fireEvent.press(screen.getByTestId('notification-history-1-avatar'));
+    await fireEvent.press(screen.getByTestId('notification-history-1-actor'));
     expect(router.push).toHaveBeenLastCalledWith('/members/4');
+    // Plus de photo, ni pour l'autre ni pour le lecteur (décision 2026-11-21-conversation-sans-photo).
+    expect(screen.queryByTestId('notification-history-0-avatar')).toBeNull();
+    expect(screen.queryByTestId('notification-history-1-avatar')).toBeNull();
     expect(screen.getByTestId('notification-history-2-actor')).toHaveTextContent('Toi');
     expect(screen.queryByText('Moi Même')).toBeNull();
     expect(screen.queryByTestId('notification-history-2-avatar')).toBeNull();
