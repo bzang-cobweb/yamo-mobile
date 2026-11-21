@@ -1,4 +1,5 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -152,9 +153,14 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
                     </View>
                   )}
-                  {/* Le nom de l'offre, sous le type de location et la pastille : un titre, pas un bouton. */}
+                  {/* Le nom de l'offre, sous le type de location et la pastille : le toucher ouvre la fiche du
+                      logement (décision 2026-11-21-detail-reservation-voir-plus). */}
                   {notification.booking?.offer.title && (
-                    <ThemedText style={styles.offerLink} testID="notification-detail-offer-title">
+                    <ThemedText
+                      accessibilityRole="link"
+                      onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
+                      style={styles.offerLink}
+                      testID="notification-detail-offer-title">
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
@@ -174,26 +180,26 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       l'autre partie, durée, prix, total en gras (décisions 2026-11-20-lignes-demande et
                       2026-11-21-detail-reservation-voir-plus). */}
                   {firstLines.map(renderLine)}
+                  {open && moreLines.map(renderLine)}
+                  {/* À la fin, même dépliée, à droite : « Voir plus » (+) / « Voir moins » (−)
+                      (décision 2026-11-21-detail-reservation-voir-plus). */}
                   {moreLines.length > 0 && (
-                    <ThemedText
-                      type="linkPrimary"
+                    <Pressable
                       accessibilityRole="button"
                       accessibilityState={{ expanded: open }}
                       onPress={() => setOpen((value) => !value)}
+                      style={({ pressed }) => [styles.more, pressed && styles.pressed]}
                       testID="notification-detail-more">
-                      {t(open ? 'notifications.less' : 'notifications.more')}
-                    </ThemedText>
-                  )}
-                  {open && moreLines.map(renderLine)}
-                  {/* Après la suite dépliée (ou sans suite), le lien vers la fiche du logement. */}
-                  {notification.booking && (open || moreLines.length === 0) && (
-                    <ThemedText
-                      type="linkPrimary"
-                      accessibilityRole="link"
-                      onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
-                      testID="notification-detail-offer-view">
-                      {t('offer.view')}
-                    </ThemedText>
+                      <SymbolView
+                        name={open ? { ios: 'minus', android: 'remove', web: 'remove' } : { ios: 'plus', android: 'add', web: 'add' }}
+                        size={14}
+                        tintColor={theme.primary}
+                        testID="notification-detail-more-icon"
+                      />
+                      <ThemedText type="linkPrimary" testID="notification-detail-more-label">
+                        {t(open ? 'notifications.less' : 'notifications.more')}
+                      </ThemedText>
+                    </Pressable>
                   )}
                 </View>
               </View>
@@ -251,4 +257,5 @@ const styles = StyleSheet.create({
   // Le nom de l'offre, en gras.
   offerLink: { fontWeight: '700' },
   pressed: { opacity: 0.7 },
+  more: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, alignSelf: 'flex-end' },
 });

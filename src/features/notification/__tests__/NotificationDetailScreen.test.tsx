@@ -11,6 +11,12 @@ import type { AppNotification } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+// L'icône, rendue comme une vue qui garde son nom et son testID.
+jest.mock('expo-symbols', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { SymbolView: (props: { testID?: string; name: unknown }) => <View testID={props.testID} {...({ name: props.name } as object)} /> };
+});
 jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn(), canGoBack: () => true }, useFocusEffect: jest.fn(), useRootNavigationState: () => undefined, useNavigationContainerRef: () => ({ getRootState: () => undefined, dispatch: jest.fn() }) }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -173,21 +179,25 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
     expect(screen.getByTestId('notification-detail-more')).toHaveTextContent('Voir plus');
     expect(screen.getByTestId('notification-detail-more').props.accessibilityState).toEqual({ expanded: false });
-    // Le nom de l'offre est un titre, pas un lien ni un bouton : couleur du texte, en gras.
-    expect(screen.getByTestId('notification-detail-offer-title').props.onPress).toBeUndefined();
+    // Le nom de l'offre, en gras, ouvre la fiche du logement ; plus de « Voir le logement ».
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
+    await fireEvent.press(screen.getByTestId('notification-detail-offer-title'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
+    expect(screen.getByTestId('notification-detail-more-icon').props.name).toMatchObject({ ios: 'plus' });
     await fireEvent.press(screen.getByTestId('notification-detail-more'));
     expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();
     expect(screen.getByTestId('notification-detail-more')).toHaveTextContent('Voir moins');
+    // À la fin, même dépliée, alignée à droite.
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('"notification-detail-more"')).toBeGreaterThan(json.indexOf('"notification-detail-line-email"'));
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-more').props.style)).toMatchObject({ alignSelf: 'flex-end' });
+    expect(screen.getByTestId('notification-detail-more-icon').props.name).toMatchObject({ ios: 'minus' });
+    expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
     // L'autre partie : son nom ouvre sa page ; l'e-mail est un texte (décision 2026-11-21-detail-reservation-contact).
     expect(screen.getByTestId('notification-detail-line-email-value')).toHaveTextContent('lea@example.test');
     await fireEvent.press(screen.getByTestId('notification-detail-line-member-value'));
     expect(router.push).toHaveBeenLastCalledWith('/members/5');
-    // Dépliée : le lien vers la fiche du logement, sous les lignes.
-    await fireEvent.press(screen.getByTestId('notification-detail-offer-view'));
-    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
-    expect(screen.getByTestId('notification-detail-offer-view')).toHaveTextContent('Voir le logement');
     await fireEvent.press(screen.getByTestId('notification-detail-more'));
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
 
