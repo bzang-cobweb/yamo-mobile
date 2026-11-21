@@ -175,7 +175,9 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-edit-7')).toBeNull();
     expect(screen.queryByTestId('profile-list-delete-7')).toBeNull();
     expect(screen.queryByText('Calendrier')).toBeNull();
-    expect(screen.getByTestId('profile-list-menu-7-toggle')).toHaveTextContent('Actions');
+    // Trois petits points, sans texte ; « Actions » pour l'accessibilité (décision 2026-11-21-menu-trois-points).
+    expect(screen.getByTestId('profile-list-menu-7-toggle')).not.toHaveTextContent('Actions');
+    expect(screen.getByTestId('profile-list-menu-7-toggle').props.accessibilityLabel).toBe('Actions Carte 7');
 
     // Ouvert : Voir, Éditer, Calendrier, Retirer, dans cet ordre.
     await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));

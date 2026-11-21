@@ -274,7 +274,8 @@ export function ProfileListScreen({ list }: { list: string }) {
         )}
         {menu ? (
           menuEntries.length > 0 && (
-            // Un seul bouton « Actions », à droite ; ouvert, ses entrées dessous (décision 2026-11-21-actions-en-menu).
+            // Un seul bouton, trois petits points, à droite ; ouvert, ses entrées dessous (décisions
+            // 2026-11-21-actions-en-menu et 2026-11-21-menu-trois-points).
             <View style={styles.menu} testID={`profile-list-menu-${item.id}`}>
               <Pressable
                 testID={`profile-list-menu-${item.id}-toggle`}
@@ -283,13 +284,9 @@ export function ProfileListScreen({ list }: { list: string }) {
                 accessibilityLabel={`${t('list.actions')} ${item.title}`}
                 hitSlop={Spacing.one}
                 onPress={() => setOpenMenu(menuOpen ? null : item.id)}
-                style={({ pressed }) => [styles.menuToggle, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-                <ThemedText type="smallBold">{t('list.actions')}</ThemedText>
-                <SymbolView
-                  name={{ ios: menuOpen ? 'chevron.up' : 'chevron.down', android: menuOpen ? 'expand_less' : 'expand_more', web: menuOpen ? 'expand_less' : 'expand_more' }}
-                  size={14}
-                  tintColor={theme.text}
-                />
+                style={({ pressed }) => [styles.menuToggle, pressed && styles.pressed]}>
+                {/* Trois petits points, sans texte (décision 2026-11-21-menu-trois-points). */}
+                <SymbolView name={{ ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' }} size={20} tintColor={theme.text} />
               </Pressable>
               {menuOpen && (
                 <View style={[styles.menuList, { borderColor: theme.backgroundSelected, backgroundColor: theme.background }]} testID={`profile-list-menu-${item.id}-list`}>
@@ -469,7 +466,7 @@ const styles = StyleSheet.create({
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   // Le menu « Actions » : le bouton à droite, ses entrées dessous, à droite.
   menu: { alignItems: 'flex-end', gap: Spacing.one },
-  menuToggle: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, borderWidth: 1, borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: Spacing.one },
+  menuToggle: { padding: Spacing.two },
   menuList: { minWidth: 180, borderWidth: 1, borderRadius: 8, overflow: 'hidden' },
   menuEntry: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
   // La ligne des actions, sous le contenu, à droite.
