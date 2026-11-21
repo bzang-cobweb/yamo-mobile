@@ -2,6 +2,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 
+import { AuthContext } from '@/features/auth/context/AuthContext';
+import type { AuthContextValue } from '@/features/auth/types';
+
 import { useListDefinition } from '../hooks/useListDefinition';
 import type { ListDefinition } from '../types';
 
@@ -30,6 +33,25 @@ function wrapper({ children }: PropsWithChildren) {
 
 describe('useListDefinition (pages suivies par curseur)', () => {
   beforeEach(() => mockGet.mockReset());
+
+  it('recharge la liste quand le compte change (décision 2026-11-21-coeurs-accueil-apres-connexion)', async () => {
+    mockGet.mockResolvedValue(page(['1'], null));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    let auth = { user: null } as unknown as AuthContextValue;
+    const withAuth = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={client}>
+        <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
+      </QueryClientProvider>
+    );
+    const { result, rerender } = await renderHook(() => useListDefinition('offer.browse'), { wrapper: withAuth });
+    await waitFor(() => expect(result.current.data?.items).toHaveLength(1));
+    expect(mockGet).toHaveBeenCalledTimes(1);
+
+    auth = { user: { id: 7 } } as unknown as AuthContextValue;
+    await rerender({});
+
+    await waitFor(() => expect(mockGet).toHaveBeenCalledTimes(2));
+  });
 
   it('met les items des pages bout à bout, sous la première page', async () => {
     mockGet.mockImplementation(async (_name: string, cursor: string | null) =>

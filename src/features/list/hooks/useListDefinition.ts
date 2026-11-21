@@ -1,5 +1,7 @@
 import { keepPreviousData, useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
+
+import { AuthContext } from '@/features/auth/context/AuthContext';
 
 import type { FormValues } from '@/features/form/types';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -25,13 +27,18 @@ const EMPTY_FILTERS: FormValues = {};
  *
  * Pas gardée en mémoire une fois l'écran fermé (`gcTime: 0`) : rouverte, elle
  * montre les items actuels.
+ *
+ * Rechargée quand le compte change : l'accueil, ouvert avant la connexion, montre ensuite
+ * les cœurs du membre connecté (décision 2026-11-21-coeurs-accueil-apres-connexion).
  */
 export function useListDefinition(name: string, search = '', filters: FormValues = EMPTY_FILTERS) {
   const { locale } = useI18n();
+  // Sans fournisseur (tests) : aucun compte.
+  const userId = useContext(AuthContext)?.user?.id ?? null;
   const queryClient = useQueryClient();
   const term = search.trim();
   const filterKey = JSON.stringify(filters);
-  const queryKey = useMemo(() => ['list', name, locale, term, filterKey], [name, locale, term, filterKey]);
+  const queryKey = useMemo(() => ['list', name, locale, userId, term, filterKey], [name, locale, userId, term, filterKey]);
 
   const query = useInfiniteQuery({
     queryKey,
