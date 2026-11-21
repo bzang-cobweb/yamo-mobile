@@ -275,6 +275,20 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking', offer: '7' });
   });
 
+  it('l’intitulé servi s’affiche sous les filtres, en tête des items (décision 2026-11-21-demandes-titre-sous-filtres)', async () => {
+    mockList = { ...list([item('7')]), heading: 'Studio meublé à Akwa' };
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-heading')).toHaveTextContent('Studio meublé à Akwa');
+  });
+
+  it('sans intitulé, rien sous les filtres', async () => {
+    mockList = list([item('7')]);
+    await renderScreen();
+
+    expect(screen.queryByTestId('profile-list-heading')).toBeNull();
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),

@@ -410,6 +410,15 @@ export function ProfileListScreen({ list }: { list: string }) {
               }
             : null
         }
+        // Sous les filtres, en tête des items : l'intitulé servi (le logement des « Demandes », décision
+        // 2026-11-21-demandes-titre-sous-filtres).
+        header={
+          definition.heading ? (
+            <ThemedText type="smallBold" testID="profile-list-heading">
+              {definition.heading}
+            </ThemedText>
+          ) : null
+        }
         contentContainerStyle={[profileContentStyle, !definition.footer && { paddingBottom: Math.max(insets.bottom, Spacing.four) }]}
         create={
           definition.create

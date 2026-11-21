@@ -79,6 +79,8 @@ export type ListItem = {
 export type ListDefinition = {
   name: string;
   title: string;
+  /** Intitulé sous les filtres, en tête des items (le logement des « Demandes », décision 2026-11-21-demandes-titre-sous-filtres) ; absent : aucun. */
+  heading?: string | null;
   /** Texte affiché quand la liste est vide. */
   empty: string | null;
   /** Bouton de création : libellé et formulaire ouvert ; `null` pour une liste en lecture seule. */
