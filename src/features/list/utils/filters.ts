@@ -50,6 +50,18 @@ export function setFilterValues(name: string, values: FormValues) {
   emit();
 }
 
+/** Enlève tous les filtres choisis de la liste `name` ; ses champs restent (décision 2026-11-21-onglet-notifications-sans-filtres). */
+export function clearFilters(name: string) {
+  const current = entries.get(name);
+
+  if (!current || Object.keys(current.values).length === 0) {
+    return;
+  }
+
+  entries.set(name, { fields: current.fields, values: {} });
+  emit();
+}
+
 /** Remet tout à zéro (tests). */
 export function resetFilters() {
   entries.clear();

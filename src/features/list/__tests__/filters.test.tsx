@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import type { FormFieldDefinition } from '@/features/form/types';
@@ -8,7 +8,7 @@ import type { ApiClient } from '@/shared/api/ApiClient';
 
 import { FilterScreen } from '../screens/FilterScreen';
 import { ListService } from '../services/ListService';
-import { activeFilterCount, activeValues, resetFilters, setFilterFields, setFilterValues, useListFilters } from '../utils/filters';
+import { activeFilterCount, activeValues, clearFilters, resetFilters, setFilterFields, setFilterValues, useListFilters } from '../utils/filters';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -165,5 +165,19 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
       fireEvent.press(screen.getByTestId('filter-apply'));
     });
     expect(seen[seen.length - 1].values).toEqual({ type: 'other' });
+  });
+
+  it('enlever les filtres d’une liste garde ses champs et ne touche pas les autres (décision 2026-11-21-onglet-notifications-sans-filtres)', async () => {
+    setFilterFields('notifications', FIELDS);
+    setFilterValues('notifications', { city: 'Douala', furnished: 'true' });
+    setFilterFields('offers', FIELDS);
+    setFilterValues('offers', { city: 'Douala' });
+
+    clearFilters('notifications');
+
+    const { result } = await renderHook(() => useListFilters('notifications'));
+    expect(result.current.values).toEqual({});
+    expect(result.current.fields).toEqual(FIELDS);
+    expect((await renderHook(() => useListFilters('offers'))).result.current.values).toEqual({ city: 'Douala' });
   });
 });

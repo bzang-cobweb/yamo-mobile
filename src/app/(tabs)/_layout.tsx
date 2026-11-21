@@ -4,7 +4,9 @@ import { AppState, StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router/js-tabs';
 import { SymbolView } from 'expo-symbols';
 
+import { clearFilters } from '@/features/list/utils/filters';
 import { useUnreadCount } from '@/features/notification/hooks/useNotifications';
+import { NOTIFICATIONS_FILTERS } from '@/features/notification/screens/NotificationsScreen';
 import { AppTopBar } from '@/features/welcome/components/AppTopBar';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -73,6 +75,9 @@ export default function TabsLayout() {
           des non lues (décisions 2026-11-19-contrat-centre-notifications et 2026-11-19-pastille-point). */}
       <Tabs.Screen
         name="notifications"
+        // Toucher l'onglet enlève tous les filtres des notifications (décision 2026-11-21-onglet-notifications-sans-filtres) ;
+        // un compteur qui ouvre les notifications déjà filtrées ne passe pas par là.
+        listeners={{ tabPress: () => clearFilters(NOTIFICATIONS_FILTERS) }}
         options={{
           title: t('tabs.notifications'),
           tabBarAccessibilityLabel: unread > 0 ? `${t('tabs.notifications')}, ${t('notifications.unread')}` : t('tabs.notifications'),
