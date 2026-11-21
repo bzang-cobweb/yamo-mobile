@@ -316,6 +316,17 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
   });
 
+  it('un compteur sans filtre ouvre son écran sans toucher aux filtres de sa liste (décision 2026-11-21-demandes-non-lues)', async () => {
+    filterStore.setFilterValues('notifications', { type: 'booking' });
+    const unread = { label: '2 notifications non lues', list: 'notifications', filter: {}, link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' };
+    mockList = list([item('7', { counter: unread, counters: [unread] })]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
+    expect(router.navigate).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
+    expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking' });
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),

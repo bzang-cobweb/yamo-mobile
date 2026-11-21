@@ -121,7 +121,10 @@ export function ProfileListScreen({ list }: { list: string }) {
 
   // Le compteur ouvre sa liste (ou son écran) avec ses filtres déjà choisis.
   function openCounter(counter: ListItemCounter) {
-    setFilterValues(counter.list, counter.filter);
+    // Sans filtre (la page d'une demande, décision 2026-11-21-demandes-non-lues), ceux de la liste ne bougent pas.
+    if (Object.keys(counter.filter ?? {}).length > 0) {
+      setFilterValues(counter.list, counter.filter);
+    }
     // Un écran de l'app (les notifications, déjà filtrées), sinon la liste.
     if (counter.link && APP_SCREEN.test(counter.link)) {
       router.navigate(counter.link as Href);
