@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
-import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
+import { StatusTag } from '@/shared/components/StatusTag';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem, ListItemCounter } from '@/features/list/types';
@@ -152,43 +152,15 @@ export function ProfileListScreen({ list }: { list: string }) {
     // Le statut sur la photo quand l'API le demande ; avec un cœur, en haut à gauche (décision 2026-11-21-reservations-statut-coeur).
     const tagOnImage = Boolean(item.tag?.on_image && item.image);
     const counters = item.counters?.length ? item.counters : item.counter ? [item.counter] : [];
-    // Un compteur avec un ton : une pastille de cette couleur, sous le titre (« 2 demandes en attente », orange) ;
-    // les autres restent en bas de la carte (décision 2026-11-21-pastille-demandes-en-attente).
-    const renderCounter = (counter: ListItemCounter, index: number) => {
-      const toned = Boolean(counter.tone);
-      return (
-        <Pressable
-          key={counter.label}
-          testID={index === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${index}`}
-          accessibilityRole="link"
-          onPress={() => openCounter(counter)}
-          style={({ pressed }) => [
-            styles.counter,
-            { backgroundColor: toned ? (TONE_COLORS[counter.tone ?? ''] ?? TONE_COLORS.neutral) : theme.backgroundSelected },
-            pressed && styles.pressed,
-          ]}>
-          <ThemedText type="smallBold" style={{ color: toned ? '#ffffff' : theme.primary }}>
-            {counter.label}
-          </ThemedText>
-        </Pressable>
-      );
-    };
-    // Avec une photo, le premier compteur qui a un ton va dessus, à la place du statut, et se touche ; le statut
-    // revient quand il n'y en a plus (décision 2026-11-21-pastille-sur-la-photo).
-    const imageCounterIndex = item.image ? counters.findIndex((counter) => counter.tone) : -1;
-    const imageCounter = imageCounterIndex >= 0 ? counters[imageCounterIndex] : null;
-    const pictureTag = imageCounter ? { label: imageCounter.label, tone: imageCounter.tone ?? 'neutral' } : tagOnImage ? item.tag : null;
-    const pictureTagProps = imageCounter
-      ? {
-          onTagPress: () => openCounter(imageCounter),
-          tagTestID: imageCounterIndex === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${imageCounterIndex}`,
-        }
-      : {};
-    const tonedCounters = counters.some((counter, index) => counter.tone && index !== imageCounterIndex) && (
-      <View style={styles.counters} testID={`profile-list-toned-counters-${item.id}`}>
-        {counters.map((counter, index) => (counter.tone && index !== imageCounterIndex ? renderCounter(counter, index) : null))}
-      </View>
-    );
+    // Un compteur avec un ton : une pastille de cette couleur, pour information, sans lien (« 2 demandes en
+    // attente », orange) : sur la photo, à la place du statut, qui revient quand il n'y en a plus ; sans photo, sous
+    // le titre. Les autres compteurs restent des liens, en bas de la carte (décisions
+    // 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien).
+    const tonedCounter = counters.find((counter) => counter.tone) ?? null;
+    const tonedTag = tonedCounter ? { label: tonedCounter.label, tone: tonedCounter.tone ?? 'neutral' } : null;
+    const pictureTag = tonedTag && item.image ? tonedTag : tagOnImage ? item.tag : null;
+    const tonedUnderTitle = tonedTag && !item.image && <StatusTag tag={tonedTag} testID={`profile-list-badge-${item.id}`} />;
+    const linkCounters = counters.filter((counter) => !counter.tone);
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
     // Toutes les actions dans un menu déroulant « Actions », quand la liste le demande (« Mes logements »,
@@ -255,11 +227,11 @@ export function ProfileListScreen({ list }: { list: string }) {
               {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
               {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
                   une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
-                  des demandes en attente (décision 2026-11-21-pastille-sur-la-photo). */}
-              <ItemPicture item={item} tag={pictureTag} tagLeft={menu} {...pictureTagProps} testID={`profile-list-item-${item.id}`} />
+                  des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
+              <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
               {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
               <ThemedText>{item.title}</ThemedText>
-              {tonedCounters}
+              {tonedUnderTitle}
               {item.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.subtitle}
@@ -281,11 +253,11 @@ export function ProfileListScreen({ list }: { list: string }) {
             {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
             {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
                 une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
-                  des demandes en attente (décision 2026-11-21-pastille-sur-la-photo). */}
-            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} {...pictureTagProps} testID={`profile-list-item-${item.id}`} />
+                  des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
+            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`profile-list-item-${item.id}`} />
             {item.tag && !tagOnImage && <StatusTag tag={item.tag} testID={`profile-list-tag-${item.id}`} />}
             <ThemedText>{item.title}</ThemedText>
-            {tonedCounters}
+            {tonedUnderTitle}
             {item.subtitle && (
               <ThemedText type="small" themeColor="textSecondary">
                 {item.subtitle}
@@ -298,8 +270,21 @@ export function ProfileListScreen({ list }: { list: string }) {
         )}
         {/* Ses compteurs, côte à côte : « 2 demandes en attente », « 1 notification non lue »
             (décision 2026-11-21-compteur-non-lues) ; un serveur plus ancien n'en sert qu'un (`counter`). */}
-        {counters.some((counter) => !counter.tone) && (
-          <View style={styles.counters}>{counters.map((counter, index) => (counter.tone ? null : renderCounter(counter, index)))}</View>
+        {linkCounters.length > 0 && (
+          <View style={styles.counters}>
+            {linkCounters.map((counter, index) => (
+              <Pressable
+                key={counter.label}
+                testID={index === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${index}`}
+                accessibilityRole="link"
+                onPress={() => openCounter(counter)}
+                style={({ pressed }) => [styles.counter, { backgroundColor: theme.backgroundSelected }, pressed && styles.pressed]}>
+                <ThemedText type="smallBold" style={{ color: theme.primary }}>
+                  {counter.label}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
         )}
         {menu ? (
           menuEntries.length > 0 && (

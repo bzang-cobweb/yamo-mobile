@@ -184,23 +184,24 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
   });
 
-  it('un compteur avec un ton : une pastille orange sous le titre (décision 2026-11-21-pastille-demandes-en-attente)', async () => {
+  it('sans photo : la pastille des demandes en attente sous le titre, pour information (décision 2026-11-21-pastille-sans-lien)', async () => {
     const pending = { label: '2 demandes en attente', list: 'notifications', filter: { type: 'booking', status: 'pending', offer: '7' }, link: '/notifications', tone: 'warning' };
     const unread = { label: '1 notification non lue', list: 'notifications', filter: { ...pending.filter, unread: 'yes' }, link: '/notifications' };
     mockList = list([item('7', { counter: pending, counters: [pending, unread] })]);
     await renderScreen();
 
-    // Sans photo : sous le titre, en orange.
-    const toned = screen.getByTestId('profile-list-toned-counters-7');
-    expect(within(toned).getByTestId('profile-list-counter-7')).toHaveTextContent('2 demandes en attente');
-    expect(StyleSheet.flatten(screen.getByTestId('profile-list-counter-7').props.style).backgroundColor).toBe(TONE_COLORS.warning);
-    // Sans ton : en bas, hors de la pastille.
-    expect(within(toned).queryByTestId('profile-list-counter-7-1')).toBeNull();
+    // Une pastille orange, pas un lien.
+    const badge = screen.getByTestId('profile-list-badge-7');
+    expect(badge).toHaveTextContent('2 demandes en attente');
+    expect(StyleSheet.flatten(badge.props.style).backgroundColor).toBe(TONE_COLORS.warning);
+    expect(screen.queryByRole('link', { name: '2 demandes en attente' })).toBeNull();
+    // Le compteur sans ton reste un lien, en bas.
+    expect(screen.getByTestId('profile-list-counter-7')).toHaveTextContent('1 notification non lue');
     await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
     expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
   });
 
-  it('avec une photo : la pastille des demandes en attente à la place du statut (décision 2026-11-21-pastille-sur-la-photo)', async () => {
+  it('avec une photo : la pastille des demandes en attente à la place du statut, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien)', async () => {
     const pending = { label: '2 demandes en attente', list: 'notifications', filter: { type: 'booking', status: 'pending', offer: '7' }, link: '/notifications', tone: 'warning' };
     const tag = { label: 'Publiée', tone: 'success', on_image: true };
     mockList = list([
@@ -209,13 +210,11 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     ]);
     await renderScreen();
 
-    // Sur la photo, à la place de « Publiée », et plus sous le titre.
+    // Sur la photo, à la place de « Publiée » ; ni sous le titre, ni lien.
     expect(screen.getByTestId('profile-list-item-7-status')).toHaveTextContent('2 demandes en attente');
-    expect(within(screen.getByTestId('profile-list-item-7-picture')).getByTestId('profile-list-counter-7')).toBeTruthy();
-    expect(screen.queryByTestId('profile-list-toned-counters-7')).toBeNull();
-    expect(screen.queryByText('Publiée', { exact: true })).not.toBeNull();
-    await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
-    expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
+    expect(screen.queryByTestId('profile-list-badge-7')).toBeNull();
+    expect(screen.queryByTestId('profile-list-counter-7')).toBeNull();
+    expect(screen.queryByRole('link', { name: '2 demandes en attente' })).toBeNull();
     // Sans demande en attente : le statut.
     expect(screen.getByTestId('profile-list-item-8-status')).toHaveTextContent('Publiée');
   });
