@@ -1,6 +1,6 @@
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -42,6 +42,18 @@ export function NotificationDetailScreen({ id }: { id: string }) {
   const [open, setOpen] = useState(false);
   const query = useNotification(id);
   const markRead = useMarkRead();
+  const { refetch } = query;
+  // Au retour sur la page (« Modifier » enregistré, décision 2026-11-21-detail-reservation-modifier),
+  // la demande est relue : ses dates, son total. Pas à la première ouverture, déjà chargée.
+  const shown = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (shown.current) {
+        void refetch();
+      }
+      shown.current = true;
+    }, [refetch]),
+  );
   const notification = query.data;
 
   useEffect(() => {
@@ -174,7 +186,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               </ScrollView>
             </>
           )}
-          {/* Le bouton dans la barre fixe du bas : « Traiter la demande » (le propriétaire), « Mes réservations » (le membre). */}
+          {/* Le bouton dans la barre fixe du bas : « Traiter la demande » (le propriétaire), « Mes réservations » ou « Modifier » tant qu'elle est en attente (le membre). */}
           {notification?.link && APP_LINK.test(notification.link) && (
             <FixedButtonBar
               label={notification.link_label ?? t('notifications.open')}

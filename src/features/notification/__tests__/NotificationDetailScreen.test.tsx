@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -19,7 +19,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 jest.mock('@/features/auth/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 } }) }));
 
-const { router } = jest.requireMock<{ router: { push: jest.Mock } }>('expo-router');
+const { router, useFocusEffect } = jest.requireMock<{ router: { push: jest.Mock }; useFocusEffect: jest.Mock }>('expo-router');
 
 const NOTIFICATION: AppNotification = {
   id: 'n1',
@@ -180,5 +180,21 @@ describe('NotificationDetailScreen', () => {
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');
     expect(router.push).toHaveBeenLastCalledWith('/profile/lists/offer.bookings.received');
+  });
+
+  it('le membre, demande en attente : « Modifier » ouvre le formulaire ; au retour, la demande est relue (décision 2026-11-21-detail-reservation-modifier)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, link: '/profile/offer.booking.edit?record=9', link_label: 'Modifier' });
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-open-button'));
+    expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Modifier');
+    expect(router.push).toHaveBeenLastCalledWith('/profile/offer.booking.edit?record=9');
+
+    // La première mise au premier plan ne relit rien ; la suivante (retour du formulaire), si.
+    const focus = useFocusEffect.mock.calls.at(-1)?.[0] as () => void;
+    focus();
+    expect(notificationService.get).toHaveBeenCalledTimes(1);
+    await act(async () => focus());
+    expect(notificationService.get).toHaveBeenCalledTimes(2);
   });
 });
