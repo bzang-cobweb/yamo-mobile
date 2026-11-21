@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet, Text } from 'react-native';
 
-import { List } from '../List';
+import { List, SEARCH_HEIGHT } from '../List';
 
 jest.mock('expo-symbols', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -117,6 +117,13 @@ describe('List (données locales, sans API)', () => {
     expect(screen.getByTestId('fruits-search-icon').props.symbol).toEqual(expect.objectContaining({ ios: 'magnifyingglass' }));
     // Le champ n'est pas dans la zone qui défile : il vient avant la liste, pas dans son en-tête.
     expect(screen.getAllByTestId(/^fruits(-search)?$/).map((node) => node.props.testID)).toEqual(['fruits-search', 'fruits']);
+  });
+
+  it('la barre de recherche, plus grande : 48 de haut au moins, texte en 17 (décision 2026-11-21-recherche-plus-grande)', async () => {
+    await renderList({ search: { value: '', onChange: jest.fn(), placeholder: 'Chercher…' } });
+
+    expect(StyleSheet.flatten(screen.getByTestId('fruits-search').props.style).fontSize).toBe(17);
+    expect(SEARCH_HEIGHT).toBe(48);
   });
 
   it('sans search : pas de champ', async () => {

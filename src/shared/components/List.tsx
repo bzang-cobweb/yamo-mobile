@@ -145,7 +145,7 @@ export function List<T>({
             <SymbolView
               testID={id('search-icon')}
               name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-              size={18}
+              size={SEARCH_ICON_SIZE}
               tintColor={theme.textSecondary}
             />
             <TextInput
@@ -180,6 +180,10 @@ export function List<T>({
   );
 }
 
+/** La hauteur minimale de la barre de recherche et la taille de sa loupe (décision 2026-11-21-recherche-plus-grande). */
+export const SEARCH_HEIGHT = 48;
+const SEARCH_ICON_SIZE = 20;
+
 function Separator() {
   return <View style={styles.separator} testID="list-separator" />;
 }
@@ -187,14 +191,16 @@ function Separator() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   bar: { gap: Spacing.two, paddingBottom: 0 },
+  // Plus grande, sur toutes les listes (décision 2026-11-21-recherche-plus-grande) : 48 de haut au moins.
   searchField: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: Spacing.three,
+    minHeight: SEARCH_HEIGHT,
   },
-  search: { flex: 1, paddingVertical: Spacing.two, fontSize: 16 },
+  search: { flex: 1, paddingVertical: Spacing.three, fontSize: 17 },
   create: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
   pressed: { opacity: 0.6 },
   header: { gap: Spacing.three, marginBottom: Spacing.three },
