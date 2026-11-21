@@ -101,6 +101,7 @@ export function BrowseScreen() {
             </ThemedText>
           )}
           {/* La note moyenne, puis le dernier avis en gras sur sa ligne (décision 2026-11-19-contrat-avis-offres). */}
+          {/* La note sur sa ligne, sous le prix, à droite (décision 2026-11-21-accueil-note-sous-le-prix). */}
           <ItemReviews item={item} testID={`browse-item-${item.id}`} />
         </Pressable>
       )}

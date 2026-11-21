@@ -368,6 +368,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-menu-8-list')).toBeNull();
   });
 
+  it('la note sous le prix, sur sa ligne, à droite (décision 2026-11-21-accueil-note-sous-le-prix)', async () => {
+    mockList = list([item('7', { highlight: '45 000 FCFA / jour', rating: { average: 4, count: 1 } })]);
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-item-7-highlight')).toHaveTextContent('45 000 FCFA / jour');
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7-rating').props.style).alignSelf).toBe('flex-end');
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),

@@ -9,10 +9,10 @@ import { Spacing } from '@/shared/theme/theme';
 import type { ListItem } from '../types';
 
 /**
- * Bas d'un item (décision 2026-11-19-acces-avis-backoffice) : la phrase mise en
- * avant, en gras, sur deux lignes au plus ; puis, en
- * bas à droite, les étoiles de la note moyenne, seules (la note et le nombre
- * d'avis sont lus par l'accessibilité). Rien de ce que l'API ne sert pas.
+ * Bas d'un item (décision 2026-11-19-acces-avis-backoffice) : la phrase mise en avant (le prix), en gras, sur
+ * deux lignes au plus ; puis, sur sa propre ligne, alignées à droite, les étoiles de la note moyenne, seules (la
+ * note et le nombre d'avis sont lus par l'accessibilité), sur toutes les cartes (décision
+ * 2026-11-21-accueil-note-sous-le-prix). Rien de ce que l'API ne sert pas.
  */
 export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 'highlight'>; testID?: string }) {
   const { t, locale } = useI18n();
@@ -26,18 +26,17 @@ export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 
   const average = rating ? rating.average.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '';
 
   return (
-    <View style={styles.row}>
-      {highlight ? (
-        <ThemedText type="smallBold" numberOfLines={2} style={styles.highlight} testID={testID ? `${testID}-highlight` : undefined}>
+    <View style={styles.column} testID={testID ? `${testID}-reviews` : undefined}>
+      {highlight && (
+        <ThemedText type="smallBold" numberOfLines={2} testID={testID ? `${testID}-highlight` : undefined}>
           {highlight}
         </ThemedText>
-      ) : (
-        <View style={styles.highlight} />
       )}
       {rating && (
         <View
           accessible
           accessibilityLabel={t('list.ratingSummary', { average, count: String(rating.count) })}
+          style={styles.stars}
           testID={testID ? `${testID}-rating` : undefined}>
           <Stars value={rating.average} emptyColor={theme.backgroundSelected} />
         </View>
@@ -47,6 +46,7 @@ export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two },
-  highlight: { flex: 1 },
+  column: { gap: Spacing.half },
+  // Sur sa ligne, à droite.
+  stars: { alignSelf: 'flex-end' },
 });
