@@ -191,6 +191,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
             <FixedButtonBar
               label={notification.link_label ?? t('notifications.open')}
               onPress={() => notification.link && go(notification.link)}
+              // « Annuler », à gauche, tant que le membre peut annuler sa demande (décision 2026-11-21-annuler-depuis-le-detail).
+              secondary={
+                notification.secondary_link && notification.secondary_link_label && APP_LINK.test(notification.secondary_link)
+                  ? { label: notification.secondary_link_label, onPress: () => notification.secondary_link && go(notification.secondary_link) }
+                  : null
+              }
               testID="notification-detail-open"
             />
           )}

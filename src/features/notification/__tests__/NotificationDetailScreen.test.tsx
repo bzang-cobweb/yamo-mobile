@@ -182,16 +182,27 @@ describe('NotificationDetailScreen', () => {
 
     await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');
+    expect(screen.queryByTestId('notification-detail-open-secondary')).toBeNull();
     expect(router.push).toHaveBeenLastCalledWith('/profile/lists/offer.bookings.received');
   });
 
   it('le membre, demande en attente : « Modifier » ouvre le formulaire ; au retour, la demande est relue (décision 2026-11-21-detail-reservation-modifier)', async () => {
-    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, link: '/profile/offer.booking.edit?record=9', link_label: 'Modifier' });
+    jest.spyOn(notificationService, 'get').mockResolvedValue({
+      ...NOTIFICATION,
+      link: '/profile/offer.booking.edit?record=9',
+      link_label: 'Modifier',
+      secondary_link: '/profile/offer.booking.cancel?record=9',
+      secondary_link_label: 'Annuler',
+    });
     await show();
 
     await fireEvent.press(await screen.findByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Modifier');
     expect(router.push).toHaveBeenLastCalledWith('/profile/offer.booking.edit?record=9');
+    // « Annuler », à gauche, ouvre le formulaire d'annulation (décision 2026-11-21-annuler-depuis-le-detail).
+    expect(screen.getByTestId('notification-detail-open-secondary')).toHaveTextContent('Annuler');
+    await fireEvent.press(screen.getByTestId('notification-detail-open-secondary'));
+    expect(router.push).toHaveBeenLastCalledWith('/profile/offer.booking.cancel?record=9');
 
     // La première mise au premier plan ne relit rien ; la suivante (retour du formulaire), si.
     const focus = useFocusEffect.mock.calls.at(-1)?.[0] as () => void;

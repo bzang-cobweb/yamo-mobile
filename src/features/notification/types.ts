@@ -27,6 +27,9 @@ export type AppNotification = {
   text_links: { text: string; link: string }[];
   /** Libellé du bouton qui ouvre `link` (« Réservations reçues ») ; `null` : un libellé générique. */
   link_label: string | null;
+  /** Un second bouton, à gauche du premier (« Annuler » → `/profile/offer.booking.cancel?record=9`), ou absent. */
+  secondary_link?: string | null;
+  secondary_link_label?: string | null;
   /** Lue ; pour la carte d'une demande, toutes ses étapes le sont. */
   read: boolean;
   created_at: string | null;
