@@ -33,6 +33,14 @@ export function useItemActions({ onDone }: Options) {
 
       return;
     }
+    // Une liste avec ses filtres déjà choisis, sans écran à part (« Demandes » d'un logement, la liste des demandes
+    // reçues, ce logement choisi : décision 2026-11-21-demandes-comme-mes-reservations).
+    if (!action.link && action.list && action.filter) {
+      setFilterValues(action.list, action.filter);
+      router.push({ pathname: '/profile/lists/[list]', params: { list: action.list } });
+
+      return;
+    }
     if (action.link) {
       // Un écran avec ses filtres déjà choisis (« Notifications » d'un logement, décision 2026-11-21-lien-notifications) :
       // les filtres d'abord, puis l'écran, un onglet que l'on rejoint.

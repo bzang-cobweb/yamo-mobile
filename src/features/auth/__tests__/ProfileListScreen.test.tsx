@@ -275,6 +275,19 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking', offer: '7' });
   });
 
+  it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
+    mockList = {
+      ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),
+      menu: true,
+    };
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-action-0'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'offer.bookings.received' } });
+    expect((await renderHook(() => filterStore.useListFilters('offer.bookings.received'))).result.current.values).toEqual({ offer: '7' });
+  });
+
   it('une réservation ouvre la page de sa notification (décision 2026-11-21-reservation-comme-notification)', async () => {
     mockList = list([item('7', { edit: null, link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' }), item('8', { edit: null, link: '/notifications/../../etc' })]);
     await renderScreen();
