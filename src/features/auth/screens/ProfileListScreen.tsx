@@ -172,12 +172,20 @@ export function ProfileListScreen({ list }: { list: string }) {
     // Le titre en lien vers son propre écran (le membre d'une demande), le reste de la carte gardant le sien
     // (décision 2026-11-21-demandes-lien-membre).
     const titleLink = item.title_link && ITEM_LINK.test(item.title_link) ? item.title_link : null;
+    // En gras, à la taille de l'accueil ; en lien, dans la couleur des liens (décision 2026-11-22-cartes-titre-gras).
     const itemTitle = titleLink ? (
-      <ThemedText type="linkPrimary" accessibilityRole="link" onPress={() => closeMenu() || router.push(titleLink as Href)} testID={`profile-list-title-link-${item.id}`}>
+      <ThemedText
+        type="smallBold"
+        accessibilityRole="link"
+        onPress={() => closeMenu() || router.push(titleLink as Href)}
+        style={{ color: theme.primary }}
+        testID={`profile-list-title-link-${item.id}`}>
         {item.title}
       </ThemedText>
     ) : (
-      <ThemedText>{item.title}</ThemedText>
+      <ThemedText type="smallBold" testID={`profile-list-title-${item.id}`}>
+        {item.title}
+      </ThemedText>
     );
     // Un compteur avec un ton : une pastille de cette couleur, pour information, sans lien (« 2 demandes en
     // attente », orange) : sur la photo, à la place du statut, qui revient quand il n’y en a plus ; sans photo, à côté
