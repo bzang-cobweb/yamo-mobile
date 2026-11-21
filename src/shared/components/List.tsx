@@ -48,6 +48,8 @@ export type ListProps<T> = {
   filter?: ListFilter | null;
   /** Contenu en tête des items, qui défile avec eux (message, erreur). */
   header?: ReactElement | null;
+  /** Le doigt commence à faire défiler la liste (fermer un menu ouvert, décision 2026-11-21-menu-fermer-ailleurs). */
+  onScrollBeginDrag?: () => void;
   contentContainerStyle?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -79,6 +81,7 @@ export function List<T>({
   create,
   filter,
   header,
+  onScrollBeginDrag,
   contentContainerStyle,
   testID,
 }: ListProps<T>) {
@@ -111,6 +114,7 @@ export function List<T>({
       onEndReachedThreshold={0.5}
       refreshing={onRefresh ? (refreshing ?? false) : undefined}
       onRefresh={onRefresh}
+      onScrollBeginDrag={onScrollBeginDrag}
       ListHeaderComponent={header ?? undefined}
       ListHeaderComponentStyle={styles.header}
       ListEmptyComponent={

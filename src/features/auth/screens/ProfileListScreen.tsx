@@ -119,8 +119,22 @@ export function ProfileListScreen({ list }: { list: string }) {
   // Un bouton de carte : un formulaire, un écran, ou un envoi après confirmation.
   const { press: pressAction } = useItemActions({ onDone: reload });
 
+  // Un menu ⋮ ouvert se ferme au premier toucher ailleurs, qui ne fait rien d'autre (décision
+  // 2026-11-21-menu-fermer-ailleurs) : vrai s'il y en avait un.
+  function closeMenu(): boolean {
+    if (openMenu === null) {
+      return false;
+    }
+    setOpenMenu(null);
+
+    return true;
+  }
+
   // Le compteur ouvre sa liste (ou son écran) avec ses filtres déjà choisis.
   function openCounter(counter: ListItemCounter) {
+    if (closeMenu()) {
+      return;
+    }
     // Sans filtre (la page d'une demande, décision 2026-11-21-demandes-non-lues), ceux de la liste ne bougent pas.
     if (Object.keys(counter.filter ?? {}).length > 0) {
       setFilterValues(counter.list, counter.filter);
@@ -159,7 +173,7 @@ export function ProfileListScreen({ list }: { list: string }) {
     // (décision 2026-11-21-demandes-lien-membre).
     const titleLink = item.title_link && ITEM_LINK.test(item.title_link) ? item.title_link : null;
     const itemTitle = titleLink ? (
-      <ThemedText type="linkPrimary" accessibilityRole="link" onPress={() => router.push(titleLink as Href)} testID={`profile-list-title-link-${item.id}`}>
+      <ThemedText type="linkPrimary" accessibilityRole="link" onPress={() => closeMenu() || router.push(titleLink as Href)} testID={`profile-list-title-link-${item.id}`}>
         {item.title}
       </ThemedText>
     ) : (
@@ -244,7 +258,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               testID={`profile-list-item-${item.id}`}
               accessibilityRole={edit || link ? 'link' : undefined}
               disabled={!edit && !link}
-              onPress={() => (edit ? openEdit() : openLink())}
+              onPress={() => closeMenu() || (edit ? openEdit() : openLink())}
               style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
               {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
               {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
@@ -269,7 +283,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             testID={`profile-list-item-${item.id}`}
             accessibilityRole={edit || link ? 'link' : undefined}
             disabled={!edit && !link}
-            onPress={() => (edit ? openEdit() : openLink())}
+            onPress={() => closeMenu() || (edit ? openEdit() : openLink())}
             style={({ pressed }) => [styles.itemText, menu && !item.image && styles.besideMenu, pressed && styles.pressed]}>
             {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
             {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
@@ -449,6 +463,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             </View>
           ) : null
         }
+        onScrollBeginDrag={() => setOpenMenu(null)}
         contentContainerStyle={[profileContentStyle, !definition.footer && { paddingBottom: Math.max(insets.bottom, Spacing.four) }]}
         create={
           definition.create

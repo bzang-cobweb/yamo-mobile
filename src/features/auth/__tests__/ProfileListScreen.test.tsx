@@ -339,6 +339,35 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-counter-7')).toBeNull();
   });
 
+  it('un menu ouvert se ferme en touchant ailleurs, sans rien ouvrir, ou en faisant défiler (décision 2026-11-21-menu-fermer-ailleurs)', async () => {
+    mockList = {
+      ...list([
+        item('7', { edit: null, link: '/offers/7', actions: [{ label: 'Calendrier', style: 'default', confirm: null, submission: null, form: null, link: '/offers/7/calendar' }] }),
+        item('8', { edit: null, link: '/offers/8', actions: [{ label: 'Calendrier', style: 'default', confirm: null, submission: null, form: null, link: '/offers/8/calendar' }] }),
+      ]),
+      menu: true,
+    };
+    await renderScreen();
+
+    // Retoucher ⋮ le ferme.
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    expect(screen.getByTestId('profile-list-menu-7-list')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+    // Toucher une carte le ferme, sans l'ouvrir.
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    await fireEvent.press(screen.getByTestId('profile-list-item-8'));
+    expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+    expect(router.push).not.toHaveBeenCalled();
+    // Menu fermé : la carte s'ouvre.
+    await fireEvent.press(screen.getByTestId('profile-list-item-8'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/8');
+    // Faire défiler le ferme.
+    await fireEvent.press(screen.getByTestId('profile-list-menu-8-toggle'));
+    await fireEvent(screen.getByTestId('profile-list'), 'scrollBeginDrag');
+    expect(screen.queryByTestId('profile-list-menu-8-list')).toBeNull();
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),
