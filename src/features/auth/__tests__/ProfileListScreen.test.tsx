@@ -392,6 +392,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
     expect(screen.getByText('Studio meublé à Akwa')).toBeTruthy();
     expect(screen.getByTestId('profile-list-detail-7')).toHaveTextContent('Séjour · du 2 déc. 2026 au 6 déc. 2026');
+    // En gris, comme le sous-titre.
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-detail-7').props.style).color).toBe(StyleSheet.flatten(screen.getByText('Studio meublé à Akwa').props.style).color);
   });
 
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {

@@ -280,9 +280,9 @@ export function ProfileListScreen({ list }: { list: string }) {
                   {item.subtitle}
                 </ThemedText>
               )}
-              {/* Sur sa ligne, sous le sous-titre : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
+              {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
               {item.detail && (
-                <ThemedText type="small" testID={`profile-list-detail-${item.id}`}>
+                <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-detail-${item.id}`}>
                   {item.detail}
                 </ThemedText>
               )}
@@ -311,9 +311,9 @@ export function ProfileListScreen({ list }: { list: string }) {
                 {item.subtitle}
               </ThemedText>
             )}
-            {/* Sur sa ligne, sous le sous-titre : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
+            {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
             {item.detail && (
-              <ThemedText type="small" testID={`profile-list-detail-${item.id}`}>
+              <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-detail-${item.id}`}>
                 {item.detail}
               </ThemedText>
             )}
