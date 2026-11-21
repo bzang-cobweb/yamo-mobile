@@ -46,14 +46,14 @@ const NOTIFICATION: AppNotification = {
     id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', guests: 2,
     offer: { title: 'Studio photos', rental_type: 'Location meublée', property_type: 'Studio' },
     lines: [
+      { key: 'member', label: 'Membre', value: 'Léa Membre', link: '/members/5' },
+      { key: 'email', label: 'E-mail', value: 'lea@example.test' },
       { key: 'guests', label: 'Personnes', value: '2' },
       { key: 'arrival', label: 'Arrivée', value: '1 déc. 2026 à partir de 14:00' },
       { key: 'departure', label: 'Départ', value: '4 déc. 2026 au plus tard à 11:00' },
       { key: 'days', label: 'Durée', value: '3 jours' },
       { key: 'price', label: 'Prix', value: '85 000 FCFA / jour' },
       { key: 'total', label: 'Total', value: '255 000 FCFA' },
-      { key: 'member', label: 'Membre', value: 'Léa Membre', link: '/members/5' },
-      { key: 'email', label: 'E-mail', value: 'lea@example.test' },
     ],
   },
   read: false,
@@ -174,7 +174,10 @@ describe('NotificationDetailScreen', () => {
 
     // Jusqu'au départ, toujours visibles ; la suite derrière « Voir plus » (décision 2026-11-21-detail-reservation-voir-plus).
     await screen.findByTestId('notification-detail-more');
-    expect(screen.getByTestId('notification-detail-line-departure')).toBeTruthy();
+    // Avant l'arrivée, toujours ; à partir de l'arrivée, derrière « Voir plus » (décision 2026-11-21-voir-plus-avant-arrivee).
+    expect(screen.getByTestId('notification-detail-line-guests')).toBeTruthy();
+    expect(screen.getByTestId('notification-detail-line-email')).toBeTruthy();
+    expect(screen.queryByTestId('notification-detail-line-arrival')).toBeNull();
     expect(screen.queryByTestId('notification-detail-line-days')).toBeNull();
     expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
     expect(screen.getByTestId('notification-detail-more')).toHaveTextContent('Voir plus');
@@ -191,7 +194,7 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('notification-detail-more')).toHaveTextContent('Voir moins');
     // À la fin, même dépliée, alignée à droite.
     const json = JSON.stringify(screen.toJSON());
-    expect(json.indexOf('"notification-detail-more"')).toBeGreaterThan(json.indexOf('"notification-detail-line-email"'));
+    expect(json.indexOf('"notification-detail-more"')).toBeGreaterThan(json.indexOf('"notification-detail-line-total"'));
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-more').props.style)).toMatchObject({ alignSelf: 'flex-end' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
     // L'autre partie : son nom ouvre sa page ; l'e-mail est un texte (décision 2026-11-21-detail-reservation-contact).
