@@ -283,6 +283,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByTestId('profile-list-heading-subtitle')).toHaveTextContent('Location meublée · Studio · Douala');
   });
 
+  it('un intitulé sans titre : son sous-titre seul (décision 2026-11-21-demandes-titre-logement-barre)', async () => {
+    mockList = { ...list([item('7')]), heading: { title: null, subtitle: 'Location · Appartement · Douala' } };
+    await renderScreen();
+
+    expect(screen.queryByTestId('profile-list-heading-title')).toBeNull();
+    expect(screen.getByTestId('profile-list-heading-subtitle')).toHaveTextContent('Location · Appartement · Douala');
+  });
+
   it('sans intitulé, rien sous les filtres', async () => {
     mockList = list([item('7')]);
     await renderScreen();

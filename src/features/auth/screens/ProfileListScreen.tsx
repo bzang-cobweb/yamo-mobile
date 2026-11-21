@@ -416,9 +416,11 @@ export function ProfileListScreen({ list }: { list: string }) {
         header={
           definition.heading ? (
             <View style={styles.heading} testID="profile-list-heading">
-              <ThemedText type="smallBold" testID="profile-list-heading-title">
-                {definition.heading.title}
-              </ThemedText>
+              {definition.heading.title && (
+                <ThemedText type="smallBold" testID="profile-list-heading-title">
+                  {definition.heading.title}
+                </ThemedText>
+              )}
               {definition.heading.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary" testID="profile-list-heading-subtitle">
                   {definition.heading.subtitle}

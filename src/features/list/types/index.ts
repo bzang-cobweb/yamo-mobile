@@ -83,7 +83,7 @@ export type ListDefinition = {
    * Intitulé sous les filtres, en tête des items : un titre et, dessous, un sous-titre (le logement des « Demandes »
    * et sa ligne du type, décisions 2026-11-21-demandes-titre-sous-filtres et 2026-11-21-demandes-d-une-offre) ; absent : aucun.
    */
-  heading?: { title: string; subtitle: string | null } | null;
+  heading?: { title: string | null; subtitle: string | null } | null;
   /** Texte affiché quand la liste est vide. */
   empty: string | null;
   /** Bouton de création : libellé et formulaire ouvert ; `null` pour une liste en lecture seule. */
