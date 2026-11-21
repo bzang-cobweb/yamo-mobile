@@ -239,11 +239,12 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
               {definition.title}
             </ThemedText>
           )}
-          {/* Le titre dans la barre du haut : le sous-titre (le titre de l'offre d'une demande) prend le style de titre,
-              en tête du contenu (décision 2026-11-22-formulaire-sous-titre-style-titre) ; sinon, en gris sous le titre. */}
+          {/* Le titre dans la barre du haut : le sous-titre (le titre de l'offre d'une demande) prend un style de titre
+              mesuré, 18 en gras, en tête du contenu (décisions 2026-11-22-formulaire-sous-titre-style-titre et
+              2026-11-22-formulaire-titre-plus-petit) ; sinon, en gris sous le titre. */}
           {definition.subtitle !== null &&
             (hideTitle ? (
-              <ThemedText type="subtitle" accessibilityRole="header" style={titleAlign} testID="form-subtitle">
+              <ThemedText accessibilityRole="header" style={[styles.contentTitle, titleAlign]} testID="form-subtitle">
                 {definition.subtitle}
               </ThemedText>
             ) : (
@@ -315,6 +316,8 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
 }
 
 const styles = StyleSheet.create({
+  // Le titre en tête du contenu, sous la barre : 18 en gras (décision 2026-11-22-formulaire-titre-plus-petit).
+  contentTitle: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
   form: { gap: Spacing.three },
   header: { gap: Spacing.one },
   progress: { textAlign: 'center' },

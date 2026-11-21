@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
+import { StyleSheet } from 'react-native';
+
 import { ApiError } from '@/shared/api/errors';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -173,6 +175,8 @@ describe('DynamicForm', () => {
     const subtitle = screen.getByTestId('form-subtitle');
     expect(subtitle).toHaveTextContent('Studio meublé à Bonanjo');
     expect(subtitle.props.accessibilityRole).toBe('header');
+    // 18 en gras, pas le grand titre (décision 2026-11-22-formulaire-titre-plus-petit).
+    expect(StyleSheet.flatten(subtitle.props.style)).toMatchObject({ fontSize: 18, fontWeight: '700' });
   });
 
   it('sans titre ni sous-titre, n’affiche aucun en-tête', async () => {
