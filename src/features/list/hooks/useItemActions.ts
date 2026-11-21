@@ -6,6 +6,10 @@ import { ApiError } from '@/shared/api/errors';
 import { useI18n } from '@/shared/i18n/I18nContext';
 
 import { ITEM_LINK } from '../services/ListService';
+import { setFilterValues } from '../utils/filters';
+
+/** Un écran de l'app (« /notifications »), sans identifiant. */
+const APP_SCREEN = /^\/[a-z][a-z0-9/_-]*$/;
 import type { ListItemAction } from '../types';
 
 type Options = {
@@ -31,7 +35,12 @@ export function useItemActions({ onNotice, onError, onDone }: Options) {
       return;
     }
     if (action.link) {
-      if (ITEM_LINK.test(action.link)) {
+      // Un écran avec ses filtres déjà choisis (« Notifications » d'un logement, décision 2026-11-21-lien-notifications) :
+      // les filtres d'abord, puis l'écran, un onglet que l'on rejoint.
+      if (action.filter && action.list && APP_SCREEN.test(action.link)) {
+        setFilterValues(action.list, action.filter);
+        router.navigate(action.link as Href);
+      } else if (ITEM_LINK.test(action.link)) {
         router.push(action.link as Href);
       }
 

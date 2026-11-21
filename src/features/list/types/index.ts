@@ -21,6 +21,9 @@ export type ListItemAction = {
   form: { form: string; record: string } | null;
   /** Écran de l'app à ouvrir (« /offers/12/calendar ») ; `null` (ou absent) : aucun. */
   link?: string | null;
+  /** Avec `filter` : les filtres déjà choisis de l'écran `link`, rangés sous `list` (décision 2026-11-21-lien-notifications). */
+  list?: string | null;
+  filter?: Record<string, string>;
 };
 
 /** Un compteur sur la carte (« 2 demandes en attente ») qui ouvre `list` (ou l'écran `link`) avec ces filtres. */

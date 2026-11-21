@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { Alert, type AlertButton } from 'react-native';
@@ -207,6 +207,19 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenLastCalledWith('/offers/7/calendar');
     // Choisir une entrée referme le menu.
     expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+  });
+
+  it('« Notifications » du menu ouvre les notifications avec ses filtres déjà choisis (décision 2026-11-21-lien-notifications)', async () => {
+    mockList = {
+      ...list([item('7', { link: '/offers/7', actions: [{ label: 'Notifications', style: 'default', confirm: null, submission: null, form: null, link: '/notifications', list: 'notifications', filter: { type: 'booking', offer: '7' } }] })]),
+      menu: true,
+    };
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-action-0'));
+    expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
+    expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking', offer: '7' });
   });
 
   it('le statut sur la photo, à la place du cœur, quand l’API le demande (décision 2026-11-21-statut-a-la-place-du-coeur)', async () => {
