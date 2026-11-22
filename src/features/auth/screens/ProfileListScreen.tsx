@@ -262,6 +262,8 @@ export function ProfileListScreen({ list }: { list: string }) {
       }
     }
 
+    // Avec un menu, la carte ouvre son écran, « Éditer » restant dans le menu (décision 2026-11-22-logements-carte-vers-fiche) ;
+    // sinon, le formulaire s'il y en a un.
     function openLink() {
       if (link) {
         router.push(link as Href);
@@ -286,10 +288,10 @@ export function ProfileListScreen({ list }: { list: string }) {
       </Pressable>
     );
 
-    // Les entrées du menu « Actions » : Voir, Éditer, les boutons de la carte, Retirer (en rouge).
+    // Les entrées du menu « Actions » : Éditer, les boutons de la carte, Retirer (en rouge). Plus de « Voir » : avec
+    // un menu, toucher la carte ouvre son écran (décision 2026-11-22-logements-carte-vers-fiche).
     const menuEntries = menu
       ? [
-          ...(link ? [{ key: 'view', label: t('list.view'), danger: false, onPress: openLink }] : []),
           ...(edit ? [{ key: 'edit', label: t('list.edit'), danger: false, onPress: openEdit }] : []),
           ...(item.actions ?? []).map((action, index) => ({ key: `action-${index}`, label: action.label, danger: action.style === 'destructive', onPress: () => pressAction(action) })),
           ...(removable && item.delete ? [{ key: 'delete', label: item.delete.label, danger: true, onPress: () => confirmRemove(item) }] : []),
@@ -305,7 +307,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               testID={`profile-list-item-${item.id}`}
               accessibilityRole={edit || link ? 'link' : undefined}
               disabled={!edit && !link}
-              onPress={() => closeMenu() || (edit ? openEdit() : openLink())}
+              onPress={() => closeMenu() || (edit && !(menu && link) ? openEdit() : openLink())}
               style={({ pressed }) => [styles.itemText, pressed && styles.pressed]}>
               {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
               {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
@@ -336,7 +338,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             testID={`profile-list-item-${item.id}`}
             accessibilityRole={edit || link ? 'link' : undefined}
             disabled={!edit && !link}
-            onPress={() => closeMenu() || (edit ? openEdit() : openLink())}
+            onPress={() => closeMenu() || (edit && !(menu && link) ? openEdit() : openLink())}
             style={({ pressed }) => [styles.itemText, menu && !item.image && styles.besideMenu, pressed && styles.pressed]}>
             {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
             {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a

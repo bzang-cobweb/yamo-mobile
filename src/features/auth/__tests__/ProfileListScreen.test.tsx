@@ -244,7 +244,6 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-7-list').props.style)).toMatchObject({ position: 'absolute' });
     expect(within(screen.getByTestId('profile-list-menu-7-list')).getAllByRole('button').map((node) => node.props.testID)).toEqual([
-      'profile-list-menu-7-view',
       'profile-list-menu-7-edit',
       'profile-list-menu-7-action-0',
       'profile-list-menu-7-delete',
@@ -253,6 +252,9 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenLastCalledWith('/offers/7/calendar');
     // Choisir une entrée referme le menu.
     expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+    // Plus de « Voir » : toucher la carte ouvre la fiche, pas le formulaire (décision 2026-11-22-logements-carte-vers-fiche).
+    await fireEvent.press(screen.getByTestId('profile-list-item-7'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/7');
   });
 
   it('« Mes réservations » : le statut en haut à gauche de la photo, le cœur à droite (décision 2026-11-21-reservations-statut-coeur)', async () => {
