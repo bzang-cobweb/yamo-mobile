@@ -172,7 +172,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByTestId('profile-list-actions-9')).toBeNull();
   });
 
-  it('plusieurs compteurs côte à côte, chacun vers ses filtres (décision 2026-11-21-compteur-non-lues)', async () => {
+  it('les compteurs sans ton : pour information, sans lien, à droite, sur un vert doux (décision 2026-11-22-compteurs-non-lus-info)', async () => {
     const pending = { label: '2 demandes en attente', list: 'notifications', filter: { type: 'booking', status: 'pending', offer: '7' }, link: '/notifications' };
     const unread = { label: '1 notification non lue', list: 'notifications', filter: { ...pending.filter, unread: 'yes' }, link: '/notifications' };
     mockList = list([item('7', { counter: pending, counters: [pending, unread] })]);
@@ -180,8 +180,12 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
     expect(screen.getByTestId('profile-list-counter-7')).toHaveTextContent('2 demandes en attente');
     expect(screen.getByTestId('profile-list-counter-7-1')).toHaveTextContent('1 notification non lue');
+    expect(screen.queryByRole('link', { name: '1 notification non lue' })).toBeNull();
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-counter-7').props.style).backgroundColor).toBe('#E3F4EA');
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-counters-7').props.style).justifyContent).toBe('flex-end');
     await fireEvent.press(screen.getByTestId('profile-list-counter-7-1'));
-    expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
+    expect(router.navigate).not.toHaveBeenCalled();
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it('sans photo : la pastille des demandes en attente sous le titre, pour information (décision 2026-11-21-pastille-sans-lien)', async () => {
@@ -195,10 +199,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(badge).toHaveTextContent('2 demandes en attente');
     expect(StyleSheet.flatten(badge.props.style).backgroundColor).toBe(TONE_COLORS.warning);
     expect(screen.queryByRole('link', { name: '2 demandes en attente' })).toBeNull();
-    // Le compteur sans ton reste un lien, en bas.
+    // Le compteur sans ton, en bas, pour information.
     expect(screen.getByTestId('profile-list-counter-7')).toHaveTextContent('1 notification non lue');
-    await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
-    expect(router.navigate).toHaveBeenLastCalledWith('/notifications');
   });
 
   it('avec une photo : la pastille des demandes en attente à la place du statut, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien)', async () => {
@@ -314,17 +316,6 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenLastCalledWith('/members/3');
     await fireEvent.press(screen.getByTestId('profile-list-item-7'));
     expect(router.push).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
-  });
-
-  it('un compteur sans filtre ouvre son écran sans toucher aux filtres de sa liste (décision 2026-11-21-demandes-non-lues)', async () => {
-    filterStore.setFilterValues('notifications', { type: 'booking' });
-    const unread = { label: '2 notifications non lues', list: 'notifications', filter: {}, link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' };
-    mockList = list([item('7', { counter: unread, counters: [unread] })]);
-    await renderScreen();
-
-    await fireEvent.press(screen.getByTestId('profile-list-counter-7'));
-    expect(router.navigate).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
-    expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking' });
   });
 
   it('sans photo : le statut et la pastille d’un compteur sur une ligne, au-dessus du titre (décision 2026-11-21-demandes-pastille-non-lues-total)', async () => {
@@ -714,33 +705,19 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.booking.refuse', record: '5' } });
     });
 
-    it('le compteur ouvre sa liste avec ses filtres ; le bouton du bas ouvre son formulaire', async () => {
+    it('le compteur n’ouvre rien ; le bouton du bas ouvre son formulaire', async () => {
       mockList = list([item('12', { counter: { label: '2 demandes en attente', list: 'offer.bookings.received', filter: { offer: '12', status: 'pending' } } })], {
         create: null,
         footer: { label: 'Ajouter un logement', form: 'offer.offer', link: null },
       });
       await renderScreen();
 
-      const setValues = jest.spyOn(filterStore, 'setFilterValues');
+      // Le compteur, pour information, n'ouvre rien (décision 2026-11-22-compteurs-non-lus-info).
       await fireEvent.press(screen.getByText('2 demandes en attente'));
-      expect(setValues).toHaveBeenCalledWith('offer.bookings.received', { offer: '12', status: 'pending' });
-      expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'offer.bookings.received' } });
+      expect(router.push).not.toHaveBeenCalled();
 
       await fireEvent.press(screen.getByTestId('profile-list-footer-button'));
       expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.offer' } });
-    });
-
-    it('un compteur vers un écran (les notifications) l’ouvre avec ses filtres', async () => {
-      mockList = list([
-        item('22', { counter: { label: '2 demandes en attente', list: 'notifications', filter: { type: 'Received', offer: '22' }, link: '/notifications' } }),
-      ]);
-      await renderScreen();
-
-      const setValues = jest.spyOn(filterStore, 'setFilterValues');
-      await fireEvent.press(screen.getByText('2 demandes en attente'));
-      expect(setValues).toHaveBeenCalledWith('notifications', { type: 'Received', offer: '22' });
-      expect(router.navigate).toHaveBeenCalledWith('/notifications');
-      expect(router.push).not.toHaveBeenCalledWith({ pathname: '/profile/lists/[list]', params: { list: 'notifications' } });
     });
 
     it('le bouton du bas peut ramener à l’accueil ; les filtres servis ouvrent l’écran des filtres', async () => {

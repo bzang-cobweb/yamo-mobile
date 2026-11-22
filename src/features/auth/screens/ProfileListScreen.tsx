@@ -10,8 +10,8 @@ import { Quote } from '@/shared/components/Quote';
 import { StatusTag } from '@/shared/components/StatusTag';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
-import type { ListItem, ListItemCounter } from '@/features/list/types';
-import { activeFilterCount, setFilterFields, setFilterValues, useListFilters } from '@/features/list/utils/filters';
+import type { ListItem } from '@/features/list/types';
+import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import { NetworkError } from '@/shared/api/errors';
 import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
 import { ItemPicture } from '@/features/list/components/ItemPicture';
@@ -130,24 +130,6 @@ export function ProfileListScreen({ list }: { list: string }) {
     return true;
   }
 
-  // Le compteur ouvre sa liste (ou son écran) avec ses filtres déjà choisis.
-  function openCounter(counter: ListItemCounter) {
-    if (closeMenu()) {
-      return;
-    }
-    // Sans filtre (la page d'une demande, décision 2026-11-21-demandes-non-lues), ceux de la liste ne bougent pas.
-    if (Object.keys(counter.filter ?? {}).length > 0) {
-      setFilterValues(counter.list, counter.filter);
-    }
-    // Un écran de l'app (les notifications, déjà filtrées), sinon la liste.
-    if (counter.link && APP_SCREEN.test(counter.link)) {
-      router.navigate(counter.link as Href);
-
-      return;
-    }
-    router.push({ pathname: '/profile/lists/[list]', params: { list: counter.list } });
-  }
-
   function confirmRemove(item: ListItem) {
     if (!item.delete) {
       return;
@@ -204,7 +186,7 @@ export function ProfileListScreen({ list }: { list: string }) {
         {badge && <StatusTag tag={badge} testID={`profile-list-badge-${item.id}`} />}
       </View>
     );
-    const linkCounters = counters.filter((counter) => !counter.tone);
+    const plainCounters = counters.filter((counter) => !counter.tone);
     // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
     const both = Boolean(edit && link);
     // Toutes les actions dans un menu déroulant « Actions », quand la liste le demande (« Mes logements »,
@@ -328,21 +310,19 @@ export function ProfileListScreen({ list }: { list: string }) {
             </View>
           </Pressable>
         )}
-        {/* Ses compteurs, côte à côte : « 2 demandes en attente », « 1 notification non lue »
-            (décision 2026-11-21-compteur-non-lues) ; un serveur plus ancien n'en sert qu'un (`counter`). */}
-        {linkCounters.length > 0 && (
-          <View style={styles.counters}>
-            {linkCounters.map((counter, index) => (
-              <Pressable
+        {/* Ses autres compteurs (« 1 notification non lue », décision 2026-11-21-compteur-non-lues), pour information :
+            sans lien, à droite, sur un vert doux (décision 2026-11-22-compteurs-non-lus-info). */}
+        {plainCounters.length > 0 && (
+          <View style={styles.counters} testID={`profile-list-counters-${item.id}`}>
+            {plainCounters.map((counter, index) => (
+              <View
                 key={counter.label}
                 testID={index === 0 ? `profile-list-counter-${item.id}` : `profile-list-counter-${item.id}-${index}`}
-                accessibilityRole="link"
-                onPress={() => openCounter(counter)}
-                style={({ pressed }) => [styles.counter, { backgroundColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-                <ThemedText type="smallBold" style={{ color: theme.primary }}>
+                style={[styles.counter, { backgroundColor: SOFT_GREEN }]}>
+                <ThemedText type="smallBold" style={{ color: SOFT_GREEN_TEXT }}>
                   {counter.label}
                 </ThemedText>
-              </Pressable>
+              </View>
             ))}
           </View>
         )}
@@ -520,10 +500,12 @@ function openFooter(footer: { form: string | null; link: string | null }) {
   }
 }
 
-/** Un écran de l'app (« /notifications ») : jamais une adresse externe. */
-const APP_SCREEN = /^\/[a-z][a-z0-9/_-]*$/;
 
 export { SEARCH_DELAY };
+
+/** Le vert doux des compteurs d'information, et son texte (décision 2026-11-22-compteurs-non-lus-info). */
+const SOFT_GREEN = '#E3F4EA';
+const SOFT_GREEN_TEXT = '#2E7D4F';
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
@@ -582,8 +564,8 @@ const styles = StyleSheet.create({
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
-  counters: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  counters: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: Spacing.two },
   heading: { gap: Spacing.half },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
-  counter: { alignSelf: 'flex-start', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
+  counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });
