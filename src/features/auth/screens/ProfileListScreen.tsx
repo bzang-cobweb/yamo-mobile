@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
-import { StatusTag } from '@/shared/components/StatusTag';
+import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
@@ -186,9 +186,9 @@ export function ProfileListScreen({ list }: { list: string }) {
           </View>
           {unreadCount > 0 && (
             <View accessible accessibilityLabel={t('notifications.unreadCount', { count: unreadCount })} testID={`profile-list-unread-${item.id}`}>
-              {/* Le vert doux des compteurs « N notifications non lues » (décision 2026-11-22-demandes-pastille-vert-doux). */}
-              <View style={[styles.unreadPill, { backgroundColor: SOFT_GREEN }]}>
-                <ThemedText type="smallBold" style={{ color: SOFT_GREEN_TEXT }}>
+              {/* Vert franc, chiffre en blanc (décision 2026-11-22-demandes-pastille-vert-franc). */}
+              <View style={[styles.unreadPill, { backgroundColor: TONE_COLORS.success }]}>
+                <ThemedText type="smallBold" style={{ color: '#ffffff' }}>
                   {unreadCount}
                 </ThemedText>
               </View>

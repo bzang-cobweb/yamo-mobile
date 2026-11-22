@@ -418,8 +418,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     const pill = screen.getByTestId('profile-list-unread-7');
     expect(pill).toHaveTextContent('2');
     expect(pill.props.accessibilityLabel).toBe('Notifications non lues : 2');
-    // Les couleurs des compteurs « N notifications non lues » (décision 2026-11-22-demandes-pastille-vert-doux).
-    expect(StyleSheet.flatten(within(pill).getByText('2').props.style).color).toBe('#2E7D4F');
+    // Vert franc, chiffre en blanc (décision 2026-11-22-demandes-pastille-vert-franc).
+    expect(StyleSheet.flatten(within(pill).getByText('2').props.style).color).toBe('#ffffff');
     // Sur la ligne du message, à sa droite.
     expect(StyleSheet.flatten(pill.parent?.props.style)).toMatchObject({ flexDirection: 'row' });
     expect(screen.queryByTestId('profile-list-unread-8')).toBeNull();
