@@ -275,6 +275,8 @@ export function ProfileListScreen({ list }: { list: string }) {
               <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
                 {tagsRow}
                 {titleRow}
+                {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
+                {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
                 {item.subtitle && (
                   <ThemedText type="small" themeColor="textSecondary">
                     {item.subtitle}
@@ -286,7 +288,6 @@ export function ProfileListScreen({ list }: { list: string }) {
                     {item.detail}
                   </ThemedText>
                 )}
-                {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
                 {/* La note et la phrase mise en avant, quand l'API les sert. */}
                 <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
               </View>
@@ -309,6 +310,8 @@ export function ProfileListScreen({ list }: { list: string }) {
             <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
               {tagsRow}
               {titleRow}
+              {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
+              {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
               {item.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.subtitle}
@@ -320,7 +323,6 @@ export function ProfileListScreen({ list }: { list: string }) {
                   {item.detail}
                 </ThemedText>
               )}
-              {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
             </View>

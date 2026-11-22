@@ -402,6 +402,15 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent('03/01/2026');
   });
 
+  it('le message juste après la ligne du nom, avant le sous-titre (décision 2026-11-22-demandes-message-apres-nom)', async () => {
+    mockList = list([item('7', { title: 'Awa Ndiaye', subtitle: 'Séjour · du 2 au 6 déc.', quote: 'Arrivée vers 18 h.' })]);
+    await renderScreen();
+
+    // Les textes dans l'ordre de l'écran.
+    const order = screen.getAllByText(/^(Awa Ndiaye|Arrivée vers 18 h\.|Séjour · du 2 au 6 déc\.)$/).map((node) => String(node.props.children));
+    expect(order).toEqual(['Awa Ndiaye', 'Arrivée vers 18 h.', 'Séjour · du 2 au 6 déc.']);
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),
