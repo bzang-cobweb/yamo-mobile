@@ -34,7 +34,7 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Demande de logement', card_title: 'Nouvelle demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', actor: { id: '4', name: 'Marie Curie', initials: 'MC', photo: null, online: true, link: '/members/4' }, summary: 'Demande de location « Studio » du 5 au 7 déc.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }, { text: 'Studio', link: '/offers/12' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
+    { id: 'a', title: 'Demande de logement', card_title: 'Nouvelle demande', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', actor: { id: '4', name: 'Marie Curie', initials: 'MC', photo: null, online: true, link: '/members/4' }, summary: 'Demande de location « Studio » du 5 au 7 déc.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }, { text: 'Studio', link: '/offers/12' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
     { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
@@ -68,7 +68,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     // Plus de statut sur la carte (décision 2026-11-22-carte-notification-ville-sans-statut).
     expect(screen.queryByTestId('notification-a-tag')).toBeNull();
     // Le type en gras, sur chaque notification, et le statut dessous.
-    expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Nouvelle demande de logement');
+    expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Nouvelle demande');
     expect(screen.getByTestId('notification-b-type')).toHaveTextContent('Demande de logement');
     expect(screen.queryByText('En attente')).toBeNull();
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
