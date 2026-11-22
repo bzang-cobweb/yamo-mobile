@@ -110,12 +110,12 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(message).toHaveTextContent('Je viens pour le travail.');
     expect(message.props.numberOfLines).toBe(1);
     expect(message.props.style).toEqual(expect.arrayContaining([{ fontStyle: 'italic' }]));
-    expect(screen.getByTestId('notification-a-date').props.style).toEqual(expect.arrayContaining([{ textAlign: 'right' }]));
+    expect(screen.getByTestId('notification-a-date').props.style).toEqual(expect.arrayContaining([{ marginLeft: 'auto', textAlign: 'right' }]));
     // Sans qui agit : pas de nom.
     expect(screen.queryByTestId('notification-b-actor')).toBeNull();
   });
 
-  it('qui envoie, juste après le type, avant le texte (décision 2026-11-22-carte-notification-expediteur-apres-titre)', async () => {
+  it('type, texte, qui envoie et la date sur une ligne, puis le message (décision 2026-11-22-carte-notification-expediteur-date-message)', async () => {
     await show();
 
     const card = await screen.findByTestId('notification-a');
@@ -128,10 +128,10 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     walk(card as never);
     expect(ids.filter((id) => /-(type|actor|text|message|date)$/.test(id))).toEqual([
       'notification-a-type',
-      'notification-a-actor',
       'notification-a-text',
-      'notification-a-message',
+      'notification-a-actor',
       'notification-a-date',
+      'notification-a-message',
     ]);
   });
 
@@ -154,13 +154,20 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
-  it('pas de nom quand c’est nous qui envoyons', async () => {
-    const own = { ...PAGE.items[0], id: 'c', actor: { ...PAGE.items[0].actor!, id: '1' } };
-    jest.mocked(notificationService.list).mockResolvedValue({ ...PAGE, items: [own] });
+  it('« Toi » comme expéditeur quand c’est nous et qu’il y a un message, sans lien (décision 2026-11-22-carte-notification-toi)', async () => {
+    const us = { ...PAGE.items[0], id: 'c', actor: { ...PAGE.items[0].actor!, id: '1' } };
+    const own = { ...PAGE.items[0], id: 'd', actor: null, own: true };
+    const silent = { ...PAGE.items[0], id: 'e', actor: null, own: true, message: null };
+    jest.mocked(notificationService.list).mockResolvedValue({ ...PAGE, items: [us, own, silent] });
     await show();
 
-    expect(await screen.findByTestId('notification-c-type')).toBeTruthy();
-    expect(screen.queryByTestId('notification-c-actor')).toBeNull();
+    for (const id of ['c', 'd']) {
+      const actor = await screen.findByTestId(`notification-${id}-actor`);
+      expect(actor).toHaveTextContent('Toi');
+      expect(actor.props.accessibilityRole).toBeUndefined();
+    }
+    expect(await screen.findByTestId('notification-e-type')).toBeTruthy();
+    expect(screen.queryByTestId('notification-e-actor')).toBeNull();
   });
 
   it('une notification lue ouvre sa page sans repartir à l’API', async () => {
