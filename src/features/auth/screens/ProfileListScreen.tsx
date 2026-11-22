@@ -181,9 +181,9 @@ export function ProfileListScreen({ list }: { list: string }) {
       item.quote || unreadCount > 0 ? (
         <View style={styles.messageRow}>
           <View style={styles.messageText}>
-            {/* Le message, simplement en italique, sur une ligne (décision 2026-11-22-demandes-message-italique). */}
+            {/* Le message, simplement en italique et en gris, sur une ligne (décisions 2026-11-22-demandes-message-italique et 2026-11-22-demandes-message-gris). */}
             {item.quote && (
-              <ThemedText type="small" numberOfLines={1} ellipsizeMode="tail" style={styles.message} testID={`profile-list-quote-${item.id}`}>
+              <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} ellipsizeMode="tail" style={styles.message} testID={`profile-list-quote-${item.id}`}>
                 {item.quote}
               </ThemedText>
             )}

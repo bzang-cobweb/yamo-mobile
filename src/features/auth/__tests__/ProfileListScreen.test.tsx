@@ -781,7 +781,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     });
 
     it('le message du membre sur la carte, en italique', async () => {
-      mockList = list([item('3', { quote: 'Je viens pour le travail.' }), item('4')]);
+      mockList = list([item('3', { quote: 'Je viens pour le travail.', subtitle: 'Sous-titre gris' }), item('4')]);
       await renderScreen();
 
       expect(screen.getByTestId('profile-list-quote-3')).toHaveTextContent('Je viens pour le travail.');
@@ -792,6 +792,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       const message = screen.getByTestId('profile-list-quote-3');
       expect(message.props.numberOfLines).toBe(1);
       expect(StyleSheet.flatten(message.props.style).fontStyle).toBe('italic');
+      // En gris, comme le sous-titre (décision 2026-11-22-demandes-message-gris).
+      expect(StyleSheet.flatten(message.props.style).color).toBe(StyleSheet.flatten(screen.getByText('Sous-titre gris').props.style).color);
       expect(screen.queryByTestId('profile-list-quote-4')).toBeNull();
     });
   });
