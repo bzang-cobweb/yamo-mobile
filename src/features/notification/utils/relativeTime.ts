@@ -1,10 +1,15 @@
 import type { Translate } from '@/shared/i18n/messages';
 
 /**
- * « à l'instant », « il y a 5 min », « il y a 3 h », « hier », « il y a 4 jours »
- * (textes servis par Laravel, dans la langue de l'app) ; au-delà d'une semaine, la
- * date entière, toujours en chiffres, dans l'ordre de la langue (« 03/03/2027 » en français, « 03.03.2027 » en
- * allemand, décisions 2026-11-22-demandes-date-chiffres et 2026-11-22-date-entiere-chiffres). Le moteur de l'app n'a pas `Intl.RelativeTimeFormat`.
+ * La date d'une carte, comme dans une messagerie (décision 2026-11-22-date-carte-heure-hier) :
+ * - aujourd'hui : l'heure, au format de la langue (« 10:30 ») ;
+ * - hier : « hier » (texte servi par Laravel) ;
+ * - de 2 à 6 jours : « il y a 4 jours » ;
+ * - au-delà : la date entière en chiffres, au format de la langue (« 03/03/2027 », « 03.03.2027 »,
+ *   décision 2026-11-22-date-entiere-chiffres).
+ *
+ * Les jours se comptent au calendrier (minuit), pas par tranches de 24 h. Le moteur de l'app n'a pas
+ * `Intl.RelativeTimeFormat`.
  */
 export function relativeTime(iso: string | null, t: Translate, locale: string, now: Date = new Date()): string {
   if (iso === null) {
@@ -12,20 +17,12 @@ export function relativeTime(iso: string | null, t: Translate, locale: string, n
   }
 
   const date = new Date(iso);
-  const seconds = Math.max(0, Math.round((now.getTime() - date.getTime()) / 1000));
+  const midnight = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime();
+  const days = Math.max(0, Math.round((midnight(now) - midnight(date)) / 86_400_000));
 
-  if (seconds < 60) {
-    return t('notifications.justNow');
+  if (days === 0) {
+    return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(date);
   }
-  if (seconds < 3600) {
-    return t('notifications.minutesAgo', { count: Math.floor(seconds / 60) });
-  }
-  if (seconds < 86400) {
-    return t('notifications.hoursAgo', { count: Math.floor(seconds / 3600) });
-  }
-
-  const days = Math.floor(seconds / 86400);
-
   if (days === 1) {
     return t('notifications.yesterday');
   }

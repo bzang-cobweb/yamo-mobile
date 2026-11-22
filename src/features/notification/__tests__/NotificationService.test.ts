@@ -26,17 +26,18 @@ describe('NotificationService', () => {
 });
 
 describe('relativeTime', () => {
-  const now = new Date('2026-11-19T12:00:00Z');
+  // Heure locale du moteur de test : les jours se comptent au calendrier.
+  const now = new Date(2026, 10, 19, 12, 0);
+  const at = (day: number, hour: number, minute = 0, month = 10) => new Date(2026, month, day, hour, minute).toISOString();
 
-  it('récente : relative, textes servis ; au-delà d’une semaine : la date', () => {
+  it('aujourd’hui : l’heure ; hier ; il y a quelques jours ; au-delà : la date en chiffres (décision 2026-11-22-date-carte-heure-hier)', () => {
     const t = TEST_I18N.t;
-    expect(relativeTime('2026-11-19T11:59:30Z', t, 'fr', now)).toBe("à l'instant");
-    expect(relativeTime('2026-11-19T11:55:00Z', t, 'fr', now)).toBe('il y a 5 min');
-    expect(relativeTime('2026-11-19T09:00:00Z', t, 'fr', now)).toBe('il y a 3 h');
-    expect(relativeTime('2026-11-18T10:00:00Z', t, 'fr', now)).toBe('hier');
-    expect(relativeTime('2026-11-15T12:00:00Z', t, 'fr', now)).toBe('il y a 4 jours');
-    expect(relativeTime('2026-10-01T12:00:00Z', t, 'fr', now)).toBe('01/10/2026');
-    expect(relativeTime('2026-10-01T12:00:00Z', t, 'de', now)).toBe('01.10.2026');
+    expect(relativeTime(at(19, 10, 30), t, 'fr', now)).toBe('10:30');
+    expect(relativeTime(at(19, 0, 5), t, 'fr', now)).toBe('00:05');
+    expect(relativeTime(at(18, 23, 50), t, 'fr', now)).toBe('hier');
+    expect(relativeTime(at(15, 12), t, 'fr', now)).toBe('il y a 4 jours');
+    expect(relativeTime(at(1, 12, 0, 9), t, 'fr', now)).toBe('01/10/2026');
+    expect(relativeTime(at(1, 12, 0, 9), t, 'de', now)).toBe('01.10.2026');
     expect(relativeTime(null, t, 'fr', now)).toBe('');
   });
 });
