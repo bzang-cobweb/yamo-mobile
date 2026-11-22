@@ -388,13 +388,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-detail-7').props.style).color).toBe(StyleSheet.flatten(screen.getByText('Studio meublé à Akwa').props.style).color);
   });
 
-  it('la date de la dernière notification, sous le message, à droite (décision 2026-11-22-demandes-date-derniere-notification)', async () => {
-    mockList = list([item('7', { quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 2 * 3600 * 1000).toISOString() })]);
+  it('la date de la dernière notification à droite du nom, en chiffres au-delà d’une semaine (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-demandes-date-chiffres)', async () => {
+    mockList = list([
+      item('7', { title: 'Awa Ndiaye', quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 2 * 3600 * 1000).toISOString() }),
+      item('8', { title: 'Paul Mbia', date: '2026-01-03T10:00:00Z' }),
+    ]);
     await renderScreen();
 
+    // Sur la ligne du nom, à droite.
     const date = screen.getByTestId('profile-list-date-7');
-    expect(date.props.children).toBeTruthy();
-    expect(StyleSheet.flatten(date.props.style).textAlign).toBe('right');
+    expect(StyleSheet.flatten(date.parent?.props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
+    // Au-delà d'une semaine : en chiffres.
+    expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent('03/01/2026');
   });
 
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {

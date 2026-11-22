@@ -158,6 +158,9 @@ export function ProfileListScreen({ list }: { list: string }) {
     // (décision 2026-11-21-demandes-lien-membre).
     const titleLink = item.title_link && ITEM_LINK.test(item.title_link) ? item.title_link : null;
     // En gras, à la taille de l'accueil ; en lien, dans la couleur des liens (décision 2026-11-22-cartes-titre-gras).
+    // La date de la dernière notification, à droite du titre (le nom du membre), en chiffres au-delà d'une semaine
+    // (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-demandes-date-chiffres).
+    const dateText = item.date ? relativeTime(item.date, t, locale, new Date(), true) : null;
     const itemTitle = titleLink ? (
       <ThemedText
         type="smallBold"
@@ -171,6 +174,16 @@ export function ProfileListScreen({ list }: { list: string }) {
       <ThemedText type="smallBold" testID={`profile-list-title-${item.id}`}>
         {item.title}
       </ThemedText>
+    );
+    const titleRow = dateText ? (
+      <View style={styles.titleRow}>
+        <View style={styles.titleText}>{itemTitle}</View>
+        <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-date-${item.id}`}>
+          {dateText}
+        </ThemedText>
+      </View>
+    ) : (
+      itemTitle
     );
     // Un compteur avec un ton : une pastille de cette couleur, pour information, sans lien (« 2 demandes en
     // attente », orange) : sur la photo, à la place du statut, qui revient quand il n’y en a plus ; sans photo, à côté
@@ -261,7 +274,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
               <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
                 {tagsRow}
-                {itemTitle}
+                {titleRow}
                 {item.subtitle && (
                   <ThemedText type="small" themeColor="textSecondary">
                     {item.subtitle}
@@ -274,12 +287,6 @@ export function ProfileListScreen({ list }: { list: string }) {
                   </ThemedText>
                 )}
                 {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
-                {/* La date de la dernière notification, sous le message, à droite (décision 2026-11-22-demandes-date-derniere-notification). */}
-                {item.date && (
-                  <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`profile-list-date-${item.id}`}>
-                    {relativeTime(item.date, t, locale)}
-                  </ThemedText>
-                )}
                 {/* La note et la phrase mise en avant, quand l'API les sert. */}
                 <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
               </View>
@@ -301,7 +308,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
             <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
               {tagsRow}
-              {itemTitle}
+              {titleRow}
               {item.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.subtitle}
@@ -314,12 +321,6 @@ export function ProfileListScreen({ list }: { list: string }) {
                 </ThemedText>
               )}
               {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
-              {/* La date de la dernière notification, sous le message, à droite (décision 2026-11-22-demandes-date-derniere-notification). */}
-              {item.date && (
-                <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`profile-list-date-${item.id}`}>
-                  {relativeTime(item.date, t, locale)}
-                </ThemedText>
-              )}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
             </View>
@@ -581,7 +582,9 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   counters: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: Spacing.two },
   heading: { gap: Spacing.half },
-  date: { textAlign: 'right' },
+  // Le titre et, à droite, la date.
+  titleRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: Spacing.two },
+  titleText: { flexShrink: 1 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });
