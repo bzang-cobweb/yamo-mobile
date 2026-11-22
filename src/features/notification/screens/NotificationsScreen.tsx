@@ -118,22 +118,14 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
       ]}>
       <View style={styles.texts}>
         {/* Le type de l'action en gras (« Nouvelle demande », « Demande acceptée », décision
-            2026-11-22-notification-par-action) ; plus de logement ni de statut. Puis le nom de qui envoie, sauf si
-            c'est nous : il ouvre sa page (décision 2026-11-22-carte-notification-lien-expediteur) ; son message en
-            italique gris, sur une ligne ; la date. Toucher ailleurs ouvre le détail (décision
+            2026-11-22-notification-par-action) ; plus de logement ni de statut. Juste dessous, le nom de qui envoie,
+            sauf si c'est nous : il ouvre sa page (décisions 2026-11-22-carte-notification-lien-expediteur et
+            2026-11-22-carte-notification-expediteur-apres-titre) ; puis le texte ; son message en italique gris, sur
+            une ligne ; la date. Toucher ailleurs ouvre le détail (décision
             2026-11-22-carte-notification-type-auteur-message-date). */}
         <ThemedText type="smallBold" testID={`notification-${item.id}-type`}>
           {item.card_title ?? item.title}
         </ThemedText>
-        {/* Le texte de la notification, après le type (décision 2026-11-22-carte-notification-texte) : sans le nom de
-            qui envoie quand il est dessous ; le nom du logement, et du membre, ouvrent leur page (décision
-            2026-11-22-lien-nom-logement). */}
-        <NotificationText
-          body={sender && item.summary ? item.summary : item.body}
-          links={item.text_links ?? []}
-          onLink={(link) => open(item, link)}
-          testID={`notification-${item.id}-text`}
-        />
         {sender && (
           <ThemedText
             type="smallBold"
@@ -144,6 +136,15 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
             {sender.name}
           </ThemedText>
         )}
+        {/* Le texte de la notification, après le type et l'expéditeur (décision 2026-11-22-carte-notification-texte) :
+            sans le nom de qui envoie quand il est au-dessus ; le nom du logement, et du membre, ouvrent leur page (décision
+            2026-11-22-lien-nom-logement). */}
+        <NotificationText
+          body={sender && item.summary ? item.summary : item.body}
+          links={item.text_links ?? []}
+          onLink={(link) => open(item, link)}
+          testID={`notification-${item.id}-text`}
+        />
         {item.message && (
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.message} testID={`notification-${item.id}-message`}>
             {item.message}

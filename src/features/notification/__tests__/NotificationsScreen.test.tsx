@@ -115,6 +115,26 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(screen.queryByTestId('notification-b-actor')).toBeNull();
   });
 
+  it('qui envoie, juste après le type, avant le texte (décision 2026-11-22-carte-notification-expediteur-apres-titre)', async () => {
+    await show();
+
+    const card = await screen.findByTestId('notification-a');
+    const ids: string[] = [];
+    const walk = (node: { props?: { testID?: string }; children?: unknown[] } | string) => {
+      if (typeof node === 'string') return;
+      if (node.props?.testID?.startsWith('notification-a-') && !ids.includes(node.props.testID)) ids.push(node.props.testID);
+      (node.children ?? []).forEach((child) => walk(child as never));
+    };
+    walk(card as never);
+    expect(ids.filter((id) => /-(type|actor|text|message|date)$/.test(id))).toEqual([
+      'notification-a-type',
+      'notification-a-actor',
+      'notification-a-text',
+      'notification-a-message',
+      'notification-a-date',
+    ]);
+  });
+
   it('le nom de qui envoie ouvre sa page et marque la notification lue (décision 2026-11-22-carte-notification-lien-expediteur)', async () => {
     await show();
     await fireEvent.press(await screen.findByTestId('notification-a-actor'));
