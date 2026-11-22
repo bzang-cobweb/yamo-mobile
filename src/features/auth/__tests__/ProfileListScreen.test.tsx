@@ -398,8 +398,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     // Sur la ligne du nom, à droite.
     const date = screen.getByTestId('profile-list-date-7');
     expect(StyleSheet.flatten(date.parent?.props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
-    // Au-delà d'une semaine : en chiffres.
-    expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent('03/01/2026');
+    // Avant hier : la date en chiffres et l'heure (décision 2026-11-22-date-carte-heure).
+    expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent(/^03\/01\/2026 \d{2}:\d{2}$/);
   });
 
   it('le message juste après la ligne du nom, avant le sous-titre (décision 2026-11-22-demandes-message-apres-nom)', async () => {
