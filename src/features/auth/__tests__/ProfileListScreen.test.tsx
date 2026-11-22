@@ -416,13 +416,13 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent(/^3 janv\. 2026 \d{2}:\d{2}$/);
   });
 
-  it('le message juste après la ligne du nom, avant le sous-titre (décision 2026-11-22-demandes-message-apres-nom)', async () => {
+  it('le message après le texte (décision 2026-11-22-demandes-message-apres-texte)', async () => {
     mockList = list([item('7', { title: 'Awa Ndiaye', subtitle: 'Séjour · du 2 au 6 déc.', quote: 'Arrivée vers 18 h.' })]);
     await renderScreen();
 
     // Les textes dans l'ordre de l'écran.
     const order = screen.getAllByText(/^(Awa Ndiaye|Arrivée vers 18 h\.|Séjour · du 2 au 6 déc\.)$/).map((node) => String(node.props.children));
-    expect(order).toEqual(['Awa Ndiaye', 'Arrivée vers 18 h.', 'Séjour · du 2 au 6 déc.']);
+    expect(order).toEqual(['Awa Ndiaye', 'Séjour · du 2 au 6 déc.', 'Arrivée vers 18 h.']);
   });
 
   it('le nombre de notifications non lues en pastille à droite du message (décision 2026-11-22-demandes-pastille-nombre-message)', async () => {

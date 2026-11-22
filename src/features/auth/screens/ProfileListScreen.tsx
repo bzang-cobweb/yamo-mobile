@@ -318,8 +318,6 @@ export function ProfileListScreen({ list }: { list: string }) {
               <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
                 {tagsRow}
                 {titleRow}
-                {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
-                {messageRow}
                 {itemSubtitle}
                 {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
                 {item.detail && (
@@ -327,6 +325,8 @@ export function ProfileListScreen({ list }: { list: string }) {
                     {item.detail}
                   </ThemedText>
                 )}
+                {/* Le message, après le texte (décision 2026-11-22-demandes-message-apres-texte). */}
+                {messageRow}
                 {/* La note et la phrase mise en avant, quand l'API les sert. */}
                 <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
               </View>
@@ -349,8 +349,6 @@ export function ProfileListScreen({ list }: { list: string }) {
             <View style={item.image ? CARD_BODY : styles.body} testID={`profile-list-body-${item.id}`}>
               {tagsRow}
               {titleRow}
-              {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
-              {messageRow}
               {itemSubtitle}
               {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
               {item.detail && (
@@ -358,6 +356,8 @@ export function ProfileListScreen({ list }: { list: string }) {
                   {item.detail}
                 </ThemedText>
               )}
+              {/* Le message, après le texte (décision 2026-11-22-demandes-message-apres-texte). */}
+              {messageRow}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
             </View>
