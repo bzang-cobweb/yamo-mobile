@@ -186,7 +186,12 @@ export function ProfileListScreen({ list }: { list: string }) {
           </View>
           {unreadCount > 0 && (
             <View accessible accessibilityLabel={t('notifications.unreadCount', { count: unreadCount })} testID={`profile-list-unread-${item.id}`}>
-              <StatusTag tag={{ label: String(unreadCount), tone: 'danger' }} />
+              {/* Le vert doux des compteurs « N notifications non lues » (décision 2026-11-22-demandes-pastille-vert-doux). */}
+              <View style={[styles.unreadPill, { backgroundColor: SOFT_GREEN }]}>
+                <ThemedText type="smallBold" style={{ color: SOFT_GREEN_TEXT }}>
+                  {unreadCount}
+                </ThemedText>
+              </View>
             </View>
           )}
         </View>
@@ -606,6 +611,7 @@ const styles = StyleSheet.create({
   // Le message et, à droite, la pastille des non lues.
   messageRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   messageText: { flex: 1 },
+  unreadPill: { minWidth: 24, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });
