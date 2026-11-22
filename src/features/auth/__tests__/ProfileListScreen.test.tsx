@@ -388,7 +388,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-detail-7').props.style).color).toBe(StyleSheet.flatten(screen.getByText('Studio meublé à Akwa').props.style).color);
   });
 
-  it('la date de la dernière notification à droite du nom, en chiffres au-delà d’une semaine (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-demandes-date-chiffres)', async () => {
+  it('la date de la dernière notification à droite du nom, avec le mois en lettres (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-dates-sans-chiffres)', async () => {
     mockList = list([
       item('7', { title: 'Awa Ndiaye', quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 2 * 3600 * 1000).toISOString() }),
       item('8', { title: 'Paul Mbia', date: '2026-01-03T10:00:00Z' }),
@@ -398,8 +398,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     // Sur la ligne du nom, à droite.
     const date = screen.getByTestId('profile-list-date-7');
     expect(StyleSheet.flatten(date.parent?.props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
-    // Avant hier : la date en chiffres et l'heure (décision 2026-11-22-date-carte-heure).
-    expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent(/^03\/01\/2026 \d{2}:\d{2}$/);
+    // Avant hier : la date, mois en lettres, et l'heure (décision 2026-11-22-dates-sans-chiffres).
+    expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent(/^3 janv\. 2026 \d{2}:\d{2}$/);
   });
 
   it('le message juste après la ligne du nom, avant le sous-titre (décision 2026-11-22-demandes-message-apres-nom)', async () => {

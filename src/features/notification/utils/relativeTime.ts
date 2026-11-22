@@ -5,8 +5,8 @@ import type { Translate } from '@/shared/i18n/messages';
  * - moins d'une minute : « à l'instant » ; moins d'une heure : « il y a 5 min » (textes servis par Laravel) ;
  * - plus tard aujourd'hui : l'heure, au format de la langue (« 10:30 ») ;
  * - hier : « hier à 10:30 » ;
- * - avant : la date entière en chiffres et l'heure, au format de la langue (« 03/03/2027 10:30 », décision
- *   2026-11-22-date-entiere-chiffres).
+ * - avant : la date, le mois en lettres pour ne pas confondre jour et mois, et l'heure, au format de la langue
+ *   (« 3 mars 2027 10:30 », décision 2026-11-22-dates-sans-chiffres).
  *
  * Les jours se comptent au calendrier (minuit), pas par tranches de 24 h. Le moteur de l'app n'a pas
  * `Intl.RelativeTimeFormat`.
@@ -37,5 +37,5 @@ export function relativeTime(iso: string | null, t: Translate, locale: string, n
     return t('notifications.yesterdayAt', { time });
   }
 
-  return `${new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)} ${time}`;
+  return `${new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(date)} ${time}`;
 }

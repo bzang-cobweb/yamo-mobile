@@ -30,14 +30,14 @@ describe('relativeTime', () => {
   const now = new Date(2026, 10, 19, 12, 0);
   const at = (day: number, hour: number, minute = 0, month = 10) => new Date(2026, month, day, hour, minute).toISOString();
 
-  it('à l’instant, il y a N min, puis l’heure ; hier à l’heure ; avant : la date en chiffres et l’heure (décision 2026-11-22-date-carte-heure)', () => {
+  it('à l’instant, il y a N min, puis l’heure ; hier à l’heure ; avant : la date, mois en lettres, et l’heure (décision 2026-11-22-date-carte-heure)', () => {
     const t = TEST_I18N.t;
     expect(relativeTime(new Date(now.getTime() - 30_000).toISOString(), t, 'fr', now)).toBe("à l'instant");
     expect(relativeTime(at(19, 11, 55), t, 'fr', now)).toBe('il y a 5 min');
     expect(relativeTime(at(19, 10, 30), t, 'fr', now)).toBe('10:30');
     expect(relativeTime(at(18, 23, 50), t, 'fr', now)).toBe('hier à 23:50');
-    expect(relativeTime(at(15, 9, 5), t, 'fr', now)).toBe('15/11/2026 09:05');
-    expect(relativeTime(at(1, 12, 0, 9), t, 'de', now)).toBe('01.10.2026 12:00');
+    expect(relativeTime(at(15, 9, 5), t, 'fr', now)).toBe('15 nov. 2026 09:05');
+    expect(relativeTime(at(1, 12, 0, 9), t, 'de', now)).toBe('1. Okt. 2026 12:00');
     expect(relativeTime(null, t, 'fr', now)).toBe('');
   });
 });
