@@ -157,8 +157,7 @@ export function ProfileListScreen({ list }: { list: string }) {
     // (décision 2026-11-21-demandes-lien-membre).
     const titleLink = item.title_link && ITEM_LINK.test(item.title_link) ? item.title_link : null;
     // En gras, à la taille de l'accueil ; en lien, dans la couleur des liens (décision 2026-11-22-cartes-titre-gras).
-    // La date de la dernière notification, à droite du titre (le nom du membre), en chiffres au-delà d'une semaine
-    // (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-demandes-date-chiffres).
+    // La date de la dernière notification (décision 2026-11-22-demandes-date-derniere-notification).
     const dateText = item.date ? relativeTime(item.date, t, locale) : null;
     // Le sous-titre en lien (le titre saisi d'une offre dans « Mes réservations », décision 2026-11-22-reservations-lien-offre).
     const subtitleLink = item.subtitle_link && ITEM_LINK.test(item.subtitle_link) ? item.subtitle_link : null;
@@ -216,16 +215,13 @@ export function ProfileListScreen({ list }: { list: string }) {
           )}
         </View>
       ) : null;
-    const titleRow = dateText ? (
-      <View style={styles.titleRow}>
-        <View style={styles.titleText}>{itemTitle}</View>
-        <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-date-${item.id}`}>
-          {dateText}
-        </ThemedText>
-      </View>
-    ) : (
-      itemTitle
-    );
+    const titleRow = itemTitle;
+    // La date de la dernière notification, après le message, alignée à droite (décision 2026-11-22-demandes-date-apres-message).
+    const dateRow = dateText ? (
+      <ThemedText type="small" themeColor="textSecondary" style={styles.dateRow} testID={`profile-list-date-${item.id}`}>
+        {dateText}
+      </ThemedText>
+    ) : null;
     // Un compteur avec un ton : une pastille de cette couleur, pour information, sans lien (« 2 demandes en
     // attente », orange) : sur la photo, à la place du statut, qui revient quand il n’y en a plus ; sans photo, à côté
     // du statut. Les autres compteurs restent des liens, en bas de la carte (décisions
@@ -327,6 +323,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                 )}
                 {/* Le message, après le texte (décision 2026-11-22-demandes-message-apres-texte). */}
                 {messageRow}
+                {dateRow}
                 {/* La note et la phrase mise en avant, quand l'API les sert. */}
                 <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
               </View>
@@ -358,6 +355,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               )}
               {/* Le message, après le texte (décision 2026-11-22-demandes-message-apres-texte). */}
               {messageRow}
+              {dateRow}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
             </View>
@@ -621,10 +619,9 @@ const styles = StyleSheet.create({
   heading: { gap: Spacing.half },
   subtitleLink: { alignSelf: 'flex-start' },
   // Le titre et, à droite, la date.
-  titleRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: Spacing.two },
-  titleText: { flexShrink: 1 },
   // Le message et, à droite, la pastille des non lues.
   messageRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  dateRow: { textAlign: 'right' },
   messageText: { flex: 1 },
   message: { fontStyle: 'italic' },
   unreadPill: { minWidth: 24, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 12 },

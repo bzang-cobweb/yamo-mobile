@@ -402,16 +402,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-detail-7').props.style).color).toBe(StyleSheet.flatten(screen.getByText('Studio meublé à Akwa').props.style).color);
   });
 
-  it('la date de la dernière notification à droite du nom, avec le mois en lettres (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-dates-sans-chiffres)', async () => {
+  it('la date de la dernière notification après le message, à droite, avec le mois en lettres (décisions 2026-11-22-demandes-date-apres-message et 2026-11-22-dates-sans-chiffres)', async () => {
     mockList = list([
-      item('7', { title: 'Awa Ndiaye', quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 2 * 3600 * 1000).toISOString() }),
+      item('7', { title: 'Awa Ndiaye', quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 5 * 60 * 1000).toISOString() }),
       item('8', { title: 'Paul Mbia', date: '2026-01-03T10:00:00Z' }),
     ]);
     await renderScreen();
 
-    // Sur la ligne du nom, à droite.
+    // Après le message, alignée à droite.
     const date = screen.getByTestId('profile-list-date-7');
-    expect(StyleSheet.flatten(date.parent?.props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
+    expect(StyleSheet.flatten(date.props.style)).toMatchObject({ textAlign: 'right' });
+    const order = screen.getAllByText(/^(Awa Ndiaye|Arrivée vers 18 h\.|il y a 5 min)$/).map((node) => String(node.props.children));
+    expect(order).toEqual(['Awa Ndiaye', 'Arrivée vers 18 h.', 'il y a 5 min']);
     // Avant hier : la date, mois en lettres, et l'heure (décision 2026-11-22-dates-sans-chiffres).
     expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent(/^3 janv\. 2026 \d{2}:\d{2}$/);
   });
