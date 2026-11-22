@@ -270,7 +270,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                     {item.detail}
                   </ThemedText>
                 )}
-                {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
+                {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
                 {/* La note et la phrase mise en avant, quand l'API les sert. */}
                 <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
               </View>
@@ -304,7 +304,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                   {item.detail}
                 </ThemedText>
               )}
-              {item.quote && <Quote text={item.quote} testID={`profile-list-quote-${item.id}`} />}
+              {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
             </View>

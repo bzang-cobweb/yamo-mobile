@@ -748,6 +748,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       await renderScreen();
 
       expect(screen.getByTestId('profile-list-quote-3')).toHaveTextContent('Je viens pour le travail.');
+      // Une ligne, puis « … » (décision 2026-11-22-demandes-dernier-message).
+      expect(within(screen.getByTestId('profile-list-quote-3')).getByText('Je viens pour le travail.').props.numberOfLines).toBe(1);
       expect(screen.queryByTestId('profile-list-quote-4')).toBeNull();
     });
   });
