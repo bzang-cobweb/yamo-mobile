@@ -104,15 +104,12 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
   function renderCard(item: AppNotification) {
     // Qui envoie, sauf nous (la copie de sa propre demande n'a pas d'auteur).
     const sender = item.actor && String(item.actor.id) !== String(user?.id) ? item.actor : null;
-    // Pas d'autre personne comme expéditeur, mais un message : « Toi », au-dessus de ce message (décision
-    // 2026-11-22-carte-notification-toi-message).
-    const mine = !sender && !!item.message;
 
     return (
     <Pressable
       testID={`notification-${item.id}`}
       accessibilityRole="button"
-      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.card_title ?? item.title}. ${sender && item.summary ? item.summary : item.body}${sender ? `, ${sender.name}` : mine ? `, ${t('notifications.you')}` : ''}${item.message ? `. ${item.message}` : ''}`}
+      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.card_title ?? item.title}. ${sender && item.summary ? item.summary : item.body}${sender ? `, ${sender.name}` : ''}${item.message ? `. ${item.message}` : ''}`}
       onPress={() => open(item)}
       style={({ pressed }) => [
         styles.item,
@@ -121,8 +118,8 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
       ]}>
       <View style={styles.texts}>
         {/* Le type de l'action en gras (« Nouvelle demande », « Demande acceptée », décision
-            2026-11-22-notification-par-action) ; plus de logement ni de statut. Puis le texte ; la ligne de qui envoie
-            et de la date ; son message en italique gris, sur une ligne. Toucher ailleurs ouvre le détail (décision
+            2026-11-22-notification-par-action) ; plus de logement ni de statut. Puis le texte ; le nom de qui envoie ;
+            son message en italique gris, sur une ligne ; la date. Toucher ailleurs ouvre le détail (décision
             2026-11-22-carte-notification-type-auteur-message-date). */}
         <ThemedText type="smallBold" testID={`notification-${item.id}-type`}>
           {item.card_title ?? item.title}
@@ -136,34 +133,27 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
           onLink={(link) => open(item, link)}
           testID={`notification-${item.id}-text`}
         />
-        {/* Une ligne : le nom de qui envoie à gauche (il ouvre sa page), « Toi » sans autre expéditeur s'il y a un message, la date à droite ;
-            puis le message (décisions 2026-11-22-carte-notification-lien-expediteur et
-            2026-11-22-carte-notification-expediteur-date-message, 2026-11-22-carte-notification-toi-message). */}
-        <View style={styles.meta}>
-          {sender && (
-            <ThemedText
-              type="smallBold"
-              accessibilityRole="link"
-              onPress={() => open(item, sender.link)}
-              style={[styles.sender, { color: theme.primary }]}
-              testID={`notification-${item.id}-actor`}>
-              {sender.name}
-            </ThemedText>
-          )}
-          {mine && (
-            <ThemedText type="smallBold" style={styles.sender} testID={`notification-${item.id}-actor`}>
-              {t('notifications.you')}
-            </ThemedText>
-          )}
-          <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`notification-${item.id}-date`}>
-            {relativeTime(item.created_at, t, locale)}
+        {/* Le nom de qui envoie, sauf si c'est nous : il ouvre sa page (décisions 2026-11-22-carte-notification-lien-expediteur
+            et 2026-11-22-carte-notification-date-apres-message). */}
+        {sender && (
+          <ThemedText
+            type="smallBold"
+            accessibilityRole="link"
+            onPress={() => open(item, sender.link)}
+            style={[styles.sender, { color: theme.primary }]}
+            testID={`notification-${item.id}-actor`}>
+            {sender.name}
           </ThemedText>
-        </View>
+        )}
         {item.message && (
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.message} testID={`notification-${item.id}-message`}>
             {item.message}
           </ThemedText>
         )}
+        {/* La date, après le message, alignée à droite. */}
+        <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`notification-${item.id}-date`}>
+          {relativeTime(item.created_at, t, locale)}
+        </ThemedText>
         {item.links.map((link, index) => (
           <Pressable
             key={link.link}
@@ -244,9 +234,8 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', gap: Spacing.three, padding: Spacing.three, borderWidth: 1, borderRadius: 8 },
   texts: { flex: 1, gap: Spacing.two },
   link: { alignSelf: 'flex-start' },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  date: { marginLeft: 'auto', textAlign: 'right' },
+  date: { textAlign: 'right' },
   message: { fontStyle: 'italic' },
-  sender: { flexShrink: 1 },
+  sender: { alignSelf: 'flex-start' },
   pressed: { opacity: 0.7 },
 });
