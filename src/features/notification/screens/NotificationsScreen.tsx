@@ -8,7 +8,6 @@ import { BackHeader } from '@/shared/components/BackHeader';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { NetworkError } from '@/shared/api/errors';
 import { List } from '@/shared/components/List';
-import { Quote } from '@/shared/components/Quote';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -106,7 +105,7 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
     <Pressable
       testID={`notification-${item.id}`}
       accessibilityRole="button"
-      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}${item.tag ? `, ${item.tag.label}` : ''}. ${item.body}${item.message ? ` « ${item.message} »` : ''}`}
+      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.card_title ?? item.title}${item.card_subtitle ? `, ${item.card_subtitle}` : ''}. ${item.actor ? item.actor.name : item.body}${item.message ? ` « ${item.message} »` : ''}`}
       onPress={() => open(item)}
       style={({ pressed }) => [
         styles.item,
@@ -114,24 +113,30 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
         pressed && styles.pressed,
       ]}>
       <View style={styles.texts}>
-        {/* 1. Le type en gras, et dessous le statut réel de la demande (sans photo, décision 2026-11-20-carte-sans-photo). */}
-        <NotificationType type={item.card_title ?? item.title} tag={item.tag} testID={`notification-${item.id}`} />
-        {/* 2. Le texte, sans le nom de qui agit, sans liens : toucher la carte ouvre toujours le détail de la demande ;
-            les liens du texte sont sur cette page (décision 2026-11-22-carte-notification-vers-detail). */}
-        <NotificationText
-          body={item.actor && item.summary ? item.summary : item.body}
-          links={[]}
-          onLink={() => open(item)}
-          testID={`notification-${item.id}-text`}
-        />
-        {/* 3. Le nom de qui agit (sans lien), puis son message, sur une ligne (« … » au-delà ; entier sur la page). */}
-        {item.actor && (
+        {/* 1. Le type en gras, avec la ville, sans le statut, lu sur le détail (décision 2026-11-22-carte-notification-ville-sans-statut). */}
+        <NotificationType type={item.card_title ?? item.title} tag={null} testID={`notification-${item.id}`} />
+        {/* 2. Le titre du logement ; 3. le nom de qui agit (sans lien) ; 4. son message en italique gris, sur une ligne
+            (« … » au-delà ; entier sur la page) : plus de texte, toucher la carte ouvre le détail (décisions
+            2026-11-22-carte-notification-vers-detail et 2026-11-22-carte-notification-type-titre-auteur). */}
+        {item.card_subtitle ? (
+          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} testID={`notification-${item.id}-subtitle`}>
+            {item.card_subtitle}
+          </ThemedText>
+        ) : null}
+        {item.actor ? (
           <ThemedText type="smallBold" testID={`notification-${item.id}-actor`}>
             {item.actor.name}
           </ThemedText>
+        ) : (
+          // Sans qui agit (une ancienne notification) : son texte, faute de mieux.
+          <NotificationText body={item.body} links={[]} onLink={() => open(item)} testID={`notification-${item.id}-text`} />
         )}
-        {item.message && <Quote text={item.message} numberOfLines={1} testID={`notification-${item.id}-message`} />}
-        {/* 4. La date, après le message, alignée à droite. */}
+        {item.message && (
+          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.message} testID={`notification-${item.id}-message`}>
+            {item.message}
+          </ThemedText>
+        )}
+        {/* 5. La date, après le message, alignée à droite. */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`notification-${item.id}-date`}>
           {relativeTime(item.created_at, t, locale)}
         </ThemedText>
@@ -216,5 +221,6 @@ const styles = StyleSheet.create({
   texts: { flex: 1, gap: Spacing.two },
   link: { alignSelf: 'flex-start' },
   date: { textAlign: 'right' },
+  message: { fontStyle: 'italic' },
   pressed: { opacity: 0.7 },
 });

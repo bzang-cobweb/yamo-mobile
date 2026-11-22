@@ -10,6 +10,8 @@ export type AppNotification = {
   title: string;
   /** Le titre de sa carte dans la liste (« Location meublée » pour une demande) ; `null` (ou absent) : `title`. */
   card_title?: string | null;
+  /** La ligne sous le titre de sa carte (le titre du logement d'une demande) ; `null` (ou absent) : aucune. */
+  card_subtitle?: string | null;
   /** Statut en pastille sous le titre (« En attente », ton `warning`), ou `null`. */
   tag: StatusTagValue | null;
   body: string;
