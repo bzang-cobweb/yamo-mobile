@@ -32,6 +32,7 @@ export const TEST_MESSAGES: Messages = {
   'notifications.minutesAgo': 'il y a :count min',
   'notifications.hoursAgo': 'il y a :count h',
   'notifications.yesterday': 'hier',
+  'notifications.yesterdayAt': 'hier à :time',
   'notifications.daysAgo': 'il y a :count jours',
   'profile.title': 'Profil',
   'profile.personalInfo': 'Informations personnelles',

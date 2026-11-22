@@ -4,7 +4,7 @@ import type { Translate } from '@/shared/i18n/messages';
  * La date d'une carte (décision 2026-11-22-date-carte-heure) :
  * - moins d'une minute : « à l'instant » ; moins d'une heure : « il y a 5 min » (textes servis par Laravel) ;
  * - plus tard aujourd'hui : l'heure, au format de la langue (« 10:30 ») ;
- * - hier : « hier 10:30 » ;
+ * - hier : « hier à 10:30 » ;
  * - avant : la date entière en chiffres et l'heure, au format de la langue (« 03/03/2027 10:30 », décision
  *   2026-11-22-date-entiere-chiffres).
  *
@@ -34,7 +34,7 @@ export function relativeTime(iso: string | null, t: Translate, locale: string, n
     return time;
   }
   if (days === 1) {
-    return `${t('notifications.yesterday')} ${time}`;
+    return t('notifications.yesterdayAt', { time });
   }
 
   return `${new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)} ${time}`;
