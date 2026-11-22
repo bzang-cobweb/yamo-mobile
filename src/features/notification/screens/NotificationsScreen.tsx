@@ -104,9 +104,9 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
   function renderCard(item: AppNotification) {
     // Qui envoie, sauf nous (la copie de sa propre demande n'a pas d'auteur).
     const sender = item.actor && String(item.actor.id) !== String(user?.id) ? item.actor : null;
-    // C'est nous qui avons agi (la copie de notre propre action) et elle porte un message : « Toi », au-dessus de ce
-    // message (décision 2026-11-22-carte-notification-toi).
-    const mine = !sender && !!item.message && (item.own === true || (item.actor != null && String(item.actor.id) === String(user?.id)));
+    // Pas d'autre personne comme expéditeur, mais un message : « Toi », au-dessus de ce message (décision
+    // 2026-11-22-carte-notification-toi-message).
+    const mine = !sender && !!item.message;
 
     return (
     <Pressable
@@ -136,9 +136,9 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
           onLink={(link) => open(item, link)}
           testID={`notification-${item.id}-text`}
         />
-        {/* Une ligne : le nom de qui envoie à gauche (il ouvre sa page), « Toi » si c'est nous et qu'il y a un message, la date à droite ;
+        {/* Une ligne : le nom de qui envoie à gauche (il ouvre sa page), « Toi » sans autre expéditeur s'il y a un message, la date à droite ;
             puis le message (décisions 2026-11-22-carte-notification-lien-expediteur et
-            2026-11-22-carte-notification-expediteur-date-message, 2026-11-22-carte-notification-toi). */}
+            2026-11-22-carte-notification-expediteur-date-message, 2026-11-22-carte-notification-toi-message). */}
         <View style={styles.meta}>
           {sender && (
             <ThemedText

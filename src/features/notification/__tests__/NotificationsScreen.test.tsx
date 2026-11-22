@@ -154,10 +154,10 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
-  it('« Toi » comme expéditeur quand c’est nous et qu’il y a un message, sans lien (décision 2026-11-22-carte-notification-toi)', async () => {
+  it('« Toi » comme expéditeur sans autre expéditeur quand il y a un message, sans lien (décision 2026-11-22-carte-notification-toi-message)', async () => {
     const us = { ...PAGE.items[0], id: 'c', actor: { ...PAGE.items[0].actor!, id: '1' } };
-    const own = { ...PAGE.items[0], id: 'd', actor: null, own: true };
-    const silent = { ...PAGE.items[0], id: 'e', actor: null, own: true, message: null };
+    const own = { ...PAGE.items[0], id: 'd', actor: null };
+    const silent = { ...PAGE.items[0], id: 'e', actor: null, message: null };
     jest.mocked(notificationService.list).mockResolvedValue({ ...PAGE, items: [us, own, silent] });
     await show();
 

@@ -13,8 +13,6 @@ export type AppNotification = {
   /** Statut en pastille sous le titre (« En attente », ton `warning`), ou `null`. */
   tag: StatusTagValue | null;
   body: string;
-  /** La copie de sa propre action : « Toi » comme expéditeur (décision 2026-11-22-carte-notification-toi). */
-  own?: boolean;
   /** Qui agit, lu à l'affichage : photo, nom, en ligne, sa page ; `null` (ancienne notification). */
   actor?: NotificationActor | null;
   /** Le texte sans le nom de qui agit, pour la carte ; `null` : `body`. */
