@@ -445,6 +445,25 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.offer', record: OFFER.id } });
   });
 
+  it('sa propre offre : « Retirer » à la place du prix, après confirmation, puis retour (décision 2026-11-22-retirer-depuis-la-fiche)', async () => {
+    const remove = { label: 'Retirer', confirm: 'Retirer cette offre ?', method: 'DELETE', endpoint: `/v1/offers/${OFFER.id}`, destructive: true, success: { action: 'back', message: 'Offre retirée.' } };
+    mockState = { data: { ...OFFER, booking: null, edit: { label: 'Modifier', form: 'offer.offer' }, delete: remove }, isPending: false, error: null };
+    mockUser = { id: 3 };
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => buttons?.[1]?.onPress?.());
+    await show();
+    const bar = screen.getByTestId('offer-booking-bar');
+    expect(within(bar).queryByTestId('offer-price')).toBeNull();
+    expect(within(bar).getByTestId('offer-delete')).toHaveTextContent('Retirer');
+
+    await act(async () => {
+      fireEvent.press(within(bar).getByTestId('offer-delete'));
+    });
+    expect(alert).toHaveBeenCalledWith('Retirer cette offre ?', undefined, expect.any(Array));
+    expect(mockSubmit).toHaveBeenCalledWith(expect.objectContaining({ method: 'DELETE', endpoint: `/v1/offers/${OFFER.id}` }), {});
+    expect(router.back).toHaveBeenCalled();
+    alert.mockRestore();
+  });
+
   it('ni réservation ni modification : le prix seul', async () => {
     mockState = { data: { ...OFFER, booking: null, edit: null }, isPending: false, error: null };
     await show();

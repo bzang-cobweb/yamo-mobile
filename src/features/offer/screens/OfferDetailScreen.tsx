@@ -1,10 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { profileFormService, profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
@@ -172,7 +173,8 @@ export function OfferDetailScreen({ id }: { id: string }) {
  * visiteur passe d'abord par la connexion ; un membre ouvre le formulaire décrit par
  * Laravel, lié à l'offre. Sa propre offre : « Modifier », qui ouvre le formulaire de
  * l'offre (décision 2026-11-19-fiche-bouton-modifier) ; après l'enregistrement, la
- * fiche se recharge. Au-dessus, sur une ligne, les boutons d'avis que donne
+ * fiche se recharge ; à la place du prix, « Retirer », en rouge, qui retire l'offre après confirmation et revient en
+ * arrière (décision 2026-11-22-retirer-depuis-la-fiche). Au-dessus, sur une ligne, les boutons d'avis que donne
  * `reviewActions` (décision 2026-11-20-boutons-avis-fiche). Rien à montrer : pas de barre.
  */
 function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewChanged: (message: string | null, failed?: boolean) => void }) {
@@ -186,6 +188,31 @@ function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewCh
   const reviews = offer.reviews ?? empty;
   const removeReview = useReviewRemoval(reviews, onReviewChanged);
   const actions = offer.reviews ? reviewActions(offer.reviews, user !== null).bar.filter((action) => action !== 'delete' || removeReview !== null) : [];
+
+  // Sa propre offre : « Retirer », en rouge, à la place du prix (décision 2026-11-22-retirer-depuis-la-fiche).
+  const removal = edit && offer.delete ? profileSubmission(offer.delete) : null;
+
+  function confirmRemove() {
+    if (!offer.delete || removal === null) {
+      return;
+    }
+
+    Alert.alert(offer.delete.confirm, undefined, [
+      { text: t('list.cancel'), style: 'cancel' },
+      {
+        text: offer.delete.label,
+        style: 'destructive',
+        onPress: () =>
+          void profileFormService
+            .submit(removal, {})
+            .then(() => {
+              showToast(removal.success.message);
+              router.back();
+            })
+            .catch(() => showToast(t('error.unknown'), 'danger')),
+      },
+    ]);
+  }
 
   if (!offer.price && !booking && !edit && actions.length === 0) {
     return null;
@@ -214,10 +241,18 @@ function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewCh
       {(offer.price || booking || edit) && (
       <View style={[styles.barContent, { maxWidth: MaxContentWidth / 2 }]}>
         <View style={styles.barPrice}>
-          {offer.price && (
-            <ThemedText type="smallBold" style={{ color: theme.primary }} testID="offer-price">
-              {offer.price.value}
-            </ThemedText>
+          {removal && offer.delete ? (
+            <Pressable testID="offer-delete" accessibilityRole="button" hitSlop={Spacing.two} onPress={confirmRemove} style={({ pressed }) => pressed && styles.pressed}>
+              <ThemedText type="smallBold" style={{ color: ERROR_COLOR }}>
+                {offer.delete.label}
+              </ThemedText>
+            </Pressable>
+          ) : (
+            offer.price && (
+              <ThemedText type="smallBold" style={{ color: theme.primary }} testID="offer-price">
+                {offer.price.value}
+              </ThemedText>
+            )
           )}
         </View>
         {booking && (

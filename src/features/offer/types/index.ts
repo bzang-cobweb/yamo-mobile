@@ -43,6 +43,8 @@ export type OfferDetail = {
   booking?: { type: 'stay' | 'visit'; label: string; form: string } | null;
   /** Pour son auteur, à la place de la réservation : « Modifier » et le formulaire de l'offre (décision 2026-11-19-fiche-bouton-modifier). */
   edit?: { label: string; form: string } | null;
+  /** Pour son auteur, à la place du prix : « Retirer », sa confirmation et l'envoi (décision 2026-11-22-retirer-depuis-la-fiche). */
+  delete?: ListItemDelete | null;
 };
 
 /**
