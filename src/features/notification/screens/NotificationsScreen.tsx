@@ -190,6 +190,14 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
               ? { label: t('list.filters'), count: filterCount, onPress: () => router.push({ pathname: '/filters/[list]', params: { list: NOTIFICATIONS_FILTERS } }) }
               : null
           }
+          // Sous les filtres, le nombre de notifications en gras, comme « 3 logements » (décision 2026-11-22-notifications-nombre).
+          header={
+            query.data?.count ? (
+              <ThemedText type="smallBold" testID="notifications-count">
+                {query.data.count}
+              </ThemedText>
+            ) : null
+          }
           contentContainerStyle={styles.items}
         />
       </View>

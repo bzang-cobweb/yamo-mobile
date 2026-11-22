@@ -62,6 +62,7 @@ export function useNotifications(search = '', filters: FormValues = {}) {
     select: (data: InfiniteData<NotificationPage, string | null>) => ({
       items: data.pages.flatMap((page) => page.items),
       filters: data.pages[0]?.filters ?? [],
+      count: data.pages[0]?.count ?? null,
     }),
   });
 

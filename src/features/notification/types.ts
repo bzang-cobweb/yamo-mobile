@@ -89,7 +89,13 @@ export type NotificationActor = {
 };
 
 /** Une page de notifications, et les filtres de la liste (décision 2026-11-20-filtres-notifications). */
-export type NotificationPage = { items: AppNotification[]; next_cursor: string | null; filters?: FormFieldDefinition[] };
+export type NotificationPage = {
+  items: AppNotification[];
+  next_cursor: string | null;
+  /** Le nombre de cartes, rédigé (« 12 notifications »), recherche et filtres compris (décision 2026-11-22-notifications-nombre). */
+  count?: string;
+  filters?: FormFieldDefinition[];
+};
 
 /** Une ligne d'une demande ; `link` : un écran de l'app ouvert par la valeur (le nom de l'hôte ou du membre → `/members/12`). */
 export type BookingLine = { key: string; label: string; value: string; link?: string | null };

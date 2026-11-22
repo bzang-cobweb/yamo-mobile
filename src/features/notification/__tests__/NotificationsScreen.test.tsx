@@ -38,6 +38,7 @@ const PAGE = {
     { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
+  count: '2 notifications',
 };
 
 async function show(back = false) {
@@ -172,6 +173,12 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
 
     expect(router.push).toHaveBeenCalledWith('/notifications/b');
     expect(notificationService.read).not.toHaveBeenCalled();
+  });
+
+  it('le nombre de notifications en gras sous les filtres (décision 2026-11-22-notifications-nombre)', async () => {
+    await show();
+
+    expect(await screen.findByTestId('notifications-count')).toHaveTextContent('2 notifications');
   });
 
   it('sans notification : le texte vide', async () => {
