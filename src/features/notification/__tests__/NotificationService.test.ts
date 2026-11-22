@@ -35,7 +35,8 @@ describe('relativeTime', () => {
     expect(relativeTime('2026-11-19T09:00:00Z', t, 'fr', now)).toBe('il y a 3 h');
     expect(relativeTime('2026-11-18T10:00:00Z', t, 'fr', now)).toBe('hier');
     expect(relativeTime('2026-11-15T12:00:00Z', t, 'fr', now)).toBe('il y a 4 jours');
-    expect(relativeTime('2026-10-01T12:00:00Z', t, 'fr', now)).toBe('1 octobre 2026');
+    expect(relativeTime('2026-10-01T12:00:00Z', t, 'fr', now)).toBe('01/10/2026');
+    expect(relativeTime('2026-10-01T12:00:00Z', t, 'de', now)).toBe('01.10.2026');
     expect(relativeTime(null, t, 'fr', now)).toBe('');
   });
 });

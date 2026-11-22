@@ -159,7 +159,7 @@ export function ProfileListScreen({ list }: { list: string }) {
     // En gras, à la taille de l'accueil ; en lien, dans la couleur des liens (décision 2026-11-22-cartes-titre-gras).
     // La date de la dernière notification, à droite du titre (le nom du membre), en chiffres au-delà d'une semaine
     // (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-demandes-date-chiffres).
-    const dateText = item.date ? relativeTime(item.date, t, locale, new Date(), true) : null;
+    const dateText = item.date ? relativeTime(item.date, t, locale) : null;
     const itemTitle = titleLink ? (
       <ThemedText
         type="smallBold"

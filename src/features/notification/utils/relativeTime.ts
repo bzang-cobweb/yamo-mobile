@@ -3,10 +3,10 @@ import type { Translate } from '@/shared/i18n/messages';
 /**
  * « à l'instant », « il y a 5 min », « il y a 3 h », « hier », « il y a 4 jours »
  * (textes servis par Laravel, dans la langue de l'app) ; au-delà d'une semaine, la
- * date (« 3 mars 2027 », ou en chiffres avec `numeric` : « 03/03/2027 », décision
- * 2026-11-22-demandes-date-chiffres). Le moteur de l'app n'a pas `Intl.RelativeTimeFormat`.
+ * date entière, toujours en chiffres, dans l'ordre de la langue (« 03/03/2027 » en français, « 03.03.2027 » en
+ * allemand, décisions 2026-11-22-demandes-date-chiffres et 2026-11-22-date-entiere-chiffres). Le moteur de l'app n'a pas `Intl.RelativeTimeFormat`.
  */
-export function relativeTime(iso: string | null, t: Translate, locale: string, now: Date = new Date(), numeric = false): string {
+export function relativeTime(iso: string | null, t: Translate, locale: string, now: Date = new Date()): string {
   if (iso === null) {
     return '';
   }
@@ -33,5 +33,5 @@ export function relativeTime(iso: string | null, t: Translate, locale: string, n
     return t('notifications.daysAgo', { count: days });
   }
 
-  return new Intl.DateTimeFormat(locale, numeric ? { day: '2-digit', month: '2-digit', year: 'numeric' } : { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+  return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
 }
