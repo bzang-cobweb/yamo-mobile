@@ -175,15 +175,29 @@ export function ProfileListScreen({ list }: { list: string }) {
         {item.title}
       </ThemedText>
     );
+    // Du non lu : un point coloré devant le titre, comme une messagerie (décision 2026-11-22-demandes-point-non-lu).
+    const titleWithDot = item.unread ? (
+      <View style={styles.unreadTitle}>
+        <View
+          style={[styles.unreadDot, { backgroundColor: theme.primary }]}
+          accessible
+          accessibilityLabel={t('notifications.unread')}
+          testID={`profile-list-unread-${item.id}`}
+        />
+        <View style={styles.titleText}>{itemTitle}</View>
+      </View>
+    ) : (
+      itemTitle
+    );
     const titleRow = dateText ? (
       <View style={styles.titleRow}>
-        <View style={styles.titleText}>{itemTitle}</View>
+        <View style={styles.titleText}>{titleWithDot}</View>
         <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-date-${item.id}`}>
           {dateText}
         </ThemedText>
       </View>
     ) : (
-      itemTitle
+      titleWithDot
     );
     // Un compteur avec un ton : une pastille de cette couleur, pour information, sans lien (« 2 demandes en
     // attente », orange) : sur la photo, à la place du statut, qui revient quand il n’y en a plus ; sans photo, à côté
@@ -587,6 +601,8 @@ const styles = StyleSheet.create({
   // Le titre et, à droite, la date.
   titleRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: Spacing.two },
   titleText: { flexShrink: 1 },
+  unreadTitle: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  unreadDot: { width: 8, height: 8, borderRadius: 4 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });

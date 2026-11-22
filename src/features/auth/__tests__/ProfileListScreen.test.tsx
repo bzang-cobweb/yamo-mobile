@@ -411,6 +411,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(order).toEqual(['Awa Ndiaye', 'Arrivée vers 18 h.', 'Séjour · du 2 au 6 déc.']);
   });
 
+  it('du non lu : un point devant le nom ; sinon, rien (décision 2026-11-22-demandes-point-non-lu)', async () => {
+    mockList = list([item('7', { title: 'Awa Ndiaye', unread: true }), item('8', { title: 'Paul Mbia' })]);
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-unread-7').props.accessibilityLabel).toBe('Non lue');
+    expect(screen.queryByTestId('profile-list-unread-8')).toBeNull();
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),
