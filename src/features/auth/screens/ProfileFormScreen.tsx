@@ -26,12 +26,12 @@ import { backToProfile, backWithNotice } from '../utils/profile-notice';
  * `scrolls={false}` : le contenu défile lui-même (une `List`), qui ne peut pas
  * être placée dans un `ScrollView` ; il reprend alors `profileContentStyle`.
  */
-export function ProfileScreenShell({ title, scrolls = true, children }: PropsWithChildren<{ title: string; scrolls?: boolean }>) {
+export function ProfileScreenShell({ title, titleLink, scrolls = true, children }: PropsWithChildren<{ title: string; titleLink?: string | null; scrolls?: boolean }>) {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <BackStackProvider>
-          <BackHeader title={title} />
+          <BackHeader title={title} titleLink={titleLink} />
           <View style={styles.safeArea}>
             {scrolls ? (
               // Un formulaire y place son bouton, fixé en bas ; le menu du bas est masqué

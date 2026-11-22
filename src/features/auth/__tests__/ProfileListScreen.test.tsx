@@ -318,6 +318,17 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
   });
 
+  it('le titre de la barre du haut en lien quand l’API le sert (décision 2026-11-22-demandes-lien-offre)', async () => {
+    mockList = list([item('7')], { title: 'Studio meublé à Akwa', title_link: '/offers/12' });
+    await renderScreen();
+
+    const title = screen.getByTestId('back-header-title');
+    expect(title).toHaveTextContent('Studio meublé à Akwa');
+    expect(title.props.accessibilityRole).toBe('link');
+    await fireEvent.press(title);
+    expect(router.push).toHaveBeenLastCalledWith('/offers/12');
+  });
+
   it('un sous-titre avec son lien ouvre son écran ; le reste de la carte garde le sien (décision 2026-11-22-reservations-lien-offre)', async () => {
     mockList = list([item('7', { edit: null, subtitle: 'Studio meublé à Akwa', subtitle_link: '/offers/12', link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' })]);
     await renderScreen();
