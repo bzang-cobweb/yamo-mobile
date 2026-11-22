@@ -780,15 +780,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(screen.queryByTestId('profile-list-tag-4')).toBeNull();
     });
 
-    it('le message du membre, cité sur la carte', async () => {
+    it('le message du membre sur la carte, en italique', async () => {
       mockList = list([item('3', { quote: 'Je viens pour le travail.' }), item('4')]);
       await renderScreen();
 
       expect(screen.getByTestId('profile-list-quote-3')).toHaveTextContent('Je viens pour le travail.');
       // Sans date, rien sous le message.
       expect(screen.queryByTestId('profile-list-date-3')).toBeNull();
-      // Une ligne, puis « … » (décision 2026-11-22-demandes-dernier-message).
-      expect(within(screen.getByTestId('profile-list-quote-3')).getByText('Je viens pour le travail.').props.numberOfLines).toBe(1);
+      // Une ligne, puis « … », en italique, sans citation (décisions 2026-11-22-demandes-dernier-message et
+      // 2026-11-22-demandes-message-italique).
+      const message = screen.getByTestId('profile-list-quote-3');
+      expect(message.props.numberOfLines).toBe(1);
+      expect(StyleSheet.flatten(message.props.style).fontStyle).toBe('italic');
       expect(screen.queryByTestId('profile-list-quote-4')).toBeNull();
     });
   });

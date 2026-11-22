@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
-import { Quote } from '@/shared/components/Quote';
 import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
@@ -182,7 +181,12 @@ export function ProfileListScreen({ list }: { list: string }) {
       item.quote || unreadCount > 0 ? (
         <View style={styles.messageRow}>
           <View style={styles.messageText}>
-            {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
+            {/* Le message, simplement en italique, sur une ligne (décision 2026-11-22-demandes-message-italique). */}
+            {item.quote && (
+              <ThemedText type="small" numberOfLines={1} ellipsizeMode="tail" style={styles.message} testID={`profile-list-quote-${item.id}`}>
+                {item.quote}
+              </ThemedText>
+            )}
           </View>
           {unreadCount > 0 && (
             <View accessible accessibilityLabel={t('notifications.unreadCount', { count: unreadCount })} testID={`profile-list-unread-${item.id}`}>
@@ -611,6 +615,7 @@ const styles = StyleSheet.create({
   // Le message et, à droite, la pastille des non lues.
   messageRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   messageText: { flex: 1 },
+  message: { fontStyle: 'italic' },
   unreadPill: { minWidth: 24, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
