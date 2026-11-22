@@ -318,6 +318,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(router.push).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
   });
 
+  it('un sous-titre avec son lien ouvre son écran ; le reste de la carte garde le sien (décision 2026-11-22-reservations-lien-offre)', async () => {
+    mockList = list([item('7', { edit: null, subtitle: 'Studio meublé à Akwa', subtitle_link: '/offers/12', link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' })]);
+    await renderScreen();
+
+    const subtitle = screen.getByTestId('profile-list-subtitle-link-7');
+    expect(subtitle).toHaveTextContent('Studio meublé à Akwa');
+    await fireEvent.press(subtitle);
+    expect(router.push).toHaveBeenLastCalledWith('/offers/12');
+    await fireEvent.press(screen.getByTestId('profile-list-item-7'));
+    expect(router.push).toHaveBeenLastCalledWith('/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d');
+  });
+
   it('sans photo : le statut et la pastille d’un compteur sur une ligne, au-dessus du titre (décision 2026-11-21-demandes-pastille-non-lues-total)', async () => {
     const unread = { label: '2 notifications non lues', list: 'notifications', filter: {}, link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d', tone: 'danger' };
     mockList = list([item('7', { tag: { label: 'En attente', tone: 'warning' }, counter: unread, counters: [unread] })]);

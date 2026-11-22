@@ -66,6 +66,8 @@ export type ListItem = {
   link?: string | null;
   /** L'écran ouvert en touchant le titre seul (« /members/3 ») : le titre s'affiche en lien (décision 2026-11-21-demandes-lien-membre) ; absent : non. */
   title_link?: string | null;
+  /** Le sous-titre en lien vers son propre écran (le titre saisi d'une offre, « /offers/12 »), le reste de la carte gardant le sien (décision 2026-11-22-reservations-lien-offre). */
+  subtitle_link?: string | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */
   edit: { form: string; record: string } | null;
   /** Boutons de la carte ; vide ou absent : aucun. */

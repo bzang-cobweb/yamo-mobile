@@ -160,6 +160,22 @@ export function ProfileListScreen({ list }: { list: string }) {
     // La date de la dernière notification, à droite du titre (le nom du membre), en chiffres au-delà d'une semaine
     // (décisions 2026-11-22-demandes-date-derniere-notification et 2026-11-22-demandes-date-chiffres).
     const dateText = item.date ? relativeTime(item.date, t, locale) : null;
+    // Le sous-titre en lien (le titre saisi d'une offre dans « Mes réservations », décision 2026-11-22-reservations-lien-offre).
+    const subtitleLink = item.subtitle_link && ITEM_LINK.test(item.subtitle_link) ? item.subtitle_link : null;
+    const itemSubtitle = !item.subtitle ? null : subtitleLink ? (
+      <ThemedText
+        type="small"
+        accessibilityRole="link"
+        onPress={() => closeMenu() || router.push(subtitleLink as Href)}
+        style={[styles.subtitleLink, { color: theme.primary }]}
+        testID={`profile-list-subtitle-link-${item.id}`}>
+        {item.subtitle}
+      </ThemedText>
+    ) : (
+      <ThemedText type="small" themeColor="textSecondary">
+        {item.subtitle}
+      </ThemedText>
+    );
     const itemTitle = titleLink ? (
       <ThemedText
         type="smallBold"
@@ -302,11 +318,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                 {titleRow}
                 {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
                 {messageRow}
-                {item.subtitle && (
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {item.subtitle}
-                  </ThemedText>
-                )}
+                {itemSubtitle}
                 {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
                 {item.detail && (
                   <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-detail-${item.id}`}>
@@ -337,11 +349,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               {titleRow}
               {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
               {messageRow}
-              {item.subtitle && (
-                <ThemedText type="small" themeColor="textSecondary">
-                  {item.subtitle}
-                </ThemedText>
-              )}
+              {itemSubtitle}
               {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
               {item.detail && (
                 <ThemedText type="small" themeColor="textSecondary" testID={`profile-list-detail-${item.id}`}>
@@ -609,6 +617,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   counters: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: Spacing.two },
   heading: { gap: Spacing.half },
+  subtitleLink: { alignSelf: 'flex-start' },
   // Le titre et, à droite, la date.
   titleRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: Spacing.two },
   titleText: { flexShrink: 1 },
