@@ -137,12 +137,13 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByText('Notification')).toBeNull();
     expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
     // Une ligne : le type de location à gauche, la pastille à droite.
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
+    // Le statut seul, à gauche (décision 2026-11-22-detail-sans-ligne-type).
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'flex-start' });
     // Une demande : ni texte ni titre composé, ses lignes seulement (décision 2026-11-20-titre-demande).
     expect(screen.queryByTestId('notification-detail-text')).toBeNull();
     expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
-    // Le type de location, après le nom de l'offre.
-    expect(screen.getByTestId('notification-detail-rental-type')).toHaveTextContent('Location meublée · Studio');
+    // Plus de ligne du type : il est dans la barre du haut (décision 2026-11-22-detail-sans-ligne-type).
+    expect(screen.queryByTestId('notification-detail-rental-type')).toBeNull();
     // La suite derrière « Voir plus » : on la déplie.
     await fireEvent.press(screen.getByTestId('notification-detail-more'));
     // Les lignes, dans l'ordre servi, le libellé à gauche et la valeur à droite (décision 2026-11-20-lignes-demande).

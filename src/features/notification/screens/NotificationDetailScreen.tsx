@@ -65,10 +65,6 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     }
   }, [notification, markRead]);
 
-  // Le type de location et, à côté, le type de logement : « Location · Appartement »
-  // (décision 2026-11-21-detail-reservation-type-logement).
-  const offerType = [notification?.booking?.offer.rental_type, notification?.booking?.offer.property_type].filter(Boolean).join(' · ');
-
   // Les deux premières lignes, puis la suite derrière « Voir plus ».
   const lines = notification?.booking?.lines ?? [];
   const split = VISIBLE_LINES;
@@ -142,14 +138,11 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               {/* La zone fixe : la pastille à gauche, le texte, le total. */}
               <View style={[styles.head, { borderBottomColor: theme.backgroundSelected }]} testID="notification-detail-head">
                 <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
-                  {/* Une ligne : le type de location en gras à gauche, la pastille du statut à droite
-                      (une notification sans demande : la pastille seule, à droite). */}
-                  {(offerType || notification.tag) && (
-                    <View style={styles.headRow} testID="notification-detail-tag-row">
-                      <ThemedText type="smallBold" style={styles.headType} testID="notification-detail-rental-type">
-                        {offerType}
-                      </ThemedText>
-                      {notification.tag && <StatusTag tag={notification.tag} testID="notification-detail-tag" />}
+                  {/* La pastille du statut seule, à gauche : le type de location et de logement est dans la barre du haut
+                      (décision 2026-11-22-detail-sans-ligne-type). */}
+                  {notification.tag && (
+                    <View style={styles.tagRow} testID="notification-detail-tag-row">
+                      <StatusTag tag={notification.tag} testID="notification-detail-tag" />
                     </View>
                   )}
                   {/* Le nom de l'offre, sous le type de location et la pastille : le toucher ouvre la fiche du
@@ -241,7 +234,8 @@ const styles = StyleSheet.create({
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
-  headType: { flex: 1 },
+  // La pastille seule, à gauche.
+  tagRow: { flexDirection: 'row', justifyContent: 'flex-start' },
   // La valeur à droite de son libellé, sur plusieurs lignes au besoin.
   dateValue: { flexShrink: 1, textAlign: 'right' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
