@@ -478,8 +478,7 @@ export function ProfileListScreen({ list }: { list: string }) {
   }
 
   return (
-    // Le titre en lien quand l'API le sert (le logement des « Demandes », décision 2026-11-22-demandes-lien-offre).
-    <ProfileScreenShell title={definition.title} titleLink={definition.title_link && ITEM_LINK.test(definition.title_link) ? definition.title_link : null} scrolls={false}>
+    <ProfileScreenShell title={definition.title} scrolls={false}>
       <List
         testID="profile-list"
         items={definition.items}

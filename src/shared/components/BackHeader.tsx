@@ -1,4 +1,3 @@
-import { router, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -11,8 +10,6 @@ import { Spacing } from '@/shared/theme/theme';
 type Props = {
   /** Titre de l'écran, affiché au centre (« Créer un compte »). */
   title: string;
-  /** Toucher le titre ouvre cet écran (« /offers/12 ») ; il s'affiche alors en lien (décision 2026-11-22-demandes-lien-offre). */
-  titleLink?: string | null;
 };
 
 /**
@@ -22,7 +19,7 @@ type Props = {
  * à l'étape précédente d'un formulaire à étapes, sinon à l'écran précédent
  * (`BackStackProvider`). Le placer hors du `ScrollView`.
  */
-export function BackHeader({ title, titleLink }: Props) {
+export function BackHeader({ title }: Props) {
   const theme = useTheme();
   const { t } = useI18n();
   const back = useBack();
@@ -32,21 +29,9 @@ export function BackHeader({ title, titleLink }: Props) {
     <View
       testID="back-header"
       style={[styles.bar, { backgroundColor: theme.background, borderBottomColor: theme.backgroundSelected }]}>
-      {titleLink ? (
-        <ThemedText
-          type="smallBold"
-          numberOfLines={1}
-          style={[styles.title, { color: theme.primary }]}
-          accessibilityRole="link"
-          onPress={() => router.push(titleLink as Href)}
-          testID="back-header-title">
-          {title}
-        </ThemedText>
-      ) : (
-        <ThemedText type="smallBold" numberOfLines={1} style={styles.title} accessibilityRole="header" testID="back-header-title">
-          {title}
-        </ThemedText>
-      )}
+      <ThemedText type="smallBold" numberOfLines={1} style={styles.title} accessibilityRole="header" testID="back-header-title">
+        {title}
+      </ThemedText>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('nav.back')}
