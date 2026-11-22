@@ -34,7 +34,7 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Demande de logement', card_title: 'Location meublée · Studio', card_subtitle: 'Studio à Bonanjo', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', actor: { id: '4', name: 'Marie Curie', initials: 'MC', photo: null, online: true, link: '/members/4' }, summary: 'demande un séjour.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
+    { id: 'a', title: 'Demande de logement', card_title: 'Nouvelle demande de logement', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', actor: { id: '4', name: 'Marie Curie', initials: 'MC', photo: null, online: true, link: '/members/4' }, summary: 'Demande de location « Studio » du 5 au 7 déc.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }, { text: 'Studio', link: '/offers/12' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
     { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
@@ -68,7 +68,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     // Plus de statut sur la carte (décision 2026-11-22-carte-notification-ville-sans-statut).
     expect(screen.queryByTestId('notification-a-tag')).toBeNull();
     // Le type en gras, sur chaque notification, et le statut dessous.
-    expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Demande de logement');
+    expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Nouvelle demande de logement');
     expect(screen.getByTestId('notification-b-type')).toHaveTextContent('Demande de logement');
     expect(screen.queryByText('En attente')).toBeNull();
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
@@ -103,10 +103,9 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     await show();
 
     expect(await screen.findByTestId('notification-a-actor')).toHaveTextContent('Marie Curie');
-    expect(screen.queryByText('Location meublée · Studio')).toBeNull();
-    expect(screen.queryByText('Studio à Bonanjo')).toBeNull();
-    expect(screen.queryByTestId('notification-a-text')).toBeNull();
-    expect(screen.queryByTestId('notification-b-text')).toBeNull();
+    // Le texte après le type : sans le nom de qui envoie, écrit dessous ; entier sans lui.
+    expect(screen.getByTestId('notification-a-text')).toHaveTextContent('Demande de location « Studio » du 5 au 7 déc.');
+    expect(screen.getByTestId('notification-b-text')).toHaveTextContent('Votre demande est acceptée.');
     const message = screen.getByTestId('notification-a-message');
     expect(message).toHaveTextContent('Je viens pour le travail.');
     expect(message.props.numberOfLines).toBe(1);
@@ -114,7 +113,25 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(screen.getByTestId('notification-a-date').props.style).toEqual(expect.arrayContaining([{ textAlign: 'right' }]));
     // Sans qui agit : pas de nom.
     expect(screen.queryByTestId('notification-b-actor')).toBeNull();
-    expect(screen.getByTestId('notification-a-actor').props.onPress).toBeUndefined();
+  });
+
+  it('le nom de qui envoie ouvre sa page et marque la notification lue (décision 2026-11-22-carte-notification-lien-expediteur)', async () => {
+    await show();
+    await fireEvent.press(await screen.findByTestId('notification-a-actor'));
+
+    expect(screen.getByTestId('notification-a-actor').props.accessibilityRole).toBe('link');
+    expect(notificationService.read).toHaveBeenCalledWith('a');
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith('/members/4');
+  });
+
+  it('le nom du logement, dans le texte, ouvre l’annonce (décision 2026-11-22-lien-nom-logement)', async () => {
+    await show();
+    await fireEvent.press(await screen.findByText('Studio'));
+
+    expect(notificationService.read).toHaveBeenCalledWith('a');
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
   it('pas de nom quand c’est nous qui envoyons', async () => {

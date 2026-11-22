@@ -19,7 +19,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { useNotifications } from '../hooks/useNotifications';
 import type { AppNotification } from '../types';
 import { relativeTime } from '../utils/relativeTime';
-import { APP_LINK } from '../components/NotificationText';
+import { APP_LINK, NotificationText } from '../components/NotificationText';
 
 /**
  * L'onglet « Notifications » (décision 2026-11-19-contrat-centre-notifications) : la
@@ -103,13 +103,13 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
 
   function renderCard(item: AppNotification) {
     // Qui envoie, sauf nous (la copie de sa propre demande n'a pas d'auteur).
-    const sender = item.actor && String(item.actor.id) !== String(user?.id) ? item.actor.name : null;
+    const sender = item.actor && String(item.actor.id) !== String(user?.id) ? item.actor : null;
 
     return (
     <Pressable
       testID={`notification-${item.id}`}
       accessibilityRole="button"
-      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}${sender ? `, ${sender}` : ''}${item.message ? `. ${item.message}` : ''}`}
+      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.card_title ?? item.title}. ${sender && item.summary ? item.summary : item.body}${sender ? `, ${sender.name}` : ''}${item.message ? `. ${item.message}` : ''}`}
       onPress={() => open(item)}
       style={({ pressed }) => [
         styles.item,
@@ -117,16 +117,31 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
         pressed && styles.pressed,
       ]}>
       <View style={styles.texts}>
-        {/* Le type de la notification en gras (« Demande de logement »), à la place du titre composé ; plus de
-            logement ni de statut. Puis le nom de qui envoie, sauf si c'est nous (sans lien) ; son message en italique
-            gris, sur une ligne ; la date. Toucher la carte ouvre le détail (décision
+        {/* Le type de l'action en gras (« Nouvelle demande », « Demande acceptée », décision
+            2026-11-22-notification-par-action) ; plus de logement ni de statut. Puis le nom de qui envoie, sauf si
+            c'est nous : il ouvre sa page (décision 2026-11-22-carte-notification-lien-expediteur) ; son message en
+            italique gris, sur une ligne ; la date. Toucher ailleurs ouvre le détail (décision
             2026-11-22-carte-notification-type-auteur-message-date). */}
         <ThemedText type="smallBold" testID={`notification-${item.id}-type`}>
-          {item.title}
+          {item.card_title ?? item.title}
         </ThemedText>
+        {/* Le texte de la notification, après le type (décision 2026-11-22-carte-notification-texte) : sans le nom de
+            qui envoie quand il est dessous ; le nom du logement, et du membre, ouvrent leur page (décision
+            2026-11-22-lien-nom-logement). */}
+        <NotificationText
+          body={sender && item.summary ? item.summary : item.body}
+          links={item.text_links ?? []}
+          onLink={(link) => open(item, link)}
+          testID={`notification-${item.id}-text`}
+        />
         {sender && (
-          <ThemedText type="smallBold" testID={`notification-${item.id}-actor`}>
-            {sender}
+          <ThemedText
+            type="smallBold"
+            accessibilityRole="link"
+            onPress={() => open(item, sender.link)}
+            style={[styles.sender, { color: theme.primary }]}
+            testID={`notification-${item.id}-actor`}>
+            {sender.name}
           </ThemedText>
         )}
         {item.message && (
@@ -220,5 +235,6 @@ const styles = StyleSheet.create({
   link: { alignSelf: 'flex-start' },
   date: { textAlign: 'right' },
   message: { fontStyle: 'italic' },
+  sender: { alignSelf: 'flex-start' },
   pressed: { opacity: 0.7 },
 });
