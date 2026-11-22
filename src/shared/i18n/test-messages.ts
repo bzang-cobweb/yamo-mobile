@@ -73,6 +73,8 @@ export const TEST_MESSAGES: Messages = {
   'list.cancel': 'Annuler',
   'offer.unavailable': "Cette offre n'est plus disponible.",
   'offer.publishedOn': 'Publiée le :date',
+  'offer.more': 'Voir plus',
+  'offer.less': 'Voir moins',
   'offer.photoPosition': ':current / :total',
   'offer.details': 'Caractéristiques',
   'offer.rules': 'Règles',

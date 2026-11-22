@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -115,7 +115,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 {/* La description seule, sans titre (décision 2026-11-19-fiche-description-equipements). */}
                 {offer.description && (
                   <View style={styles.section}>
-                    <ThemedText testID="offer-description">{offer.description}</ThemedText>
+                    <Description text={offer.description} />
                   </View>
                 )}
 
@@ -285,6 +285,47 @@ function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewCh
   );
 }
 
+/** Les lignes de la description visibles avant « Voir plus » (décision 2026-11-22-description-voir-plus). */
+const DESCRIPTION_LINES = 4;
+
+/**
+ * La description, repliée à `DESCRIPTION_LINES` lignes quand elle est plus longue, avec « Voir plus » / « Voir moins »
+ * dessous, à droite, comme les lignes d'une demande (décision 2026-11-22-description-voir-plus). Ses lignes sont
+ * comptées au premier affichage, texte entier.
+ */
+function Description({ text }: { text: string }) {
+  const { t } = useI18n();
+  const [lines, setLines] = useState<number | null>(null);
+  const [open, setOpen] = useState(false);
+  const long = lines !== null && lines > DESCRIPTION_LINES;
+
+  return (
+    <View>
+      <ThemedText
+        testID="offer-description"
+        numberOfLines={long && !open ? DESCRIPTION_LINES : undefined}
+        onTextLayout={(event) => {
+          if (lines === null) {
+            setLines(event.nativeEvent.lines.length);
+          }
+        }}>
+        {text}
+      </ThemedText>
+      {long && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open }}
+          hitSlop={Spacing.one}
+          onPress={() => setOpen((value) => !value)}
+          style={({ pressed }) => [styles.more, pressed && styles.pressed]}
+          testID="offer-description-more">
+          <ThemedText type="linkPrimary">{t(open ? 'offer.less' : 'offer.more')}</ThemedText>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 /**
  * Le contenu d'une section `text` (la localisation, un bloc d'informations) : le
  * texte, sa note en dessous s'il y en a une, et le séparateur à la fin
@@ -323,6 +364,7 @@ function FactRow({ fact, testID }: { fact: { label: string; value: string }; tes
 }
 
 const styles = StyleSheet.create({
+  more: { alignSelf: 'flex-end', paddingTop: Spacing.one },
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   centered: { textAlign: 'center' },

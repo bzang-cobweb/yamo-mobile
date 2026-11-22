@@ -433,6 +433,31 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     expect(router.push).toHaveBeenLastCalledWith({ pathname: '/offers/[id]/book', params: { id: OFFER.id } });
   });
 
+  it('une longue description : 4 lignes, puis « Voir plus » / « Voir moins » (décision 2026-11-22-description-voir-plus)', async () => {
+    await show();
+    const description = screen.getByTestId('offer-description');
+    expect(screen.queryByTestId('offer-description-more')).toBeNull();
+
+    await act(async () => {
+      fireEvent(description, 'textLayout', { nativeEvent: { lines: Array.from({ length: 6 }, () => ({})) } });
+    });
+    expect(screen.getByTestId('offer-description').props.numberOfLines).toBe(4);
+    expect(screen.getByTestId('offer-description-more')).toHaveTextContent('Voir plus');
+
+    await fireEvent.press(screen.getByTestId('offer-description-more'));
+    expect(screen.getByTestId('offer-description').props.numberOfLines).toBeUndefined();
+    expect(screen.getByTestId('offer-description-more')).toHaveTextContent('Voir moins');
+  });
+
+  it('une courte description : pas de « Voir plus »', async () => {
+    await show();
+    await act(async () => {
+      fireEvent(screen.getByTestId('offer-description'), 'textLayout', { nativeEvent: { lines: [{}, {}] } });
+    });
+    expect(screen.queryByTestId('offer-description-more')).toBeNull();
+    expect(screen.getByTestId('offer-description').props.numberOfLines).toBeUndefined();
+  });
+
   it('sa propre offre : « Modifier » ouvre le formulaire de l’offre (décision 2026-11-19-fiche-bouton-modifier)', async () => {
     mockState = { data: { ...OFFER, booking: null, edit: { label: 'Modifier', form: 'offer.offer' } }, isPending: false, error: null };
     mockUser = { id: 3 };
