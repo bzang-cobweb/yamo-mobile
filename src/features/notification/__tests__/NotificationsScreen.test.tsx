@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import type { FormFieldDefinition } from '@/features/form/types';
@@ -68,7 +68,7 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     // Plus de statut sur la carte (décision 2026-11-22-carte-notification-ville-sans-statut).
     expect(screen.queryByTestId('notification-a-tag')).toBeNull();
     // Le type en gras, sur chaque notification, et le statut dessous.
-    expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Location meublée · Studio');
+    expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Demande de logement');
     expect(screen.getByTestId('notification-b-type')).toHaveTextContent('Demande de logement');
     expect(screen.queryByText('En attente')).toBeNull();
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
@@ -90,12 +90,6 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     await waitFor(() => expect(screen.getByTestId('notification-a').props.accessibilityLabel).not.toMatch(/^Non lue/));
   });
 
-  it('le texte de la carte n’a pas de lien : toucher la carte ouvre le détail (décision 2026-11-22-carte-notification-vers-detail)', async () => {
-    await show();
-
-    expect(within(await screen.findByTestId('notification-b-text')).queryAllByRole('link')).toHaveLength(0);
-  });
-
   it('« Voir l’annonce » marque la notification lue et ouvre la fiche de l’offre', async () => {
     await show();
     await fireEvent.press(await screen.findByText('Voir l’annonce'));
@@ -105,25 +99,31 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(router.push).toHaveBeenCalledWith('/offers/12');
   });
 
-  it('la carte : le type, le titre du logement, le nom, le message en italique gris, la date à droite ; sans texte ni photo', async () => {
+  it('la carte : le type, qui envoie sauf nous, le message en italique gris, la date à droite ; sans titre composé ni logement (décision 2026-11-22-carte-notification-type-auteur-message-date)', async () => {
     await show();
 
     expect(await screen.findByTestId('notification-a-actor')).toHaveTextContent('Marie Curie');
-    expect(screen.getByTestId('notification-a-subtitle')).toHaveTextContent('Studio à Bonanjo');
-    expect(screen.queryByTestId('notification-b-subtitle')).toBeNull();
-    expect(screen.queryByTestId('notification-a-avatar')).toBeNull();
-    // Plus de texte quand on sait qui agit.
+    expect(screen.queryByText('Location meublée · Studio')).toBeNull();
+    expect(screen.queryByText('Studio à Bonanjo')).toBeNull();
     expect(screen.queryByTestId('notification-a-text')).toBeNull();
+    expect(screen.queryByTestId('notification-b-text')).toBeNull();
     const message = screen.getByTestId('notification-a-message');
     expect(message).toHaveTextContent('Je viens pour le travail.');
     expect(message.props.numberOfLines).toBe(1);
     expect(message.props.style).toEqual(expect.arrayContaining([{ fontStyle: 'italic' }]));
     expect(screen.getByTestId('notification-a-date').props.style).toEqual(expect.arrayContaining([{ textAlign: 'right' }]));
-    // Sans qui agit (une ancienne notification) : son texte entier.
+    // Sans qui agit : pas de nom.
     expect(screen.queryByTestId('notification-b-actor')).toBeNull();
-    expect(screen.getByTestId('notification-b-text')).toHaveTextContent('Votre demande est acceptée.');
-    // Le nom de qui agit n'est pas cliquable sur la carte.
     expect(screen.getByTestId('notification-a-actor').props.onPress).toBeUndefined();
+  });
+
+  it('pas de nom quand c’est nous qui envoyons', async () => {
+    const own = { ...PAGE.items[0], id: 'c', actor: { ...PAGE.items[0].actor!, id: '1' } };
+    jest.mocked(notificationService.list).mockResolvedValue({ ...PAGE, items: [own] });
+    await show();
+
+    expect(await screen.findByTestId('notification-c-type')).toBeTruthy();
+    expect(screen.queryByTestId('notification-c-actor')).toBeNull();
   });
 
   it('une notification lue ouvre sa page sans repartir à l’API', async () => {

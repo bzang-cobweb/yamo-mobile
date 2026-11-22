@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
@@ -18,8 +19,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { useNotifications } from '../hooks/useNotifications';
 import type { AppNotification } from '../types';
 import { relativeTime } from '../utils/relativeTime';
-import { NotificationType } from '../components/NotificationType';
-import { APP_LINK, NotificationText } from '../components/NotificationText';
+import { APP_LINK } from '../components/NotificationText';
 
 /**
  * L'onglet « Notifications » (décision 2026-11-19-contrat-centre-notifications) : la
@@ -38,6 +38,7 @@ export const NOTIFICATIONS_FILTERS = 'notifications';
  */
 export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
   const { t, locale } = useI18n();
+  const { user } = useAuth();
   const theme = useTheme();
   const [searchText, setSearchText] = useState('');
   const search = useDebounced(searchText.trim(), SEARCH_DELAY);
@@ -101,11 +102,14 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
   const narrowed = search !== '' || filterCount > 0;
 
   function renderCard(item: AppNotification) {
+    // Qui envoie, sauf nous (la copie de sa propre demande n'a pas d'auteur).
+    const sender = item.actor && String(item.actor.id) !== String(user?.id) ? item.actor.name : null;
+
     return (
     <Pressable
       testID={`notification-${item.id}`}
       accessibilityRole="button"
-      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.card_title ?? item.title}${item.card_subtitle ? `, ${item.card_subtitle}` : ''}. ${item.actor ? item.actor.name : item.body}${item.message ? ` « ${item.message} »` : ''}`}
+      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}${sender ? `, ${sender}` : ''}${item.message ? `. ${item.message}` : ''}`}
       onPress={() => open(item)}
       style={({ pressed }) => [
         styles.item,
@@ -113,30 +117,24 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
         pressed && styles.pressed,
       ]}>
       <View style={styles.texts}>
-        {/* 1. Le type en gras, avec la ville, sans le statut, lu sur le détail (décision 2026-11-22-carte-notification-ville-sans-statut). */}
-        <NotificationType type={item.card_title ?? item.title} tag={null} testID={`notification-${item.id}`} />
-        {/* 2. Le titre du logement ; 3. le nom de qui agit (sans lien) ; 4. son message en italique gris, sur une ligne
-            (« … » au-delà ; entier sur la page) : plus de texte, toucher la carte ouvre le détail (décisions
-            2026-11-22-carte-notification-vers-detail et 2026-11-22-carte-notification-type-titre-auteur). */}
-        {item.card_subtitle ? (
-          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} testID={`notification-${item.id}-subtitle`}>
-            {item.card_subtitle}
-          </ThemedText>
-        ) : null}
-        {item.actor ? (
+        {/* Le type de la notification en gras (« Demande de logement »), à la place du titre composé ; plus de
+            logement ni de statut. Puis le nom de qui envoie, sauf si c'est nous (sans lien) ; son message en italique
+            gris, sur une ligne ; la date. Toucher la carte ouvre le détail (décision
+            2026-11-22-carte-notification-type-auteur-message-date). */}
+        <ThemedText type="smallBold" testID={`notification-${item.id}-type`}>
+          {item.title}
+        </ThemedText>
+        {sender && (
           <ThemedText type="smallBold" testID={`notification-${item.id}-actor`}>
-            {item.actor.name}
+            {sender}
           </ThemedText>
-        ) : (
-          // Sans qui agit (une ancienne notification) : son texte, faute de mieux.
-          <NotificationText body={item.body} links={[]} onLink={() => open(item)} testID={`notification-${item.id}-text`} />
         )}
         {item.message && (
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.message} testID={`notification-${item.id}-message`}>
             {item.message}
           </ThemedText>
         )}
-        {/* 5. La date, après le message, alignée à droite. */}
+        {/* La date, après le message, alignée à droite. */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`notification-${item.id}-date`}>
           {relativeTime(item.created_at, t, locale)}
         </ThemedText>
