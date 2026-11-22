@@ -116,11 +116,12 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
       <View style={styles.texts}>
         {/* 1. Le type en gras, et dessous le statut réel de la demande (sans photo, décision 2026-11-20-carte-sans-photo). */}
         <NotificationType type={item.card_title ?? item.title} tag={item.tag} testID={`notification-${item.id}`} />
-        {/* 2. Le texte, sans le nom de qui agit. */}
+        {/* 2. Le texte, sans le nom de qui agit, sans liens : toucher la carte ouvre toujours le détail de la demande ;
+            les liens du texte sont sur cette page (décision 2026-11-22-carte-notification-vers-detail). */}
         <NotificationText
           body={item.actor && item.summary ? item.summary : item.body}
-          links={item.text_links ?? []}
-          onLink={(link) => open(item, link)}
+          links={[]}
+          onLink={() => open(item)}
           testID={`notification-${item.id}-text`}
         />
         {/* 3. Le nom de qui agit (sans lien), puis son message, sur une ligne (« … » au-delà ; entier sur la page). */}

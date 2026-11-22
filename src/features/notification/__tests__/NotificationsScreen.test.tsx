@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import type { FormFieldDefinition } from '@/features/form/types';
@@ -86,6 +86,12 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     expect(notificationService.read).toHaveBeenCalledWith('a');
     expect(router.push).toHaveBeenCalledWith('/notifications/a');
     await waitFor(() => expect(screen.getByTestId('notification-a').props.accessibilityLabel).not.toMatch(/^Non lue/));
+  });
+
+  it('le texte de la carte n’a pas de lien : toucher la carte ouvre le détail (décision 2026-11-22-carte-notification-vers-detail)', async () => {
+    await show();
+
+    expect(within(await screen.findByTestId('notification-a-text')).queryAllByRole('link')).toHaveLength(0);
   });
 
   it('« Voir l’annonce » marque la notification lue et ouvre la fiche de l’offre', async () => {
