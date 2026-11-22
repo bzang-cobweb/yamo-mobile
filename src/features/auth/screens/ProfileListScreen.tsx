@@ -18,9 +18,11 @@ import { ItemPicture } from '@/features/list/components/ItemPicture';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { ITEM_LINK } from '@/features/list/services/ListService';
 import { ItemReviews } from '@/features/list/components/ItemReviews';
+import { relativeTime } from '@/features/notification/utils/relativeTime';
 import { CARD_BODY, CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { ThemedText } from '@/shared/theme/components/themed-text';
+import { useI18n } from '@/shared/i18n/I18nContext';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
 
@@ -58,6 +60,7 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
  */
 export function ProfileListScreen({ list }: { list: string }) {
   const { t } = useAuth();
+  const { locale } = useI18n();
   const theme = useTheme();
   const [searchText, setSearchText] = useState('');
   const search = useDebounced(searchText.trim(), SEARCH_DELAY);
@@ -271,6 +274,12 @@ export function ProfileListScreen({ list }: { list: string }) {
                   </ThemedText>
                 )}
                 {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
+                {/* La date de la dernière notification, sous le message, à droite (décision 2026-11-22-demandes-date-derniere-notification). */}
+                {item.date && (
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`profile-list-date-${item.id}`}>
+                    {relativeTime(item.date, t, locale)}
+                  </ThemedText>
+                )}
                 {/* La note et la phrase mise en avant, quand l'API les sert. */}
                 <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
               </View>
@@ -305,6 +314,12 @@ export function ProfileListScreen({ list }: { list: string }) {
                 </ThemedText>
               )}
               {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
+              {/* La date de la dernière notification, sous le message, à droite (décision 2026-11-22-demandes-date-derniere-notification). */}
+              {item.date && (
+                <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`profile-list-date-${item.id}`}>
+                  {relativeTime(item.date, t, locale)}
+                </ThemedText>
+              )}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`profile-list-item-${item.id}`} />
             </View>
@@ -566,6 +581,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   counters: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: Spacing.two },
   heading: { gap: Spacing.half },
+  date: { textAlign: 'right' },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });

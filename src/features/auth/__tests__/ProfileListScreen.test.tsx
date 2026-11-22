@@ -388,6 +388,15 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-detail-7').props.style).color).toBe(StyleSheet.flatten(screen.getByText('Studio meublé à Akwa').props.style).color);
   });
 
+  it('la date de la dernière notification, sous le message, à droite (décision 2026-11-22-demandes-date-derniere-notification)', async () => {
+    mockList = list([item('7', { quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 2 * 3600 * 1000).toISOString() })]);
+    await renderScreen();
+
+    const date = screen.getByTestId('profile-list-date-7');
+    expect(date.props.children).toBeTruthy();
+    expect(StyleSheet.flatten(date.props.style).textAlign).toBe('right');
+  });
+
   it('« Demandes » du menu ouvre la liste des demandes reçues, le logement choisi (décision 2026-11-21-demandes-comme-mes-reservations)', async () => {
     mockList = {
       ...list([item('7', { link: '/offers/7', actions: [{ label: 'Demandes', style: 'default', confirm: null, submission: null, form: null, link: null, list: 'offer.bookings.received', filter: { offer: '7' } }] })]),
@@ -748,6 +757,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       await renderScreen();
 
       expect(screen.getByTestId('profile-list-quote-3')).toHaveTextContent('Je viens pour le travail.');
+      // Sans date, rien sous le message.
+      expect(screen.queryByTestId('profile-list-date-3')).toBeNull();
       // Une ligne, puis « … » (décision 2026-11-22-demandes-dernier-message).
       expect(within(screen.getByTestId('profile-list-quote-3')).getByText('Je viens pour le travail.').props.numberOfLines).toBe(1);
       expect(screen.queryByTestId('profile-list-quote-4')).toBeNull();

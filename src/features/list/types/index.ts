@@ -45,6 +45,8 @@ export type ListItem = {
   subtitle: string | null;
   /** Une ligne à part sous le sous-titre (le type de demande et les dates d'une réservation, décision 2026-11-22-reservations-ligne-dates) ; absente : aucune. */
   detail?: string | null;
+  /** Une date ISO 8601 sous le message, à droite, dite en temps relatif (décision 2026-11-22-demandes-date-derniere-notification) ; absente : aucune. */
+  date?: string | null;
   /** Photo (URL), affichée au-dessus du titre ; `null` : aucune. */
   image: string | null;
   /** Note moyenne (1 à 5) et nombre de notes ; `null` : aucune (décision 2026-11-19-contrat-avis-offres). */
