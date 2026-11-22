@@ -175,6 +175,22 @@ export function ProfileListScreen({ list }: { list: string }) {
         {item.title}
       </ThemedText>
     );
+    // Le message cité et, à sa droite, le nombre de notifications non lues en pastille (décision
+    // 2026-11-22-demandes-pastille-nombre-message).
+    const unreadCount = item.unread_count ?? 0;
+    const messageRow =
+      item.quote || unreadCount > 0 ? (
+        <View style={styles.messageRow}>
+          <View style={styles.messageText}>
+            {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
+          </View>
+          {unreadCount > 0 && (
+            <View accessible accessibilityLabel={t('notifications.unreadCount', { count: unreadCount })} testID={`profile-list-unread-${item.id}`}>
+              <StatusTag tag={{ label: String(unreadCount), tone: 'danger' }} />
+            </View>
+          )}
+        </View>
+      ) : null;
     const titleRow = dateText ? (
       <View style={styles.titleRow}>
         <View style={styles.titleText}>{itemTitle}</View>
@@ -276,7 +292,7 @@ export function ProfileListScreen({ list }: { list: string }) {
                 {tagsRow}
                 {titleRow}
                 {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
-                {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
+                {messageRow}
                 {item.subtitle && (
                   <ThemedText type="small" themeColor="textSecondary">
                     {item.subtitle}
@@ -311,7 +327,7 @@ export function ProfileListScreen({ list }: { list: string }) {
               {tagsRow}
               {titleRow}
               {/* Le message, juste après la ligne du nom (décision 2026-11-22-demandes-message-apres-nom). */}
-              {item.quote && <Quote text={item.quote} numberOfLines={1} testID={`profile-list-quote-${item.id}`} />}
+              {messageRow}
               {item.subtitle && (
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.subtitle}
@@ -587,6 +603,9 @@ const styles = StyleSheet.create({
   // Le titre et, à droite, la date.
   titleRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: Spacing.two },
   titleText: { flexShrink: 1 },
+  // Le message et, à droite, la pastille des non lues.
+  messageRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  messageText: { flex: 1 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });

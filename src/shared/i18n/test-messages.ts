@@ -27,6 +27,7 @@ export const TEST_MESSAGES: Messages = {
   'notifications.search': 'Rechercher…',
   'notifications.noResults': 'Aucune notification ne correspond à cette recherche.',
   'notifications.unread': 'Non lue',
+  'notifications.unreadCount': 'Notifications non lues : :count',
   'notifications.justNow': "à l'instant",
   'notifications.minutesAgo': 'il y a :count min',
   'notifications.hoursAgo': 'il y a :count h',
