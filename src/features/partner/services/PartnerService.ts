@@ -11,6 +11,11 @@ export class PartnerService {
     return (await this.client.get<{ data: Partner[] }>('/v1/partners')).data;
   }
 
+  /** `GET /api/v1/partners/{id}` — un partenaire visible (décision 2026-11-23-partenaires-liste-detail). */
+  async get(id: string): Promise<Partner> {
+    return (await this.client.get<{ data: Partner }>(`/v1/partners/${encodeURIComponent(id)}`)).data;
+  }
+
   /** `POST /api/v1/partners/{id}/click` — un toucher sur un partenaire compte un clic. */
   async click(id: string): Promise<void> {
     await this.client.post(`/v1/partners/${encodeURIComponent(id)}/click`);

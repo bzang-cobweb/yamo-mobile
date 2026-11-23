@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import * as WebBrowser from 'expo-web-browser';
-import { StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
@@ -15,6 +14,8 @@ jest.mock('expo-image', () => {
   return { Image: View };
 });
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
+jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 const mockClick = jest.fn().mockResolvedValue(undefined);
 jest.mock('../services/PartnerService', () => ({ partnerService: { click: (...args: unknown[]) => mockClick(...args) } }));
 
@@ -47,18 +48,17 @@ describe('PartnersStrip', () => {
     expect(screen.getByLabelText('Déménageurs du Wouri')).toBeTruthy();
     // Sans logo, le nom à sa place.
     expect(screen.getByTestId('home-partner-4')).toHaveTextContent('Assurances du Littoral');
-    // Dans le cadre, sans fond, comme un logo.
-    expect(StyleSheet.flatten(screen.getByTestId('home-partner-4').props.style).backgroundColor).toBeUndefined();
-    expect(StyleSheet.flatten(screen.getByTestId('home-partner-3').props.style).backgroundColor).toBeUndefined();
   });
 
-  it('un toucher compte un clic et ouvre le lien dans le navigateur de l’app', async () => {
+  it('toucher un logo ouvre la page du partenaire ; la flèche, la page « Partenaires » (décision 2026-11-23-partenaires-liste-detail)', async () => {
     await show([wouri]);
 
     await fireEvent.press(screen.getByTestId('home-partner-3'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '3' } });
+    expect(mockClick).not.toHaveBeenCalled();
 
-    expect(mockClick).toHaveBeenCalledWith('3');
-    expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith('https://wouri.test/fr');
+    await fireEvent.press(screen.getByTestId('home-partners-see-all'));
+    expect(router.push).toHaveBeenLastCalledWith('/partners');
   });
 
   it('sans partenaire, rien', async () => {

@@ -74,6 +74,9 @@ function RootNavigator() {
           <Stack.Screen name="offers/[id]/index" />
           {/* Tous les avis d'une offre, ouverts comme la fiche (décision 2026-11-19-nuit-tous-les-avis). */}
           <Stack.Screen name="offers/[id]/reviews" />
+          {/* Les partenaires et la page de chacun (décision 2026-11-23-partenaires-liste-detail). */}
+          <Stack.Screen name="partners/index" />
+          <Stack.Screen name="partners/[id]" />
           {/* Les filtres d'une liste (décision 2026-11-19-contrat-filtres-vitrine). */}
           <Stack.Screen name="filters/[list]" />
           <Stack.Protected guard={user !== null}>

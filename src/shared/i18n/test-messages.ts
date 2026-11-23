@@ -11,6 +11,8 @@ export const TEST_MESSAGES: Messages = {
   'tabs.search': 'Recherche',
   'home.seeAll': 'Voir tout',
   'partners.title': 'Partenaires',
+  'partners.visit': 'Visiter le site',
+  'partners.unavailable': "Ce partenaire n'est plus disponible.",
   'tabs.profile': 'Profil',
   'tabs.notifications': 'Notifications',
   'notifications.title': 'Notifications',
