@@ -792,6 +792,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(router.push).toHaveBeenCalledWith({ pathname: '/filters/[list]', params: { list: 'payments.cards' } });
     });
 
+    it('le sous-titre coupé au nombre de lignes demandé par l’API (décision 2026-11-24-mes-partenaires-cartes)', async () => {
+      mockList = list([item('1', { subtitle: 'Une longue description', subtitle_lines: 1 }), item('2')]);
+      await renderScreen();
+
+      expect(screen.getByTestId('profile-list-subtitle-1').props.numberOfLines).toBe(1);
+      expect(screen.getByTestId('profile-list-subtitle-2').props.numberOfLines).toBeUndefined();
+    });
+
     it('le statut en pastille de couleur', async () => {
       mockList = list([item('3', { tag: { label: 'En attente', tone: 'warning' } }), item('4')]);
       await renderScreen();

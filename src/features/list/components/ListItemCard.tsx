@@ -74,7 +74,8 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
       {item.subtitle}
     </ThemedText>
   ) : (
-    <ThemedText type="small" themeColor="textSecondary">
+    // Coupé à `subtitle_lines` lignes quand l'API le demande (décision 2026-11-24-mes-partenaires-cartes).
+    <ThemedText type="small" themeColor="textSecondary" numberOfLines={item.subtitle_lines ?? undefined} testID={`${prefix}-subtitle-${item.id}`}>
       {item.subtitle}
     </ThemedText>
   );
