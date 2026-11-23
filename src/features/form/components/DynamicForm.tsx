@@ -233,27 +233,45 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
 
   return (
     <View ref={root} collapsable={false} style={styles.form} testID={`form-${definition.name}`}>
-      {((!hideTitle && definition.title !== null) || definition.subtitle !== null) && (
-        <View style={styles.header}>
-          {!hideTitle && definition.title !== null && (
-            <ThemedText type="subtitle" accessibilityRole="header" style={titleAlign} testID="form-title">
-              {definition.title}
-            </ThemedText>
-          )}
-          {/* Le titre dans la barre du haut : le sous-titre (le titre de l'offre d'une demande) prend un style de titre
-              mesuré, 18 en gras, en tête du contenu (décisions 2026-11-22-formulaire-sous-titre-style-titre et
-              2026-11-22-formulaire-titre-plus-petit) ; sinon, en gris sous le titre. */}
-          {definition.subtitle !== null &&
-            (hideTitle ? (
-              <ThemedText accessibilityRole="header" style={[styles.contentTitle, titleAlign]} testID="form-subtitle">
-                {definition.subtitle}
+      {/* Un titre de navigation, dans la barre du haut : le titre en gras en tête du contenu, le sous-titre en gris dessous
+          (décision 2026-11-22-formulaire-titre-navigation). Sinon, avec le titre dans la barre du haut, le sous-titre prend
+          le style de titre mesuré, 18 en gras (décisions 2026-11-22-formulaire-sous-titre-style-titre et
+          2026-11-22-formulaire-titre-plus-petit) ; sans barre, le grand titre et le sous-titre en gris. */}
+      {hideTitle && definition.navigation_title ? (
+        (definition.title !== null || definition.subtitle !== null) && (
+          <View style={styles.header}>
+            {definition.title !== null && (
+              <ThemedText accessibilityRole="header" style={[styles.contentTitle, titleAlign]} testID="form-title">
+                {definition.title}
               </ThemedText>
-            ) : (
+            )}
+            {definition.subtitle !== null && (
               <ThemedText themeColor="textSecondary" style={titleAlign} testID="form-subtitle">
                 {definition.subtitle}
               </ThemedText>
-            ))}
-        </View>
+            )}
+          </View>
+        )
+      ) : (
+        ((!hideTitle && definition.title !== null) || definition.subtitle !== null) && (
+          <View style={styles.header}>
+            {!hideTitle && definition.title !== null && (
+              <ThemedText type="subtitle" accessibilityRole="header" style={titleAlign} testID="form-title">
+                {definition.title}
+              </ThemedText>
+            )}
+            {definition.subtitle !== null &&
+              (hideTitle ? (
+                <ThemedText accessibilityRole="header" style={[styles.contentTitle, titleAlign]} testID="form-subtitle">
+                  {definition.subtitle}
+                </ThemedText>
+              ) : (
+                <ThemedText themeColor="textSecondary" style={titleAlign} testID="form-subtitle">
+                  {definition.subtitle}
+                </ThemedText>
+              ))}
+          </View>
+        )
       )}
 
       {/* Une description sous le sous-titre, en gris : le titre du logement (décision 2026-11-22-formulaire-description). */}

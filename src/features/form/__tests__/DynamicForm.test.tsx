@@ -211,6 +211,22 @@ describe('DynamicForm', () => {
     expect(tree.indexOf('"form-description"')).toBeLessThan(tree.indexOf('"form-notice"'));
   });
 
+  it('avec un titre de navigation : le titre en gras en tête du contenu, le sous-titre en gris (décision 2026-11-22-formulaire-titre-navigation)', async () => {
+    await render(
+      <DynamicForm
+        definition={{ ...everyType, navigation_title: 'Accepter la demande', title: 'Marie Curie · du 3 déc. 2026 au 6 déc. 2026', subtitle: 'Studio meublé à Bonanjo' }}
+        onSubmit={jest.fn()}
+        hideTitle
+      />,
+    );
+
+    const title = screen.getByTestId('form-title');
+    expect(title).toHaveTextContent('Marie Curie · du 3 déc. 2026 au 6 déc. 2026');
+    expect(StyleSheet.flatten(title.props.style)).toMatchObject({ fontSize: 18, fontWeight: '700' });
+    expect(screen.getByTestId('form-subtitle')).toHaveTextContent('Studio meublé à Bonanjo');
+    expect(screen.queryByText('Accepter la demande')).toBeNull();
+  });
+
   it('sans titre ni sous-titre, n’affiche aucun en-tête', async () => {
     await render(<DynamicForm definition={everyType} onSubmit={jest.fn()} />);
 

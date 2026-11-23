@@ -100,7 +100,8 @@ export function ProfileFormScreen({ form, record }: { form: string; record?: str
   }
 
   return (
-    <ProfileScreenShell title={definition.data?.title ?? ''}>
+    // La barre du haut : le titre de navigation, sinon le titre (décision 2026-11-22-formulaire-titre-navigation).
+    <ProfileScreenShell title={definition.data?.navigation_title || definition.data?.title || ''}>
       {definition.data && submission === null ? (
         <ThemedText style={styles.error} accessibilityRole="alert" testID="profile-form-unsupported">
           {t('error.unknown')}

@@ -131,6 +131,8 @@ export type FormDefinition = {
   name: string;
   /** Titre affiché au-dessus du formulaire, ou `null`. */
   title: string | null;
+  /** Le titre de la barre du haut ; absent ou `null` : le titre (décision 2026-11-22-formulaire-titre-navigation). */
+  navigation_title?: string | null;
   /** Sous-titre affiché sous le titre, ou `null`. */
   subtitle: string | null;
   /** Une description sous le sous-titre, en gris (le titre d'une offre, décision 2026-11-22-formulaire-description) ; absente : aucune. */
