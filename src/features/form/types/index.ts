@@ -133,6 +133,8 @@ export type FormDefinition = {
   title: string | null;
   /** Sous-titre affiché sous le titre, ou `null`. */
   subtitle: string | null;
+  /** Une description sous le sous-titre, en gris (le titre d'une offre, décision 2026-11-22-formulaire-description) ; absente : aucune. */
+  description?: string | null;
   /** Une note à part, sous le titre et le sous-titre : un avertissement (décision 2026-11-22-formulaire-note) ; absente : aucune. */
   notice?: string | null;
   /** Alignement du titre, du sous-titre et des titres d'étape ; absent : `start` (décision 2026-11-19-alignement-titre-formulaire). */

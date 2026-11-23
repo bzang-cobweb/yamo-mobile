@@ -1,6 +1,6 @@
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { ERROR_COLOR } from '@/shared/theme/colors';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 

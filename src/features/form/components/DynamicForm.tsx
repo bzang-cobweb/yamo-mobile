@@ -256,6 +256,12 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
         </View>
       )}
 
+      {/* Une description sous le sous-titre, en gris : le titre du logement (décision 2026-11-22-formulaire-description). */}
+      {definition.description ? (
+        <ThemedText themeColor="textSecondary" style={titleAlign} testID="form-description">
+          {definition.description}
+        </ThemedText>
+      ) : null}
       {/* Une note à part, sous le titre : un avertissement, en orange (décision 2026-11-22-formulaire-note). */}
       {definition.notice ? (
         <ThemedText type="small" style={[{ color: TONE_COLORS.warning }, titleAlign]} testID="form-notice">

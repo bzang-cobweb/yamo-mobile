@@ -2,13 +2,15 @@ import type { PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { TONE_COLORS } from '@/shared/components/StatusTag';
+import { ERROR_COLOR } from '@/shared/theme/colors';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
 import type { FormFieldDefinition } from '../types';
 
-export const ERROR_COLOR = '#d93025';
+// Le rouge partagé, gardé exporté ici pour les écrans qui l'importent déjà.
+export { ERROR_COLOR };
 
 /**
  * Cadre commun d'un champ : libellé (et marque d'obligation), le champ, puis
@@ -27,7 +29,7 @@ export function FieldShell({ field, error, children }: PropsWithChildren<{ field
     <View style={styles.container}>
       {/* Une note avant le libellé, un avertissement, en orange comme celle d'un formulaire (décision 2026-11-22-champ-note). */}
       {field.notice ? (
-        <ThemedText type="small" style={styles.notice} testID={`${field.name}-notice`}>
+        <ThemedText type="small" style={{ color: TONE_COLORS.warning }} testID={`${field.name}-notice`}>
           {field.notice}
         </ThemedText>
       ) : null}
@@ -57,5 +59,4 @@ const styles = StyleSheet.create({
   container: { gap: Spacing.one },
   required: { color: ERROR_COLOR },
   error: { color: ERROR_COLOR },
-  notice: { color: TONE_COLORS.warning },
 });

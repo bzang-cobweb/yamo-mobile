@@ -195,7 +195,7 @@ describe('DynamicForm', () => {
   it('une note à part, sous le titre, en orange (décision 2026-11-22-formulaire-note)', async () => {
     await render(
       <DynamicForm
-        definition={{ ...everyType, title: 'Accepter la demande', subtitle: 'Marie Curie · du 3 déc. 2026 au 6 déc. 2026', notice: '2 autres visites sont demandées ce jour-là.' }}
+        definition={{ ...everyType, title: 'Accepter la demande', subtitle: 'Marie Curie · du 3 déc. 2026 au 6 déc. 2026', description: 'Studio meublé à Bonanjo', notice: '2 autres visites sont demandées ce jour-là.' }}
         onSubmit={jest.fn()}
         hideTitle
       />,
@@ -205,7 +205,10 @@ describe('DynamicForm', () => {
     expect(notice).toHaveTextContent('2 autres visites sont demandées ce jour-là.');
     expect(screen.getByTestId('form-subtitle')).toHaveTextContent('Marie Curie · du 3 déc. 2026 au 6 déc. 2026');
     const tree = JSON.stringify(screen.toJSON());
-    expect(tree.indexOf('"form-subtitle"')).toBeLessThan(tree.indexOf('"form-notice"'));
+    // La description entre le sous-titre et la note (décision 2026-11-22-formulaire-description).
+    expect(screen.getByTestId('form-description')).toHaveTextContent('Studio meublé à Bonanjo');
+    expect(tree.indexOf('"form-subtitle"')).toBeLessThan(tree.indexOf('"form-description"'));
+    expect(tree.indexOf('"form-description"')).toBeLessThan(tree.indexOf('"form-notice"'));
   });
 
   it('sans titre ni sous-titre, n’affiche aucun en-tête', async () => {
