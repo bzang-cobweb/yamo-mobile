@@ -173,6 +173,13 @@ export function ProfileListScreen({ list }: { list: string }) {
 
   return (
     <ProfileScreenShell title={definition.title} scrolls={false}>
+      {/* Menu ouvert : un toucher ailleurs que sur un bouton ou une carte (entre les cartes, l'intitulé, le vide) le
+          referme (décision 2026-11-24-menu-se-ferme-au-toucher). */}
+      <View
+        style={styles.fill}
+        testID="profile-list-area"
+        onStartShouldSetResponder={() => openMenu !== null}
+        onResponderRelease={() => setOpenMenu(null)}>
       <List
         testID="profile-list"
         items={definition.items}
@@ -185,7 +192,7 @@ export function ProfileListScreen({ list }: { list: string }) {
         refreshing={refreshing}
         onRefresh={() => void refresh()}
         empty={Object.keys(filters.values).length > 0 ? t('list.noFilterResults') : search ? t('list.noResults') : definition.empty}
-        search={definition.search ? { value: searchText, onChange: setSearchText, placeholder: definition.search } : null}
+        search={definition.search ? { value: searchText, onChange: setSearchText, placeholder: definition.search, onFocus: () => setOpenMenu(null) } : null}
         filter={
           definition.filters && definition.filters.length > 0
             ? {
@@ -226,6 +233,7 @@ export function ProfileListScreen({ list }: { list: string }) {
             : null
         }
       />
+      </View>
       {/* Le bouton fixe en bas : un formulaire (« Ajouter un logement ») ou un écran (« Rechercher un logement »). */}
       {definition.footer && (
         <FixedButtonBar label={definition.footer.label} onPress={() => definition.footer && openFooter(definition.footer)} testID="profile-list-footer" />
@@ -253,4 +261,5 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
   error: { color: ERROR_COLOR },
   heading: { gap: Spacing.half },
+  fill: { flex: 1 },
 });

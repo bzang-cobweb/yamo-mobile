@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -17,6 +18,9 @@ import type { ListItem, ListItemAction } from '../types';
 import { ItemActionButtons } from './ItemActionButtons';
 import { ItemPicture } from './ItemPicture';
 import { ItemReviews } from './ItemReviews';
+
+/** Le côté d'une image à gauche du texte, en points : celui d'un logo de la page « Partenaires ». */
+const SIDE_IMAGE = 72;
 
 type Props = {
   item: ListItem;
@@ -54,7 +58,10 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   const link = item.link && ITEM_LINK.test(item.link) ? item.link : null;
   const removable = item.delete !== null && profileSubmission(item.delete) !== null;
   // Le statut sur la photo quand l'API le demande ; avec un cœur, en haut à gauche (décision 2026-11-21-reservations-statut-coeur).
-  const tagOnImage = Boolean(item.tag?.on_image && item.image);
+  // L'image en petit à gauche du texte, comme la page « Partenaires » (décision 2026-11-24-mes-partenaires-comme-partenaires).
+  // Sans image, sa place reste réservée, vide : les textes restent alignés (décision 2026-11-24-mes-partenaires-comme-partenaires).
+  const side = item.image_layout === 'side';
+  const tagOnImage = Boolean(item.tag?.on_image && item.image && !side);
   const counters = item.counters?.length ? item.counters : item.counter ? [item.counter] : [];
   // Le titre en lien vers son propre écran (le membre d'une demande), le reste de la carte gardant le sien
   // (décision 2026-11-21-demandes-lien-membre).
@@ -137,7 +144,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   // Sans photo : le statut et la pastille d'un compteur sur une ligne, au-dessus du titre (décision
   // 2026-11-21-demandes-pastille-non-lues-total).
   const plainTag = item.tag && !tagOnImage ? item.tag : null;
-  const badge = tonedTag && !item.image ? tonedTag : null;
+  const badge = tonedTag && (!item.image || side) ? tonedTag : null;
   const tagsRow = (plainTag || badge) && (
     <View style={styles.tags} testID={`${prefix}-tags-${item.id}`}>
       {plainTag && <StatusTag tag={plainTag} testID={`${prefix}-tag-${item.id}`} />}
@@ -152,11 +159,11 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   // (menu : servi par la liste, `menu`.)
   const menuOpen = menu && open;
   // Sans photo ni menu : « Retirer » en icône corbeille, à droite du texte (décision 2026-11-21-corbeille-a-droite).
-  const removeIcon = removable && !item.image && !menu;
+  const removeIcon = removable && !item.image && !side && !menu;
   // Avec une photo, « Voir » et « Éditer », ou « Retirer » en texte : en colonne, les actions sur leur ligne,
   // à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et 2026-11-21-retirer-en-fin-de-carte).
   // Des boutons pleine largeur (le calendrier) : sous la date, ligne par ligne (décision 2026-11-22-calendrier-boutons-sous-la-date).
-  const stacked = Boolean(item.image) || both || (removable && !removeIcon) || (fullWidthActions && (item.actions?.length ?? 0) > 0);
+  const stacked = (Boolean(item.image) && !side) || both || (removable && !removeIcon) || (fullWidthActions && (item.actions?.length ?? 0) > 0);
 
   function openEdit() {
     if (edit) {
@@ -242,14 +249,27 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
           accessibilityRole={edit || link ? 'link' : undefined}
           disabled={!edit && !link}
           onPress={() => close() || (edit && !(menu && link) ? openEdit() : openLink())}
-          style={({ pressed }) => [styles.itemText, menu && !item.image && styles.besideMenu, pressed && styles.pressed]}>
+          style={({ pressed }) => [styles.itemText, side && styles.sideRow, menu && !item.image && !side && styles.besideMenu, pressed && styles.pressed]}>
           {/* La photo de l'item, s'il en a une, au-dessus du titre ; son cœur de favori. */}
           {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
               une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
                 des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
-          <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`${prefix}-item-${item.id}`} />
-          {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
-          <View style={item.image ? CARD_BODY : styles.body} testID={`${prefix}-body-${item.id}`}>
+          {side && !item.image ? (
+            <View style={styles.sideImage} testID={`${prefix}-item-${item.id}-side-empty`} />
+          ) : side ? (
+            // En petit, en entier, à gauche, coins arrondis, comme la page « Partenaires ».
+            <Image
+              source={{ uri: item.image as string }}
+              style={styles.sideImage}
+              contentFit={item.image_fit === 'contain' ? 'contain' : 'cover'}
+              accessibilityIgnoresInvertColors
+              testID={`${prefix}-item-${item.id}-side-photo`}
+            />
+          ) : (
+            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`${prefix}-item-${item.id}`} />
+          )}
+          {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo) ; à côté d'une image à gauche, le reste de la ligne. */}
+          <View style={side ? styles.sideBody : item.image ? CARD_BODY : styles.body} testID={`${prefix}-body-${item.id}`}>
             {tagsRow}
             {titleRow}
             {itemSubtitle}
@@ -385,6 +405,9 @@ const styles = StyleSheet.create({
   body: { gap: CARD_GAP },
   // Sans photo, avec le menu : le texte s'arrête avant le bouton rond (décision 2026-11-21-demandes-sans-photo).
   besideMenu: { paddingRight: 32 + Spacing.two },
+  sideRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  sideImage: { width: SIDE_IMAGE, height: SIDE_IMAGE, borderRadius: 8 },
+  sideBody: { flex: 1, gap: CARD_GAP },
   delete: { padding: Spacing.one },
   // Le texte et la corbeille à sa droite.
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },

@@ -282,6 +282,25 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect((await renderHook(() => filterStore.useListFilters('notifications'))).result.current.values).toEqual({ type: 'booking', offer: '7' });
   });
 
+  it('le menu ouvert se referme au toucher ailleurs : le vide de la liste, la recherche (décision 2026-11-24-menu-se-ferme-au-toucher)', async () => {
+    mockList = { ...list([item('7', { link: '/offers/7' })]), menu: true, search: 'Rechercher…' };
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    expect(screen.getByTestId('profile-list-menu-7-list')).toBeTruthy();
+    // Le vide autour des cartes prend le toucher seulement quand un menu est ouvert.
+    expect(screen.getByTestId('profile-list-area').props.onStartShouldSetResponder()).toBe(true);
+    await act(async () => {
+      screen.getByTestId('profile-list-area').props.onResponderRelease();
+    });
+    expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+    expect(screen.getByTestId('profile-list-area').props.onStartShouldSetResponder()).toBe(false);
+
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    await fireEvent(screen.getByTestId('profile-list-search'), 'focus');
+    expect(screen.queryByTestId('profile-list-menu-7-list')).toBeNull();
+  });
+
   it('l’intitulé servi s’affiche sous les filtres, en tête des items, avec son sous-titre (décisions 2026-11-21-demandes-titre-sous-filtres et 2026-11-21-demandes-d-une-offre)', async () => {
     mockList = { ...list([item('7')]), heading: { title: 'Studio meublé à Akwa', subtitle: 'Location meublée · Studio · Douala' } };
     await renderScreen();
@@ -800,6 +819,22 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       // Sans cadre, comme une photo de « Mes logements » (décision 2026-11-24-logo-entier-sans-cadre).
       expect(screen.queryByTestId('profile-list-item-1-photo-frame')).toBeNull();
       expect(screen.getByTestId('profile-list-item-2-photo').props.contentFit).toBe('cover');
+    });
+
+    it('l’image en petit à gauche quand l’API le demande, le statut au-dessus du titre (décision 2026-11-24-mes-partenaires-comme-partenaires)', async () => {
+      mockList = list([item('1', { image: 'https://api.test/logo.png', image_fit: 'contain', image_layout: 'side', tag: { label: 'En validation', tone: 'warning' } })]);
+      await renderScreen();
+
+      expect(screen.getByTestId('profile-list-item-1-side-photo').props.contentFit).toBe('contain');
+      expect(screen.queryByTestId('profile-list-item-1-photo')).toBeNull();
+      expect(screen.getByTestId('profile-list-body-1')).toHaveTextContent(/^En validation.*Carte 1/);
+    });
+
+    it('sans image, la place de l’image à gauche reste réservée', async () => {
+      mockList = list([item('1', { image: null, image_layout: 'side' })]);
+      await renderScreen();
+
+      expect(screen.getByTestId('profile-list-item-1-side-empty')).toBeTruthy();
     });
 
     it('le sous-titre coupé au nombre de lignes demandé par l’API (décision 2026-11-24-mes-partenaires-cartes)', async () => {

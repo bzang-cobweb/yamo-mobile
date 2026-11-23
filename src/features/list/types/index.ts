@@ -70,6 +70,8 @@ export type ListItem = {
   subtitle_link?: string | null;
   /** `contain` : l'image en entier, au centre (un logo, décision 2026-11-24-mes-partenaires-logo-entier) ; absent : remplie. */
   image_fit?: 'contain' | null;
+  /** L'image en petit à gauche du texte (`side`, « Mes partenaires », décision 2026-11-24-mes-partenaires-comme-partenaires) ; sinon au-dessus. */
+  image_layout?: 'side' | null;
   /** Le sous-titre coupé à ce nombre de lignes, la suite en « … » (décision 2026-11-24-mes-partenaires-cartes) ; absent : entier. */
   subtitle_lines?: number | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */

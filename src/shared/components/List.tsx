@@ -15,6 +15,8 @@ export type ListSearch = {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  /** Le champ prend la main (un menu ouvert se referme, décision 2026-11-24-menu-se-ferme-au-toucher). */
+  onFocus?: () => void;
 };
 
 /** Lien de création : son libellé, affiché, et son action. */
@@ -156,6 +158,7 @@ export function List<T>({
               testID={id('search')}
               value={search.value}
               onChangeText={search.onChange}
+              onFocus={search.onFocus}
               placeholder={search.placeholder}
               accessibilityLabel={search.placeholder}
               placeholderTextColor={theme.textSecondary}
