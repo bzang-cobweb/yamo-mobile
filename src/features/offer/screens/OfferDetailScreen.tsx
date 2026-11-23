@@ -119,14 +119,6 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 </View>
                 {/* Le prix n'est plus ici : il est dans la barre fixe (décision 2026-11-19-contrat-reservations). */}
 
-                {/* Puis la description, la localisation, les caractéristiques. */}
-                {/* La description seule, sans titre (décision 2026-11-19-fiche-description-equipements). */}
-                {offer.description && (
-                  <View style={styles.section}>
-                    <Description text={offer.description} />
-                  </View>
-                )}
-
                 {/* Les sections repliables, complètes, dans l'ordre et l'ouverture servis par
                     Laravel (décisions 2026-11-19-sections-fiche-laravel et
                     2026-11-19-sections-construites-laravel) : un seul aiguillage, sur le type. */}
@@ -145,7 +137,14 @@ export function OfferDetailScreen({ id }: { id: string }) {
                     case 'text':
                       return (
                         <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
-                          <TextSection text={section.text ?? ''} note={section.note} testID={`offer-${section.key}`} />
+                          <TextSection
+                            text={section.text ?? ''}
+                            note={section.note}
+                            // La description, repliée à quelques lignes avec « Voir plus » (décisions
+                            // 2026-11-22-description-voir-plus et 2026-11-22-fiche-sections-ordre).
+                            collapsible={section.key === 'description'}
+                            testID={`offer-${section.key}`}
+                          />
                         </Accordion>
                       );
                     case 'reviews':
@@ -301,7 +300,7 @@ const DESCRIPTION_LINES = 4;
  * dessous, à droite, comme les lignes d'une demande (décision 2026-11-22-description-voir-plus). Ses lignes sont
  * comptées au premier affichage, texte entier.
  */
-function Description({ text }: { text: string }) {
+function Description({ text, testID }: { text: string; testID: string }) {
   const { t } = useI18n();
   const [lines, setLines] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
@@ -310,7 +309,7 @@ function Description({ text }: { text: string }) {
   return (
     <View>
       <ThemedText
-        testID="offer-description"
+        testID={testID}
         numberOfLines={long && !open ? DESCRIPTION_LINES : undefined}
         onTextLayout={(event) => {
           if (lines === null) {
@@ -326,7 +325,7 @@ function Description({ text }: { text: string }) {
           hitSlop={Spacing.one}
           onPress={() => setOpen((value) => !value)}
           style={({ pressed }) => [styles.more, pressed && styles.pressed]}
-          testID="offer-description-more">
+          testID={`${testID}-more`}>
           <ThemedText type="linkPrimary">{t(open ? 'offer.less' : 'offer.more')}</ThemedText>
         </Pressable>
       )}
@@ -339,12 +338,12 @@ function Description({ text }: { text: string }) {
  * texte, sa note en dessous s'il y en a une, et le séparateur à la fin
  * (décision 2026-11-19-sections-construites-laravel).
  */
-function TextSection({ text, note, testID }: { text: string; note?: string | null; testID: string }) {
+function TextSection({ text, note, collapsible = false, testID }: { text: string; note?: string | null; collapsible?: boolean; testID: string }) {
   const theme = useTheme();
 
   return (
     <View style={[styles.text, { borderBottomColor: theme.backgroundSelected }]}>
-      <ThemedText testID={`${testID}-text`}>{text}</ThemedText>
+      {collapsible ? <Description text={text} testID={`${testID}-text`} /> : <ThemedText testID={`${testID}-text`}>{text}</ThemedText>}
       {note && (
         <ThemedText type="small" themeColor="textSecondary" testID={`${testID}-note`}>
           {note}
@@ -379,7 +378,6 @@ const styles = StyleSheet.create({
   centered: { textAlign: 'center' },
   content: { paddingBottom: Spacing.five },
   body: { width: '100%', alignSelf: 'center', gap: Spacing.two, padding: Spacing.four },
-  section: { gap: Spacing.one, marginTop: Spacing.three },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
   // Le texte d'une section, et le séparateur à sa fin.
   text: { gap: Spacing.one, paddingBottom: Spacing.two, borderBottomWidth: 1 },
