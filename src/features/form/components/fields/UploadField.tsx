@@ -57,6 +57,8 @@ export function UploadField({ field, value, onChange, error, disabled }: FieldPr
 
   const limits = settings;
   const remaining = limits.max_files - value.length;
+  // Le libellé du champ s'il en a un (« Ajouter un logo »), sinon « Ajouter des photos » (décision 2026-11-24-champ-fichier-libelle-ajout).
+  const addLabel = limits.add_label || t('form.uploadAdd');
 
   function commit(next: string[]) {
     latest.current = next;
@@ -157,7 +159,8 @@ export function UploadField({ field, value, onChange, error, disabled }: FieldPr
                   <ActivityIndicator color="#fff" />
                 </View>
               )}
-              {index === 0 && (
+              {/* « Principale » : seulement quand il peut y en avoir plusieurs. */}
+              {index === 0 && limits.max_files > 1 && (
                 <View style={[styles.badge, { backgroundColor: theme.primary }]}>
                   <ThemedText style={[styles.badgeText, { color: theme.onPrimary }]}>
                     {t('form.uploadMain')}
@@ -208,7 +211,7 @@ export function UploadField({ field, value, onChange, error, disabled }: FieldPr
           <Pressable
             testID={`field-${field.name}-add`}
             accessibilityRole="button"
-            accessibilityLabel={t('form.uploadAdd')}
+            accessibilityLabel={addLabel}
             disabled={disabled}
             onPress={pick}
             style={({ pressed }) => [
@@ -223,7 +226,7 @@ export function UploadField({ field, value, onChange, error, disabled }: FieldPr
               +
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.addText}>
-              {t('form.uploadAdd')}
+              {addLabel}
             </ThemedText>
           </Pressable>
         )}

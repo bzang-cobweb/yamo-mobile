@@ -110,6 +110,8 @@ export type UploadSettings = {
   accept: string[];
   max_size_kb: number;
   max_files: number;
+  /** Libellé du bouton d'ajout (« Ajouter un logo ») ; à défaut, celui de l'app (décision 2026-11-24-champ-fichier-libelle-ajout). */
+  add_label?: string | null;
   endpoint: string;
   files: UploadedFileRef[];
 };

@@ -183,6 +183,22 @@ describe('UploadField (type « upload »)', () => {
     expect(screen.queryByTestId('field-photos-add')).toBeNull();
   });
 
+  it('le bouton d’ajout prend le libellé servi par le champ ; sinon celui de l’app', async () => {
+    await show(field());
+    expect(screen.getByText('Ajouter des photos')).toBeTruthy();
+
+    // Un logo : un seul fichier, son propre libellé, pas de « Principale » (décision 2026-11-24-champ-fichier-libelle-ajout).
+    await show({ ...field({ max_files: 1, add_label: 'Ajouter un logo', files: [] }), default: [] } as FormFieldDefinition);
+    expect(screen.getByText('Ajouter un logo')).toBeTruthy();
+    expect(screen.getByLabelText('Ajouter un logo')).toBeTruthy();
+    expect(screen.queryByText('Ajouter des photos')).toBeNull();
+  });
+
+  it('un seul fichier permis : pas de « Principale »', async () => {
+    await show(field({ max_files: 1 }));
+    expect(screen.queryByText('Principale')).toBeNull();
+  });
+
   it('un libellé masqué par l’API n’est pas affiché ; il l’est sinon', async () => {
     // Le libellé (« Photos * ») est le texte `nativeID` `<nom>-label` de `FieldShell`.
     await show({ ...field(), label_hidden: true } as FormFieldDefinition);
