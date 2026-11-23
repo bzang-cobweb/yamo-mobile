@@ -105,7 +105,7 @@ export function HomeScreen() {
           />
         </View>
       ))}
-      <PartnersStrip partners={partners.data ?? []} cardWidth={cardWidth} />
+      <PartnersStrip partners={partners.data ?? []} />
     </ScrollView>
   );
 }

@@ -10,20 +10,20 @@ import { Spacing } from '@/shared/theme/theme';
 import { partnerService } from '../services/PartnerService';
 import type { Partner } from '../types';
 
-const LOGO_SIZE = 48;
+/** La taille d'un logo du carrousel. */
+const LOGO_SIZE = 96;
 
 type Props = {
   partners: Partner[];
-  /** La largeur d'une carte, celle des cartes d'offres de l'accueil. */
-  cardWidth: number;
 };
 
 /**
- * L'espace des partenaires, en bas de l'accueil (décision 2026-11-23-module-partenaires) : un titre, puis une
- * carte par partenaire qui défile de côté (logo, nom, description, bouton). Toucher une carte compte un clic et
- * ouvre son lien dans le navigateur de l'app. Sans partenaire, rien.
+ * Le carrousel des partenaires, en bas de l'accueil (décisions 2026-11-23-module-partenaires et
+ * 2026-11-23-partenaires-logos) : leurs logos seuls, qui défilent de côté. Toucher un logo compte un clic et
+ * ouvre son lien dans le navigateur de l'app ; le nom est lu par les lecteurs d'écran, et affiché au centre du
+ * cadre, sans fond, à la place d'un logo absent. Sans partenaire, rien.
  */
-export function PartnersStrip({ partners, cardWidth }: Props) {
+export function PartnersStrip({ partners }: Props) {
   const { t } = useI18n();
   const theme = useTheme();
 
@@ -54,27 +54,15 @@ export function PartnersStrip({ partners, cardWidth }: Props) {
           <Pressable
             testID={`home-partner-${partner.id}`}
             accessibilityRole="link"
-            accessibilityLabel={[partner.name, partner.cta_label].filter(Boolean).join(', ')}
+            accessibilityLabel={partner.name}
             onPress={() => open(partner)}
-            style={({ pressed }) => [styles.card, { width: cardWidth, borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-            <View style={styles.head}>
-              {partner.logo ? (
-                <Image source={{ uri: partner.logo }} style={styles.logo} contentFit="contain" accessible={false} />
-              ) : (
-                <View style={[styles.logo, { backgroundColor: theme.backgroundElement }]} />
-              )}
-              <ThemedText type="smallBold" style={[styles.text, styles.name]} numberOfLines={2}>
+            // Sans logo, le nom au centre du cadre, sans fond (décision 2026-11-23-partenaires-logos).
+            style={({ pressed }) => [styles.tile, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
+            {partner.logo ? (
+              <Image source={{ uri: partner.logo }} style={styles.logo} contentFit="contain" accessible={false} testID={`home-partner-${partner.id}-logo`} />
+            ) : (
+              <ThemedText type="smallBold" style={styles.name} numberOfLines={3}>
                 {partner.name}
-              </ThemedText>
-            </View>
-            {partner.description && (
-              <ThemedText type="small" themeColor="textSecondary" style={styles.text} numberOfLines={3}>
-                {partner.description}
-              </ThemedText>
-            )}
-            {partner.cta_label && (
-              <ThemedText type="linkPrimary" style={styles.text}>
-                {partner.cta_label}
               </ThemedText>
             )}
           </Pressable>
@@ -88,11 +76,16 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.two },
   title: { paddingHorizontal: Spacing.four },
   row: { paddingHorizontal: Spacing.four, gap: Spacing.two },
-  card: { borderRadius: 8, borderWidth: 1, padding: Spacing.two, gap: Spacing.one },
-  head: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  logo: { width: LOGO_SIZE, height: LOGO_SIZE, borderRadius: 8 },
-  name: { flex: 1 },
-  // La police des cartes de l'accueil (décision 2026-11-23-accueil-fleche-deux-cartes).
-  text: { fontSize: 11, lineHeight: 15 },
+  tile: {
+    width: LOGO_SIZE + 2 * Spacing.two,
+    height: LOGO_SIZE + 2 * Spacing.two,
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: Spacing.two,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: { width: LOGO_SIZE, height: LOGO_SIZE },
+  name: { fontSize: 11, lineHeight: 15, textAlign: 'center' },
   pressed: { opacity: 0.7 },
 });

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import * as WebBrowser from 'expo-web-browser';
+import { StyleSheet } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
@@ -29,18 +30,26 @@ const wouri: Partner = {
 async function show(partners: Partner[]) {
   await render(
     <I18nContext.Provider value={TEST_I18N}>
-      <PartnersStrip partners={partners} cardWidth={170} />
+      <PartnersStrip partners={partners} />
     </I18nContext.Provider>,
   );
 }
 
 // Décision 2026-11-23-module-partenaires.
 describe('PartnersStrip', () => {
-  it('le titre, puis une carte par partenaire : nom, description, bouton', async () => {
-    await show([wouri]);
+  it('le titre, puis le logo de chaque partenaire, son nom lu par les lecteurs d’écran (décision 2026-11-23-partenaires-logos)', async () => {
+    await show([{ ...wouri, logo: 'https://api.test/logo.png' }, { ...wouri, id: '4', name: 'Assurances du Littoral', logo: null }]);
 
     expect(screen.getByTestId('home-partners')).toHaveTextContent(/^Partenaires/);
-    expect(screen.getByTestId('home-partner-3')).toHaveTextContent(/Déménageurs du Wouri.*Déménagement clés en main\..*Demander un devis/);
+    expect(screen.getByTestId('home-partner-3-logo')).toBeTruthy();
+    // Ni description ni bouton : le logo suffit.
+    expect(screen.getByTestId('home-partner-3')).not.toHaveTextContent(/Déménagement|Demander un devis/);
+    expect(screen.getByLabelText('Déménageurs du Wouri')).toBeTruthy();
+    // Sans logo, le nom à sa place.
+    expect(screen.getByTestId('home-partner-4')).toHaveTextContent('Assurances du Littoral');
+    // Dans le cadre, sans fond, comme un logo.
+    expect(StyleSheet.flatten(screen.getByTestId('home-partner-4').props.style).backgroundColor).toBeUndefined();
+    expect(StyleSheet.flatten(screen.getByTestId('home-partner-3').props.style).backgroundColor).toBeUndefined();
   });
 
   it('un toucher compte un clic et ouvre le lien dans le navigateur de l’app', async () => {
