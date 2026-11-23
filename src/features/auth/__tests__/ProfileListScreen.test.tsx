@@ -792,6 +792,15 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(router.push).toHaveBeenCalledWith({ pathname: '/filters/[list]', params: { list: 'payments.cards' } });
     });
 
+    it('l’image en entier quand l’API le demande, remplie sinon (décision 2026-11-24-mes-partenaires-logo-entier)', async () => {
+      mockList = list([item('1', { image: 'https://api.test/logo.png', image_fit: 'contain' }), item('2', { image: 'https://api.test/photo.jpg' })]);
+      await renderScreen();
+
+      expect(screen.getByTestId('profile-list-item-1-photo').props.contentFit).toBe('contain');
+      expect(screen.getByTestId('profile-list-item-1-photo-frame')).toBeTruthy();
+      expect(screen.getByTestId('profile-list-item-2-photo').props.contentFit).toBe('cover');
+    });
+
     it('le sous-titre coupé au nombre de lignes demandé par l’API (décision 2026-11-24-mes-partenaires-cartes)', async () => {
       mockList = list([item('1', { subtitle: 'Une longue description', subtitle_lines: 1 }), item('2')]);
       await renderScreen();

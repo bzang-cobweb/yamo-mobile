@@ -19,7 +19,7 @@ export function ItemPicture({
   placeholder = false,
   testID,
 }: {
-  item: Pick<ListItem, 'image' | 'favorite'>;
+  item: Pick<ListItem, 'image' | 'favorite' | 'image_fit'>;
   tag?: StatusTagValue | null;
   /** La pastille en haut à gauche (le haut à droite porte le menu de la carte, décision 2026-11-21-menu-en-haut-a-droite). */
   tagLeft?: boolean;
@@ -27,12 +27,12 @@ export function ItemPicture({
   testID: string;
 }) {
   if (!item.favorite && !tag) {
-    return <ItemPhoto uri={item.image} placeholder={placeholder} testID={`${testID}-photo`} />;
+    return <ItemPhoto uri={item.image} placeholder={placeholder} contain={item.image_fit === 'contain'} testID={`${testID}-photo`} />;
   }
 
   return (
     <View style={styles.wrap} testID={`${testID}-picture`}>
-      <ItemPhoto uri={item.image} placeholder testID={`${testID}-photo`} />
+      <ItemPhoto uri={item.image} placeholder contain={item.image_fit === 'contain'} testID={`${testID}-photo`} />
       {item.favorite && <FavoriteHeart favorite={item.favorite} testID={`${testID}-favorite`} />}
       {tag && <StatusTag tag={tag} style={tagLeft || item.favorite ? STATUS_ON_IMAGE_LEFT : STATUS_ON_IMAGE} testID={`${testID}-status`} />}
     </View>

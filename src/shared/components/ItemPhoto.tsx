@@ -9,8 +9,17 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
  * 2026-11-18-liste-photo-barre-connecte), au format 16:9. Sans photo : un
  * emplacement neutre avec une icône, si `placeholder` le demande ; sinon rien.
  */
-export function ItemPhoto({ uri, placeholder = false, testID }: { uri: string | null; placeholder?: boolean; testID?: string }) {
+export function ItemPhoto({ uri, placeholder = false, contain = false, testID }: { uri: string | null; placeholder?: boolean; contain?: boolean; testID?: string }) {
   const theme = useTheme();
+
+  // En entier, au centre, avec une marge pour la pastille et le menu : un logo (décision 2026-11-24-mes-partenaires-logo-entier).
+  if (uri && contain) {
+    return (
+      <View style={[styles.photo, styles.frame, { borderColor: theme.backgroundSelected }]} testID={testID ? `${testID}-frame` : undefined}>
+        <Image source={{ uri }} style={styles.fill} contentFit="contain" transition={150} accessibilityIgnoresInvertColors testID={testID} />
+      </View>
+    );
+  }
 
   if (uri) {
     return <Image source={{ uri }} style={styles.photo} contentFit="cover" transition={150} accessibilityIgnoresInvertColors testID={testID} />;
@@ -30,4 +39,6 @@ export function ItemPhoto({ uri, placeholder = false, testID }: { uri: string | 
 const styles = StyleSheet.create({
   photo: { width: '100%', aspectRatio: 16 / 9, borderRadius: 6 },
   empty: { alignItems: 'center', justifyContent: 'center' },
+  frame: { borderWidth: 1, paddingVertical: 44, paddingHorizontal: 16 },
+  fill: { flex: 1 },
 });

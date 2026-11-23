@@ -68,6 +68,8 @@ export type ListItem = {
   title_link?: string | null;
   /** Le sous-titre en lien vers son propre écran (le titre saisi d'une offre, « /offers/12 »), le reste de la carte gardant le sien (décision 2026-11-22-reservations-lien-offre). */
   subtitle_link?: string | null;
+  /** `contain` : l'image en entier, au centre (un logo, décision 2026-11-24-mes-partenaires-logo-entier) ; absent : remplie. */
+  image_fit?: 'contain' | null;
   /** Le sous-titre coupé à ce nombre de lignes, la suite en « … » (décision 2026-11-24-mes-partenaires-cartes) ; absent : entier. */
   subtitle_lines?: number | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */
