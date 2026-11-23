@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { router } from 'expo-router';
 import { Alert, StyleSheet } from 'react-native';
 
 import { profileFormService } from '@/features/auth/services/ProfileFormService';
@@ -70,14 +69,11 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
         {
           id: '9',
           title: 'Marie Curie',
-          title_link: '/members/37',
           subtitle: 'Séjour · du 3 déc. 2026 au 6 déc. 2026',
           image: null,
           rating: null,
           highlight: null,
-          quote: 'J’arrive tard.',
           date: '2026-11-19T10:00:00Z',
-          unread_count: 1,
           tag: { label: 'En attente', tone: 'warning' },
           link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d',
           edit: null,
@@ -122,13 +118,13 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     await fireEvent.press(await screen.findByTestId('offer-calendar-day-2026-12-03'));
     expect(await screen.findByText('Jeudi 3 décembre 2026')).toBeTruthy();
     expect(offerService.calendarDay).toHaveBeenCalledWith('7', '2026-12-03');
-    // La carte de « Demandes reçues » (décision 2026-11-22-calendrier-carte-demandes-recues) : le nom du membre vers
-    // sa page, le statut, le type et les dates, le dernier message, les non lues, la date.
-    expect(screen.getByTestId('calendar-title-link-9')).toHaveTextContent('Marie Curie');
+    // La carte de « Demandes reçues » (décision 2026-11-22-calendrier-carte-demandes-recues) : le nom du membre, le
+    // statut, le type et les dates, la date.
+    // Le nom du membre sans lien (décision 2026-11-22-calendrier-membre-sans-lien).
+    expect(screen.getByTestId('calendar-title-9')).toHaveTextContent('Marie Curie');
+    expect(screen.queryByTestId('calendar-title-link-9')).toBeNull();
     expect(screen.getByText('En attente')).toBeTruthy();
     expect(screen.getByText('Séjour · du 3 déc. 2026 au 6 déc. 2026')).toBeTruthy();
-    expect(screen.getByTestId('calendar-quote-9')).toHaveTextContent('J’arrive tard.');
-    expect(screen.getByTestId('calendar-unread-9')).toHaveTextContent('1');
     expect(screen.getByTestId('calendar-date-9')).toBeTruthy();
     // Deux par ligne, à parts égales, le premier à droite (décisions 2026-11-22-calendrier-deux-boutons-par-ligne et
     // 2026-11-22-calendrier-premier-bouton-a-droite).
@@ -141,8 +137,6 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     const json = JSON.stringify(screen.toJSON());
     expect(json.indexOf('"testID":"calendar-date-9"')).toBeLessThan(json.indexOf('"testID":"calendar-action-9-buttons"'));
     expect(screen.getByTestId('calendar-action-9-destructive')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('calendar-title-link-9'));
-    expect(router.push).toHaveBeenLastCalledWith('/members/37');
 
     await fireEvent.press(screen.getByText('Bloquer ce jour'));
     await waitFor(() => expect(submit).toHaveBeenCalledWith(expect.objectContaining({ method: 'PUT', endpoint: '/v1/offers/7/blocked-dates/2026-12-03' }), {}));
