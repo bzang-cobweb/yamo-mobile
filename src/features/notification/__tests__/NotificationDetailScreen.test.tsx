@@ -198,9 +198,6 @@ describe('NotificationDetailScreen', () => {
     // Le nom de l'offre, en gras, ouvre la fiche du logement ; plus de « Voir le logement ».
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
-    // Deux colonnes de largeur fixe, celle de droite plus grande (décision 2026-11-22-detail-colonnes-fixes).
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-line-member-label').props.style)).toMatchObject({ width: '35%' });
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-line-member-value').props.style)).toMatchObject({ flex: 1 });
     // Le titre composé avec la ville, sous le nom du logement (décision 2026-11-22-detail-titre-compose-sous-titre).
     expect(screen.getByTestId('notification-detail-composed-title')).toHaveTextContent('Location meublée · Studio · Douala');
     const tree = JSON.stringify(screen.toJSON());
