@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { StyleSheet } from 'react-native';
 
@@ -133,6 +133,24 @@ describe('DynamicForm', () => {
 
     expect(await screen.findByTestId('form-message')).toHaveTextContent('Too Many Attempts.');
   });
+  it('deux touchers rapides sur le bouton n’envoient le formulaire qu’une fois (décision 2026-11-23-pas-de-double-envoi)', async () => {
+    let finish: () => void = () => {};
+    const onSubmit = jest.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+    await render(<DynamicForm definition={{ ...everyType, fields: [field({ name: 'nickname', type: 'text', default: 'Ana' })] }} onSubmit={onSubmit} />);
+
+    const button = screen.getByTestId('form-submit');
+    await act(async () => {
+      fireEvent.press(button);
+      fireEvent.press(button);
+    });
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+
+    // L'envoi fini, le bouton renvoie.
+    await act(async () => finish());
+    await fireEvent.press(screen.getByTestId('form-submit'));
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+  });
+
   it('affiche puis masque le mot de passe, sans changer la valeur envoyée', async () => {
     const onSubmit = jest.fn().mockResolvedValue(undefined);
     await render(<DynamicForm definition={everyType} onSubmit={onSubmit} />);

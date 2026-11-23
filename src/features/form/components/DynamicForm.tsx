@@ -57,6 +57,9 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Un envoi en cours, su tout de suite : un second toucher avant le nouveau rendu n'envoie pas
+  // le formulaire deux fois (décision 2026-11-23-pas-de-double-envoi).
+  const inFlight = useRef(false);
   const uploading = hasPendingUploads(values);
   const steps = definition.steps ?? [];
   const [step, setStep] = useState(0);
@@ -194,10 +197,11 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
   }, [revealError]);
 
   async function submit() {
-    if (uploading) {
+    if (uploading || inFlight.current) {
       return;
     }
 
+    inFlight.current = true;
     setSubmitting(true);
     setErrors({});
     setMessage(null);
@@ -227,6 +231,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
         setMessage(t('error.unknown'));
       }
     } finally {
+      inFlight.current = false;
       setSubmitting(false);
     }
   }
