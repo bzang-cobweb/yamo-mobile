@@ -156,6 +156,12 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
+                  {/* Le titre composé avec la ville, sous le nom du logement (décision 2026-11-22-detail-titre-compose-sous-titre). */}
+                  {notification.booking?.composed_title && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-composed-title">
+                      {notification.booking.composed_title}
+                    </ThemedText>
+                  )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
                       (décision 2026-11-20-titre-demande). */}
                   {!notification.booking && (

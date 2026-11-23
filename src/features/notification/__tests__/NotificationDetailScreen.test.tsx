@@ -44,6 +44,7 @@ const NOTIFICATION: AppNotification = {
   booking: {
     id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', guests: 2,
     offer: { title: 'Studio photos', rental_type: 'Location meublée', property_type: 'Studio' },
+    composed_title: 'Location meublée · Studio · Douala',
     lines: [
       { key: 'member', label: 'Membre', value: 'Léa Membre', link: '/members/5' },
       { key: 'email', label: 'E-mail', value: 'lea@example.test' },
@@ -197,9 +198,10 @@ describe('NotificationDetailScreen', () => {
     // Le nom de l'offre, en gras, ouvre la fiche du logement ; plus de « Voir le logement ».
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
-    // Plus de titre composé ni de dates en tête : ce sont les premières lignes de la demande (décision
-    // 2026-11-22-detail-lignes-titre-dates-adresse).
-    expect(screen.queryByTestId('notification-detail-composed-title')).toBeNull();
+    // Le titre composé avec la ville, sous le nom du logement (décision 2026-11-22-detail-titre-compose-sous-titre).
+    expect(screen.getByTestId('notification-detail-composed-title')).toHaveTextContent('Location meublée · Studio · Douala');
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('"notification-detail-offer-title"')).toBeLessThan(tree.indexOf('"notification-detail-composed-title"'));
     expect(screen.queryByTestId('notification-detail-period')).toBeNull();
     await fireEvent.press(screen.getByTestId('notification-detail-offer-title'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
