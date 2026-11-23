@@ -84,7 +84,7 @@ export function PartnersScreen() {
                   accessibilityRole="link"
                   onPress={() => router.push({ pathname: '/partners/[id]', params: { id: item.id } })}
                   style={({ pressed }) => [styles.card, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-                  <PartnerLogo partner={{ name: item.title, logo: item.image }} size={LOGO_SIZE} testID={`partners-item-${item.id}`} />
+                  <PartnerLogo partner={{ name: item.title, logo: item.image }} size={LOGO_SIZE} framed={false} testID={`partners-item-${item.id}`} />
                   <View style={styles.texts}>
                     <ThemedText type="smallBold">{item.title}</ThemedText>
                     {item.subtitle && (

@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -75,6 +76,9 @@ describe('la page « Partenaires »', () => {
     expect(screen.getByTestId('back-header-title')).toHaveTextContent('Partenaires');
     expect(screen.getByTestId('partners-item-3')).toHaveTextContent(/Déménageurs du Wouri.*Déménagement clés en main\./);
     expect(screen.getByTestId('partners-item-4')).toHaveTextContent(/Assurances du Littoral/);
+
+    // Le logo sans bordure : la carte a déjà la sienne (décision 2026-11-24-partenaires-logos-sans-cadre).
+    expect(StyleSheet.flatten(screen.getByTestId('partners-item-3-box').props.style).borderWidth).toBeUndefined();
 
     await fireEvent.press(screen.getByTestId('partners-item-4'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '4' } });
