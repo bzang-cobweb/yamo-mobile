@@ -38,9 +38,11 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     lineHeight: 52,
   },
+  // Le titre d'une page (fiche, calendrier, membre, formulaire, notifications), plus petit (décision
+  // 2026-11-22-titres-plus-petits).
   subtitle: {
-    fontSize: 32,
-    lineHeight: 44,
+    fontSize: 24,
+    lineHeight: 32,
     fontWeight: 600,
   },
   link: {

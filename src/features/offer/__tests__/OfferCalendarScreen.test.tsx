@@ -25,6 +25,7 @@ jest.mock('react-native-safe-area-context', () => {
 const DECEMBER: OfferCalendarMonth = {
   title: 'Calendrier',
   heading: 'Studio photos',
+  composed_title: 'Location meublée · Studio · Douala',
   address: 'Rue Njo-Njo, Bonapriso, 00237 Douala, Cameroun',
   indication: 'Portail vert, 2e étage.',
   month: '2026-12',
@@ -99,6 +100,7 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
 
     expect(await screen.findByText('Décembre 2026')).toBeTruthy();
     expect(screen.getByTestId('offer-calendar-heading')).toHaveTextContent('Studio photos');
+    expect(screen.getByTestId('offer-calendar-composed-title')).toHaveTextContent('Location meublée · Studio · Douala');
     expect(screen.getByTestId('offer-calendar-address')).toHaveTextContent('Rue Njo-Njo, Bonapriso, 00237 Douala, Cameroun');
     expect(screen.getByTestId('offer-calendar-indication')).toHaveTextContent('Portail vert, 2e étage.');
     expect(screen.getByText('Calendrier')).toBeTruthy();

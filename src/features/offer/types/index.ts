@@ -102,6 +102,8 @@ export type OfferCalendarMonth = {
   title: string;
   /** Titre du contenu : le titre saisi de l'offre (« Studio photos »). */
   heading: string;
+  /** Le titre composé (« Location meublée · Studio · Douala »), sous le titre (décision 2026-11-22-calendrier-titre-compose) ; `null` (ou absent) : aucun. */
+  composed_title?: string | null;
   /** Son adresse, sous le titre ; `null` sans adresse. */
   address: string | null;
   /** Les indications de l'adresse, dessous (« Portail vert, 2e étage ») ; `null` sans. */
