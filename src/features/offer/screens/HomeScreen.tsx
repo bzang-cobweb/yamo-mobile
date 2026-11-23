@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { setFilterValues } from '@/features/list/utils/filters';
+import { PartnersStrip } from '@/features/partner/components/PartnersStrip';
+import { usePartners } from '@/features/partner/hooks/usePartners';
 import { NetworkError } from '@/shared/api/errors';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -27,6 +29,8 @@ export function HomeScreen() {
   const { t } = useI18n();
   const theme = useTheme();
   const query = useHomeCarousels();
+  // L'espace des partenaires, en bas (décision 2026-11-23-module-partenaires) ; sans eux, l'accueil reste.
+  const partners = usePartners();
   const [refreshing, setRefreshing] = useState(false);
   const { width } = useWindowDimensions();
   // La largeur utile, moins les marges et l'espace entre les cartes, partagée en deux.
@@ -41,7 +45,7 @@ export function HomeScreen() {
   async function refresh() {
     setRefreshing(true);
     try {
-      await query.refetch();
+      await Promise.all([query.refetch(), partners.refetch()]);
     } finally {
       setRefreshing(false);
     }
@@ -101,6 +105,7 @@ export function HomeScreen() {
           />
         </View>
       ))}
+      <PartnersStrip partners={partners.data ?? []} cardWidth={cardWidth} />
     </ScrollView>
   );
 }

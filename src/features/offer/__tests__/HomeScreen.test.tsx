@@ -20,6 +20,7 @@ jest.mock('expo-image', () => {
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), navigate: jest.fn() } }));
 let mockState: { data?: HomeCarousel[]; isPending: boolean; isError: boolean; error: unknown } = { isPending: true, isError: false, error: null };
 const mockRefetch = jest.fn();
+jest.mock('@/features/partner/hooks/usePartners', () => ({ usePartners: () => ({ data: [], refetch: jest.fn() }) }));
 jest.mock('../hooks/useHomeCarousels', () => ({ useHomeCarousels: () => ({ ...mockState, refetch: mockRefetch }) }));
 
 function item(id: string, title: string): ListItem {

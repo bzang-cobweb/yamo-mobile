@@ -10,6 +10,7 @@ export const TEST_MESSAGES: Messages = {
   'tabs.home': 'Accueil',
   'tabs.search': 'Recherche',
   'home.seeAll': 'Voir tout',
+  'partners.title': 'Partenaires',
   'tabs.profile': 'Profil',
   'tabs.notifications': 'Notifications',
   'notifications.title': 'Notifications',
