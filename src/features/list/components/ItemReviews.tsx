@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type TextStyle } from 'react-native';
 
 import { Stars } from '@/shared/components/Stars';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -14,7 +14,18 @@ import type { ListItem } from '../types';
  * note et le nombre d'avis sont lus par l'accessibilité), sur toutes les cartes (décision
  * 2026-11-21-accueil-note-sous-le-prix). Rien de ce que l'API ne sert pas.
  */
-export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 'highlight'>; testID?: string }) {
+export function ItemReviews({
+  item,
+  testID,
+  textStyle,
+  starSize,
+}: {
+  item: Pick<ListItem, 'rating' | 'highlight'>;
+  testID?: string;
+  textStyle?: StyleProp<TextStyle>;
+  /** La taille des étoiles, plus petite sur une carte réduite (décision 2026-11-23-accueil-deux-cartes). */
+  starSize?: number;
+}) {
   const { t, locale } = useI18n();
   const theme = useTheme();
   const { rating, highlight } = item;
@@ -28,7 +39,7 @@ export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 
   return (
     <View style={styles.column} testID={testID ? `${testID}-reviews` : undefined}>
       {highlight && (
-        <ThemedText type="smallBold" numberOfLines={2} testID={testID ? `${testID}-highlight` : undefined}>
+        <ThemedText type="smallBold" numberOfLines={2} style={textStyle} testID={testID ? `${testID}-highlight` : undefined}>
           {highlight}
         </ThemedText>
       )}
@@ -38,7 +49,7 @@ export function ItemReviews({ item, testID }: { item: Pick<ListItem, 'rating' | 
           accessibilityLabel={t('list.ratingSummary', { average, count: String(rating.count) })}
           style={styles.stars}
           testID={testID ? `${testID}-rating` : undefined}>
-          <Stars value={rating.average} emptyColor={theme.backgroundSelected} />
+          <Stars value={rating.average} emptyColor={theme.backgroundSelected} size={starSize} />
         </View>
       )}
     </View>

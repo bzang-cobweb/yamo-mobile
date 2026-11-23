@@ -8,11 +8,16 @@ import { CARD_BODY, CARD_GAP, CARD_PADDING } from '@/shared/components/List';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 
+/** La taille des étoiles d'une carte réduite, celle de sa police. */
+const COMPACT_STARS = 10;
+
 type Props = {
   item: ListItem;
   /** Préfixe des `testID` : `browse-item`, `home-item`… */
   testIDPrefix: string;
   style?: StyleProp<ViewStyle>;
+  /** Plus petite, sur l'accueil : une police réduite (décision 2026-11-23-accueil-deux-cartes). */
+  compact?: boolean;
 };
 
 /**
@@ -20,9 +25,10 @@ type Props = {
  * la photo et le cœur, le titre, le sous-titre, puis la note. Toucher la carte ouvre la fiche de l'offre (décision
  * 2026-11-18-fiche-offre).
  */
-export function OfferCard({ item, testIDPrefix, style }: Props) {
+export function OfferCard({ item, testIDPrefix, style, compact = false }: Props) {
   const theme = useTheme();
   const testID = `${testIDPrefix}-${item.id}`;
+  const text = compact ? styles.compactText : undefined;
 
   return (
     <Pressable
@@ -34,15 +40,17 @@ export function OfferCard({ item, testIDPrefix, style }: Props) {
       <ItemPicture item={item} placeholder testID={testID} />
       {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
       <View style={CARD_BODY} testID={`${testID}-body`}>
-        <ThemedText type="smallBold">{item.title}</ThemedText>
+        <ThemedText type="smallBold" style={text}>
+          {item.title}
+        </ThemedText>
         {item.subtitle && (
-          <ThemedText type="small" themeColor="textSecondary">
+          <ThemedText type="small" themeColor="textSecondary" style={text}>
             {item.subtitle}
           </ThemedText>
         )}
         {/* La note sur sa ligne, sous le prix, à droite (décisions 2026-11-19-contrat-avis-offres et
             2026-11-21-accueil-note-sous-le-prix). */}
-        <ItemReviews item={item} testID={testID} />
+        <ItemReviews item={item} testID={testID} textStyle={text} starSize={compact ? COMPACT_STARS : undefined} />
       </View>
     </Pressable>
   );
@@ -52,4 +60,5 @@ const styles = StyleSheet.create({
   // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
   card: { borderRadius: 8, borderWidth: 1, padding: CARD_PADDING, gap: CARD_GAP },
   pressed: { opacity: 0.7 },
+  compactText: { fontSize: 11, lineHeight: 15 },
 });

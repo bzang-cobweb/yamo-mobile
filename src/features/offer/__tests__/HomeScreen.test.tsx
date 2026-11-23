@@ -1,7 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, renderHook, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 import type { ListItem } from '@/features/list/types';
+import { useListFilters } from '@/features/list/utils/filters';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
@@ -15,13 +17,13 @@ jest.mock('expo-image', () => {
 
   return { Image: View };
 });
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), navigate: jest.fn() } }));
 let mockState: { data?: HomeCarousel[]; isPending: boolean; isError: boolean; error: unknown } = { isPending: true, isError: false, error: null };
 const mockRefetch = jest.fn();
 jest.mock('../hooks/useHomeCarousels', () => ({ useHomeCarousels: () => ({ ...mockState, refetch: mockRefetch }) }));
 
 function item(id: string, title: string): ListItem {
-  return { id, title, subtitle: `Logement ${id}`, image: null, rating: null, highlight: '35 000 FCFA / jour', favorite: null, link: `/offers/${id}`, edit: null, actions: [], tag: null, counter: null, delete: null } as unknown as ListItem;
+  return { id, title, subtitle: `Logement ${id}`, image: null, rating: { average: 4, count: 3 }, highlight: '35 000 FCFA / jour', favorite: null, link: `/offers/${id}`, edit: null, actions: [], tag: null, counter: null, delete: null } as unknown as ListItem;
 }
 
 async function show() {
@@ -49,10 +51,28 @@ describe('HomeScreen', () => {
     expect(screen.getByTestId('home-carousel-Douala')).toHaveTextContent(/^Douala/);
     expect(screen.getByTestId('home-item-1')).toHaveTextContent(/Location meublée · Studio · Douala/);
     expect(screen.getByTestId('home-item-2')).toBeTruthy();
+    // Plus petites que dans la recherche : une police réduite (décision 2026-11-23-accueil-deux-cartes).
+    expect(StyleSheet.flatten(screen.getByText('Location meublée · Studio · Douala').props.style)).toMatchObject({ fontSize: 11 });
+    // Les étoiles de la note aussi.
+    expect(StyleSheet.flatten(within(screen.getByTestId('home-item-1-rating')).getAllByText(/★/)[0].parent?.props.style)).toMatchObject({ fontSize: 10 });
     expect(screen.getByTestId('home-carousel-Yaoundé')).toHaveTextContent(/^Yaoundé/);
 
     await fireEvent.press(screen.getByTestId('home-item-3'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '3' } });
+  });
+
+  it('« Voir tout » ouvre la recherche filtrée sur la ville (décision 2026-11-23-accueil-voir-tout)', async () => {
+    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'Studio · Douala')] }] };
+    await show();
+
+    // Une flèche, sans texte ; « Voir tout » pour les lecteurs d'écran (décision 2026-11-23-accueil-fleche).
+    expect(screen.getByTestId('home-see-all-Douala')).toHaveTextContent('');
+    expect(screen.getByLabelText('Voir tout Douala')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('home-see-all-Douala'));
+
+    expect(router.navigate).toHaveBeenCalledWith('/search');
+    const { result } = await renderHook(() => useListFilters('offer.browse'));
+    expect(result.current.values).toEqual({ city: 'Douala' });
   });
 
   it('une erreur propose de réessayer', async () => {
