@@ -8,6 +8,8 @@ import type { NotificationActor } from '@/features/notification/types';
 export type OfferDetail = {
   id: string;
   title: string;
+  /** Le titre composé (« Location meublée · Studio · Douala »), sous le titre (décision 2026-11-22-fiche-titres-centres) ; `null` (ou absent) : aucun. */
+  composed_title?: string | null;
   /** Prix formaté et son libellé (« Loyer mensuel ») ; `null` sans prix. */
   price: { label: string; value: string } | null;
   /** La ville ; jamais la rue. */

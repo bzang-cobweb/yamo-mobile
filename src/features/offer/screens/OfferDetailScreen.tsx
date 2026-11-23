@@ -106,9 +106,17 @@ export function OfferDetailScreen({ id }: { id: string }) {
                 )}
               </View>
               <View style={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
-                <ThemedText type="subtitle" testID="offer-title">
-                  {offer.title}
-                </ThemedText>
+                {/* Le titre, puis le titre composé dessous, tous deux centrés (décision 2026-11-22-fiche-titres-centres). */}
+                <View style={styles.titles}>
+                  <ThemedText type="subtitle" style={styles.centered} testID="offer-title">
+                    {offer.title}
+                  </ThemedText>
+                  {offer.composed_title && (
+                    <ThemedText themeColor="textSecondary" style={styles.centered} testID="offer-composed-title">
+                      {offer.composed_title}
+                    </ThemedText>
+                  )}
+                </View>
                 {/* Le prix n'est plus ici : il est dans la barre fixe (décision 2026-11-19-contrat-reservations). */}
 
                 {/* Puis la description, la localisation, les caractéristiques. */}
@@ -364,6 +372,7 @@ function FactRow({ fact, testID }: { fact: { label: string; value: string }; tes
 }
 
 const styles = StyleSheet.create({
+  titles: { gap: Spacing.one },
   more: { alignSelf: 'flex-end', paddingTop: Spacing.one },
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },

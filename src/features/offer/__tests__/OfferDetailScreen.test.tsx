@@ -66,6 +66,7 @@ function mockWithSections(offer: OfferDetail): OfferDetail {
 const OFFER: OfferDetail = {
   id: '7',
   title: 'Appartement 3 pièces à Bonapriso',
+  composed_title: 'Location · Appartement · Douala',
   price: { label: 'Loyer mensuel', value: '250 000 FCFA' },
   location: 'Douala',
   photos: ['http://api.test/storage/7-0.jpg', 'http://api.test/storage/7-1.jpg'],
@@ -132,6 +133,10 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByTestId('offer-photo-0').props.source).toEqual({ uri: 'http://api.test/storage/7-0.jpg' });
     expect(screen.getByTestId('offer-photo-position').props.children).toBe('1 / 2');
     expect(screen.getByTestId('offer-title').props.children).toBe('Appartement 3 pièces à Bonapriso');
+    // Le titre composé juste dessous, les deux centrés (décision 2026-11-22-fiche-titres-centres).
+    expect(screen.getByTestId('offer-composed-title')).toHaveTextContent('Location · Appartement · Douala');
+    expect(StyleSheet.flatten(screen.getByTestId('offer-title').props.style)).toMatchObject({ textAlign: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('offer-composed-title').props.style)).toMatchObject({ textAlign: 'center' });
     expect(screen.getByTestId('offer-price').props.children).toBe('250 000 FCFA');
     // Le prix seul ; la ville est dans les caractéristiques (décision 2026-11-19-fiche-offre-ordre).
     expect(screen.queryByText('Loyer mensuel')).toBeNull();
