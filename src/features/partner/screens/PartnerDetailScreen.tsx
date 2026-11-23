@@ -55,15 +55,17 @@ export function PartnerDetailScreen({ id }: { id: string }) {
               <ScrollView contentContainerStyle={styles.body}>
                 <View style={styles.identity}>
                   <PartnerLogo partner={partner} size={LOGO_SIZE} testID="partner" />
-                  <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered} testID="partner-name">
-                    {partner.name}
-                  </ThemedText>
-                  {/* Le slogan, sous le nom, s'il y en a un (décision 2026-11-24-partenaire-slogan). */}
-                  {partner.slogan && (
-                    <ThemedText themeColor="textSecondary" style={styles.centered} testID="partner-slogan">
-                      {partner.slogan}
+                  {/* Le nom, et juste dessous son slogan s'il en a un (décision 2026-11-24-partenaire-slogan). */}
+                  <View style={styles.heading}>
+                    <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered} testID="partner-name">
+                      {partner.name}
                     </ThemedText>
-                  )}
+                    {partner.slogan && (
+                      <ThemedText themeColor="textSecondary" style={styles.centered} testID="partner-slogan">
+                        {partner.slogan}
+                      </ThemedText>
+                    )}
+                  </View>
                 </View>
                 {/* Son e-mail et son téléphone ; les toucher ouvre l'e-mail ou l'appel (décision 2026-11-24-partenaire-contact). */}
                 {(partner.contact_email || partner.contact_phone) && (
@@ -108,6 +110,7 @@ const styles = StyleSheet.create({
   body: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four, gap: Spacing.four },
   identity: { alignItems: 'center', gap: Spacing.three },
   centered: { textAlign: 'center' },
+  heading: { gap: Spacing.half },
   contact: { borderTopWidth: 1, borderBottomWidth: 1, paddingVertical: Spacing.three, gap: Spacing.three },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.three },
 });
