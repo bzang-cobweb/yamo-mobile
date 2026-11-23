@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
@@ -43,6 +44,8 @@ describe('PartnersStrip', () => {
 
     expect(screen.getByTestId('home-partners')).toHaveTextContent(/^Partenaires/);
     expect(screen.getByTestId('home-partner-3-logo')).toBeTruthy();
+    // Sans bordure (décision 2026-11-24-partenaires-logos-sans-cadre).
+    expect(StyleSheet.flatten(screen.getByTestId('home-partner-3-box').props.style).borderWidth).toBeUndefined();
     // Ni description ni bouton : le logo suffit.
     expect(screen.getByTestId('home-partner-3')).not.toHaveTextContent(/Déménagement|Demander un devis/);
     expect(screen.getByLabelText('Déménageurs du Wouri')).toBeTruthy();

@@ -58,7 +58,7 @@ export function PartnersStrip({ partners }: Props) {
             accessibilityLabel={partner.name}
             onPress={() => router.push({ pathname: '/partners/[id]', params: { id: partner.id } })}
             style={({ pressed }) => pressed && styles.pressed}>
-            <PartnerLogo partner={partner} size={LOGO_SIZE} testID={`home-partner-${partner.id}`} />
+            <PartnerLogo partner={partner} size={LOGO_SIZE} framed={false} testID={`home-partner-${partner.id}`} />
           </Pressable>
         )}
       />
