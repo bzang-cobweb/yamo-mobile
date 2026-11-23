@@ -2,17 +2,16 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
-import { ItemPicture } from '@/features/list/components/ItemPicture';
-import { ItemReviews } from '@/features/list/components/ItemReviews';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
-import { CARD_BODY, CARD_GAP, CARD_PADDING, List } from '@/shared/components/List';
+import { List } from '@/shared/components/List';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
-import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
+
+import { OfferCard } from '../components/OfferCard';
 
 /** La vitrine servie par l'API : offres publiées du pays courant. */
 export const BROWSE_LIST = 'offer.browse';
@@ -28,7 +27,6 @@ const SEARCH_DELAY = 300;
  */
 export function BrowseScreen() {
   const { t } = useI18n();
-  const theme = useTheme();
   const [searchText, setSearchText] = useState('');
   const [search, setSearch] = useState('');
   // Les filtres choisis, gardés tant que l'app est ouverte (décision 2026-11-19-contrat-filtres-vitrine).
@@ -85,29 +83,7 @@ export function BrowseScreen() {
       testID="browse-list"
       items={definition.items}
       keyExtractor={(item) => item.id}
-      renderItem={(item) => (
-        <Pressable
-          testID={`browse-item-${item.id}`}
-          accessibilityRole="link"
-          // La fiche de l'offre (décision 2026-11-18-fiche-offre).
-          onPress={() => router.push({ pathname: '/offers/[id]', params: { id: item.id } })}
-          style={({ pressed }) => [styles.card, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
-          {/* La photo au-dessus du titre ; sans photo, un emplacement neutre ; le cœur d'un membre connecté. */}
-          <ItemPicture item={item} placeholder testID={`browse-item-${item.id}`} />
-          {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
-          <View style={CARD_BODY} testID={`browse-item-${item.id}-body`}>
-            <ThemedText type="smallBold">{item.title}</ThemedText>
-            {item.subtitle && (
-              <ThemedText type="small" themeColor="textSecondary">
-                {item.subtitle}
-              </ThemedText>
-            )}
-            {/* La note moyenne, puis le dernier avis en gras sur sa ligne (décision 2026-11-19-contrat-avis-offres). */}
-            {/* La note sur sa ligne, sous le prix, à droite (décision 2026-11-21-accueil-note-sous-le-prix). */}
-            <ItemReviews item={item} testID={`browse-item-${item.id}`} />
-          </View>
-        </Pressable>
-      )}
+      renderItem={(item) => <OfferCard item={item} testIDPrefix="browse-item" />}
       hasMore={query.hasNextPage}
       onLoadMore={() => query.fetchNextPage()}
       loadingMore={query.isFetchingNextPage}
@@ -133,7 +109,4 @@ export function BrowseScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four },
-  pressed: { opacity: 0.7 },
-  // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
-  card: { borderRadius: 8, borderWidth: 1, padding: CARD_PADDING, gap: CARD_GAP },
 });

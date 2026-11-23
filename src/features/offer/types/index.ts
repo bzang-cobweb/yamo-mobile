@@ -146,3 +146,9 @@ export type MemberProfile = {
   description: string | null;
   facts: { label: string; value: string }[];
 };
+
+/** Un carrousel de l'accueil : une ville et ses offres tirées au hasard (décision 2026-11-23-accueil-carrousels-par-ville). */
+export type HomeCarousel = {
+  city: string;
+  items: ListItem[];
+};

@@ -1,7 +1,5 @@
-// Route `/` (onglet Accueil, écran par défaut) : vide pour l'instant, les offres sont passées dans l'onglet
-// « Recherche » (décision 2026-11-23-onglet-recherche).
-import { ThemedView } from '@/shared/theme/components/themed-view';
+// Route `/` (onglet Accueil, écran par défaut) : un carrousel par ville (décision
+// 2026-11-23-accueil-carrousels-par-ville) ; la recherche des offres est dans l'onglet « Recherche ».
+import { HomeScreen } from '@/features/offer/screens/HomeScreen';
 
-export default function HomeScreen() {
-  return <ThemedView testID="home-screen" style={{ flex: 1 }} />;
-}
+export default HomeScreen;

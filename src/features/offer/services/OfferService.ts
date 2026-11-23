@@ -1,10 +1,15 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
-import type { MemberProfile, OfferCalendarDayPanel, OfferCalendarMonth, OfferDetail, OfferDetailResponse, OfferReviewPage } from '../types';
+import type { HomeCarousel, MemberProfile, OfferCalendarDayPanel, OfferCalendarMonth, OfferDetail, OfferDetailResponse, OfferReviewPage } from '../types';
 
 /** Offres servies par l'API. Une méthode par appel. */
 export class OfferService {
   constructor(private readonly client: ApiClient = apiClient) {}
+
+  /** `GET /api/v1/home` — l'accueil : un carrousel par ville, 10 offres au hasard (décision 2026-11-23-accueil-carrousels-par-ville). */
+  async home(): Promise<HomeCarousel[]> {
+    return (await this.client.get<{ data: { carousels: HomeCarousel[] } }>('/v1/home')).data.carousels;
+  }
 
   /** `GET /api/v1/offers/{id}` — la fiche, ouverte sans connexion. */
   async get(id: string): Promise<OfferDetail> {
