@@ -797,7 +797,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       await renderScreen();
 
       expect(screen.getByTestId('profile-list-item-1-photo').props.contentFit).toBe('contain');
-      expect(screen.getByTestId('profile-list-item-1-photo-frame')).toBeTruthy();
+      // Sans cadre, comme une photo de « Mes logements » (décision 2026-11-24-logo-entier-sans-cadre).
+      expect(screen.queryByTestId('profile-list-item-1-photo-frame')).toBeNull();
       expect(screen.getByTestId('profile-list-item-2-photo').props.contentFit).toBe('cover');
     });
 
