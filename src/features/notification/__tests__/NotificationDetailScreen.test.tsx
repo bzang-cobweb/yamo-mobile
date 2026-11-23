@@ -116,6 +116,8 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('notification-history-2-delivery-delivered').props.accessibilityLabel).toBe('Reçue');
     expect(screen.queryByTestId('notification-history-1-delivery-sent')).toBeNull();
     // Le nom ouvre la page du membre.
+    // Le lien sur le nom seul (décision 2026-11-22-liens-sur-le-texte).
+    expect(StyleSheet.flatten(screen.getByTestId('notification-history-0-actor').props.style)).toMatchObject({ alignSelf: 'flex-start' });
     await fireEvent.press(screen.getByTestId('notification-history-0-actor'));
     expect(router.push).toHaveBeenLastCalledWith('/members/37');
     await fireEvent.press(screen.getByTestId('notification-history-1-actor'));
@@ -205,7 +207,7 @@ describe('NotificationDetailScreen', () => {
     // 2026-11-22-detail-titre-compose-sans-ville).
     expect(screen.getByTestId('notification-detail-composed-title')).toHaveTextContent('Location meublée · Studio');
     // Le titre et le titre composé, centrés (décision 2026-11-22-detail-titres-centres).
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ textAlign: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ textAlign: 'center', alignSelf: 'center' });
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-composed-title').props.style)).toMatchObject({ textAlign: 'center' });
     const tree = JSON.stringify(screen.toJSON());
     expect(tree.indexOf('"notification-detail-offer-title"')).toBeLessThan(tree.indexOf('"notification-detail-composed-title"'));

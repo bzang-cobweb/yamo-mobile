@@ -83,7 +83,8 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
       type="smallBold"
       accessibilityRole="link"
       onPress={() => close() || router.push(titleLink as Href)}
-      style={{ color: theme.primary }}
+      // Le lien sur le texte seul, pas sur toute la ligne (décision 2026-11-22-liens-sur-le-texte).
+      style={[styles.subtitleLink, { color: theme.primary }]}
       testID={`${prefix}-title-link-${item.id}`}>
       {item.title}
     </ThemedText>

@@ -317,6 +317,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     mockList = list([item('7', { edit: null, title: 'Awa Ndiaye', title_link: '/members/3', link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d' })]);
     await renderScreen();
 
+    // Le lien sur le texte seul, pas sur toute la ligne (décision 2026-11-22-liens-sur-le-texte).
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-title-link-7').props.style)).toMatchObject({ alignSelf: 'flex-start' });
     await fireEvent.press(screen.getByTestId('profile-list-title-link-7'));
     expect(router.push).toHaveBeenLastCalledWith('/members/3');
     await fireEvent.press(screen.getByTestId('profile-list-item-7'));

@@ -45,7 +45,13 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
                   {t('notifications.you')}
                 </ThemedText>
               ) : step.actor && (
-                <ThemedText type="smallBold" accessibilityRole="link" onPress={() => step.actor && onOpen(step.actor.link)} testID={`notification-history-${index}-actor`}>
+                <ThemedText
+                  type="smallBold"
+                  accessibilityRole="link"
+                  onPress={() => step.actor && onOpen(step.actor.link)}
+                  // Le lien sur le nom seul (décision 2026-11-22-liens-sur-le-texte).
+                  style={styles.actor}
+                  testID={`notification-history-${index}-actor`}>
                   {step.actor.name}
                 </ThemedText>
               )}
@@ -85,6 +91,7 @@ function Ticks({ delivery, color, testID }: { delivery: 'sent' | 'delivered' | '
 }
 
 const styles = StyleSheet.create({
+  actor: { alignSelf: 'flex-start' },
   block: { gap: Spacing.three },
   step: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two, maxWidth: '85%', alignSelf: 'flex-start' },
   // Le lecteur à droite.
