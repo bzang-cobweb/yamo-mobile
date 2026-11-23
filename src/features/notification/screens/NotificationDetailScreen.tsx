@@ -153,7 +153,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     <ThemedText
                       accessibilityRole="link"
                       onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
-                      style={styles.offerLink}
+                      style={[styles.offerLink, styles.centered]}
                       testID="notification-detail-offer-title">
                       {notification.booking.offer.title}
                     </ThemedText>
@@ -161,7 +161,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                   {/* Le titre composé sans la ville, sous le nom du logement (décisions 2026-11-22-detail-titre-compose-sous-titre et
                       2026-11-22-detail-titre-compose-sans-ville). */}
                   {notification.booking?.composed_title && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-composed-title">
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.centered} testID="notification-detail-composed-title">
                       {notification.booking.composed_title}
                     </ThemedText>
                   )}
@@ -243,6 +243,8 @@ const styles = StyleSheet.create({
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
+  // Le titre et le titre composé, centrés (décision 2026-11-22-detail-titres-centres).
+  centered: { textAlign: 'center' },
   // Le libellé en haut de sa ligne, même si la valeur en prend plusieurs (décision 2026-11-22-detail-libelle-en-haut).
   lineRow: { alignItems: 'flex-start' },
   // La pastille seule, à gauche.

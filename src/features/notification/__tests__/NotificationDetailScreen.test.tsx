@@ -204,6 +204,9 @@ describe('NotificationDetailScreen', () => {
     // Le titre composé sans la ville, sous le nom du logement (décisions 2026-11-22-detail-titre-compose-sous-titre et
     // 2026-11-22-detail-titre-compose-sans-ville).
     expect(screen.getByTestId('notification-detail-composed-title')).toHaveTextContent('Location meublée · Studio');
+    // Le titre et le titre composé, centrés (décision 2026-11-22-detail-titres-centres).
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ textAlign: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-composed-title').props.style)).toMatchObject({ textAlign: 'center' });
     const tree = JSON.stringify(screen.toJSON());
     expect(tree.indexOf('"notification-detail-offer-title"')).toBeLessThan(tree.indexOf('"notification-detail-composed-title"'));
     expect(screen.queryByTestId('notification-detail-period')).toBeNull();
