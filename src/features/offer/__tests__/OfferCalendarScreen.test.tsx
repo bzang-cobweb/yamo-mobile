@@ -96,6 +96,10 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
 
     expect(await screen.findByText('Décembre 2026')).toBeTruthy();
     expect(screen.getByTestId('offer-calendar-heading')).toHaveTextContent('Studio photos');
+    // À la taille du texte, en gras (décision 2026-11-22-calendrier-titre-taille-texte).
+    const size = (id: string) => (StyleSheet.flatten(screen.getByTestId(id).props.style) as { fontSize?: number }).fontSize;
+    expect(size('offer-calendar-heading')).toBe(size('offer-calendar-address'));
+    expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-heading').props.style)).toMatchObject({ fontWeight: '700' });
     expect(screen.getByTestId('offer-calendar-composed-title')).toHaveTextContent('Location meublée · Studio · Douala');
     expect(screen.getByTestId('offer-calendar-address')).toHaveTextContent('Rue Njo-Njo, Bonapriso, 00237 Douala, Cameroun');
     expect(screen.getByTestId('offer-calendar-indication')).toHaveTextContent('Portail vert, 2e étage.');

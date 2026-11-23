@@ -103,7 +103,8 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
           ) : (
             <ScrollView contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
               <View style={styles.heading}>
-                <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered} testID="offer-calendar-heading">
+                {/* Le titre à la taille du texte, en gras (décision 2026-11-22-calendrier-titre-taille-texte). */}
+                <ThemedText accessibilityRole="header" style={[styles.centered, styles.headingText]} testID="offer-calendar-heading">
                   {data.heading}
                 </ThemedText>
                 {/* Le titre composé, juste après le titre (décision 2026-11-22-calendrier-titre-compose). */}
@@ -191,6 +192,7 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
 }
 
 const styles = StyleSheet.create({
+  headingText: { fontWeight: '700' },
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   error: { color: ERROR_COLOR },
