@@ -52,8 +52,8 @@ function mockWithSections(offer: OfferDetail): OfferDetail {
   const sections: OfferSection[] = [
     // Caractéristiques, description, localisation, puis le reste (décision 2026-11-22-fiche-sections-ordre).
     ...(offer.facts.length > 0 ? [{ key: 'facts', type: 'rows', title: 'Caractéristiques', open: true, rows: offer.facts }] : []),
-    ...(offer.description ? [{ key: 'description', type: 'text', title: 'Description', open: true, text: offer.description, note: null }] : []),
-    ...(offer.address ? [{ key: 'location', type: 'text', title: 'Localisation', open: true, text: offer.address, note: offer.indication ?? null }] : []),
+    ...(offer.description ? [{ key: 'description', type: 'text', title: 'Description', open: false, text: offer.description, note: null }] : []),
+    ...(offer.address ? [{ key: 'location', type: 'text', title: 'Localisation', open: false, text: offer.address, note: offer.indication ?? null }] : []),
     ...((offer.rules?.length ?? 0) > 0 ? [{ key: 'rules', type: 'rows', title: 'Règles', open: false, rows: offer.rules }] : []),
     ...(offer.reviews ? [{ key: 'reviews', type: 'reviews', title: 'Avis', open: false }] : []),
     ...(offer.informations ?? []).map((information) => ({ key: `information-${information.id}`, type: 'text', title: information.title, open: false, text: information.description, note: null })),
@@ -114,7 +114,7 @@ async function show() {
 
 /** Ouvre les sections repliées (seule la première est ouverte à l'arrivée). */
 async function openSections() {
-  for (const block of ['offer-section-location', 'offer-section-facts', 'offer-section-rules', 'offer-section-reviews']) {
+  for (const block of ['offer-section-facts', 'offer-section-description', 'offer-section-location', 'offer-section-rules', 'offer-section-reviews']) {
     const toggle = screen.queryByTestId(`${block}-toggle`);
     if (toggle && !toggle.props.accessibilityState?.expanded) {
       await fireEvent.press(toggle);
@@ -152,7 +152,9 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     // Le libellé d'une valeur longue reste affiché (décision 2026-11-19-fiche-description-equipements).
     expect(screen.getByText('Équipements')).toBeTruthy();
     expect(screen.getByText('85 m²')).toBeTruthy();
-    // Dans sa section « Description » (décision 2026-11-22-fiche-sections-ordre).
+    // Dans sa section « Description », fermée à l'arrivée (décisions 2026-11-22-fiche-sections-ordre et
+    // 2026-11-22-fiche-premiere-section-ouverte).
+    await openSections();
     expect(screen.getByTestId('offer-description-text').props.children).toBe('Proche des commerces.');
     expect(screen.getByText('Description')).toBeTruthy();
     expect(screen.getByTestId('offer-published').props.children).toMatch(/^Publiée le /);
@@ -162,6 +164,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
   it('caractéristiques, description, puis localisation (adresse complète et indication) ; le prix dans la barre fixe', async () => {
     mockState = { data: { ...OFFER, address: 'Rue Njo-Njo 12, Douala, Cameroun', indication: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
     await show();
+    await openSections();
     // Décision 2026-11-19-fiche-localisation.
     expect(screen.getByText('Localisation')).toBeTruthy();
     expect(screen.getByTestId('offer-location-text').props.children).toBe('Rue Njo-Njo 12, Douala, Cameroun');
@@ -174,16 +177,16 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
 
-    // À l'arrivée : caractéristiques, description et localisation ouvertes, les avis fermés, comme servi
-    // (décision 2026-11-22-fiche-sections-ordre).
+    // À l'arrivée : seule la première section, les caractéristiques, est ouverte, comme servi (décision
+    // 2026-11-22-fiche-premiere-section-ouverte).
     await show();
-    for (const block of ['offer-section-facts', 'offer-section-description', 'offer-section-location']) {
-      expect(screen.getByTestId(`${block}-toggle`).props.accessibilityState).toEqual({ expanded: true });
+    expect(screen.getByTestId('offer-section-facts-toggle').props.accessibilityState).toEqual({ expanded: true });
+    for (const block of ['offer-section-description', 'offer-section-location', 'offer-section-reviews']) {
+      expect(screen.getByTestId(`${block}-toggle`).props.accessibilityState).toEqual({ expanded: false });
     }
-    expect(screen.getByTestId('offer-section-reviews-toggle').props.accessibilityState).toEqual({ expanded: false });
     expect(screen.getAllByTestId('offer-facts-row').length).toBeGreaterThan(0);
-    await fireEvent.press(screen.getByTestId('offer-section-facts-toggle'));
-    expect(screen.queryAllByTestId('offer-facts-row')).toHaveLength(0);
+    expect(screen.queryByTestId('offer-location-text')).toBeNull();
+    await fireEvent.press(screen.getByTestId('offer-section-location-toggle'));
     expect(screen.getByTestId('offer-location-text')).toBeTruthy();
 
     mockState = { data: OFFER, isPending: false, error: null };
@@ -450,6 +453,7 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
 
   it('une longue description : 4 lignes, puis « Voir plus » / « Voir moins » (décision 2026-11-22-description-voir-plus)', async () => {
     await show();
+    await openSections();
     const description = screen.getByTestId('offer-description-text');
     expect(screen.queryByTestId('offer-description-text-more')).toBeNull();
 
@@ -466,6 +470,7 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
 
   it('une courte description : pas de « Voir plus »', async () => {
     await show();
+    await openSections();
     await act(async () => {
       fireEvent(screen.getByTestId('offer-description-text'), 'textLayout', { nativeEvent: { lines: [{}, {}] } });
     });
