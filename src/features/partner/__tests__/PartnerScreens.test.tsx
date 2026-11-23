@@ -79,6 +79,8 @@ describe('la page « Partenaires »', () => {
 
     // Le logo sans bordure : la carte a déjà la sienne (décision 2026-11-24-partenaires-logos-sans-cadre).
     expect(StyleSheet.flatten(screen.getByTestId('partners-item-3-box').props.style).borderWidth).toBeUndefined();
+    // Les coins arrondis restent.
+    expect(StyleSheet.flatten(screen.getByTestId('partners-item-3-box').props.style).borderRadius).toBe(8);
 
     await fireEvent.press(screen.getByTestId('partners-item-4'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '4' } });

@@ -43,7 +43,8 @@ export function PartnerLogo({
 }
 
 const styles = StyleSheet.create({
-  box: { alignItems: 'center', justifyContent: 'center' },
-  frame: { borderRadius: 8, borderWidth: 1, padding: Spacing.two },
+  // Les coins arrondis, avec ou sans cadre (décision 2026-11-24-partenaires-logos-sans-cadre) ; l'image est coupée aux coins.
+  box: { alignItems: 'center', justifyContent: 'center', borderRadius: 8, overflow: 'hidden' },
+  frame: { borderWidth: 1, padding: Spacing.two },
   name: { fontSize: 11, lineHeight: 15, textAlign: 'center' },
 });
