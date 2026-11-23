@@ -53,6 +53,8 @@ describe('HomeScreen', () => {
     expect(screen.getByTestId('home-item-2')).toBeTruthy();
     // Plus petites que dans la recherche : une police réduite (décision 2026-11-23-accueil-deux-cartes).
     expect(StyleSheet.flatten(screen.getByText('Location meublée · Studio · Douala').props.style)).toMatchObject({ fontSize: 11 });
+    // Sans retrait : le texte a la largeur de la photo (décision 2026-11-23-accueil-texte-sans-retrait).
+    expect(StyleSheet.flatten(screen.getByTestId('home-item-1-body').props.style)).toMatchObject({ paddingHorizontal: 0 });
     // Les étoiles de la note aussi.
     expect(StyleSheet.flatten(within(screen.getByTestId('home-item-1-rating')).getAllByText(/★/)[0].parent?.props.style)).toMatchObject({ fontSize: 10 });
     expect(screen.getByTestId('home-carousel-Yaoundé')).toHaveTextContent(/^Yaoundé/);

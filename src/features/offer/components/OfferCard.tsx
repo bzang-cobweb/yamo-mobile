@@ -39,7 +39,8 @@ export function OfferCard({ item, testIDPrefix, style, compact = false }: Props)
       {/* La photo au-dessus du titre ; sans photo, un emplacement neutre ; le cœur d'un membre connecté. */}
       <ItemPicture item={item} placeholder testID={testID} />
       {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
-      <View style={CARD_BODY} testID={`${testID}-body`}>
+      {/* Sur l'accueil, sans retrait : le texte a la largeur de la photo (décision 2026-11-23-accueil-texte-sans-retrait). */}
+      <View style={[CARD_BODY, compact && styles.compactBody]} testID={`${testID}-body`}>
         <ThemedText type="smallBold" style={text}>
           {item.title}
         </ThemedText>
@@ -61,4 +62,5 @@ const styles = StyleSheet.create({
   card: { borderRadius: 8, borderWidth: 1, padding: CARD_PADDING, gap: CARD_GAP },
   pressed: { opacity: 0.7 },
   compactText: { fontSize: 11, lineHeight: 15 },
+  compactBody: { paddingHorizontal: 0 },
 });
