@@ -77,6 +77,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
         <ThemedText
           type={line.key === 'total' ? 'smallBold' : 'small'}
           themeColor={line.key === 'total' ? undefined : 'textSecondary'}
+          style={styles.lineLabel}
           testID={`notification-detail-line-${line.key}-label`}>
           {line.label}
         </ThemedText>
@@ -243,7 +244,9 @@ const styles = StyleSheet.create({
   // La pastille seule, à gauche.
   tagRow: { flexDirection: 'row', justifyContent: 'flex-start' },
   // La valeur à droite de son libellé, sur plusieurs lignes au besoin.
-  dateValue: { flexShrink: 1, textAlign: 'right' },
+  // Deux colonnes de largeur fixe, celle de droite plus grande (décision 2026-11-22-detail-colonnes-fixes).
+  lineLabel: { width: '35%' },
+  dateValue: { flex: 1, textAlign: 'right' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
   total: { fontWeight: '700' },
