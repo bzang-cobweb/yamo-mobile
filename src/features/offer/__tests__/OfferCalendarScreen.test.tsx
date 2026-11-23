@@ -130,8 +130,9 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(screen.getByTestId('calendar-quote-9')).toHaveTextContent('J’arrive tard.');
     expect(screen.getByTestId('calendar-unread-9')).toHaveTextContent('1');
     expect(screen.getByTestId('calendar-date-9')).toBeTruthy();
-    // Deux par ligne, à parts égales (décision 2026-11-22-calendrier-deux-boutons-par-ligne).
-    expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-buttons').props.style)).toMatchObject({ flexDirection: 'row', flexWrap: 'wrap' });
+    // Deux par ligne, à parts égales, le premier à droite (décisions 2026-11-22-calendrier-deux-boutons-par-ligne et
+    // 2026-11-22-calendrier-premier-bouton-a-droite).
+    expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-buttons').props.style)).toMatchObject({ flexDirection: 'row-reverse', flexWrap: 'wrap' });
     expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-primary').props.style)).toMatchObject({ flexGrow: 1, flexBasis: '40%' });
     expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-buttons').props.style)).toMatchObject({ marginTop: 16 });
     expect(screen.getByTestId('calendar-action-9-primary')).toBeTruthy();

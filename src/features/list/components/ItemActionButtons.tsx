@@ -49,7 +49,8 @@ const styles = StyleSheet.create({
   action: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 8 },
   // Toute la largeur, partagée à parts égales, deux par ligne ; plus d'espace au-dessus, sous la date (décisions
   // 2026-11-22-calendrier-espace-boutons et 2026-11-22-calendrier-deux-boutons-par-ligne).
-  column: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.three },
+  // Le premier (« Accepter ») à droite (décision 2026-11-22-calendrier-premier-bouton-a-droite).
+  column: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.three },
   full: { flexGrow: 1, flexBasis: '40%', alignItems: 'center' },
   pressed: { opacity: 0.6 },
 });
