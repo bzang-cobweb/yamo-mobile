@@ -54,7 +54,8 @@ export function PartnerDetailScreen({ id }: { id: string }) {
             <>
               <ScrollView contentContainerStyle={styles.body}>
                 <View style={styles.identity}>
-                  <PartnerLogo partner={partner} size={LOGO_SIZE} testID="partner" />
+                  {/* Sans logo, rien : le nom suffit (décision 2026-11-24-partenaire-page-sans-logo). */}
+                  {partner.logo && <PartnerLogo partner={partner} size={LOGO_SIZE} testID="partner" />}
                   {/* Le nom, et juste dessous son slogan s'il en a un (décision 2026-11-24-partenaire-slogan). */}
                   <View style={styles.heading}>
                     <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered} testID="partner-name">

@@ -133,6 +133,18 @@ describe('la page d’un partenaire', () => {
     expect(screen.queryByTestId('partner-contact')).toBeNull();
   });
 
+  it('le logo s’il y en a un ; sans logo, pas de cadre (décision 2026-11-24-partenaire-page-sans-logo)', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, logo: 'https://api.test/logo.png' } };
+    await show(<PartnerDetailScreen id="3" />);
+    expect(screen.getByTestId('partner-logo')).toBeTruthy();
+
+    mockOne = { isPending: false, isError: false, error: null, data: wouri };
+    await show(<PartnerDetailScreen id="3" />);
+    expect(screen.queryByTestId('partner-logo')).toBeNull();
+    // Le nom n'est affiché qu'une fois : en titre, pas dans un cadre.
+    expect(screen.getAllByText('Déménageurs du Wouri')).toHaveLength(2);
+  });
+
   it('le slogan sous le nom (décision 2026-11-24-partenaire-slogan)', async () => {
     mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, slogan: 'On porte, vous respirez.' } };
     await show(<PartnerDetailScreen id="3" />);
