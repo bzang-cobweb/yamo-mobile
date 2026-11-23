@@ -118,7 +118,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <BackStackProvider>
-          {/* Le type de la notification dans la barre du haut (« Demande de logement ») ; « Notification » en attendant. */}
+          {/* Le titre servi dans la barre du haut (« Ma réservation », « Demande reçue ») ; « Notification » en attendant. */}
           <BackHeader title={notification?.title || t('notifications.detail')} />
           {query.isPending ? (
             <View style={styles.center}>
@@ -154,6 +154,18 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       style={styles.offerLink}
                       testID="notification-detail-offer-title">
                       {notification.booking.offer.title}
+                    </ThemedText>
+                  )}
+                  {/* Le titre composé sur une ligne, puis les dates sur une autre (décision
+                      2026-11-22-detail-titre-compose-et-dates). */}
+                  {notification.booking?.composed_title && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-composed-title">
+                      {notification.booking.composed_title}
+                    </ThemedText>
+                  )}
+                  {notification.booking?.period && (
+                    <ThemedText type="small" testID="notification-detail-period">
+                      {notification.booking.period}
                     </ThemedText>
                   )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes

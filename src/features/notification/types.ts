@@ -57,6 +57,10 @@ export type NotificationBooking = {
   /** L'offre : son titre saisi et son type de location, rédigé (« Location meublée »). */
   /** `property_type` : le type de logement (« Appartement »), à côté du type de location ; absent d'un serveur plus ancien. */
   offer: { title: string | null; rental_type: string | null; property_type?: string | null };
+  /** Le titre composé (« Location meublée · Studio »), sur sa ligne sous le nom du logement (décision 2026-11-22-detail-titre-compose-et-dates). */
+  composed_title?: string | null;
+  /** Les dates (« Du 5 déc. 2026 au 7 déc. 2026 »), sur la ligne suivante. */
+  period?: string | null;
   /**
    * Les lignes à afficher, dans l'ordre, libellé et valeur rédigés (décision
    * 2026-11-20-lignes-demande) : `guests`, `arrival`, `departure` (ou `visit`,
