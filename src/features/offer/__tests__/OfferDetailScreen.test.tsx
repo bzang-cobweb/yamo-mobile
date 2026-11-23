@@ -50,10 +50,10 @@ function mockWithSections(offer: OfferDetail): OfferDetail {
     return offer;
   }
   const sections: OfferSection[] = [
-    // Caractéristiques, description, localisation, puis le reste (décision 2026-11-22-fiche-sections-ordre).
+    // Caractéristiques, localisation, description, puis le reste (décision 2026-11-22-fiche-localisation-apres-caracteristiques).
     ...(offer.facts.length > 0 ? [{ key: 'facts', type: 'rows', title: 'Caractéristiques', open: true, rows: offer.facts }] : []),
-    ...(offer.description ? [{ key: 'description', type: 'text', title: 'Description', open: false, text: offer.description, note: null }] : []),
     ...(offer.address ? [{ key: 'location', type: 'text', title: 'Localisation', open: false, text: offer.address, note: offer.indication ?? null }] : []),
+    ...(offer.description ? [{ key: 'description', type: 'text', title: 'Description', open: false, text: offer.description, note: null }] : []),
     ...((offer.rules?.length ?? 0) > 0 ? [{ key: 'rules', type: 'rows', title: 'Règles', open: false, rows: offer.rules }] : []),
     ...(offer.reviews ? [{ key: 'reviews', type: 'reviews', title: 'Avis', open: false }] : []),
     ...(offer.informations ?? []).map((information) => ({ key: `information-${information.id}`, type: 'text', title: information.title, open: false, text: information.description, note: null })),
@@ -114,7 +114,7 @@ async function show() {
 
 /** Ouvre les sections repliées (seule la première est ouverte à l'arrivée). */
 async function openSections() {
-  for (const block of ['offer-section-facts', 'offer-section-description', 'offer-section-location', 'offer-section-rules', 'offer-section-reviews']) {
+  for (const block of ['offer-section-facts', 'offer-section-location', 'offer-section-description', 'offer-section-rules', 'offer-section-reviews']) {
     const toggle = screen.queryByTestId(`${block}-toggle`);
     if (toggle && !toggle.props.accessibilityState?.expanded) {
       await fireEvent.press(toggle);
@@ -161,7 +161,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-status')).toBeNull();
   });
 
-  it('caractéristiques, description, puis localisation (adresse complète et indication) ; le prix dans la barre fixe', async () => {
+  it('caractéristiques, localisation (adresse complète et indication), puis description ; le prix dans la barre fixe', async () => {
     mockState = { data: { ...OFFER, address: 'Rue Njo-Njo 12, Douala, Cameroun', indication: 'Derrière le marché, portail bleu' }, isPending: false, error: null };
     await show();
     await openSections();
@@ -176,7 +176,7 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     // Le prix n'est plus sous le titre : il est dans la barre fixe (décision 2026-11-19-contrat-reservations).
     expect(within(screen.getByTestId('offer-booking-bar')).getByTestId('offer-price')).toBeTruthy();
     expect(within(screen.getByTestId('offer-detail')).queryByTestId('offer-price')).toBeNull();
-    const order = ['offer-facts-row', 'offer-description-text', 'offer-location-text', 'offer-location-note'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
+    const order = ['offer-facts-row', 'offer-location-text', 'offer-location-note', 'offer-description-text'].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
 
