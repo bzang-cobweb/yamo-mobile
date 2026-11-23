@@ -10,8 +10,9 @@ import type { ListItemAction } from '../types';
 /**
  * Les boutons d'une carte (décision 2026-11-19-contrat-reservations-logements-profil),
  * à droite sous son contenu : `primary` plein, `destructive` en rouge, sinon bordé.
- * Le même rendu dans une liste et dans le panneau d'un jour du calendrier ; avec `fullWidth`, chacun sur toute la
- * ligne, les uns sous les autres (les cartes du calendrier, décision 2026-11-22-calendrier-boutons-pleine-largeur).
+ * Le même rendu dans une liste et dans le panneau d'un jour du calendrier ; avec `fullWidth`, toute la largeur de la
+ * carte, partagée à parts égales (deux par ligne : « Accepter » et « Refuser » dans le calendrier, décision
+ * 2026-11-22-calendrier-deux-boutons-par-ligne).
  */
 export function ItemActionButtons({ actions, testID, onPress, fullWidth = false }: { actions: ListItemAction[]; testID: string; onPress: (action: ListItemAction) => void; fullWidth?: boolean }) {
   const theme = useTheme();
@@ -46,9 +47,9 @@ export function ItemActionButtons({ actions, testID, onPress, fullWidth = false 
 const styles = StyleSheet.create({
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.two },
   action: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 8 },
-  // Toute la ligne, les uns sous les autres.
-  // Plus d'espace au-dessus, sous la date (décision 2026-11-22-calendrier-espace-boutons).
-  column: { gap: Spacing.two, marginTop: Spacing.three },
-  full: { alignItems: 'center' },
+  // Toute la largeur, partagée à parts égales, deux par ligne ; plus d'espace au-dessus, sous la date (décisions
+  // 2026-11-22-calendrier-espace-boutons et 2026-11-22-calendrier-deux-boutons-par-ligne).
+  column: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.three },
+  full: { flexGrow: 1, flexBasis: '40%', alignItems: 'center' },
   pressed: { opacity: 0.6 },
 });
