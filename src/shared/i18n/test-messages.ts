@@ -12,6 +12,8 @@ export const TEST_MESSAGES: Messages = {
   'home.seeAll': 'Voir tout',
   'partners.title': 'Partenaires',
   'partners.visit': 'Visiter le site',
+  'partners.email': 'E-mail',
+  'partners.phone': 'Téléphone',
   'partners.unavailable': "Ce partenaire n'est plus disponible.",
   'tabs.profile': 'Profil',
   'tabs.notifications': 'Notifications',

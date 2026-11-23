@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { Linking } from 'react-native';
 
 import { ApiError } from '@/shared/api/errors';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -108,6 +109,26 @@ describe('la page d’un partenaire', () => {
     await fireEvent.press(screen.getByTestId('partner-cta-button'));
     expect(mockClick).toHaveBeenCalledWith('3');
     expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith('https://wouri.test/fr');
+  });
+
+  it('son e-mail et son téléphone, qui ouvrent l’e-mail et l’appel (décision 2026-11-24-partenaire-contact)', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, contact_email: 'contact@wouri.test', contact_phone: '+237 6 70 00 00 02' } };
+    await show(<PartnerDetailScreen id="3" />);
+
+    expect(screen.getByTestId('partner-contact')).toHaveTextContent(/E-mail.*contact@wouri\.test.*Téléphone.*\+237 6 70 00 00 02/);
+    // La description après le contact.
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('"partner-contact"')).toBeLessThan(json.indexOf('"partner-description"'));
+    await fireEvent.press(screen.getByTestId('partner-email'));
+    expect(openURL).toHaveBeenLastCalledWith('mailto:contact@wouri.test');
+    await fireEvent.press(screen.getByTestId('partner-phone'));
+    expect(openURL).toHaveBeenLastCalledWith('tel:+237670000002');
+
+    // Sans coordonnées, rien.
+    mockOne = { isPending: false, isError: false, error: null, data: wouri };
+    await show(<PartnerDetailScreen id="3" />);
+    expect(screen.queryByTestId('partner-contact')).toBeNull();
   });
 
   it('sans libellé, « Visiter le site » ; sans lien, pas de bouton', async () => {

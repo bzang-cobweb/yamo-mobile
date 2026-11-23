@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, NetworkError } from '@/shared/api/errors';
@@ -8,6 +8,7 @@ import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
+import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { PartnerLogo } from '../components/PartnerLogo';
@@ -17,12 +18,14 @@ import { openPartner } from '../utils/openPartner';
 const LOGO_SIZE = 120;
 
 /**
- * La page d'un partenaire (décision 2026-11-23-partenaires-liste-detail) : son logo, son nom, sa description ; en
+ * La page d'un partenaire (décision 2026-11-23-partenaires-liste-detail) : son logo, son nom, son e-mail et son
+ * téléphone, puis sa description (décision 2026-11-24-partenaire-contact) ; en
  * bas, son bouton (son libellé, sinon « Visiter le site »), qui compte un clic et ouvre son lien. Sans lien, pas de
  * bouton. Un partenaire qui n'est plus visible : « plus disponible ».
  */
 export function PartnerDetailScreen({ id }: { id: string }) {
   const { t } = useI18n();
+  const theme = useTheme();
   const query = usePartner(id);
   const partner = query.data;
   const gone = query.error instanceof ApiError && query.error.status === 404;
@@ -56,6 +59,18 @@ export function PartnerDetailScreen({ id }: { id: string }) {
                     {partner.name}
                   </ThemedText>
                 </View>
+                {/* Son e-mail et son téléphone ; les toucher ouvre l'e-mail ou l'appel (décision 2026-11-24-partenaire-contact). */}
+                {(partner.contact_email || partner.contact_phone) && (
+                  <View style={[styles.contact, { borderColor: theme.backgroundSelected }]} testID="partner-contact">
+                    {partner.contact_email && (
+                      <ContactRow label={t('partners.email')} value={partner.contact_email} url={`mailto:${partner.contact_email}`} testID="partner-email" />
+                    )}
+                    {partner.contact_phone && (
+                      <ContactRow label={t('partners.phone')} value={partner.contact_phone} url={`tel:${partner.contact_phone.replace(/\s/g, '')}`} testID="partner-phone" />
+                    )}
+                  </View>
+                )}
+                {/* La description après le contact (décision 2026-11-24-partenaire-contact). */}
                 {partner.description && <ThemedText testID="partner-description">{partner.description}</ThemedText>}
               </ScrollView>
               {partner.url && <FixedButtonBar testID="partner-cta" label={partner.cta_label ?? t('partners.visit')} onPress={() => openPartner(partner)} />}
@@ -67,10 +82,26 @@ export function PartnerDetailScreen({ id }: { id: string }) {
   );
 }
 
+/** Une ligne de contact : le libellé à gauche, la valeur en lien à droite. */
+function ContactRow({ label, value, url, testID }: { label: string; value: string; url: string; testID: string }) {
+  const theme = useTheme();
+
+  return (
+    <View style={styles.row}>
+      <ThemedText themeColor="textSecondary">{label}</ThemedText>
+      <Pressable accessibilityRole="link" accessibilityLabel={`${label} ${value}`} hitSlop={Spacing.one} onPress={() => void Linking.openURL(url)} testID={testID}>
+        <ThemedText style={{ color: theme.primary }}>{value}</ThemedText>
+      </Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   body: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four, gap: Spacing.four },
   identity: { alignItems: 'center', gap: Spacing.three },
   centered: { textAlign: 'center' },
+  contact: { borderTopWidth: 1, borderBottomWidth: 1, paddingVertical: Spacing.three, gap: Spacing.three },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.three },
 });
