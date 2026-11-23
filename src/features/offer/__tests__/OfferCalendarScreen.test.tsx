@@ -131,6 +131,10 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     // Chaque bouton sur toute la ligne, les uns sous les autres (décision 2026-11-22-calendrier-boutons-pleine-largeur).
     expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-buttons').props.style)).not.toMatchObject({ flexDirection: 'row' });
     expect(screen.getByTestId('calendar-action-9-primary')).toBeTruthy();
+    // Sous la date, la carte en colonne (décision 2026-11-22-calendrier-boutons-sous-la-date).
+    expect(StyleSheet.flatten(screen.getByTestId('calendar-row-9').props.style)).toMatchObject({ flexDirection: 'column' });
+    const json = JSON.stringify(screen.toJSON());
+    expect(json.indexOf('"testID":"calendar-date-9"')).toBeLessThan(json.indexOf('"testID":"calendar-action-9-buttons"'));
     expect(screen.getByTestId('calendar-action-9-destructive')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('calendar-title-link-9'));
     expect(router.push).toHaveBeenLastCalledWith('/members/37');

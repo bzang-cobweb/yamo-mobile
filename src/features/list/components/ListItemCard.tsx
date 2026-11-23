@@ -153,7 +153,8 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   const removeIcon = removable && !item.image && !menu;
   // Avec une photo, « Voir » et « Éditer », ou « Retirer » en texte : en colonne, les actions sur leur ligne,
   // à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et 2026-11-21-retirer-en-fin-de-carte).
-  const stacked = Boolean(item.image) || both || (removable && !removeIcon);
+  // Des boutons pleine largeur (le calendrier) : sous la date, ligne par ligne (décision 2026-11-22-calendrier-boutons-sous-la-date).
+  const stacked = Boolean(item.image) || both || (removable && !removeIcon) || (fullWidthActions && (item.actions?.length ?? 0) > 0);
 
   function openEdit() {
     if (edit) {
