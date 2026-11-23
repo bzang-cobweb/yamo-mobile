@@ -1,7 +1,19 @@
 import type { FieldValue, FormDefinition, FormFieldDefinition, FormValues } from '../types';
 
+/**
+ * Un choix Oui / Non obligatoire : un interrupteur, qui envoie « yes » ou « no »
+ * (décision 2026-11-23-regles-oui-non-obligatoires).
+ */
+export function isYesNoSwitch(field: FormFieldDefinition): boolean {
+  return field.type === 'select' && field.required && field.options.map((option) => option.value).join(',') === 'yes,no';
+}
+
 /** Valeur de départ d'un champ : la valeur par défaut de l'API, sinon le « vide » de son type. */
 export function initialValue(field: FormFieldDefinition): FieldValue {
+  // L'interrupteur éteint vaut « no » : un champ non renseigné part sur Non.
+  if (isYesNoSwitch(field)) {
+    return field.default === 'yes' ? 'yes' : 'no';
+  }
   switch (field.type) {
     case 'checkbox':
     case 'switch':

@@ -1,4 +1,5 @@
 import type { FieldProps, FieldValue, RepeaterItem } from '../types';
+import { isYesNoSwitch } from '../utils/values';
 import { CheckboxField } from './fields/CheckboxField';
 import { CheckboxGroupField } from './fields/CheckboxGroupField';
 import { CodeField } from './fields/CodeField';
@@ -41,6 +42,9 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
     case 'textarea':
       return <TextareaField {...common} value={asText} onChange={onChange} />;
     case 'select':
+      if (isYesNoSwitch(field)) {
+        return <SwitchField {...common} value={value === 'yes'} onChange={(on) => onChange(on ? 'yes' : 'no')} />;
+      }
       return <SelectField {...common} value={asText} onChange={onChange} />;
     case 'radio':
       return <RadioField {...common} value={asText} onChange={onChange} />;
