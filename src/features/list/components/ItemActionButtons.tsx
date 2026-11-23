@@ -10,9 +10,10 @@ import type { ListItemAction } from '../types';
 /**
  * Les boutons d'une carte (décision 2026-11-19-contrat-reservations-logements-profil),
  * à droite sous son contenu : `primary` plein, `destructive` en rouge, sinon bordé.
- * Le même rendu dans une liste et dans le panneau d'un jour du calendrier.
+ * Le même rendu dans une liste et dans le panneau d'un jour du calendrier ; avec `fullWidth`, chacun sur toute la
+ * ligne, les uns sous les autres (les cartes du calendrier, décision 2026-11-22-calendrier-boutons-pleine-largeur).
  */
-export function ItemActionButtons({ actions, testID, onPress }: { actions: ListItemAction[]; testID: string; onPress: (action: ListItemAction) => void }) {
+export function ItemActionButtons({ actions, testID, onPress, fullWidth = false }: { actions: ListItemAction[]; testID: string; onPress: (action: ListItemAction) => void; fullWidth?: boolean }) {
   const theme = useTheme();
 
   if (actions.length === 0) {
@@ -20,7 +21,7 @@ export function ItemActionButtons({ actions, testID, onPress }: { actions: ListI
   }
 
   return (
-    <View style={styles.actions}>
+    <View style={fullWidth ? styles.column : styles.actions} testID={`${testID}-buttons`}>
       {actions.map((action) => (
         <Pressable
           key={action.label}
@@ -29,6 +30,7 @@ export function ItemActionButtons({ actions, testID, onPress }: { actions: ListI
           onPress={() => onPress(action)}
           style={({ pressed }) => [
             styles.action,
+            fullWidth && styles.full,
             action.style === 'primary' ? { backgroundColor: theme.primary } : { borderColor: action.style === 'destructive' ? ERROR_COLOR : theme.backgroundSelected, borderWidth: 1 },
             pressed && styles.pressed,
           ]}>
@@ -44,5 +46,8 @@ export function ItemActionButtons({ actions, testID, onPress }: { actions: ListI
 const styles = StyleSheet.create({
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.two },
   action: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 8 },
+  // Toute la ligne, les uns sous les autres.
+  column: { gap: Spacing.two },
+  full: { alignItems: 'center' },
   pressed: { opacity: 0.6 },
 });

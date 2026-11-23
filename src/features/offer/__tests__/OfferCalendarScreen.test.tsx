@@ -81,7 +81,10 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
           link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d',
           edit: null,
           delete: null,
-          actions: [],
+          actions: [
+            { label: 'Accepter', style: 'primary', confirm: null, submission: null, form: { form: 'offer.booking.accept', record: '9' }, link: null },
+            { label: 'Refuser', style: 'destructive', confirm: null, submission: null, form: { form: 'offer.booking.refuse', record: '9' }, link: null },
+          ],
         },
       ],
       empty: 'Aucune demande ce jour-là.',
@@ -125,6 +128,10 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(screen.getByTestId('calendar-quote-9')).toHaveTextContent('J’arrive tard.');
     expect(screen.getByTestId('calendar-unread-9')).toHaveTextContent('1');
     expect(screen.getByTestId('calendar-date-9')).toBeTruthy();
+    // Chaque bouton sur toute la ligne, les uns sous les autres (décision 2026-11-22-calendrier-boutons-pleine-largeur).
+    expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-buttons').props.style)).not.toMatchObject({ flexDirection: 'row' });
+    expect(screen.getByTestId('calendar-action-9-primary')).toBeTruthy();
+    expect(screen.getByTestId('calendar-action-9-destructive')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('calendar-title-link-9'));
     expect(router.push).toHaveBeenLastCalledWith('/members/37');
 

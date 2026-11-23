@@ -32,6 +32,8 @@ type Props = {
   onAction: (action: ListItemAction) => void;
   /** « Retirer », après confirmation. */
   onRemove?: (item: ListItem) => void;
+  /** Chaque bouton de la carte sur toute la ligne (le panneau du jour du calendrier). */
+  fullWidthActions?: boolean;
   /** Le préfixe des identifiants de test. */
   testID?: string;
 };
@@ -42,7 +44,7 @@ type Props = {
  * calendrier d'un logement. Photo, statut, titre, texte, message, date, note, compteurs, boutons, menu, retrait :
  * chacun seulement s'il est servi.
  */
-export function ListItemCard({ item, menu = false, open = false, onMenuChange, onCloseMenu, onAction, onRemove, testID: prefix = 'profile-list' }: Props) {
+export function ListItemCard({ item, menu = false, open = false, onMenuChange, onCloseMenu, onAction, onRemove, fullWidthActions = false, testID: prefix = 'profile-list' }: Props) {
   const { t, locale } = useI18n();
   const theme = useTheme();
   const close = () => onCloseMenu?.() ?? false;
@@ -319,7 +321,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
         )
       ) : (
         <>
-          <ItemActionButtons actions={item.actions ?? []} testID={`${prefix}-action-${item.id}`} onPress={onAction} />
+          <ItemActionButtons actions={item.actions ?? []} testID={`${prefix}-action-${item.id}`} onPress={onAction} fullWidth={fullWidthActions} />
           {stacked ? (
             <View style={styles.actions} testID={`${prefix}-actions-${item.id}`}>
               {both && (

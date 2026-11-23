@@ -75,7 +75,8 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
    * dernier message et les non lues, la date ; la carte ouvre la page de la demande ; Accepter, Refuser, l'adresse.
    */
   function renderCard(item: ListItem) {
-    return <ListItemCard key={item.id} item={item} onAction={press} testID="calendar" />;
+    // Chaque bouton sur toute la ligne (décision 2026-11-22-calendrier-boutons-pleine-largeur).
+    return <ListItemCard key={item.id} item={item} onAction={press} fullWidthActions testID="calendar" />;
   }
 
   /** Un lien d'une carte (l'annonce) : le panneau se ferme, l'écran s'ouvre. */
