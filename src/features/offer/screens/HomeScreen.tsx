@@ -86,6 +86,9 @@ export function HomeScreen() {
             </Pressable>
           </View>
           <FlatList
+            // Un nouveau tirage repart du début : une liste horizontale garde sinon sa position de défilement, et le
+            // nouveau tirage s'affichait décalé d'une carte (décision 2026-11-23-accueil-fleche-deux-cartes).
+            key={carousel.items.map((item) => item.id).join(',')}
             horizontal
             data={carousel.items}
             keyExtractor={(item) => item.id}

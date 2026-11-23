@@ -75,6 +75,22 @@ describe('HomeScreen', () => {
     expect(result.current.values).toEqual({ city: 'Douala' });
   });
 
+  it('un nouveau tirage repart du début de la rangée', async () => {
+    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'A'), item('2', 'B'), item('3', 'C')] }] };
+    await show();
+
+    mockState = { ...mockState, data: [{ city: 'Douala', items: [item('4', 'D'), item('5', 'E'), item('6', 'F')] }] };
+    await screen.rerender(
+      <I18nContext.Provider value={TEST_I18N}>
+        <HomeScreen />
+      </I18nContext.Provider>,
+    );
+
+    // Le nouveau tirage remplace l'ancien (la rangée, clé du tirage, est montée de nouveau et part du début).
+    expect(screen.queryByTestId('home-item-1')).toBeNull();
+    expect(screen.getByTestId('home-item-4')).toBeTruthy();
+  });
+
   it('une erreur propose de réessayer', async () => {
     mockState = { isPending: false, isError: true, error: new Error('boom') };
     await show();
