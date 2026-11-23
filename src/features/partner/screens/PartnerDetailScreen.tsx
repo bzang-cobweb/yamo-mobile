@@ -58,6 +58,12 @@ export function PartnerDetailScreen({ id }: { id: string }) {
                   <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered} testID="partner-name">
                     {partner.name}
                   </ThemedText>
+                  {/* Le slogan, sous le nom, s'il y en a un (décision 2026-11-24-partenaire-slogan). */}
+                  {partner.slogan && (
+                    <ThemedText themeColor="textSecondary" style={styles.centered} testID="partner-slogan">
+                      {partner.slogan}
+                    </ThemedText>
+                  )}
                 </View>
                 {/* Son e-mail et son téléphone ; les toucher ouvre l'e-mail ou l'appel (décision 2026-11-24-partenaire-contact). */}
                 {(partner.contact_email || partner.contact_phone) && (

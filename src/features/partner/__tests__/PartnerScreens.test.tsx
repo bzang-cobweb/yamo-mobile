@@ -103,6 +103,8 @@ describe('la page d’un partenaire', () => {
     await show(<PartnerDetailScreen id="3" />);
 
     expect(screen.getByTestId('partner-name')).toHaveTextContent('Déménageurs du Wouri');
+    // Sans slogan, rien sous le nom.
+    expect(screen.queryByTestId('partner-slogan')).toBeNull();
     expect(screen.getByTestId('partner-description')).toHaveTextContent('Déménagement clés en main.');
     expect(screen.getByTestId('partner-cta-button')).toHaveTextContent('Demander un devis');
 
@@ -129,6 +131,13 @@ describe('la page d’un partenaire', () => {
     mockOne = { isPending: false, isError: false, error: null, data: wouri };
     await show(<PartnerDetailScreen id="3" />);
     expect(screen.queryByTestId('partner-contact')).toBeNull();
+  });
+
+  it('le slogan sous le nom (décision 2026-11-24-partenaire-slogan)', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, slogan: 'On porte, vous respirez.' } };
+    await show(<PartnerDetailScreen id="3" />);
+
+    expect(screen.getByTestId('partner-slogan')).toHaveTextContent('On porte, vous respirez.');
   });
 
   it('sans libellé, « Visiter le site » ; sans lien, pas de bouton', async () => {

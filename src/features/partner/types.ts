@@ -2,6 +2,8 @@
 export type Partner = {
   id: string;
   name: string;
+  /** Facultatif (décision 2026-11-24-partenaire-slogan). */
+  slogan?: string | null;
   description: string | null;
   url: string | null;
   cta_label: string | null;
