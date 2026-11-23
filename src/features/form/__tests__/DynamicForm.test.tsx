@@ -179,6 +179,22 @@ describe('DynamicForm', () => {
     expect(StyleSheet.flatten(subtitle.props.style)).toMatchObject({ fontSize: 18, fontWeight: '700' });
   });
 
+  it('une note à part, sous le titre, en orange (décision 2026-11-22-formulaire-note)', async () => {
+    await render(
+      <DynamicForm
+        definition={{ ...everyType, title: 'Accepter la demande', subtitle: 'Marie Curie · du 3 déc. 2026 au 6 déc. 2026', notice: '2 autres visites sont demandées ce jour-là.' }}
+        onSubmit={jest.fn()}
+        hideTitle
+      />,
+    );
+
+    const notice = screen.getByTestId('form-notice');
+    expect(notice).toHaveTextContent('2 autres visites sont demandées ce jour-là.');
+    expect(screen.getByTestId('form-subtitle')).toHaveTextContent('Marie Curie · du 3 déc. 2026 au 6 déc. 2026');
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('"form-subtitle"')).toBeLessThan(tree.indexOf('"form-notice"'));
+  });
+
   it('sans titre ni sous-titre, n’affiche aucun en-tête', async () => {
     await render(<DynamicForm definition={everyType} onSubmit={jest.fn()} />);
 

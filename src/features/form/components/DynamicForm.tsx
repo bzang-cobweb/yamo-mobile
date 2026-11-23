@@ -5,6 +5,7 @@ import { ApiError, NetworkError } from '@/shared/api/errors';
 import { useFixedFooter, type RevealTarget } from '@/shared/components/FixedFooterLayout';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useBackStep } from '@/shared/navigation/BackStack';
+import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -254,6 +255,13 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
             ))}
         </View>
       )}
+
+      {/* Une note à part, sous le titre : un avertissement, en orange (décision 2026-11-22-formulaire-note). */}
+      {definition.notice ? (
+        <ThemedText type="small" style={[{ color: TONE_COLORS.warning }, titleAlign]} testID="form-notice">
+          {definition.notice}
+        </ThemedText>
+      ) : null}
 
       {currentStep && (
         <View style={styles.header}>
