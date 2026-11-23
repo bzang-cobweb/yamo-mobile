@@ -109,12 +109,13 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
                 </ThemedText>
                 {/* Le titre composé, juste après le titre (décision 2026-11-22-calendrier-titre-compose). */}
                 {data.composed_title && (
-                  <ThemedText themeColor="textSecondary" style={styles.centered} testID="offer-calendar-composed-title">
+                  // Petit et gris, comme sous le titre de la page d'une demande (décision 2026-11-22-calendrier-textes-comme-detail).
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.centered} testID="offer-calendar-composed-title">
                     {data.composed_title}
                   </ThemedText>
                 )}
                 {data.address && (
-                  <ThemedText themeColor="textSecondary" style={styles.centered} testID="offer-calendar-address">
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.centered} testID="offer-calendar-address">
                     {data.address}
                   </ThemedText>
                 )}
