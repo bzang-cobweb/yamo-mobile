@@ -14,7 +14,7 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 /**
  * Pour un utilisateur connecté : barre fixe en haut (logo de l'application) sur
  * l'écran racine de chaque onglet, pas sur les formulaires du profil ; menu fixe en bas, Accueil (écran par défaut),
- * Notifications (avec la pastille des non lues) et Profil. Icônes seules ; leur nom, servi par l'API, est annoncé aux lecteurs
+ * Recherche, Notifications (avec la pastille des non lues) et Profil. Icônes seules ; leur nom, servi par l'API, est annoncé aux lecteurs
  * d'écran. Les formulaires du profil (`app/profile/[form].tsx`) s'ouvrent hors des
  * onglets, par-dessus ; les listes du profil gardent le menu.
  */
@@ -68,6 +68,19 @@ export default function TabsLayout() {
               tintColor={color}
               size={size}
             />
+          ),
+        }}
+      />
+      {/* Recherche, avant les notifications : les offres, leur recherche et leurs filtres (décision
+          2026-11-23-onglet-recherche). */}
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: t('tabs.search'),
+          tabBarAccessibilityLabel: t('tabs.search'),
+          tabBarButtonTestID: 'tab-search',
+          tabBarIcon: ({ color, size }) => (
+            <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }} tintColor={color} size={size} />
           ),
         }}
       />

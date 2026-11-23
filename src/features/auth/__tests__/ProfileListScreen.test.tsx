@@ -778,16 +778,16 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'offer.offer' } });
     });
 
-    it('le bouton du bas peut ramener à l’accueil ; les filtres servis ouvrent l’écran des filtres', async () => {
+    it('le bouton du bas peut ouvrir l’onglet Recherche (décision 2026-11-23-onglet-recherche) ; les filtres servis ouvrent l’écran des filtres', async () => {
       mockList = list([item('1')], {
         create: null,
-        footer: { label: 'Rechercher un logement', form: null, link: '/' },
+        footer: { label: 'Rechercher un logement', form: null, link: '/search' },
         filters: [{ name: 'status', type: 'segmented', label: 'Statut', placeholder: null, help: null, required: false, default: 'any', options: [] }],
       });
       await renderScreen();
 
       await fireEvent.press(screen.getByTestId('profile-list-footer-button'));
-      expect(router.navigate).toHaveBeenCalledWith('/');
+      expect(router.navigate).toHaveBeenCalledWith('/search');
       await fireEvent.press(screen.getByText('Filtres'));
       expect(router.push).toHaveBeenCalledWith({ pathname: '/filters/[list]', params: { list: 'payments.cards' } });
     });

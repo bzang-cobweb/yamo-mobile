@@ -234,12 +234,13 @@ export function ProfileListScreen({ list }: { list: string }) {
   );
 }
 
-/** Le bouton du bas : son formulaire, ou l'écran de l'app (l'accueil `/`, une fiche) ; jamais une adresse externe. */
+/** Le bouton du bas : son formulaire, ou l'écran de l'app (l'accueil `/`, la recherche `/search`, une fiche) ; jamais une adresse externe. */
 function openFooter(footer: { form: string | null; link: string | null }) {
   if (footer.form) {
     router.push({ pathname: '/profile/[form]', params: { form: footer.form } });
-  } else if (footer.link === '/') {
-    router.navigate('/');
+  } else if (footer.link === '/' || footer.link === '/search') {
+    // Un onglet : l'accueil, ou la recherche des offres (décision 2026-11-23-onglet-recherche).
+    router.navigate(footer.link);
   } else if (footer.link && ITEM_LINK.test(footer.link)) {
     router.push(footer.link as Href);
   }

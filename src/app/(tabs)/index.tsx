@@ -1,5 +1,7 @@
-// Route `/` (onglet Accueil, écran par défaut) : les offres du pays, comme pour un
-// visiteur (décision 2026-11-18-accueil-offres-du-pays).
-import { BrowseScreen } from '@/features/offer/screens/BrowseScreen';
+// Route `/` (onglet Accueil, écran par défaut) : vide pour l'instant, les offres sont passées dans l'onglet
+// « Recherche » (décision 2026-11-23-onglet-recherche).
+import { ThemedView } from '@/shared/theme/components/themed-view';
 
-export default BrowseScreen;
+export default function HomeScreen() {
+  return <ThemedView testID="home-screen" style={{ flex: 1 }} />;
+}
