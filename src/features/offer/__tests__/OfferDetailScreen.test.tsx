@@ -139,6 +139,11 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByTestId('offer-composed-title')).toHaveTextContent('Location · Appartement · Douala');
     expect(StyleSheet.flatten(screen.getByTestId('offer-title').props.style)).toMatchObject({ textAlign: 'center' });
     expect(StyleSheet.flatten(screen.getByTestId('offer-composed-title').props.style)).toMatchObject({ textAlign: 'center' });
+    // La note juste dessous, centrée : étoiles, moyenne, nombre d'avis (décision 2026-11-22-fiche-note-sous-titre).
+    const rating = screen.getByTestId('offer-title-rating');
+    expect(StyleSheet.flatten(rating.props.style)).toMatchObject({ justifyContent: 'center' });
+    expect(within(rating).getByText('4,5')).toBeTruthy();
+    expect(within(rating).getByText(`(${OFFER.reviews!.count})`)).toBeTruthy();
     expect(screen.getByTestId('offer-price').props.children).toBe('250 000 FCFA');
     // Le prix seul ; la ville est dans les caractéristiques (décision 2026-11-19-fiche-offre-ordre).
     expect(screen.queryByText('Loyer mensuel')).toBeNull();
@@ -329,6 +334,8 @@ describe('OfferDetailScreen : avis', () => {
   it('sans avis : le texte d’attente ; offre non publiée : pas de section', async () => {
     mockState = { data: { ...OFFER, reviews: { ...OFFER.reviews!, average: null, count: 0, latest: [] } }, isPending: false, error: null };
     await show();
+    // Sans avis : pas de note sous les titres.
+    expect(screen.queryByTestId('offer-title-rating')).toBeNull();
     await openSections();
     expect(screen.getByTestId('offer-reviews-empty').props.children).toBe('Aucun avis pour le moment.');
 

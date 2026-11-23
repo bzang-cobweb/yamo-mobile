@@ -11,6 +11,7 @@ import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { Accordion } from '@/shared/components/Accordion';
 import { BackHeader } from '@/shared/components/BackHeader';
+import { Stars } from '@/shared/components/Stars';
 import { STATUS_ON_IMAGE, StatusTag } from '@/shared/components/StatusTag';
 import { showToast } from '@/shared/components/Toast';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -116,6 +117,9 @@ export function OfferDetailScreen({ id }: { id: string }) {
                       {offer.composed_title}
                     </ThemedText>
                   )}
+                  {/* La note : étoiles, moyenne et nombre d'avis, centrée sous le titre composé (décision
+                      2026-11-22-fiche-note-sous-titre). */}
+                  {offer.reviews?.average != null && <TitleRating average={offer.reviews.average} count={offer.reviews.count} />}
                 </View>
                 {/* Le prix n'est plus ici : il est dans la barre fixe (décision 2026-11-19-contrat-reservations). */}
 
@@ -292,6 +296,21 @@ function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewCh
   );
 }
 
+/** La note moyenne sous les titres : les étoiles, la moyenne et le nombre d'avis, centrés (décision 2026-11-22-fiche-note-sous-titre). */
+function TitleRating({ average, count }: { average: number; count: number }) {
+  const { t, locale } = useI18n();
+  const theme = useTheme();
+  const shown = average.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  return (
+    <View accessible accessibilityLabel={t('list.ratingSummary', { average: shown, count: String(count) })} style={styles.titleRating} testID="offer-title-rating">
+      <Stars value={average} size={18} emptyColor={theme.backgroundSelected} />
+      <ThemedText type="smallBold">{shown}</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">{`(${count})`}</ThemedText>
+    </View>
+  );
+}
+
 /** Les lignes de la description visibles avant « Voir plus » (décision 2026-11-22-description-voir-plus). */
 const DESCRIPTION_LINES = 4;
 
@@ -372,6 +391,7 @@ function FactRow({ fact, testID }: { fact: { label: string; value: string }; tes
 
 const styles = StyleSheet.create({
   titles: { gap: Spacing.one },
+  titleRating: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.one },
   more: { alignSelf: 'flex-end', paddingTop: Spacing.one },
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
