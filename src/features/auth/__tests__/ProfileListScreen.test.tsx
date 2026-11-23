@@ -6,6 +6,7 @@ import { Alert, type AlertButton } from 'react-native';
 import type { ListDefinition, ListItem } from '@/features/list/types';
 import * as filterStore from '@/features/list/utils/filters';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
+import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { AuthContext } from '../context/AuthContext';
 import { ProfileListScreen } from '../screens/ProfileListScreen';
@@ -110,9 +111,11 @@ function list(items: ListItem[], overrides: Partial<ListDefinition> = {}): ListD
 async function renderScreen() {
   const auth = { t: TEST_I18N.t };
   await render(
-    <AuthContext.Provider value={auth as unknown as AuthContextValue}>
-      <ProfileListScreen list="payments.cards" />
-    </AuthContext.Provider>,
+    <I18nContext.Provider value={TEST_I18N}>
+      <AuthContext.Provider value={auth as unknown as AuthContextValue}>
+        <ProfileListScreen list="payments.cards" />
+      </AuthContext.Provider>
+    </I18nContext.Provider>,
   );
 }
 

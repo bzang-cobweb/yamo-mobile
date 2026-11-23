@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { Alert, StyleSheet } from 'react-native';
 
 import { profileFormService } from '@/features/auth/services/ProfileFormService';
@@ -67,14 +68,19 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
       items: [
         {
           id: '9',
-          actor: { id: '37', name: 'Marie Curie', initials: 'MC', photo: null, online: false, link: '/members/37' },
-          type: 'Demande de logement',
+          title: 'Marie Curie',
+          title_link: '/members/37',
+          subtitle: 'Séjour · du 3 déc. 2026 au 6 déc. 2026',
+          image: null,
+          rating: null,
+          highlight: null,
+          quote: 'J’arrive tard.',
+          date: '2026-11-19T10:00:00Z',
+          unread_count: 1,
           tag: { label: 'En attente', tone: 'warning' },
-          summary: 'demande un séjour du 3 au 6 déc. (3 jours) pour « Studio », 45 000 FCFA / jour (2 personnes).',
-          text_links: [{ text: 'Studio', link: '/offers/7' }],
-          message: 'J’arrive tard.',
-          total: '135 000 FCFA',
-          created_at: '2026-11-19T10:00:00Z',
+          link: '/notifications/0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d',
+          edit: null,
+          delete: null,
           actions: [],
         },
       ],
@@ -111,18 +117,16 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     await fireEvent.press(await screen.findByTestId('offer-calendar-day-2026-12-03'));
     expect(await screen.findByText('Jeudi 3 décembre 2026')).toBeTruthy();
     expect(offerService.calendarDay).toHaveBeenCalledWith('7', '2026-12-03');
-    // Pas de message sur la carte du calendrier.
-    expect(screen.queryByText('J’arrive tard.')).toBeNull();
-    // En carte de notification : qui demande, la pastille, le texte, le total en gras.
-    expect(screen.getByTestId('calendar-item-9-actor')).toHaveTextContent('Marie Curie');
-    // Sans photo, la date à droite (décision 2026-11-20-carte-sans-photo).
-    expect(screen.queryByTestId('calendar-item-9-avatar')).toBeNull();
-    expect(screen.getByTestId('calendar-item-9-date').props.style).toEqual(expect.arrayContaining([{ textAlign: 'right' }]));
-    // Le membre n'est pas cliquable depuis la carte.
-    expect(screen.getByTestId('calendar-item-9-actor').props.onPress).toBeUndefined();
-    expect(screen.getByTestId('calendar-item-9-type')).toHaveTextContent('Demande de logement');
+    // La carte de « Demandes reçues » (décision 2026-11-22-calendrier-carte-demandes-recues) : le nom du membre vers
+    // sa page, le statut, le type et les dates, le dernier message, les non lues, la date.
+    expect(screen.getByTestId('calendar-title-link-9')).toHaveTextContent('Marie Curie');
     expect(screen.getByText('En attente')).toBeTruthy();
-    expect(screen.getByTestId('calendar-item-9-total')).toHaveTextContent('135 000 FCFA');
+    expect(screen.getByText('Séjour · du 3 déc. 2026 au 6 déc. 2026')).toBeTruthy();
+    expect(screen.getByTestId('calendar-quote-9')).toHaveTextContent('J’arrive tard.');
+    expect(screen.getByTestId('calendar-unread-9')).toHaveTextContent('1');
+    expect(screen.getByTestId('calendar-date-9')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('calendar-title-link-9'));
+    expect(router.push).toHaveBeenLastCalledWith('/members/37');
 
     await fireEvent.press(screen.getByText('Bloquer ce jour'));
     await waitFor(() => expect(submit).toHaveBeenCalledWith(expect.objectContaining({ method: 'PUT', endpoint: '/v1/offers/7/blocked-dates/2026-12-03' }), {}));

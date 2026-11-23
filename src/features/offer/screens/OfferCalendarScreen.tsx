@@ -1,16 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { router, useFocusEffect, type Href } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
+import { ListItemCard } from '@/features/list/components/ListItemCard';
+import type { ListItem } from '@/features/list/types';
 import { ToastHost } from '@/shared/components/Toast';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
-import { NotificationType } from '@/features/notification/components/NotificationType';
-import { APP_LINK, NotificationText } from '@/features/notification/components/NotificationText';
-import { relativeTime } from '@/features/notification/utils/relativeTime';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { MonthGrid } from '@/shared/components/MonthGrid';
@@ -19,11 +18,9 @@ import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
-import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { useOfferCalendar, useOfferCalendarDay } from '../hooks/useOfferCalendar';
-import type { OfferCalendarCard } from '../types';
 
 /** La couleur d'une case de la légende, comme dans la grille. */
 const LEGEND_COLORS: Record<string, string> = {
@@ -40,8 +37,7 @@ const LEGEND_COLORS: Record<string, string> = {
  * Refuser) et « Bloquer ce jour » ou « Débloquer ». Tout est décrit par l'API.
  */
 export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: string; /** Mois ouvert d'abord (`AAAA-MM`) ; `null` : le mois courant. */ month?: string | null }) {
-  const { t, locale } = useI18n();
-  const theme = useTheme();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [month, setMonth] = useState<string | null>(initialMonth);
   const [selected, setSelected] = useState<string | null>(null);
@@ -74,39 +70,15 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
   }
 
   /**
-   * Une demande en carte de notification, comme dans la liste (décision 2026-11-20-carte-sans-photo), sans photo :
-   * le type en gras et le statut dessous, le texte, le total, le nom de qui demande (sans lien), la date à droite,
-   * les boutons (sans le message).
+   * Une demande en carte de « Demandes reçues », la même que dans la liste (décision
+   * 2026-11-22-calendrier-carte-demandes-recues) : le nom du membre vers sa page, le statut, le type et les dates, le
+   * dernier message et les non lues, la date ; la carte ouvre la page de la demande ; Accepter, Refuser, l'adresse.
    */
-  function renderCard(card: OfferCalendarCard) {
-    return (
-      <View key={card.id} style={[styles.card, { borderColor: theme.backgroundSelected }]} testID={`calendar-item-${card.id}`}>
-        <NotificationType type={card.type} tag={card.tag} testID={`calendar-item-${card.id}`} />
-        <NotificationText body={card.summary} links={card.text_links} onLink={go} testID={`calendar-item-${card.id}-text`} />
-        {card.total && (
-          <ThemedText type="smallBold" testID={`calendar-item-${card.id}-total`}>
-            {card.total}
-          </ThemedText>
-        )}
-        <ThemedText type="smallBold" testID={`calendar-item-${card.id}-actor`}>
-          {card.actor.name}
-        </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`calendar-item-${card.id}-date`}>
-          {relativeTime(card.created_at, t, locale)}
-        </ThemedText>
-        <ItemActionButtons actions={card.actions} testID={`calendar-action-${card.id}`} onPress={press} />
-      </View>
-    );
+  function renderCard(item: ListItem) {
+    return <ListItemCard key={item.id} item={item} onAction={press} testID="calendar" />;
   }
 
   /** Un lien d'une carte (l'annonce) : le panneau se ferme, l'écran s'ouvre. */
-  function go(link: string) {
-    if (APP_LINK.test(link)) {
-      setSelected(null);
-      router.push(link as Href);
-    }
-  }
-
   const panel = day.data;
 
   return (
@@ -229,6 +201,4 @@ const styles = StyleSheet.create({
   sheetTitle: { flex: 1 },
   sheetLoading: { paddingVertical: Spacing.four },
   sheetBody: { gap: Spacing.three, paddingBottom: Spacing.four },
-  card: { borderWidth: 1, borderRadius: 8, padding: Spacing.three, gap: Spacing.two },
-  date: { textAlign: 'right' },
 });
