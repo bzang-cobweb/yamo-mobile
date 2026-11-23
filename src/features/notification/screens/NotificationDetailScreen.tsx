@@ -156,18 +156,6 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
-                  {/* Le titre composé sur une ligne, puis les dates sur une autre (décision
-                      2026-11-22-detail-titre-compose-et-dates). */}
-                  {notification.booking?.composed_title && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-composed-title">
-                      {notification.booking.composed_title}
-                    </ThemedText>
-                  )}
-                  {notification.booking?.period && (
-                    <ThemedText type="small" testID="notification-detail-period">
-                      {notification.booking.period}
-                    </ThemedText>
-                  )}
                   {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
                       (décision 2026-11-20-titre-demande). */}
                   {!notification.booking && (
