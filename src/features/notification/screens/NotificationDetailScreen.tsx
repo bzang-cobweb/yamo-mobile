@@ -73,12 +73,14 @@ export function NotificationDetailScreen({ id }: { id: string }) {
 
   function renderLine(line: BookingLine) {
     return (
-      <View key={line.key} style={styles.headRow} testID={`notification-detail-line-${line.key}`}>
+      <View key={line.key} style={[styles.headRow, styles.lineRow]} testID={`notification-detail-line-${line.key}`}>
         <ThemedText
           type={line.key === 'total' ? 'smallBold' : 'small'}
           themeColor={line.key === 'total' ? undefined : 'textSecondary'}
           testID={`notification-detail-line-${line.key}-label`}>
-          {line.label}
+          {/* « Arrivée : » ; en français, une espace insécable avant les deux-points (décision
+              2026-11-22-detail-libelles-deux-points). */}
+          {`${line.label}${locale.startsWith('fr') ? '\u00a0:' : ':'}`}
         </ThemedText>
         {/* Une valeur avec un lien : le nom de l'hôte ou du membre, vers sa page
             (décision 2026-11-21-detail-reservation-contact). */}
@@ -156,7 +158,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       {notification.booking.offer.title}
                     </ThemedText>
                   )}
-                  {/* Le titre composé avec la ville, sous le nom du logement (décision 2026-11-22-detail-titre-compose-sous-titre). */}
+                  {/* Le titre composé sans la ville, sous le nom du logement (décisions 2026-11-22-detail-titre-compose-sous-titre et
+                      2026-11-22-detail-titre-compose-sans-ville). */}
                   {notification.booking?.composed_title && (
                     <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-composed-title">
                       {notification.booking.composed_title}
@@ -240,6 +243,8 @@ const styles = StyleSheet.create({
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
+  // Le libellé en haut de sa ligne, même si la valeur en prend plusieurs (décision 2026-11-22-detail-libelle-en-haut).
+  lineRow: { alignItems: 'flex-start' },
   // La pastille seule, à gauche.
   tagRow: { flexDirection: 'row', justifyContent: 'flex-start' },
   // La valeur à droite de son libellé, sur plusieurs lignes au besoin.

@@ -57,7 +57,7 @@ export type NotificationBooking = {
   /** L'offre : son titre saisi et son type de location, rédigé (« Location meublée »). */
   /** `property_type` : le type de logement (« Appartement »), à côté du type de location ; absent d'un serveur plus ancien. */
   offer: { title: string | null; rental_type: string | null; property_type?: string | null };
-  /** Le titre composé avec la ville (« Location meublée · Studio · Douala »), sous le nom du logement (décision 2026-11-22-detail-titre-compose-sous-titre) ; `null` (ou absent) : aucun. */
+  /** Le titre composé sans la ville (« Location meublée · Studio »), sous le nom du logement (décision 2026-11-22-detail-titre-compose-sans-ville) ; `null` (ou absent) : aucun. */
   composed_title?: string | null;
   /**
    * Les lignes à afficher, dans l'ordre, libellé et valeur rédigés (décision

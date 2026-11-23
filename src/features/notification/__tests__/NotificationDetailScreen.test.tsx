@@ -44,7 +44,7 @@ const NOTIFICATION: AppNotification = {
   booking: {
     id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', guests: 2,
     offer: { title: 'Studio photos', rental_type: 'Location meublée', property_type: 'Studio' },
-    composed_title: 'Location meublée · Studio · Douala',
+    composed_title: 'Location meublée · Studio',
     lines: [
       { key: 'member', label: 'Membre', value: 'Léa Membre', link: '/members/5' },
       { key: 'email', label: 'E-mail', value: 'lea@example.test' },
@@ -151,7 +151,10 @@ describe('NotificationDetailScreen', () => {
     const keys = ['guests', 'arrival', 'departure', 'days', 'price', 'total'];
     const json = JSON.stringify(screen.toJSON());
     expect(keys.map((key) => json.indexOf(`"notification-detail-line-${key}"`))).toEqual([...keys.map((key) => json.indexOf(`"notification-detail-line-${key}"`))].sort((a, b) => a - b));
-    expect(screen.getByTestId('notification-detail-line-arrival-label')).toHaveTextContent('Arrivée');
+    // « Arrivée : », une espace insécable avant les deux-points (décision 2026-11-22-detail-libelles-deux-points).
+    expect(screen.getByTestId('notification-detail-line-arrival-label').props.children).toBe('Arrivée\u00a0:');
+    // Le libellé en haut de sa ligne, même si la valeur en prend plusieurs (décision 2026-11-22-detail-libelle-en-haut).
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-line-arrival').props.style)).toMatchObject({ alignItems: 'flex-start' });
     expect(screen.getByTestId('notification-detail-line-arrival-value')).toHaveTextContent('1 déc. 2026 à partir de 14:00');
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-line-price').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
     expect(screen.getByTestId('notification-detail-line-price-value')).toHaveTextContent('85 000 FCFA / jour');
@@ -198,8 +201,9 @@ describe('NotificationDetailScreen', () => {
     // Le nom de l'offre, en gras, ouvre la fiche du logement ; plus de « Voir le logement ».
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
-    // Le titre composé avec la ville, sous le nom du logement (décision 2026-11-22-detail-titre-compose-sous-titre).
-    expect(screen.getByTestId('notification-detail-composed-title')).toHaveTextContent('Location meublée · Studio · Douala');
+    // Le titre composé sans la ville, sous le nom du logement (décisions 2026-11-22-detail-titre-compose-sous-titre et
+    // 2026-11-22-detail-titre-compose-sans-ville).
+    expect(screen.getByTestId('notification-detail-composed-title')).toHaveTextContent('Location meublée · Studio');
     const tree = JSON.stringify(screen.toJSON());
     expect(tree.indexOf('"notification-detail-offer-title"')).toBeLessThan(tree.indexOf('"notification-detail-composed-title"'));
     expect(screen.queryByTestId('notification-detail-period')).toBeNull();
