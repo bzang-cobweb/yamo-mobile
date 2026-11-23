@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
@@ -24,6 +25,12 @@ export function FieldShell({ field, error, children }: PropsWithChildren<{ field
 
   return (
     <View style={styles.container}>
+      {/* Une note avant le libellé, un avertissement, en orange comme celle d'un formulaire (décision 2026-11-22-champ-note). */}
+      {field.notice ? (
+        <ThemedText type="small" style={styles.notice} testID={`${field.name}-notice`}>
+          {field.notice}
+        </ThemedText>
+      ) : null}
       {/* Un libellé masqué par l'API n'est pas affiché ; les contrôles du champ portent le leur. */}
       {field.label !== null && !field.label_hidden && (
         <ThemedText type="smallBold" nativeID={`${field.name}-label`}>
@@ -50,4 +57,5 @@ const styles = StyleSheet.create({
   container: { gap: Spacing.one },
   required: { color: ERROR_COLOR },
   error: { color: ERROR_COLOR },
+  notice: { color: TONE_COLORS.warning },
 });

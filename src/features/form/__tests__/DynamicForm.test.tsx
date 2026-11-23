@@ -179,6 +179,19 @@ describe('DynamicForm', () => {
     expect(StyleSheet.flatten(subtitle.props.style)).toMatchObject({ fontSize: 18, fontWeight: '700' });
   });
 
+  it('une note de champ, avant son libellé, en orange (décision 2026-11-22-champ-note)', async () => {
+    await render(
+      <DynamicForm
+        definition={{ ...everyType, fields: [field({ name: 'others', type: 'checkbox', label: 'Accepter aussi les autres visites', notice: '2 autres visites ce jour-là.' })] }}
+        onSubmit={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId('others-notice')).toHaveTextContent('2 autres visites ce jour-là.');
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('2 autres visites ce jour-là.')).toBeLessThan(tree.indexOf('Accepter aussi les autres visites'));
+  });
+
   it('une note à part, sous le titre, en orange (décision 2026-11-22-formulaire-note)', async () => {
     await render(
       <DynamicForm

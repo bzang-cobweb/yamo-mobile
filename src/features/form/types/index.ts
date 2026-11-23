@@ -51,6 +51,8 @@ export type FormFieldDefinition = {
   label_hidden?: boolean;
   placeholder: string | null;
   help: string | null;
+  /** Une note avant le libellé : un avertissement (décision 2026-11-22-champ-note) ; absente : aucune. */
+  notice?: string | null;
   required: boolean;
   /** Affiché, non modifiable, jamais envoyé. */
   readonly?: boolean;
