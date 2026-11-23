@@ -130,6 +130,7 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     expect(screen.getByTestId('calendar-date-9')).toBeTruthy();
     // Chaque bouton sur toute la ligne, les uns sous les autres (décision 2026-11-22-calendrier-boutons-pleine-largeur).
     expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-buttons').props.style)).not.toMatchObject({ flexDirection: 'row' });
+    expect(StyleSheet.flatten(screen.getByTestId('calendar-action-9-buttons').props.style)).toMatchObject({ marginTop: 16 });
     expect(screen.getByTestId('calendar-action-9-primary')).toBeTruthy();
     // Sous la date, la carte en colonne (décision 2026-11-22-calendrier-boutons-sous-la-date).
     expect(StyleSheet.flatten(screen.getByTestId('calendar-row-9').props.style)).toMatchObject({ flexDirection: 'column' });

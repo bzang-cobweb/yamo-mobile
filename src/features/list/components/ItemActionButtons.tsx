@@ -47,7 +47,8 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.two },
   action: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 8 },
   // Toute la ligne, les uns sous les autres.
-  column: { gap: Spacing.two },
+  // Plus d'espace au-dessus, sous la date (décision 2026-11-22-calendrier-espace-boutons).
+  column: { gap: Spacing.two, marginTop: Spacing.three },
   full: { alignItems: 'center' },
   pressed: { opacity: 0.6 },
 });
