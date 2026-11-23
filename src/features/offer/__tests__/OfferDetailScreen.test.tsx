@@ -169,6 +169,9 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByText('Localisation')).toBeTruthy();
     expect(screen.getByTestId('offer-location-text').props.children).toBe('Rue Njo-Njo 12, Douala, Cameroun');
     expect(screen.getByTestId('offer-location-note').props.children).toBe('Derrière le marché, portail bleu');
+    // Le même texte que les lignes des caractéristiques (décision 2026-11-22-fiche-texte-comme-lignes).
+    const size = (node: { props: { style?: unknown } }) => (StyleSheet.flatten(node.props.style as never) as { fontSize?: number } | undefined)?.fontSize;
+    expect(size(screen.getByTestId('offer-location-text'))).toBe(size(screen.getByText('85 m²')));
     await openSections();
     // Le prix n'est plus sous le titre : il est dans la barre fixe (décision 2026-11-19-contrat-reservations).
     expect(within(screen.getByTestId('offer-booking-bar')).getByTestId('offer-price')).toBeTruthy();

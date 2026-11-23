@@ -328,6 +328,7 @@ function Description({ text, testID }: { text: string; testID: string }) {
   return (
     <View>
       <ThemedText
+        type="small"
         testID={testID}
         numberOfLines={long && !open ? DESCRIPTION_LINES : undefined}
         onTextLayout={(event) => {
@@ -362,7 +363,7 @@ function TextSection({ text, note, collapsible = false, testID }: { text: string
 
   return (
     <View style={[styles.text, { borderBottomColor: theme.backgroundSelected }]}>
-      {collapsible ? <Description text={text} testID={`${testID}-text`} /> : <ThemedText testID={`${testID}-text`}>{text}</ThemedText>}
+      {collapsible ? <Description text={text} testID={`${testID}-text`} /> : <ThemedText type="small" testID={`${testID}-text`}>{text}</ThemedText>}
       {note && (
         <ThemedText type="small" themeColor="textSecondary" testID={`${testID}-note`}>
           {note}
@@ -400,7 +401,8 @@ const styles = StyleSheet.create({
   body: { width: '100%', alignSelf: 'center', gap: Spacing.two, padding: Spacing.four },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
   // Le texte d'une section, et le séparateur à sa fin.
-  text: { gap: Spacing.one, paddingBottom: Spacing.two, borderBottomWidth: 1 },
+  // Le même texte et les mêmes marges que les lignes des caractéristiques (décision 2026-11-22-fiche-texte-comme-lignes).
+  text: { gap: Spacing.one, paddingVertical: Spacing.two, borderBottomWidth: 1 },
   factLabel: { flexShrink: 0, maxWidth: '45%' },
   factValue: { flexShrink: 1, textAlign: 'right' },
   error: { color: ERROR_COLOR },
