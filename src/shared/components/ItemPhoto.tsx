@@ -12,7 +12,8 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 export function ItemPhoto({ uri, placeholder = false, contain = false, testID }: { uri: string | null; placeholder?: boolean; contain?: boolean; testID?: string }) {
   const theme = useTheme();
 
-  // En entier, au centre, avec une marge pour la pastille et le menu : un logo (décision 2026-11-24-mes-partenaires-logo-entier).
+  // En entier, au centre, avec une marge réduite : la pastille et le menu passent dessus (décisions
+  // 2026-11-24-mes-partenaires-logo-entier et 2026-11-24-logo-entier-marge-reduite).
   if (uri && contain) {
     return (
       <View style={[styles.photo, styles.frame, { borderColor: theme.backgroundSelected }]} testID={testID ? `${testID}-frame` : undefined}>
@@ -39,6 +40,6 @@ export function ItemPhoto({ uri, placeholder = false, contain = false, testID }:
 const styles = StyleSheet.create({
   photo: { width: '100%', aspectRatio: 16 / 9, borderRadius: 6 },
   empty: { alignItems: 'center', justifyContent: 'center' },
-  frame: { borderWidth: 1, paddingVertical: 44, paddingHorizontal: 16 },
+  frame: { borderWidth: 1, padding: 16 },
   fill: { flex: 1 },
 });
