@@ -136,6 +136,21 @@ describe('la page d’un partenaire', () => {
     expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith('https://wouri.test/fr');
   });
 
+  it('pour ses comptes, sa pastille en haut à droite, flottante ; sans, rien (décision 2026-11-24-partenaire-page-statut)', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, status: { label: 'En validation', tone: 'warning' } } };
+    await show(<PartnerDetailScreen id="3" />);
+
+    expect(screen.getByTestId('partner-status')).toHaveTextContent('En validation');
+    expect(StyleSheet.flatten(screen.getByTestId('partner-status').props.style)).toMatchObject({ position: 'absolute', right: expect.any(Number), top: expect.any(Number) });
+  });
+
+  it('un visiteur : pas de pastille', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: wouri };
+    await show(<PartnerDetailScreen id="3" />);
+
+    expect(screen.queryByTestId('partner-status')).toBeNull();
+  });
+
   it('son e-mail et son téléphone, qui ouvrent l’e-mail et l’appel (décision 2026-11-24-partenaire-contact)', async () => {
     const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, contact_email: 'contact@wouri.test', contact_phone: '+237 6 70 00 00 02' } };

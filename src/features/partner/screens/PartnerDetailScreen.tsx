@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
+import { StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -52,40 +53,45 @@ export function PartnerDetailScreen({ id }: { id: string }) {
             </View>
           ) : (
             <>
-              <ScrollView contentContainerStyle={styles.body}>
-                <View style={styles.identity}>
-                  {/* Sans logo, rien : le nom suffit (décision 2026-11-24-partenaire-page-sans-logo). */}
-                  {partner.logo && <PartnerLogo partner={partner} size={LOGO_SIZE} framed={false} testID="partner" />}
-                  {/* Le nom, et juste dessous son slogan s'il en a un (décision 2026-11-24-partenaire-slogan). */}
-                  <View style={styles.heading}>
-                    <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered} testID="partner-name">
-                      {partner.name}
-                    </ThemedText>
-                    {partner.slogan && (
-                      <ThemedText themeColor="textSecondary" style={styles.centered} testID="partner-slogan">
-                        {partner.slogan}
+              <View style={styles.content}>
+                <ScrollView contentContainerStyle={styles.body}>
+                  <View style={styles.identity}>
+                    {/* Sans logo, rien : le nom suffit (décision 2026-11-24-partenaire-page-sans-logo). */}
+                    {partner.logo && <PartnerLogo partner={partner} size={LOGO_SIZE} framed={false} testID="partner" />}
+                    {/* Le nom, et juste dessous son slogan s'il en a un (décision 2026-11-24-partenaire-slogan). */}
+                    <View style={styles.heading}>
+                      <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered} testID="partner-name">
+                        {partner.name}
                       </ThemedText>
-                    )}
+                      {partner.slogan && (
+                        <ThemedText themeColor="textSecondary" style={styles.centered} testID="partner-slogan">
+                          {partner.slogan}
+                        </ThemedText>
+                      )}
+                    </View>
                   </View>
-                </View>
-                {/* Son e-mail et son téléphone ; les toucher ouvre l'e-mail ou l'appel (décision 2026-11-24-partenaire-contact). */}
-                {(partner.contact_email || partner.contact_phone) && (
-                  <View style={[styles.contact, { borderColor: theme.backgroundSelected }]} testID="partner-contact">
-                    {partner.contact_email && (
-                      <ContactRow label={t('partners.email')} value={partner.contact_email} url={`mailto:${partner.contact_email}`} testID="partner-email" />
-                    )}
-                    {partner.contact_phone && (
-                      <ContactRow label={t('partners.phone')} value={partner.contact_phone} url={`tel:${partner.contact_phone.replace(/\s/g, '')}`} testID="partner-phone" />
-                    )}
-                  </View>
-                )}
-                {/* La description après le contact (décision 2026-11-24-partenaire-contact), en gris (décision 2026-11-24-partenaire-description-grise). */}
-                {partner.description && (
-                  <ThemedText themeColor="textSecondary" testID="partner-description">
-                    {partner.description}
-                  </ThemedText>
-                )}
-              </ScrollView>
+                  {/* Son e-mail et son téléphone ; les toucher ouvre l'e-mail ou l'appel (décision 2026-11-24-partenaire-contact). */}
+                  {(partner.contact_email || partner.contact_phone) && (
+                    <View style={[styles.contact, { borderColor: theme.backgroundSelected }]} testID="partner-contact">
+                      {partner.contact_email && (
+                        <ContactRow label={t('partners.email')} value={partner.contact_email} url={`mailto:${partner.contact_email}`} testID="partner-email" />
+                      )}
+                      {partner.contact_phone && (
+                        <ContactRow label={t('partners.phone')} value={partner.contact_phone} url={`tel:${partner.contact_phone.replace(/\s/g, '')}`} testID="partner-phone" />
+                      )}
+                    </View>
+                  )}
+                  {/* La description après le contact (décision 2026-11-24-partenaire-contact), en gris (décision 2026-11-24-partenaire-description-grise). */}
+                  {partner.description && (
+                    <ThemedText themeColor="textSecondary" testID="partner-description">
+                      {partner.description}
+                    </ThemedText>
+                  )}
+                </ScrollView>
+                {/* Sa pastille, pour ses comptes : en haut à droite, flottante sur la zone de contenu, qui défile dessous
+                    (décision 2026-11-24-partenaire-page-statut). */}
+                {partner.status && <StatusTag tag={partner.status} style={styles.status} testID="partner-status" />}
+              </View>
               {partner.url && <FixedButtonBar testID="partner-cta" label={partner.cta_label ?? t('partners.visit')} onPress={() => openPartner(partner)} />}
             </>
           )}
@@ -111,6 +117,8 @@ function ContactRow({ label, value, url, testID }: { label: string; value: strin
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  content: { flex: 1 },
+  status: { position: 'absolute', top: Spacing.three, right: Spacing.three, zIndex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   body: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four, gap: Spacing.four },
   identity: { alignItems: 'center', gap: Spacing.three },
