@@ -1,4 +1,6 @@
 import { StyleSheet } from 'react-native';
+
+import { Colors } from '@/shared/theme/theme';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -112,6 +114,8 @@ describe('la page d’un partenaire', () => {
     // Sans slogan, rien sous le nom.
     expect(screen.queryByTestId('partner-slogan')).toBeNull();
     expect(screen.getByTestId('partner-description')).toHaveTextContent('Déménagement clés en main.');
+    // En gris, comme un texte secondaire (décision 2026-11-24-partenaire-description-grise).
+    expect(StyleSheet.flatten(screen.getByTestId('partner-description').props.style).color).toBe(Colors.light.textSecondary);
     expect(screen.getByTestId('partner-cta-button')).toHaveTextContent('Demander un devis');
 
     await fireEvent.press(screen.getByTestId('partner-cta-button'));

@@ -79,8 +79,12 @@ export function PartnerDetailScreen({ id }: { id: string }) {
                     )}
                   </View>
                 )}
-                {/* La description après le contact (décision 2026-11-24-partenaire-contact). */}
-                {partner.description && <ThemedText testID="partner-description">{partner.description}</ThemedText>}
+                {/* La description après le contact (décision 2026-11-24-partenaire-contact), en gris (décision 2026-11-24-partenaire-description-grise). */}
+                {partner.description && (
+                  <ThemedText themeColor="textSecondary" testID="partner-description">
+                    {partner.description}
+                  </ThemedText>
+                )}
               </ScrollView>
               {partner.url && <FixedButtonBar testID="partner-cta" label={partner.cta_label ?? t('partners.visit')} onPress={() => openPartner(partner)} />}
             </>
