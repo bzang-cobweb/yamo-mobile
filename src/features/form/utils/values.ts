@@ -73,17 +73,16 @@ export function isVisible(field: FormFieldDefinition, values: FormValues): boole
 
 /**
  * Les options d'une liste dépendante (`depends_on`) : celles dont le parent est la valeur choisie dans le champ
- * parent, ou le groupe de cette valeur (« Demande acceptée » appartient au groupe « booking » : les statuts d'une
- * demande, décision 2026-11-24-notifications-types-groupes-statut).
+ * parent (la région du pays ; le statut du type de notification, décision
+ * 2026-11-24-notifications-types-reservation-partenaire).
  */
-export function dependentOptions(field: FormFieldDefinition, fields: FormFieldDefinition[], values: FormValues): FieldOption[] {
+export function dependentOptions(field: FormFieldDefinition, values: FormValues): FieldOption[] {
   if (!field.depends_on) {
     return field.options;
   }
   const parent = String(values[field.depends_on] ?? '');
-  const group = fields.find((other) => other.name === field.depends_on)?.options.find((option) => option.value === parent)?.group ?? null;
 
-  return field.options.filter((option) => option.parent === parent || (group !== null && option.parent === group));
+  return field.options.filter((option) => option.parent === parent);
 }
 
 /**

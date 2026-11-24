@@ -216,17 +216,16 @@ describe('filtres d’une liste (décision 2026-11-19-contrat-filtres-vitrine)',
   });
 });
 
-describe('filtre « Statut » selon le type (décision 2026-11-24-notifications-types-groupes-statut)', () => {
+describe('filtre « Statut » selon le type (décision 2026-11-24-notifications-types-reservation-partenaire)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetFilters();
   });
 
-  it('les types sont groupés ; le statut ne propose que ceux du groupe du type', async () => {
+  it('le statut ne propose que ceux du type choisi', async () => {
     const types = [
-      { value: 'booking', label: 'Demande de logement', group: 'booking' },
-      { value: 'booking_accepted', label: 'Demande acceptée', group: 'booking' },
-      { value: 'partner', label: 'Partenaire', group: 'partner' },
+      { value: 'booking', label: 'Réservation' },
+      { value: 'partner', label: 'Partenaire' },
     ];
     const statuses = [
       { value: 'accepted', label: 'Acceptée', parent: 'booking' },
@@ -234,7 +233,7 @@ describe('filtre « Statut » selon le type (décision 2026-11-24-notifications-
     ];
     setFilterFields('notifications', [
       field({ name: 'type', type: 'select', options: types }),
-      field({ name: 'status', type: 'select', options: statuses, depends_on: 'type', visible_when: { field: 'type', value: 'booking', values: ['booking', 'booking_accepted', 'partner'] } }),
+      field({ name: 'status', type: 'select', options: statuses, depends_on: 'type', visible_when: { field: 'type', value: 'booking', values: ['booking', 'partner'] } }),
     ]);
 
     await render(
@@ -243,12 +242,12 @@ describe('filtre « Statut » selon le type (décision 2026-11-24-notifications-
       </I18nContext.Provider>,
     );
 
-    // Une action de demande : les statuts d'une demande, par son groupe.
+    // Réservation : les statuts d'une demande.
     await act(async () => {
       fireEvent.press(screen.getByTestId('field-type'));
     });
     await act(async () => {
-      fireEvent.press(screen.getByTestId('field-type-option-booking_accepted'));
+      fireEvent.press(screen.getByTestId('field-type-option-booking'));
     });
     await act(async () => {
       fireEvent.press(screen.getByTestId('field-status'));

@@ -128,7 +128,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
       return current;
     }
 
-    return { ...current, options: dependentOptions(field, definition.fields, values) };
+    return { ...current, options: dependentOptions(field, values) };
   }
 
   function isDisabled(field: FormFieldDefinition): boolean {

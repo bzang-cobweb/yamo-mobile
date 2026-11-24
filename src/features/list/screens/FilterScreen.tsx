@@ -47,10 +47,10 @@ export function FilterScreen({ list }: { list: string }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   // Seuls les filtres dont la condition est remplie s'affichent (« Logement » pour un type de demande) ; une liste
   // dépendante ne propose que les options du choix parent (« Statut » : ceux du type, décision
-  // 2026-11-24-notifications-types-groupes-statut).
+  // 2026-11-24-notifications-types-reservation-partenaire).
   const visibleFields = fields
     .filter((field) => isVisible(field, values))
-    .map((field) => withAll({ ...field, options: dependentOptions(field, fields, values) }, t('list.all')));
+    .map((field) => withAll({ ...field, options: dependentOptions(field, values) }, t('list.all')));
 
   /** Changer un filtre vide ceux qui en dépendent (changer de type remet le statut à « Tous »). */
   function change(name: string, value: FieldValue) {

@@ -29,16 +29,6 @@ type Props = {
   clearable?: boolean;
 };
 
-/** L'option qui en regroupe d'autres (« Demande de logement »). */
-function isGroup(option: FieldOption): boolean {
-  return option.group != null && option.group === option.value;
-}
-
-/** Une option sous son groupe (« Demande acceptée »). */
-function isGrouped(option: FieldOption): boolean {
-  return option.group != null && option.group !== option.value;
-}
-
 /** Fenêtre de choix commune aux listes déroulantes et au pays d'un téléphone. */
 export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false, limit, clearable = false }: Props) {
   const { t } = useI18n();
@@ -103,11 +93,8 @@ export function OptionsModal({ visible, title, options, selected, onSelect, onCl
                   close();
                 }}
                 style={({ pressed }) => [styles.option, pressed && styles.pressed]}>
-                {/* Une option sous son groupe, en retrait ; le groupe en gras (décision 2026-11-24-notifications-types-groupes-statut). */}
-                <View style={[styles.optionRow, isGrouped(option) && styles.grouped]}>
-                  <ThemedText style={[styles.label, isGroup(option) && styles.group]}>
-                    {option.label}
-                  </ThemedText>
+                <View style={styles.optionRow}>
+                  <ThemedText style={styles.label}>{option.label}</ThemedText>
                   {option.hint && <ThemedText themeColor="textSecondary">{option.hint}</ThemedText>}
                   {option.value === selected && <ThemedText type="smallBold">✓</ThemedText>}
                 </View>
@@ -127,7 +114,5 @@ const styles = StyleSheet.create({
   option: { paddingVertical: Spacing.three },
   optionRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   label: { flex: 1 },
-  group: { fontWeight: '600' },
-  grouped: { paddingLeft: Spacing.four },
   pressed: { opacity: 0.6 },
 });
