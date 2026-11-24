@@ -24,7 +24,8 @@ const wouri: Partner = {
   id: '3',
   name: 'Déménageurs du Wouri',
   description: 'Déménagement clés en main.',
-  url: 'https://wouri.test/fr',
+  url: 'demenageurs-du-wouri',
+  website: 'https://wouri.test/fr',
   cta_label: 'Demander un devis',
   logo: null,
 };

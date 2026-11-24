@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { Colors } from '@/shared/theme/theme';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { Linking } from 'react-native';
@@ -58,7 +58,7 @@ jest.mock('../hooks/usePartners', () => ({
   usePartner: () => ({ ...mockOne, refetch: jest.fn() }),
 }));
 
-const wouri: Partner = { id: '3', name: 'Déménageurs du Wouri', description: 'Déménagement clés en main.', url: 'https://wouri.test/fr', cta_label: 'Demander un devis', logo: null };
+const wouri: Partner = { id: '3', name: 'Déménageurs du Wouri', description: 'Déménagement clés en main.', url: 'demenageurs-du-wouri', website: 'https://wouri.test/fr', cta_label: 'Demander un devis', logo: null };
 
 async function show(element: React.ReactElement) {
   await render(<I18nContext.Provider value={TEST_I18N}>{element}</I18nContext.Provider>);
@@ -83,6 +83,8 @@ describe('la page « Partenaires »', () => {
     expect(StyleSheet.flatten(screen.getByTestId('partners-item-3-box').props.style).borderWidth).toBeUndefined();
     // Les coins arrondis restent.
     expect(StyleSheet.flatten(screen.getByTestId('partners-item-3-box').props.style).borderRadius).toBe(8);
+    // Sans logo, l'emplacement reste vide : pas le nom (décision 2026-11-24-partenaires-cartes-sans-logo-vides).
+    expect(within(screen.getByTestId('partners-item-3-box')).queryByText('Déménageurs du Wouri')).toBeNull();
 
     await fireEvent.press(screen.getByTestId('partners-item-4'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '4' } });
@@ -197,7 +199,7 @@ describe('la page d’un partenaire', () => {
     await show(<PartnerDetailScreen id="3" />);
     expect(screen.getByTestId('partner-cta-button')).toHaveTextContent('Visiter le site');
 
-    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, url: null } };
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, website: null } };
     await show(<PartnerDetailScreen id="3" />);
     expect(screen.queryByTestId('partner-cta')).toBeNull();
   });

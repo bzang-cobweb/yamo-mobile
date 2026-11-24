@@ -8,9 +8,9 @@ import type { Partner } from '../types';
  * 2026-11-23-module-partenaires et 2026-11-23-partenaires-liste-detail). Le clic compte même si le lien ne s'ouvre
  * pas ; une erreur réseau ne bloque pas l'ouverture.
  */
-export function openPartner(partner: Pick<Partner, 'id' | 'url'>) {
+export function openPartner(partner: Pick<Partner, 'id' | 'website'>) {
   void partnerService.click(partner.id).catch(() => undefined);
-  if (partner.url) {
-    void WebBrowser.openBrowserAsync(partner.url);
+  if (partner.website) {
+    void WebBrowser.openBrowserAsync(partner.website);
   }
 }

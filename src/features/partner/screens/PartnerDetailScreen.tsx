@@ -92,7 +92,7 @@ export function PartnerDetailScreen({ id }: { id: string }) {
                     (décision 2026-11-24-partenaire-page-statut). */}
                 {partner.status && <StatusTag tag={partner.status} style={styles.status} testID="partner-status" />}
               </View>
-              {partner.url && <FixedButtonBar testID="partner-cta" label={partner.cta_label ?? t('partners.visit')} onPress={() => openPartner(partner)} />}
+              {partner.website && <FixedButtonBar testID="partner-cta" label={partner.cta_label ?? t('partners.visit')} onPress={() => openPartner(partner)} />}
             </>
           )}
         </BackStackProvider>

@@ -4,10 +4,13 @@ import type { StatusTagValue } from '@/shared/components/StatusTag';
 export type Partner = {
   id: string;
   name: string;
+  /** Le slug, tiré du nom (décision 2026-11-25-slug-url-offres-partenaires). */
+  url: string | null;
   /** Facultatif (décision 2026-11-24-partenaire-slogan). */
   slogan?: string | null;
   description: string | null;
-  url: string | null;
+  /** Le lien vers son site, ouvert par le bouton. */
+  website: string | null;
   cta_label: string | null;
   logo: string | null;
   /** Sur la page du partenaire seulement : son e-mail et son téléphone (décision 2026-11-24-partenaire-contact). */
