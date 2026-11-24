@@ -39,8 +39,13 @@ export type FieldOption = {
   label: string;
   /** Complément affiché (ex. l'indicatif d'un pays). */
   hint?: string | null;
-  /** Liste dépendante : valeur du champ parent à laquelle l'option appartient. */
+  /**
+   * Liste dépendante : valeur du champ parent à laquelle l'option appartient, ou le groupe de cette valeur
+   * (`group`, décision 2026-11-24-notifications-types-groupes-statut).
+   */
   parent?: string | null;
+  /** La valeur de l'option qui la regroupe, dans la même liste : affichée en retrait, sous son groupe. */
+  group?: string | null;
 };
 
 export type FormFieldDefinition = {

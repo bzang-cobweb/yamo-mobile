@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormField } from '@/features/form/components/FormField';
 import type { FieldValue, FormFieldDefinition, FormValues } from '@/features/form/types';
-import { initialValue, isVisible } from '@/features/form/utils/values';
+import { dependentOptions, initialValue, isVisible } from '@/features/form/utils/values';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
@@ -45,8 +45,18 @@ export function FilterScreen({ list }: { list: string }) {
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  // Seuls les filtres dont la condition est remplie s'affichent (« Logement » pour un type de demande).
-  const visibleFields = fields.filter((field) => isVisible(field, values)).map((field) => withAll(field, t('list.all')));
+  // Seuls les filtres dont la condition est remplie s'affichent (« Logement » pour un type de demande) ; une liste
+  // dépendante ne propose que les options du choix parent (« Statut » : ceux du type, décision
+  // 2026-11-24-notifications-types-groupes-statut).
+  const visibleFields = fields
+    .filter((field) => isVisible(field, values))
+    .map((field) => withAll({ ...field, options: dependentOptions(field, fields, values) }, t('list.all')));
+
+  /** Changer un filtre vide ceux qui en dépendent (changer de type remet le statut à « Tous »). */
+  function change(name: string, value: FieldValue) {
+    const children = fields.filter((field) => field.depends_on === name).map((field) => field.name);
+    setValues((previous) => ({ ...previous, [name]: value, ...Object.fromEntries(children.map((child) => [child, ''])) }));
+  }
 
   /** Un intervalle à l'envers (max sous le min) : erreur sous le champ, rien n'est appliqué. */
   function rangeErrors(): Record<string, string> {
@@ -95,7 +105,7 @@ export function FilterScreen({ list }: { list: string }) {
                 field={{ ...field, required: false }}
                 value={values[field.name] ?? initialValue(field)}
                 error={errors[field.name]}
-                onChange={(value) => setValues((previous) => ({ ...previous, [field.name]: value }))}
+                onChange={(value) => change(field.name, value)}
               />
             ))}
           </ScrollView>

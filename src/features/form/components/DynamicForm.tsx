@@ -12,7 +12,7 @@ import { Spacing } from '@/shared/theme/theme';
 
 import { formService } from '../services/FormService';
 import type { FieldValue, FormDefinition, FormErrors, FormFieldDefinition, FormValues } from '../types';
-import { countryKey, fieldError, hasPendingUploads, initialValues, isVisible, submittedValues } from '../utils/values';
+import { countryKey, dependentOptions, fieldError, hasPendingUploads, initialValues, isVisible, submittedValues } from '../utils/values';
 import { ERROR_COLOR } from './FieldShell';
 import { FormField } from './FormField';
 
@@ -128,9 +128,7 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
       return current;
     }
 
-    const parent = values[field.depends_on];
-
-    return { ...current, options: field.options.filter((option) => option.parent === parent) };
+    return { ...current, options: dependentOptions(field, definition.fields, values) };
   }
 
   function isDisabled(field: FormFieldDefinition): boolean {
