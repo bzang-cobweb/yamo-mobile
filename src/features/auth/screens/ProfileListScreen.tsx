@@ -242,8 +242,6 @@ export function ProfileListScreen({ list }: { list: string }) {
   );
 }
 
-
-
 export { SEARCH_DELAY };
 
 const styles = StyleSheet.create({
