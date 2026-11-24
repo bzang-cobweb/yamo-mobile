@@ -88,6 +88,19 @@ describe('la page « Partenaires »', () => {
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '4' } });
   });
 
+  it('« Devenir partenaire », servi par l’API : visiteur, la connexion ; connecté, le formulaire (décision 2026-11-24-devenir-partenaire)', async () => {
+    mockList = { name: 'partner.all', title: 'Partenaires', search: null, empty: null, filters: [], items: [], footer: { label: 'Devenir partenaire', form: null, link: '/sign-in' } };
+    await show(<PartnersScreen />);
+    expect(screen.getByTestId('partners-footer')).toHaveTextContent('Devenir partenaire');
+    await fireEvent.press(screen.getByText('Devenir partenaire'));
+    expect(router.push).toHaveBeenLastCalledWith('/sign-in');
+
+    mockList = { name: 'partner.all', title: 'Partenaires', search: null, empty: null, filters: [], items: [], footer: { label: 'Devenir partenaire', form: 'partner.partner', link: null } };
+    await show(<PartnersScreen />);
+    await fireEvent.press(screen.getByText('Devenir partenaire'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'partner.partner' } });
+  });
+
   it('la recherche, puis la suite en approchant du bas, comme toutes les listes (décision 2026-11-23-partenaires-recherche)', async () => {
     jest.useFakeTimers();
     mockList = { name: 'partner.all', title: 'Partenaires', search: 'Rechercher…', empty: null, filters: [], items: [item('3', 'Déménageurs du Wouri', null)] };

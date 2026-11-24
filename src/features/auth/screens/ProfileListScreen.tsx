@@ -1,4 +1,4 @@
-import { router, useFocusEffect, type Href } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,10 +9,10 @@ import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
 import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
+import { openListFooter } from '@/features/list/utils/openListFooter';
 import { NetworkError } from '@/shared/api/errors';
 import { ListItemCard } from '@/features/list/components/ListItemCard';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
-import { ITEM_LINK } from '@/features/list/services/ListService';
 import { List } from '@/shared/components/List';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -236,23 +236,12 @@ export function ProfileListScreen({ list }: { list: string }) {
       </View>
       {/* Le bouton fixe en bas : un formulaire (« Ajouter un logement ») ou un écran (« Rechercher un logement »). */}
       {definition.footer && (
-        <FixedButtonBar label={definition.footer.label} onPress={() => definition.footer && openFooter(definition.footer)} testID="profile-list-footer" />
+        <FixedButtonBar label={definition.footer.label} onPress={() => definition.footer && openListFooter(definition.footer)} testID="profile-list-footer" />
       )}
     </ProfileScreenShell>
   );
 }
 
-/** Le bouton du bas : son formulaire, ou l'écran de l'app (l'accueil `/`, la recherche `/search`, une fiche) ; jamais une adresse externe. */
-function openFooter(footer: { form: string | null; link: string | null }) {
-  if (footer.form) {
-    router.push({ pathname: '/profile/[form]', params: { form: footer.form } });
-  } else if (footer.link === '/' || footer.link === '/search') {
-    // Un onglet : l'accueil, ou la recherche des offres (décision 2026-11-23-onglet-recherche).
-    router.navigate(footer.link);
-  } else if (footer.link && ITEM_LINK.test(footer.link)) {
-    router.push(footer.link as Href);
-  }
-}
 
 
 export { SEARCH_DELAY };

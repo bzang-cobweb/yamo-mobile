@@ -4,9 +4,11 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
+import { openListFooter } from '@/features/list/utils/openListFooter';
 import type { ListItem } from '@/features/list/types';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
+import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { List } from '@/shared/components/List';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
@@ -105,6 +107,11 @@ export function PartnersScreen() {
               search={definition.search ? { value: searchText, onChange: setSearchText, placeholder: definition.search } : null}
               contentContainerStyle={styles.content}
             />
+          )}
+          {/* « Devenir partenaire », décrit par l'API : connecté, le formulaire ; visiteur, la connexion (décision
+              2026-11-24-devenir-partenaire). */}
+          {definition?.footer && (
+            <FixedButtonBar label={definition.footer.label} onPress={() => definition.footer && openListFooter(definition.footer)} testID="partners-footer" />
           )}
         </BackStackProvider>
       </SafeAreaView>
