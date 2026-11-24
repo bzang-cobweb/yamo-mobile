@@ -143,6 +143,8 @@ describe('la page d’un partenaire', () => {
     mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, logo: 'https://api.test/logo.png' } };
     await show(<PartnerDetailScreen id="3" />);
     expect(screen.getByTestId('partner-logo')).toBeTruthy();
+    // Sans bordure, coins arrondis (décision 2026-11-24-partenaire-logo-list-detail-inverses).
+    expect(StyleSheet.flatten(screen.getByTestId('partner-box').props.style).borderWidth).toBeUndefined();
 
     mockOne = { isPending: false, isError: false, error: null, data: wouri };
     await show(<PartnerDetailScreen id="3" />);
