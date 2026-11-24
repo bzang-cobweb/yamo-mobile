@@ -139,9 +139,8 @@ describe('NotificationDetailScreen', () => {
     expect(await screen.findByText('Demande de logement')).toBeTruthy();
     expect(screen.queryByText('Notification')).toBeNull();
     expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
-    // Une ligne : le type de location à gauche, la pastille à droite.
-    // Le statut seul, à gauche (décision 2026-11-22-detail-sans-ligne-type).
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'flex-start' });
+    // Le statut seul, centré (décisions 2026-11-22-detail-sans-ligne-type et 2026-11-24-detail-statut-centre).
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'center' });
     // Une demande : ni texte ni titre composé, ses lignes seulement (décision 2026-11-20-titre-demande).
     expect(screen.queryByTestId('notification-detail-text')).toBeNull();
     expect(screen.queryByTestId('notification-detail-offer')).toBeNull();

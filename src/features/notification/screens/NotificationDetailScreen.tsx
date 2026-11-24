@@ -140,8 +140,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
               {/* La zone fixe : la pastille à gauche, le texte, le total. */}
               <View style={[styles.head, { borderBottomColor: theme.backgroundSelected }]} testID="notification-detail-head">
                 <View style={[styles.headContent, { maxWidth: MaxContentWidth / 2 }]}>
-                  {/* La pastille du statut seule, à gauche : le type de location et de logement est dans la barre du haut
-                      (décision 2026-11-22-detail-sans-ligne-type). */}
+                  {/* La pastille du statut seule, centrée : le type de location et de logement est dans la barre du haut
+                      (décisions 2026-11-22-detail-sans-ligne-type et 2026-11-24-detail-statut-centre). */}
                   {notification.tag && (
                     <View style={styles.tagRow} testID="notification-detail-tag-row">
                       <StatusTag tag={notification.tag} testID="notification-detail-tag" />
@@ -250,7 +250,8 @@ const styles = StyleSheet.create({
   // Le libellé en haut de sa ligne, même si la valeur en prend plusieurs (décision 2026-11-22-detail-libelle-en-haut).
   lineRow: { alignItems: 'flex-start' },
   // La pastille seule, à gauche.
-  tagRow: { flexDirection: 'row', justifyContent: 'flex-start' },
+  // La pastille du statut, centrée comme le nom du logement en dessous (décision 2026-11-24-detail-statut-centre).
+  tagRow: { flexDirection: 'row', justifyContent: 'center' },
   // La valeur à droite de son libellé, sur plusieurs lignes au besoin.
   dateValue: { flexShrink: 1, textAlign: 'right' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
