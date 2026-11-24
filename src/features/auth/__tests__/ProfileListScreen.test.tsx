@@ -822,13 +822,14 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     });
 
     it('l’image en petit à gauche quand l’API le demande, le statut au-dessus du titre (décision 2026-11-24-mes-partenaires-comme-partenaires)', async () => {
-      mockList = list([item('1', { image: 'https://api.test/logo.png', image_fit: 'contain', image_layout: 'side', tag: { label: 'En validation', tone: 'warning' } })]);
+      mockList = { ...list([item('1', { image: 'https://api.test/logo.png', image_fit: 'contain', image_layout: 'side', tag: { label: 'En validation', tone: 'warning' } })]), menu: true };
       await renderScreen();
 
       expect(screen.getByTestId('profile-list-item-1-side-photo').props.contentFit).toBe('contain');
       expect(screen.queryByTestId('profile-list-item-1-photo')).toBeNull();
       expect(screen.getByTestId('profile-list-body-1')).toHaveTextContent(/^En validation.*Carte 1/);
       expect(StyleSheet.flatten(screen.getByTestId('profile-list-tags-1').props.style).marginBottom).toBe(4);
+      expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-1').props.style)).toMatchObject({ top: 8, right: 8 });
     });
 
     it('sans image, la place de l’image à gauche reste réservée', async () => {

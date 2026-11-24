@@ -308,7 +308,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
           // Un seul bouton, trois petits points verticaux, flottant en haut à droite de la photo sur une pastille
           // ronde ; ouvert, ses entrées flottent dessous, par-dessus la photo (décisions 2026-11-21-actions-en-menu
           // et 2026-11-21-menu-en-haut-a-droite).
-          <View style={styles.menu} testID={`${prefix}-menu-${item.id}`}>
+          <View style={[styles.menu, side && styles.sideMenu]} testID={`${prefix}-menu-${item.id}`}>
             <Pressable
               testID={`${prefix}-menu-${item.id}-toggle`}
               accessibilityRole="button"
@@ -458,5 +458,7 @@ const styles = StyleSheet.create({
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   // Plus d'air entre le statut et le titre, à côté d'une image à gauche (décision 2026-11-24-mes-partenaires-comme-partenaires).
   sideTags: { marginBottom: Spacing.one },
+  // Sans photo dessous à suivre : à la marge de la carte, près du coin (décision 2026-11-24-mes-partenaires-comme-partenaires).
+  sideMenu: { top: CARD_PADDING, right: CARD_PADDING },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });
