@@ -146,7 +146,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   const plainTag = item.tag && !tagOnImage ? item.tag : null;
   const badge = tonedTag && (!item.image || side) ? tonedTag : null;
   const tagsRow = (plainTag || badge) && (
-    <View style={styles.tags} testID={`${prefix}-tags-${item.id}`}>
+    <View style={[styles.tags, side && styles.sideTags]} testID={`${prefix}-tags-${item.id}`}>
       {plainTag && <StatusTag tag={plainTag} testID={`${prefix}-tag-${item.id}`} />}
       {badge && <StatusTag tag={badge} testID={`${prefix}-badge-${item.id}`} />}
     </View>
@@ -456,5 +456,7 @@ const styles = StyleSheet.create({
   message: { fontStyle: 'italic' },
   unreadPill: { minWidth: 24, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  // Plus d'air entre le statut et le titre, à côté d'une image à gauche (décision 2026-11-24-mes-partenaires-comme-partenaires).
+  sideTags: { marginBottom: Spacing.one },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },
 });

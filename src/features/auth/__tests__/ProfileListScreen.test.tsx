@@ -828,6 +828,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(screen.getByTestId('profile-list-item-1-side-photo').props.contentFit).toBe('contain');
       expect(screen.queryByTestId('profile-list-item-1-photo')).toBeNull();
       expect(screen.getByTestId('profile-list-body-1')).toHaveTextContent(/^En validation.*Carte 1/);
+      expect(StyleSheet.flatten(screen.getByTestId('profile-list-tags-1').props.style).marginBottom).toBe(4);
     });
 
     it('sans image, la place de l’image à gauche reste réservée', async () => {
