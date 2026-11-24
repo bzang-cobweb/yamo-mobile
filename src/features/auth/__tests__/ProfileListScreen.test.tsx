@@ -829,6 +829,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(screen.queryByTestId('profile-list-item-1-photo')).toBeNull();
       expect(screen.getByTestId('profile-list-body-1')).toHaveTextContent(/^En validation.*Carte 1/);
       expect(StyleSheet.flatten(screen.getByTestId('profile-list-tags-1').props.style).marginBottom).toBe(4);
+      expect(StyleSheet.flatten(screen.getByTestId('profile-list-body-1').props.style).gap).toBe(8);
       expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-1').props.style)).toMatchObject({ top: 8, right: 8 });
     });
 

@@ -407,7 +407,8 @@ const styles = StyleSheet.create({
   besideMenu: { paddingRight: 32 + Spacing.two },
   sideRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   sideImage: { width: SIDE_IMAGE, height: SIDE_IMAGE, borderRadius: 8 },
-  sideBody: { flex: 1, gap: CARD_GAP },
+  // Plus d'air entre le statut, le titre et la ligne dessous (décision 2026-11-24-mes-partenaires-comme-partenaires).
+  sideBody: { flex: 1, gap: Spacing.two },
   delete: { padding: Spacing.one },
   // Le texte et la corbeille à sa droite.
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
