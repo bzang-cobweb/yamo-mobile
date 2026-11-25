@@ -49,8 +49,8 @@ describe('HomeScreen', () => {
       isError: false,
       error: null,
       data: [
-        { city: 'Douala', items: [item('1', 'Location meublée · Studio · Douala'), item('2', 'Location · Maison · Douala')] },
-        { city: 'Yaoundé', items: [item('3', 'Location · Appartement · Yaoundé')] },
+        { title: 'Douala', filter: { region: '34' }, items: [item('1', 'Location meublée · Studio · Douala'), item('2', 'Location · Maison · Douala')] },
+        { title: 'Yaoundé', filter: { region: '34' }, items: [item('3', 'Location · Appartement · Yaoundé')] },
       ],
     };
     await show();
@@ -73,7 +73,7 @@ describe('HomeScreen', () => {
   });
 
   it('« À la une » en haut, avant les villes, sans carrousel : les cartes des villes, toutes visibles (décision 2026-11-25-bloc-a-la-une)', async () => {
-    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'Studio · Douala')] }] };
+    mockState = { isPending: false, isError: false, error: null, data: [{ title: 'Douala', filter: { region: '34' }, items: [item('1', 'Studio · Douala')] }] };
     mockFeatured = [item('7', 'Villa · Bonapriso'), item('8', 'Duplex · Akwa'), item('9', 'Studio · Bali')];
     await show();
 
@@ -93,15 +93,15 @@ describe('HomeScreen', () => {
   });
 
   it('sans offre « À la une » : pas de bloc', async () => {
-    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'Studio · Douala')] }] };
+    mockState = { isPending: false, isError: false, error: null, data: [{ title: 'Douala', filter: { region: '34' }, items: [item('1', 'Studio · Douala')] }] };
     mockFeatured = [];
     await show();
 
     expect(screen.queryByTestId('home-featured')).toBeNull();
   });
 
-  it('« Voir tout » ouvre la recherche filtrée sur la ville (décision 2026-11-23-accueil-voir-tout)', async () => {
-    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'Studio · Douala')] }] };
+  it('« Voir tout » ouvre la recherche filtrée sur la région (décisions 2026-11-23-accueil-voir-tout et 2026-11-25-region-de-l-adresse)', async () => {
+    mockState = { isPending: false, isError: false, error: null, data: [{ title: 'Douala', filter: { region: '34' }, items: [item('1', 'Studio · Douala')] }] };
     await show();
 
     // Une flèche, sans texte ; « Voir tout » pour les lecteurs d'écran (décision 2026-11-23-accueil-fleche).
@@ -111,14 +111,15 @@ describe('HomeScreen', () => {
 
     expect(router.navigate).toHaveBeenCalledWith('/search');
     const { result } = await renderHook(() => useListFilters('offer.browse'));
-    expect(result.current.values).toEqual({ city: 'Douala' });
+    // Le filtre servi avec le carrousel : sa région (décision 2026-11-25-region-de-l-adresse).
+    expect(result.current.values).toEqual({ region: '34' });
   });
 
   it('un nouveau tirage repart du début de la rangée', async () => {
-    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'A'), item('2', 'B'), item('3', 'C')] }] };
+    mockState = { isPending: false, isError: false, error: null, data: [{ title: 'Douala', filter: { region: '34' }, items: [item('1', 'A'), item('2', 'B'), item('3', 'C')] }] };
     await show();
 
-    mockState = { ...mockState, data: [{ city: 'Douala', items: [item('4', 'D'), item('5', 'E'), item('6', 'F')] }] };
+    mockState = { ...mockState, data: [{ title: 'Douala', filter: { region: '34' }, items: [item('4', 'D'), item('5', 'E'), item('6', 'F')] }] };
     await screen.rerender(
       <I18nContext.Provider value={TEST_I18N}>
         <HomeScreen />

@@ -150,8 +150,10 @@ export type MemberProfile = {
 };
 
 /** Un carrousel de l'accueil : une ville et ses offres tirées au hasard (décision 2026-11-23-accueil-carrousels-par-ville). */
+/** Un carrousel de l'accueil : une région (décision 2026-11-25-region-de-l-adresse), le filtre qu'ouvre « Voir tout ». */
 export type HomeCarousel = {
-  city: string;
+  title: string;
+  filter: Record<string, string>;
   items: ListItem[];
 };
 

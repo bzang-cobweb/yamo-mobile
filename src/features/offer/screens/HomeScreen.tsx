@@ -40,8 +40,9 @@ export function HomeScreen() {
   const cardWidth = (Math.min(width, MaxContentWidth / 2) - 2 * Spacing.four - (VISIBLE_CARDS - 1) * Spacing.two) / VISIBLE_CARDS;
 
   /** « Voir tout » : la recherche, filtrée sur la ville seule (décision 2026-11-23-accueil-voir-tout). */
-  function seeAll(city: string) {
-    setFilterValues(BROWSE_LIST, { city });
+  function seeAll(filter: Record<string, string>) {
+    // Le filtre servi avec le carrousel : sa région (décision 2026-11-25-region-de-l-adresse).
+    setFilterValues(BROWSE_LIST, filter);
     router.navigate('/search');
   }
 
@@ -92,15 +93,15 @@ export function HomeScreen() {
         </View>
       )}
       {query.data.map((carousel) => (
-        <View key={carousel.city} style={styles.section} testID={`home-carousel-${carousel.city}`}>
+        <View key={carousel.title} style={styles.section} testID={`home-carousel-${carousel.title}`}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold">{carousel.city}</ThemedText>
+            <ThemedText type="smallBold">{carousel.title}</ThemedText>
             <Pressable
               accessibilityRole="link"
-              accessibilityLabel={`${t('home.seeAll')} ${carousel.city}`}
+              accessibilityLabel={`${t('home.seeAll')} ${carousel.title}`}
               hitSlop={Spacing.two}
-              testID={`home-see-all-${carousel.city}`}
-              onPress={() => seeAll(carousel.city)}>
+              testID={`home-see-all-${carousel.title}`}
+              onPress={() => seeAll(carousel.filter)}>
               {/* Une flèche, sans texte ; « Voir tout » reste annoncé aux lecteurs d'écran (décision 2026-11-23-accueil-fleche). */}
               <SymbolView name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }} tintColor={theme.text} size={20} />
             </Pressable>
