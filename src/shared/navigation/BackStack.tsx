@@ -1,5 +1,5 @@
 import { router, useNavigationContainerRef, useRootNavigationState } from 'expo-router';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, type PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 
 type Entry = { id: number; run: () => void };
 
@@ -8,6 +8,9 @@ type BackStackValue = {
   push: (entry: Entry) => () => void;
   /** Retour : la dernière étape inscrite, sinon l'écran précédent. */
   back: () => void;
+  /** L'étape (0, 1…) du formulaire à étapes de l'écran ; `null` : pas de formulaire à étapes (décision 2026-11-25-croix-formulaire-etapes). */
+  formStep: number | null;
+  setFormStep: (step: number | null) => void;
 };
 
 const BackStackContext = createContext<BackStackValue | null>(null);
@@ -21,6 +24,7 @@ let nextId = 0;
  */
 export function BackStackProvider({ children }: PropsWithChildren) {
   const stack = useRef<Entry[]>([]);
+  const [formStep, setFormStep] = useState<number | null>(null);
 
   const push = useCallback((entry: Entry) => {
     stack.current = [...stack.current, entry];
@@ -40,9 +44,29 @@ export function BackStackProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  const value = useMemo(() => ({ push, back }), [push, back]);
+  const value = useMemo(() => ({ push, back, formStep, setFormStep }), [push, back, formStep]);
 
   return <BackStackContext.Provider value={value}>{children}</BackStackContext.Provider>;
+}
+
+/**
+ * Un formulaire à étapes donne son étape à l'en-tête, qui y montre la croix de fermeture à partir de la 2e (décision 2026-11-25-croix-formulaire-etapes).
+ * `null` : pas d'étapes.
+ */
+export function useFormStep(step: number | null): void {
+  const context = useContext(BackStackContext);
+  const setFormStep = context?.setFormStep;
+
+  useEffect(() => {
+    setFormStep?.(step);
+
+    return () => setFormStep?.(null);
+  }, [setFormStep, step]);
+}
+
+/** L'étape du formulaire à étapes de l'écran, pour l'en-tête ; `null` sans formulaire à étapes. */
+export function useCurrentFormStep(): number | null {
+  return useContext(BackStackContext)?.formStep ?? null;
 }
 
 /** Retour de l'en-tête : étape précédente s'il y en a une, sinon écran précédent. */

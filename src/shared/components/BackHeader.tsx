@@ -1,8 +1,9 @@
+import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/shared/i18n/I18nContext';
-import { useBack, useClose } from '@/shared/navigation/BackStack';
+import { useBack, useClose, useCurrentFormStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -25,7 +26,11 @@ export function BackHeader({ title, closable = true }: Props) {
   const theme = useTheme();
   const { t } = useI18n();
   const back = useBack();
-  const close = useClose();
+  const deep = useClose();
+  // Un formulaire à étapes : la croix ferme sa page, à partir de la 2e étape seulement (décision 2026-11-25-croix-formulaire-etapes) ; sinon, plus d'un
+  // écran depuis le départ, elle y ramène d'un coup.
+  const formStep = useCurrentFormStep();
+  const close = formStep === null ? deep : formStep >= 1 ? () => router.back() : null;
 
   return (
     <View

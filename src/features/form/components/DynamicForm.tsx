@@ -4,7 +4,7 @@ import { Alert, ActivityIndicator, Pressable, StyleSheet, View } from 'react-nat
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { useFixedFooter, type RevealTarget } from '@/shared/components/FixedFooterLayout';
 import { useI18n } from '@/shared/i18n/I18nContext';
-import { useBackStep } from '@/shared/navigation/BackStack';
+import { useBackStep, useFormStep } from '@/shared/navigation/BackStack';
 import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -80,6 +80,8 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
 
   // Avec un en-tête de retour, sa flèche revient à l'étape précédente (à partir de l'étape 2).
   const hasBackHeader = useBackStep(step > 0, previousStep);
+  // L'étape, pour la croix de l'en-tête à partir de la 2e (décision 2026-11-25-croix-formulaire-etapes).
+  useFormStep(steps.length > 0 ? step : null);
 
   /** Noms envoyés pour des champs (un téléphone envoie aussi son pays). */
   function namesOf(fields: FormFieldDefinition[]): string[] {

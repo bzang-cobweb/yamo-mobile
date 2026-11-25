@@ -8,6 +8,7 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { DynamicForm as BareDynamicForm } from '../components/DynamicForm';
 import type { FormDefinition, FormFieldDefinition } from '../types';
+import { CHECKBOX_GROUP_MAX_HEIGHT } from '../components/fields/CheckboxGroupField';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('@react-native-community/datetimepicker', () => ({ __esModule: true, default: () => null, DateTimePickerAndroid: { open: jest.fn() } }));
@@ -67,6 +68,13 @@ describe('DynamicForm', () => {
     expect(screen.getByText('Visible par tous')).toBeOnTheScreen();
     expect(screen.getByTestId('field-city')).toHaveAccessibilityValue({ text: 'Vaud' }); // valeur par défaut du sélecteur
     expect(screen.getByText('Envoyer')).toBeOnTheScreen();
+  });
+
+  it('une liste de cases garde une hauteur fixe et défile dans son cadre (décision 2026-11-25-cases-hauteur-fixe)', async () => {
+    await render(<DynamicForm definition={everyType} onSubmit={jest.fn()} />);
+
+    const list = screen.getByTestId('field-tags-list');
+    expect(StyleSheet.flatten(list.props.style)).toMatchObject({ maxHeight: CHECKBOX_GROUP_MAX_HEIGHT });
   });
 
   it('le mot de passe est masqué et l’e-mail a le clavier adapté', async () => {

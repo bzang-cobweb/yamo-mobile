@@ -62,6 +62,21 @@ describe('BackHeader', () => {
     expect(screen.queryByTestId('form-title')).toBeNull();
   });
 
+  it('formulaire à étapes : pas de croix à l’étape 1 ; à partir de la 2e, elle ferme la page (décision 2026-11-25-croix-formulaire-etapes)', async () => {
+    // Même loin du départ, l'étape 1 n'a pas de croix.
+    mockRootState = { type: 'stack', key: 'root', index: 2, routes: [{}, {}, {}] };
+    jest.mocked(formService.validateStep).mockResolvedValue(undefined);
+    await renderScreen();
+
+    expect(screen.queryByTestId('back-header-close')).toBeNull();
+    await fireEvent.press(screen.getByTestId('form-submit'));
+    await waitFor(() => expect(screen.getByTestId('form-step-progress')).toHaveTextContent('Étape 2 sur 3'));
+    await fireEvent.press(screen.getByTestId('back-header-close'));
+    expect(router.back).toHaveBeenCalledTimes(1);
+    expect(mockDispatch).not.toHaveBeenCalled();
+    mockRootState = undefined;
+  });
+
   it('à l’étape 1, revient à l’écran précédent ; à partir de l’étape 2, à l’étape précédente', async () => {
     jest.mocked(formService.validateStep).mockResolvedValue(undefined);
     await renderScreen();
