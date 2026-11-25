@@ -86,8 +86,11 @@ describe('la page « Partenaires »', () => {
     // Sans logo, l'emplacement reste vide : pas le nom (décision 2026-11-24-partenaires-cartes-sans-logo-vides).
     expect(within(screen.getByTestId('partners-item-3-box')).queryByText('Déménageurs du Wouri')).toBeNull();
 
+    mockClick.mockClear();
     await fireEvent.press(screen.getByTestId('partners-item-4'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '4' } });
+    // Ouvrir la fiche compte un clic (décision 2026-11-25-compteurs-partenaires).
+    expect(mockClick).toHaveBeenCalledWith('4');
   });
 
   it('« Devenir partenaire », servi par l’API : visiteur, la connexion ; connecté, le formulaire (décision 2026-11-24-devenir-partenaire)', async () => {
@@ -133,8 +136,10 @@ describe('la page d’un partenaire', () => {
     expect(StyleSheet.flatten(screen.getByTestId('partner-description').props.style).color).toBe(Colors.light.textSecondary);
     expect(screen.getByTestId('partner-cta-button')).toHaveTextContent('Demander un devis');
 
+    mockClick.mockClear();
     await fireEvent.press(screen.getByTestId('partner-cta-button'));
-    expect(mockClick).toHaveBeenCalledWith('3');
+    // Le bouton du lien ne compte plus de clic (décision 2026-11-25-compteurs-partenaires).
+    expect(mockClick).not.toHaveBeenCalled();
     expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith('https://wouri.test/fr');
   });
 

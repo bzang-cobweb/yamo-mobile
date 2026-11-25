@@ -20,8 +20,12 @@ jest.mock('expo-image', () => {
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), navigate: jest.fn() } }));
 let mockState: { data?: HomeCarousel[]; isPending: boolean; isError: boolean; error: unknown } = { isPending: true, isError: false, error: null };
 const mockRefetch = jest.fn();
-jest.mock('@/features/partner/hooks/usePartners', () => ({ usePartners: () => ({ data: [], refetch: jest.fn() }) }));
-jest.mock('../hooks/useHomeCarousels', () => ({ useHomeCarousels: () => ({ ...mockState, refetch: mockRefetch }) }));
+jest.mock('@/features/partner/hooks/usePartners', () => ({ usePartners: () => ({ data: { partners: [], become: null }, refetch: jest.fn() }) }));
+let mockFeatured: ListItem[] = [];
+jest.mock('../hooks/useHomeCarousels', () => ({
+  useHomeCarousels: () => ({ ...mockState, refetch: mockRefetch }),
+  useHomeFeatured: () => ({ data: mockFeatured }),
+}));
 
 function item(id: string, title: string): ListItem {
   return { id, title, subtitle: `Logement ${id}`, image: null, rating: { average: 4, count: 3 }, highlight: '35 000 FCFA / jour', favorite: null, link: `/offers/${id}`, edit: null, actions: [], tag: null, counter: null, delete: null } as unknown as ListItem;
@@ -62,6 +66,34 @@ describe('HomeScreen', () => {
 
     await fireEvent.press(screen.getByTestId('home-item-3'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '3' } });
+  });
+
+  it('« À la une » en haut, avant les villes, sans carrousel : les cartes des villes, toutes visibles (décision 2026-11-25-bloc-a-la-une)', async () => {
+    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'Studio · Douala')] }] };
+    mockFeatured = [item('7', 'Villa · Bonapriso'), item('8', 'Duplex · Akwa'), item('9', 'Studio · Bali')];
+    await show();
+
+    expect(screen.getByTestId('home-featured')).toHaveTextContent(/^À la une/);
+    expect(screen.getAllByTestId(/^home-(featured|carousel-[^-]+)$/).map((element) => element.props.testID)).toEqual(['home-featured', 'home-carousel-Douala']);
+    // Pas de liste qui défile : une grille, deux par ligne.
+    expect(StyleSheet.flatten(screen.getByTestId('home-featured-grid').props.style)).toMatchObject({ flexDirection: 'row', flexWrap: 'wrap' });
+    expect(within(screen.getByTestId('home-featured-grid')).getByTestId('home-featured-item-9')).toBeTruthy();
+    // La taille et la police des cartes des villes.
+    const featuredWidth = StyleSheet.flatten(screen.getByTestId('home-featured-item-7').props.style).width;
+    expect(featuredWidth).toBe(StyleSheet.flatten(screen.getByTestId('home-item-1').props.style).width);
+    expect(StyleSheet.flatten(screen.getByText('Villa · Bonapriso').props.style)).toMatchObject({ fontSize: 11 });
+    expect(screen.getByTestId('home-featured-item-9')).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('home-featured-item-8'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '8' } });
+  });
+
+  it('sans offre « À la une » : pas de bloc', async () => {
+    mockState = { isPending: false, isError: false, error: null, data: [{ city: 'Douala', items: [item('1', 'Studio · Douala')] }] };
+    mockFeatured = [];
+    await show();
+
+    expect(screen.queryByTestId('home-featured')).toBeNull();
   });
 
   it('« Voir tout » ouvre la recherche filtrée sur la ville (décision 2026-11-23-accueil-voir-tout)', async () => {

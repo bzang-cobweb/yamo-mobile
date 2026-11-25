@@ -6,7 +6,7 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { PartnersStrip } from '../components/PartnersStrip';
-import type { Partner } from '../types';
+import type { Partner, PartnerBecome } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-image', () => {
@@ -16,7 +16,7 @@ jest.mock('expo-image', () => {
 });
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), navigate: jest.fn() } }));
 const mockClick = jest.fn().mockResolvedValue(undefined);
 jest.mock('../services/PartnerService', () => ({ partnerService: { click: (...args: unknown[]) => mockClick(...args) } }));
 
@@ -30,10 +30,10 @@ const wouri: Partner = {
   logo: null,
 };
 
-async function show(partners: Partner[]) {
+async function show(partners: Partner[], become: PartnerBecome | null = null) {
   await render(
     <I18nContext.Provider value={TEST_I18N}>
-      <PartnersStrip partners={partners} />
+      <PartnersStrip partners={partners} become={become} />
     </I18nContext.Provider>,
   );
 }
@@ -61,13 +61,33 @@ describe('PartnersStrip', () => {
 
     await fireEvent.press(screen.getByTestId('home-partner-3'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '3' } });
-    expect(mockClick).not.toHaveBeenCalled();
+    // Ouvrir la fiche compte un clic (décision 2026-11-25-compteurs-partenaires).
+    expect(mockClick).toHaveBeenCalledWith('3');
 
     await fireEvent.press(screen.getByTestId('home-partners-see-all'));
     expect(router.push).toHaveBeenLastCalledWith('/partners');
   });
 
-  it('sans partenaire, rien', async () => {
+  it('au bout du carrousel, la carte « Devenir partenaire » : visiteur, la connexion ; connecté, le formulaire (décision 2026-11-25-accueil-carte-devenir-partenaire)', async () => {
+    await show([wouri], { label: 'Devenir partenaire', form: null, link: '/sign-in' });
+
+    await fireEvent.press(screen.getByTestId('home-partners-become'));
+    expect(screen.getByTestId('home-partners-become')).toHaveTextContent('Devenir partenaire');
+    expect(router.push).toHaveBeenLastCalledWith('/sign-in');
+
+    await show([wouri], { label: 'Devenir partenaire', form: 'partner.form', link: null });
+    await fireEvent.press(screen.getByTestId('home-partners-become'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/profile/[form]', params: { form: 'partner.form' } });
+  });
+
+  it('sans partenaire, la carte « Devenir partenaire » seule', async () => {
+    await show([], { label: 'Devenir partenaire', form: null, link: '/sign-in' });
+
+    expect(screen.getByTestId('home-partners')).toBeTruthy();
+    expect(screen.getByTestId('home-partners-become')).toBeTruthy();
+  });
+
+  it('sans partenaire ni carte, rien', async () => {
     await show([]);
 
     expect(screen.queryByTestId('home-partners')).toBeNull();

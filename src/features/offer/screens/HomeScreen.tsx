@@ -14,11 +14,12 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { OfferCard } from '../components/OfferCard';
-import { useHomeCarousels } from '../hooks/useHomeCarousels';
+import { useHomeCarousels, useHomeFeatured } from '../hooks/useHomeCarousels';
 import { BROWSE_LIST } from './BrowseScreen';
 
 /** Deux cartes côte à côte à l'écran (décision 2026-11-23-accueil-deux-cartes). */
 const VISIBLE_CARDS = 2;
+
 
 /**
  * L'accueil d'un membre connecté (décision 2026-11-23-accueil-carrousels-par-ville) : un carrousel par ville, le
@@ -29,6 +30,8 @@ export function HomeScreen() {
   const { t } = useI18n();
   const theme = useTheme();
   const query = useHomeCarousels();
+  // En haut, avant les villes (décision 2026-11-25-bloc-a-la-une).
+  const featured = useHomeFeatured().data ?? [];
   // L'espace des partenaires, en bas (décision 2026-11-23-module-partenaires) ; sans eux, l'accueil reste.
   const partners = usePartners();
   const [refreshing, setRefreshing] = useState(false);
@@ -75,6 +78,19 @@ export function HomeScreen() {
       testID="home-screen"
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}>
+      {featured.length > 0 && (
+        // Pas un carrousel : les cartes des villes, deux par ligne, toutes visibles (décision 2026-11-25-bloc-a-la-une).
+        <View style={styles.section} testID="home-featured">
+          <View style={styles.heading}>
+            <ThemedText type="smallBold">{t('home.featured')}</ThemedText>
+          </View>
+          <View style={styles.grid} testID="home-featured-grid">
+            {featured.map((item) => (
+              <OfferCard key={item.id} item={item} testIDPrefix="home-featured-item" style={{ width: cardWidth }} compact />
+            ))}
+          </View>
+        </View>
+      )}
       {query.data.map((carousel) => (
         <View key={carousel.city} style={styles.section} testID={`home-carousel-${carousel.city}`}>
           <View style={styles.heading}>
@@ -105,7 +121,7 @@ export function HomeScreen() {
           />
         </View>
       ))}
-      <PartnersStrip partners={partners.data ?? []} />
+      <PartnersStrip partners={partners.data?.partners ?? []} become={partners.data?.become ?? null} />
     </ScrollView>
   );
 }
@@ -116,4 +132,5 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.two },
   heading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.four },
   row: { paddingHorizontal: Spacing.four, gap: Spacing.two },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.four, gap: Spacing.two },
 });

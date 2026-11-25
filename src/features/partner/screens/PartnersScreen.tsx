@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +17,7 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { PartnerLogo } from '../components/PartnerLogo';
+import { openPartnerDetail } from '../utils/openPartner';
 
 /** La liste servie par l'API : tous les partenaires visibles (décision 2026-11-23-partenaires-liste-detail). */
 export const PARTNERS_LIST = 'partner.all';
@@ -84,7 +84,7 @@ export function PartnersScreen() {
                 <Pressable
                   testID={`partners-item-${item.id}`}
                   accessibilityRole="link"
-                  onPress={() => router.push({ pathname: '/partners/[id]', params: { id: item.id } })}
+                  onPress={() => openPartnerDetail(item.id)}
                   style={({ pressed }) => [styles.card, { borderColor: theme.backgroundSelected }, pressed && styles.pressed]}>
                   <PartnerLogo partner={{ name: item.title, logo: item.image }} size={LOGO_SIZE} framed={false} named={false} testID={`partners-item-${item.id}`} />
                   <View style={styles.texts}>

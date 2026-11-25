@@ -154,3 +154,9 @@ export type HomeCarousel = {
   city: string;
   items: ListItem[];
 };
+
+/** `GET /api/v1/home` : le bloc « À la une » (décision 2026-11-25-bloc-a-la-une), puis un carrousel par ville. */
+export type HomeData = {
+  featured: ListItem[];
+  carousels: HomeCarousel[];
+};

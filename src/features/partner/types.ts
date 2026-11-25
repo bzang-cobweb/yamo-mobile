@@ -19,3 +19,12 @@ export type Partner = {
   /** Sur sa page, pour ses comptes seulement : sa pastille, comme dans « Mes partenaires » (décision 2026-11-24-partenaire-page-statut). */
   status?: StatusTagValue | null;
 };
+
+/**
+ * « Devenir partenaire », décrit par l'API : connecté, le formulaire d'ajout ; visiteur, la connexion (décisions
+ * 2026-11-24-devenir-partenaire et 2026-11-25-accueil-carte-devenir-partenaire).
+ */
+export type PartnerBecome = { label: string; form: string | null; link: string | null };
+
+/** Les partenaires de l'accueil, et la carte « Devenir partenaire » au bout du carrousel (`null` : pas de carte). */
+export type HomePartners = { partners: Partner[]; become: PartnerBecome | null };
