@@ -42,6 +42,8 @@ export type ListProps<T> = {
   onRefresh?: () => void;
   /** Texte affiché quand il n'y a aucun item. */
   empty?: string | null;
+  /** En tête de la zone fixe, avant la recherche : le sélecteur de région de la recherche (décision 2026-11-25-region-en-tete-recherche). */
+  top?: ReactElement | null;
   /** Champ de recherche, sur toute la largeur de la zone fixe au-dessus de la liste. */
   search?: ListSearch | null;
   /** Lien de création, sous la recherche, aligné à droite, dans la zone fixe. */
@@ -79,6 +81,7 @@ export function List<T>({
   refreshing,
   onRefresh,
   empty,
+  top,
   search,
   create,
   filter,
@@ -139,13 +142,14 @@ export function List<T>({
     />
   );
 
-  if (!search && !create && !filter) {
+  if (!top && !search && !create && !filter) {
     return list;
   }
 
   return (
     <View style={styles.fill}>
       <View style={[StyleSheet.flatten(contentContainerStyle), styles.bar]} testID={id('bar')}>
+        {top}
         {search && (
           <View style={[styles.searchField, { backgroundColor: theme.backgroundElement }]}>
             <SymbolView

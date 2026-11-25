@@ -3,7 +3,7 @@ import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
-import { setFilterValues } from '@/features/list/utils/filters';
+import { chooseFilter, setFilterValues } from '@/features/list/utils/filters';
 import { PartnersStrip } from '@/features/partner/components/PartnersStrip';
 import { usePartners } from '@/features/partner/hooks/usePartners';
 import { NetworkError } from '@/shared/api/errors';
@@ -39,11 +39,18 @@ export function HomeScreen() {
   // La largeur utile, moins les marges et l'espace entre les cartes, partagée en deux.
   const cardWidth = (Math.min(width, MaxContentWidth / 2) - 2 * Spacing.four - (VISIBLE_CARDS - 1) * Spacing.two) / VISIBLE_CARDS;
 
-  /** « Voir tout » : la recherche, filtrée sur la ville seule (décision 2026-11-23-accueil-voir-tout). */
+  /** « Voir tout » : la recherche, filtrée sur la région seule (décisions 2026-11-23-accueil-voir-tout et 2026-11-25-region-de-l-adresse). */
   function seeAll(filter: Record<string, string>) {
-    // Le filtre servi avec le carrousel : sa région (décision 2026-11-25-region-de-l-adresse).
     setFilterValues(BROWSE_LIST, filter);
     router.navigate('/search');
+  }
+
+  /**
+   * Une offre ouverte depuis le carrousel d'une région : la recherche reprend cette région, ses autres filtres restent
+   * et la ville s'efface si la région change (décision 2026-11-25-carte-choisit-region).
+   */
+  function chooseRegion(filter: Record<string, string>) {
+    Object.entries(filter).forEach(([field, value]) => chooseFilter(BROWSE_LIST, field, value));
   }
 
   async function refresh() {
@@ -118,7 +125,8 @@ export function HomeScreen() {
             // Défile carte par carte.
             snapToInterval={cardWidth + Spacing.two}
             decelerationRate="fast"
-            renderItem={({ item }) => <OfferCard item={item} testIDPrefix="home-item" style={{ width: cardWidth }} compact />}
+            // Ouvrir une offre d'une région : la recherche reprend cette région (décision 2026-11-25-carte-choisit-region).
+            renderItem={({ item }) => <OfferCard item={item} testIDPrefix="home-item" style={{ width: cardWidth }} compact onOpen={() => chooseRegion(carousel.filter)} />}
           />
         </View>
       ))}

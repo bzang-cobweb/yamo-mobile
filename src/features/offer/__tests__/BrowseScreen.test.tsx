@@ -1,9 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import type { ListDefinition } from '@/features/list/types';
+import { resetFilters, setFilterValues, useListFilters } from '@/features/list/utils/filters';
+import type { FormFieldDefinition } from '@/features/form/types';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
@@ -11,7 +13,13 @@ import { BrowseScreen } from '../screens/BrowseScreen';
 import { GuestHomeScreen } from '../screens/GuestHomeScreen';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
-jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+// L'icône rendue comme une vue, pour la trouver par son testID (l'épingle des régions).
+jest.mock('expo-symbols', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+
+  return { SymbolView: ({ testID }: { testID?: string }) => createElement(View, { testID }) };
+});
 jest.mock('expo-image', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
@@ -91,14 +99,14 @@ describe('Accueil : offres du pays', () => {
     mockList = list();
   });
 
-  it('montre la vitrine du pays : titre, titre saisi, prix, recherche', async () => {
+  it('montre la vitrine du pays : titre, titre saisi, prix ; pas de champ de recherche (décision 2026-11-25-recherche-sans-champ)', async () => {
     await show(<BrowseScreen />);
 
     expect(mockCalls[0][0]).toBe('offer.browse');
     expect(screen.getByText('Maison - Yaoundé')).toBeTruthy();
     expect(screen.getByText('Maison à Bastos')).toBeTruthy();
     expect(screen.getByText('25 000 FCFA / mois')).toBeTruthy();
-    expect(screen.getByTestId('browse-list-search').props.placeholder).toBe('Rechercher par titre…');
+    expect(screen.queryByTestId('browse-list-search')).toBeNull();
   });
 
   it('la photo au-dessus du titre ; sans photo, un emplacement neutre', async () => {
@@ -156,6 +164,32 @@ describe('Accueil : offres du pays', () => {
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '7' } });
     // La carte ne compte pas le clic : la fiche le fait (décision 2026-11-25-clic-a-l-ouverture).
     expect(mockClick).not.toHaveBeenCalled();
+  });
+
+  it('le sélecteur de région en premier, avant la recherche ; le changer filtre la recherche (décision 2026-11-25-region-en-tete-recherche)', async () => {
+    const region = { name: 'region', type: 'select', label: 'Région', placeholder: null, help: null, required: true, default: '27', all_option: false, country_scoped: true, options: [{ value: '27', label: 'Centre' }, { value: '34', label: 'Littoral' }] } as FormFieldDefinition;
+    const city = { name: 'city', type: 'select', label: 'Ville', placeholder: null, help: null, required: false, default: null, depends_on: 'region', country_scoped: true, options: [{ value: 'Yaoundé', label: 'Yaoundé', parent: '27' }] } as FormFieldDefinition;
+    const rentalType = { name: 'rental_type', type: 'select', label: 'Type', placeholder: null, help: null, required: false, default: null, options: [{ value: 'furnished', label: 'Meublé' }] } as FormFieldDefinition;
+    mockList = { ...list(), filters: [region, city, rentalType] };
+    await show(<BrowseScreen />);
+
+    // En premier dans la zone fixe, sur la région par défaut.
+    const bar = screen.getByTestId('browse-list-bar');
+    expect(bar.children[0]).toBe(screen.getByTestId('browse-region'));
+    expect(screen.getByTestId('browse-region-label')).toHaveTextContent('Région');
+    expect(screen.getByTestId('browse-region-value')).toHaveTextContent('Centre');
+
+    // Une ville choisie dans la région, puis une autre région : la ville s'efface (décision 2026-11-25-ville-selon-region).
+    setFilterValues('offer.browse', { region: '27', city: 'Yaoundé', rental_type: 'furnished' });
+    await fireEvent.press(screen.getByTestId('field-region'));
+    // Une épingle devant chaque région (décision 2026-11-25-region-icone).
+    expect(screen.getByTestId('field-region-option-27-icon')).toBeTruthy();
+    expect(screen.getByTestId('field-region-option-34-icon')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('field-region-option-34'));
+    expect(screen.getByTestId('browse-region-value')).toHaveTextContent('Littoral');
+    const { result } = await renderHook(() => useListFilters('offer.browse'));
+    expect(result.current.values).toEqual({ region: '34', rental_type: 'furnished' });
+    resetFilters();
   });
 
   it('le nombre d’offres trouvées en tête (décision 2026-11-25-recherche-nombre)', async () => {

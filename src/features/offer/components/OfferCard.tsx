@@ -18,6 +18,8 @@ type Props = {
   style?: StyleProp<ViewStyle>;
   /** Plus petite, sur l'accueil : une police réduite (décision 2026-11-23-accueil-deux-cartes). */
   compact?: boolean;
+  /** Appelé au toucher, avant d'ouvrir la fiche (la région du carrousel de l'accueil, décision 2026-11-25-carte-choisit-region). */
+  onOpen?: () => void;
 };
 
 /**
@@ -25,7 +27,7 @@ type Props = {
  * la photo et le cœur, le titre, le sous-titre, puis la note. Toucher la carte ouvre la fiche de l'offre (décision
  * 2026-11-18-fiche-offre) ; c'est la fiche qui compte le clic (décision 2026-11-25-clic-a-l-ouverture).
  */
-export function OfferCard({ item, testIDPrefix, style, compact = false }: Props) {
+export function OfferCard({ item, testIDPrefix, style, compact = false, onOpen }: Props) {
   const theme = useTheme();
   const testID = `${testIDPrefix}-${item.id}`;
   const text = compact ? styles.compactText : undefined;
@@ -34,7 +36,10 @@ export function OfferCard({ item, testIDPrefix, style, compact = false }: Props)
     <Pressable
       testID={testID}
       accessibilityRole="link"
-      onPress={() => router.push({ pathname: '/offers/[id]', params: { id: item.id } })}
+      onPress={() => {
+        onOpen?.();
+        router.push({ pathname: '/offers/[id]', params: { id: item.id } });
+      }}
       style={({ pressed }) => [styles.card, { borderColor: theme.backgroundSelected }, style, pressed && styles.pressed]}>
       {/* La photo au-dessus du titre ; sans photo, un emplacement neutre ; le cœur d'un membre connecté. */}
       <ItemPicture item={item} placeholder testID={testID} />

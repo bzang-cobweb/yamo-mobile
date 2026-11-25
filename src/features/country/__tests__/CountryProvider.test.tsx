@@ -1,11 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react-native';
 import * as React from 'react';
 import { Text } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 import type { Locale } from '@/shared/i18n/messages';
+import { setFilterFields, setFilterValues, useListFilters } from '@/features/list/utils/filters';
 
 import { CountrySwitcher } from '../components/CountrySwitcher';
 import { useCountry } from '../context/CountryContext';
@@ -217,6 +218,13 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
     mockStored = 'CM';
     mockLocaleChosen = true;
     const { invalidate } = await renderApp();
+    // Les filtres de l'ancien pays (décision 2026-11-25-region-en-tete-recherche) : la région et la ville lui sont propres.
+    setFilterFields('offer.browse', [
+      { name: 'region', type: 'select', label: 'Région', placeholder: null, help: null, required: true, default: '27', options: [], country_scoped: true },
+      { name: 'city', type: 'select', label: 'Ville', placeholder: null, help: null, required: false, default: null, options: [], country_scoped: true },
+      { name: 'rental_type', type: 'select', label: 'Type', placeholder: null, help: null, required: false, default: null, options: [] },
+    ]);
+    setFilterValues('offer.browse', { region: '34', city: 'Douala', rental_type: 'furnished' });
 
     await fireEvent.press(screen.getByTestId('country-switcher'));
     await fireEvent.changeText(screen.getByTestId('country-switcher-search'), 'séné');
@@ -230,6 +238,9 @@ describe('Espace pays : écran d’entrée, mémoire, drapeau', () => {
     const { predicate } = invalidate.mock.calls[0][0] as unknown as { predicate: (query: { queryKey: unknown[] }) => boolean };
     expect(predicate({ queryKey: ['list', 'offer.browse'] })).toBe(true);
     expect(predicate({ queryKey: ['countries', 'fr'] })).toBe(false);
+    // Région et ville repartent de zéro dans le nouveau pays ; le type de location reste.
+    const { result } = await renderHook(() => useListFilters('offer.browse'));
+    expect(result.current.values).toEqual({ rental_type: 'furnished' });
   });
 
   it('choisir le pays déjà courant ne recharge rien', async () => {

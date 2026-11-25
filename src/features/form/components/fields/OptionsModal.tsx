@@ -1,3 +1,4 @@
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
@@ -27,10 +28,12 @@ type Props = {
   limit?: number;
   /** Un champ facultatif : une première ligne (« Aucun ») retire la valeur (décision 2026-11-21-choix-facultatif-effacable). */
   clearable?: boolean;
+  /** Une icône devant chaque option (l'épingle des régions, décision 2026-11-25-region-icone) ; sans : aucune. */
+  icon?: SymbolViewProps['name'];
 };
 
 /** Fenêtre de choix commune aux listes déroulantes et au pays d'un téléphone. */
-export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false, limit, clearable = false }: Props) {
+export function OptionsModal({ visible, title, options, selected, onSelect, onClose, testIDPrefix, searchable = false, limit, clearable = false, icon }: Props) {
   const { t } = useI18n();
   const theme = useTheme();
   const [query, setQuery] = useState('');
@@ -94,6 +97,14 @@ export function OptionsModal({ visible, title, options, selected, onSelect, onCl
                 }}
                 style={({ pressed }) => [styles.option, pressed && styles.pressed]}>
                 <View style={styles.optionRow}>
+                  {icon && (
+                    <SymbolView
+                      testID={`${testIDPrefix}-option-${option.value}-icon`}
+                      name={icon}
+                      tintColor={option.value === selected ? theme.primary : theme.textSecondary}
+                      size={18}
+                    />
+                  )}
                   <ThemedText style={styles.label}>{option.label}</ThemedText>
                   {option.hint && <ThemedText themeColor="textSecondary">{option.hint}</ThemedText>}
                   {option.value === selected && <ThemedText type="smallBold">✓</ThemedText>}

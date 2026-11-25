@@ -68,6 +68,9 @@ describe('HomeScreen', () => {
 
     await fireEvent.press(screen.getByTestId('home-item-3'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '3' } });
+    // La recherche reprend la région de ce carrousel (décision 2026-11-25-carte-choisit-region).
+    const { result } = await renderHook(() => useListFilters('offer.browse'));
+    expect(result.current.values).toEqual({ region: '34' });
     // La carte ne compte pas le clic : la fiche le fait (décision 2026-11-25-clic-a-l-ouverture).
     expect(mockClick).not.toHaveBeenCalled();
   });

@@ -50,6 +50,20 @@ export function setFilterValues(name: string, values: FormValues) {
   emit();
 }
 
+/**
+ * Choisit une valeur d'un filtre de la liste `name` (la région de la recherche) : les filtres qui en dépendent (la
+ * ville) s'effacent si la valeur change ; les autres restent (décision 2026-11-25-ville-selon-region).
+ */
+export function chooseFilter(name: string, field: string, value: string) {
+  const current = entries.get(name) ?? { fields: [], values: {} };
+  if (current.values[field] === value) {
+    return;
+  }
+  const children = new Set(current.fields.filter((child) => child.depends_on === field).map((child) => child.name));
+  const kept = Object.fromEntries(Object.entries(current.values).filter(([key]) => !children.has(key)));
+  setFilterValues(name, { ...kept, [field]: value });
+}
+
 /** Enlève tous les filtres choisis de la liste `name` ; ses champs restent (décision 2026-11-21-onglet-notifications-sans-filtres). */
 export function clearFilters(name: string) {
   const current = entries.get(name);
@@ -66,6 +80,25 @@ export function clearFilters(name: string) {
 export function resetFilters() {
   entries.clear();
   emit();
+}
+
+/**
+ * Un autre pays : les filtres qui lui sont propres (région, ville, un logement) repartent de zéro dans toutes les
+ * listes ; les autres (prix, type…) restent (décision 2026-11-25-region-en-tete-recherche).
+ */
+export function resetCountryFilters() {
+  let changed = false;
+  entries.forEach((entry, name) => {
+    const scoped = new Set(entry.fields.filter((field) => field.country_scoped).map((field) => field.name));
+    const kept = Object.fromEntries(Object.entries(entry.values).filter(([field]) => !scoped.has(field)));
+    if (Object.keys(kept).length !== Object.keys(entry.values).length) {
+      entries.set(name, { fields: entry.fields, values: kept });
+      changed = true;
+    }
+  });
+  if (changed) {
+    emit();
+  }
 }
 
 /** Une valeur qui filtre : non vide, et différente de la valeur par défaut du champ (« Tous »). */
@@ -92,12 +125,25 @@ export function isFixedFilter(field: FormFieldDefinition): boolean {
   return field.type === 'hidden';
 }
 
-/** Les valeurs des filtres cachés. */
-export function fixedValues(fields: FormFieldDefinition[], values: FormValues): FormValues {
-  return Object.fromEntries(Object.entries(values).filter(([name]) => fields.some((field) => field.name === name && isFixedFilter(field))));
+/**
+ * Un filtre obligatoire (la région de la recherche) : il a toujours une valeur, celle par défaut tant qu'on n'en choisit
+ * pas d'autre ; « Effacer les filtres » le garde et le badge ne le compte pas (décision
+ * 2026-11-25-region-obligatoire-recherche).
+ */
+export function isRequiredFilter(field: FormFieldDefinition): boolean {
+  return field.required === true && !isFixedFilter(field);
 }
 
-/** Le nombre de filtres actifs, pour le badge, sans les filtres cachés ; un intervalle compte pour un. */
+/** Les valeurs qui restent quand on efface les filtres : celles des filtres cachés et des filtres obligatoires. */
+export function fixedValues(fields: FormFieldDefinition[], values: FormValues): FormValues {
+  return Object.fromEntries(
+    Object.entries(values).filter(([name]) => fields.some((field) => field.name === name && (isFixedFilter(field) || isRequiredFilter(field)))),
+  );
+}
+
+/** Le nombre de filtres actifs, pour le badge, sans les filtres cachés ni obligatoires ; un intervalle compte pour un. */
 export function activeFilterCount(fields: FormFieldDefinition[], values: FormValues): number {
-  return Object.keys(activeValues(fields, values)).filter((name) => !fields.some((field) => field.name === name && isFixedFilter(field))).length;
+  return Object.keys(activeValues(fields, values)).filter(
+    (name) => !fields.some((field) => field.name === name && (isFixedFilter(field) || isRequiredFilter(field))),
+  ).length;
 }

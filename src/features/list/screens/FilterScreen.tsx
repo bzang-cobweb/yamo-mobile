@@ -14,7 +14,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-import { fixedValues, isFixedFilter, setFilterValues, useListFilters } from '../utils/filters';
+import { fixedValues, isFixedFilter, isRequiredFilter, setFilterValues, useListFilters } from '../utils/filters';
 
 /**
  * Les filtres d'une liste (`/filters/[list]`, décision 2026-11-19-contrat-filtres-vitrine) :
@@ -30,6 +30,10 @@ import { fixedValues, isFixedFilter, setFilterValues, useListFilters } from '../
  */
 function withAll(field: FormFieldDefinition, label: string): FormFieldDefinition {
   if (field.type !== 'select' || field.options.some((option) => option.value === '')) {
+    return field;
+  }
+  // Un filtre sans « Tous » : on choisit une valeur, « Effacer les filtres » la retire (décision 2026-11-25-region-sans-tous).
+  if (field.all_option === false) {
     return field;
   }
 
@@ -87,7 +91,8 @@ export function FilterScreen({ list }: { list: string }) {
   }
 
   function clear() {
-    // Les filtres cachés restent : ils ne se choisissent pas ici.
+    // Les filtres cachés restent : ils ne se choisissent pas ici ; un filtre obligatoire (la région de la recherche) garde
+    // son choix (décision 2026-11-25-region-obligatoire-recherche).
     setFilterValues(list, fixedValues(fields, current));
     router.back();
   }
@@ -99,7 +104,9 @@ export function FilterScreen({ list }: { list: string }) {
           <BackHeader title={t('list.filters')} />
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="filter-screen">
             {/* Un filtre caché filtre sans s'afficher (décision 2026-11-21-demandes-filtre-logement-cache). */}
-            {visibleFields.filter((field) => !isFixedFilter(field)).map((field) => (
+            {/* Un filtre obligatoire (la région de la recherche) se choisit sur la page de la liste, pas ici (décision
+                2026-11-25-region-en-tete-recherche) ; il reste appliqué. */}
+            {visibleFields.filter((field) => !isFixedFilter(field) && !isRequiredFilter(field)).map((field) => (
               <FormField
                 key={field.name}
                 field={{ ...field, required: false }}

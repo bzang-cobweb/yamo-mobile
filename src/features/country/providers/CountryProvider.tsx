@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type PropsWithChildren } fro
 import { apiClient } from '@/shared/api/ApiClient';
 import { NetworkError } from '@/shared/api/errors';
 import { useI18n } from '@/shared/i18n/I18nContext';
+import { resetCountryFilters } from '@/features/list/utils/filters';
 
 import { CountryContext, type CountryContextValue } from '../context/CountryContext';
 import { countryService } from '../services/CountryService';
@@ -49,7 +50,9 @@ export function CountryProvider({ children }: PropsWithChildren) {
       saveChosenCountry(code).catch(() => undefined);
 
       if (changed) {
-        // Un autre espace : listes, formulaires et menu rechargés.
+        // Un autre espace : listes, formulaires et menu rechargés ; les filtres propres à l'ancien pays (région, ville…)
+        // repartent de zéro, les autres restent (décision 2026-11-25-region-en-tete-recherche).
+        resetCountryFilters();
         queryClient.invalidateQueries({ predicate: (cached) => cached.queryKey[0] !== 'countries' });
       }
     },

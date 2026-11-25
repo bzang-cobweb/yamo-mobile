@@ -222,6 +222,63 @@ describe('filtre « Statut » selon le type (décision 2026-11-24-notifications-
     resetFilters();
   });
 
+  it('un filtre sans « Tous » ne le propose pas ; la ville le garde (décision 2026-11-25-region-sans-tous)', async () => {
+    setFilterFields('offer.browse', [
+      field({ name: 'region', type: 'select', all_option: false, options: [{ value: '27', label: 'Centre' }, { value: '34', label: 'Littoral' }] }),
+      field({ name: 'city', type: 'select', options: [{ value: 'Douala', label: 'Douala' }] }),
+    ]);
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <FilterScreen list="offer.browse" />
+      </I18nContext.Provider>,
+    );
+
+    await fireEvent.press(screen.getByTestId('field-region'));
+    expect(screen.queryByTestId('field-region-option-')).toBeNull();
+    expect(screen.getByTestId('field-region-option-34')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('field-region-option-34'));
+
+    await fireEvent.press(screen.getByTestId('field-city'));
+    expect(screen.getByTestId('field-city-option-')).toBeTruthy();
+  });
+
+  it('un filtre obligatoire ne se choisit pas dans l’écran des filtres, reste appliqué et effacer le garde (décisions 2026-11-25-region-obligatoire-recherche et 2026-11-25-region-en-tete-recherche)', async () => {
+    const fields = [
+      field({ name: 'region', type: 'select', required: true, default: '27', all_option: false, options: [{ value: '27', label: 'Centre' }, { value: '34', label: 'Littoral' }] }),
+      field({ name: 'city', type: 'select', options: [{ value: 'Douala', label: 'Douala' }] }),
+    ];
+    setFilterFields('offer.browse', fields);
+    setFilterValues('offer.browse', { region: '34' });
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <FilterScreen list="offer.browse" />
+      </I18nContext.Provider>,
+    );
+
+    // La région se choisit en tête de la recherche, pas ici.
+    expect(screen.queryByTestId('field-region')).toBeNull();
+    await fireEvent.press(screen.getByTestId('field-city'));
+    await fireEvent.press(screen.getByTestId('field-city-option-Douala'));
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('filter-apply'));
+    });
+    const { result } = await renderHook(() => useListFilters('offer.browse'));
+    expect(result.current.values).toEqual({ region: '34', city: 'Douala' });
+    // Le badge ne compte pas la région.
+    expect(activeFilterCount(fields, result.current.values)).toBe(1);
+
+    // Effacer garde la région choisie et retire la ville.
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <FilterScreen list="offer.browse" />
+      </I18nContext.Provider>,
+    );
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('filter-clear'));
+    });
+    expect(result.current.values).toEqual({ region: '34' });
+  });
+
   it('le statut ne propose que ceux du type choisi', async () => {
     const types = [
       { value: 'booking', label: 'Réservation' },
