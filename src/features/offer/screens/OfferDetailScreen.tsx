@@ -328,7 +328,10 @@ function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewCh
   );
 }
 
-/** La note moyenne sous les titres : les étoiles, la moyenne et le nombre d'avis, centrés (décision 2026-11-22-fiche-note-sous-titre). */
+/**
+ * La note moyenne sous les titres : les étoiles seules, centrées ; la moyenne et le nombre d'avis restent
+ * dans le libellé d'accessibilité (décision 2026-11-26-fiche-etoiles-seules).
+ */
 function TitleRating({ average, count }: { average: number; count: number }) {
   const { t, locale } = useI18n();
   const theme = useTheme();
@@ -337,8 +340,6 @@ function TitleRating({ average, count }: { average: number; count: number }) {
   return (
     <View accessible accessibilityLabel={t('list.ratingSummary', { average: shown, count: String(count) })} style={styles.titleRating} testID="offer-title-rating">
       <Stars value={average} size={18} emptyColor={theme.backgroundSelected} />
-      <ThemedText type="smallBold">{shown}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">{`(${count})`}</ThemedText>
     </View>
   );
 }

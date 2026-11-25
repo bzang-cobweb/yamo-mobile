@@ -3,7 +3,7 @@ import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/shared/i18n/I18nContext';
-import { useBack, useClose, useCurrentFormStep } from '@/shared/navigation/BackStack';
+import { useBack, useCurrentFormStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -11,26 +11,24 @@ import { Spacing } from '@/shared/theme/theme';
 type Props = {
   /** Titre de l'écran, affiché au centre (« Créer un compte »). */
   title: string;
-  /** `false` : jamais de croix, la flèche seule (la liste des avis, décision 2026-11-25-liste-avis-titre-nombre). */
-  closable?: boolean;
 };
 
 /**
  * En-tête d'un sous-écran, fixé en haut comme le menu du bas l'est en bas : la flèche
- * de retour à gauche, le titre au centre, et une croix à droite quand on est à plus
- * d'un écran du départ (elle y ramène d'un coup) ; le contenu défile dessous. La flèche revient
+ * de retour à gauche, le titre au centre ; le contenu défile dessous. Une croix à droite seulement
+ * dans un formulaire à étapes, à partir de la 2e étape : elle ferme la page (décision
+ * 2026-11-26-croix-etapes-seulement). La flèche revient
  * à l'étape précédente d'un formulaire à étapes, sinon à l'écran précédent
  * (`BackStackProvider`). Le placer hors du `ScrollView`.
  */
-export function BackHeader({ title, closable = true }: Props) {
+export function BackHeader({ title }: Props) {
   const theme = useTheme();
   const { t } = useI18n();
   const back = useBack();
-  const deep = useClose();
-  // Un formulaire à étapes : la croix ferme sa page, à partir de la 2e étape seulement (décision 2026-11-25-croix-formulaire-etapes) ; sinon, plus d'un
-  // écran depuis le départ, elle y ramène d'un coup.
+  // La croix : seulement dans un formulaire à étapes, à partir de la 2e ; elle ferme sa page (décision
+  // 2026-11-26-croix-etapes-seulement).
   const formStep = useCurrentFormStep();
-  const close = formStep === null ? deep : formStep >= 1 ? () => router.back() : null;
+  const closable = formStep !== null && formStep >= 1;
 
   return (
     <View
@@ -48,13 +46,12 @@ export function BackHeader({ title, closable = true }: Props) {
         style={styles.back}>
         <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={20} tintColor={theme.text} />
       </Pressable>
-      {/* Plus d'un écran depuis le départ : la croix y ramène d'un coup. */}
-      {closable && close && (
+      {closable && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('nav.close')}
           testID="back-header-close"
-          onPress={close}
+          onPress={() => router.back()}
           hitSlop={12}
           style={styles.close}>
           <SymbolView name={{ ios: 'xmark', android: 'close', web: 'close' }} size={18} tintColor={theme.text} />

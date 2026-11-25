@@ -11,14 +11,7 @@ import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { BackHeader } from '../BackHeader';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
-// L'état de navigation de toute l'app, tel que le test le pose.
-let mockRootState: unknown;
-const mockDispatch = jest.fn();
-jest.mock('expo-router', () => ({
-  router: { back: jest.fn() },
-  useRootNavigationState: () => mockRootState,
-  useNavigationContainerRef: () => ({ getRootState: () => mockRootState, dispatch: mockDispatch }),
-}));
+jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('@/features/form/services/FormService', () => ({ formService: { validateStep: jest.fn() } }));
 
@@ -62,9 +55,7 @@ describe('BackHeader', () => {
     expect(screen.queryByTestId('form-title')).toBeNull();
   });
 
-  it('formulaire à étapes : pas de croix à l’étape 1 ; à partir de la 2e, elle ferme la page (décision 2026-11-25-croix-formulaire-etapes)', async () => {
-    // Même loin du départ, l'étape 1 n'a pas de croix.
-    mockRootState = { type: 'stack', key: 'root', index: 2, routes: [{}, {}, {}] };
+  it('formulaire à étapes : pas de croix à l’étape 1 ; à partir de la 2e, elle ferme la page (décision 2026-11-26-croix-etapes-seulement)', async () => {
     jest.mocked(formService.validateStep).mockResolvedValue(undefined);
     await renderScreen();
 
@@ -73,8 +64,6 @@ describe('BackHeader', () => {
     await waitFor(() => expect(screen.getByTestId('form-step-progress')).toHaveTextContent('Étape 2 sur 3'));
     await fireEvent.press(screen.getByTestId('back-header-close'));
     expect(router.back).toHaveBeenCalledTimes(1);
-    expect(mockDispatch).not.toHaveBeenCalled();
-    mockRootState = undefined;
   });
 
   it('à l’étape 1, revient à l’écran précédent ; à partir de l’étape 2, à l’étape précédente', async () => {
@@ -99,48 +88,16 @@ describe('BackHeader', () => {
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 
-  describe('la croix (décision 2026-11-19-croix-fermer)', () => {
-    // Pile principale : les onglets, puis un formulaire ; dans l'onglet Profil, sa pile.
-    function state(profileIndex: number, rootIndex: number) {
-      const profile = { type: 'stack', key: 'profile-stack', index: profileIndex, routes: Array.from({ length: profileIndex + 1 }, () => ({})) };
-      const tabs = { type: 'tab', key: 'tabs', index: 1, routes: [{}, { state: profile }] };
+  it('hors d’un formulaire à étapes : jamais de croix, la flèche seule (décision 2026-11-26-croix-etapes-seulement)', async () => {
+    await render(
+      <I18nContext.Provider value={TEST_I18N}>
+        <BackStackProvider>
+          <BackHeader title="Modifier une adresse" />
+        </BackStackProvider>
+      </I18nContext.Provider>,
+    );
 
-      return { type: 'stack', key: 'root', index: rootIndex, routes: [{ state: tabs }, ...Array.from({ length: rootIndex }, () => ({}))] };
-    }
-
-    afterEach(() => {
-      mockRootState = undefined;
-      mockDispatch.mockClear();
-    });
-
-    it('à un écran du départ : pas de croix, la flèche suffit', async () => {
-      mockRootState = state(0, 1);
-      await render(
-        <I18nContext.Provider value={TEST_I18N}>
-          <BackHeader title="Mes adresses" />
-        </I18nContext.Provider>,
-      );
-
-      expect(screen.queryByTestId('back-header-close')).toBeNull();
-    });
-
-    it('à plus d’un écran (une liste du profil, puis un formulaire) : la croix ramène au départ', async () => {
-      mockRootState = state(1, 1);
-      await render(
-        <I18nContext.Provider value={TEST_I18N}>
-          <BackHeader title="Modifier l'adresse" />
-        </I18nContext.Provider>,
-      );
-
-      const close = screen.getByTestId('back-header-close');
-      expect(close.props.accessibilityLabel).toBe('Fermer');
-      await fireEvent.press(close);
-
-      // La pile de l'onglet d'abord, puis la pile principale.
-      expect(mockDispatch.mock.calls.map(([action]) => action)).toEqual([
-        { type: 'POP_TO_TOP', target: 'profile-stack' },
-        { type: 'POP_TO_TOP', target: 'root' },
-      ]);
-    });
+    expect(screen.getByTestId('back-header-link')).toBeTruthy();
+    expect(screen.queryByTestId('back-header-close')).toBeNull();
   });
 });

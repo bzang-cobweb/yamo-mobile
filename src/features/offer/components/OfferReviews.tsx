@@ -123,6 +123,7 @@ export function OfferReviews({ offerId, reviews }: { offerId: string; reviews: R
           showsHorizontalScrollIndicator={false}
           snapToInterval={reviews.latest.length > 1 ? cardWidth + Spacing.two : undefined}
           decelerationRate="fast"
+          style={styles.carouselFrame}
           contentContainerStyle={styles.carousel}
           testID="offer-reviews-carousel">
           {reviews.latest.map((review) => (
@@ -211,6 +212,8 @@ const CARD_LINES = 4;
 const styles = StyleSheet.create({
   section: { gap: Spacing.two },
   carousel: { gap: Spacing.two },
+  // Plus d'air sous le carrousel, avant « Voir tous les avis » (décision 2026-11-26-avis-espace-sous-carrousel).
+  carouselFrame: { marginBottom: Spacing.two },
   // Sans fond, une bordure tout autour, coins arrondis comme les cartes des listes (décision
   // 2026-11-25-avis-cartes-bordures).
   card: { borderWidth: 1, borderRadius: 8, paddingHorizontal: Spacing.three },

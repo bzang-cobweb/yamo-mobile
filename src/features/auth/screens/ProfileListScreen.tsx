@@ -52,17 +52,14 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
  * « Refuser »), et un compteur de carte qui ouvre une autre liste déjà filtrée.
  */
 /**
- * `closable={false}` : la flèche seule, sans croix (la liste des avis, décision 2026-11-25-liste-avis-generique).
  * `headingType` : le style du titre en tête des items ; `subtitle`, celui du titre de la fiche d'une offre (la note de
  * la liste des avis, décision 2026-11-25-liste-avis-note-style-titre-fiche).
  */
 export function ProfileListScreen({
   list,
-  closable = true,
   headingType = 'smallBold',
 }: {
   list: string;
-  closable?: boolean;
   headingType?: 'smallBold' | 'subtitle';
 }) {
   const { t } = useAuth();
@@ -167,7 +164,7 @@ export function ProfileListScreen({
 
   if (query.isPending || query.isError || !definition) {
     return (
-      <ProfileScreenShell title={definition?.title ?? ''} closable={closable}>
+      <ProfileScreenShell title={definition?.title ?? ''}>
         {query.isPending ? (
           <View style={styles.center} accessibilityLabel={t('list.loading')}>
             <ActivityIndicator />
@@ -187,7 +184,7 @@ export function ProfileListScreen({
   }
 
   return (
-    <ProfileScreenShell title={definition.title} scrolls={false} closable={closable}>
+    <ProfileScreenShell title={definition.title} scrolls={false}>
       {/* Menu ouvert : un toucher ailleurs que sur un bouton ou une carte (entre les cartes, l'intitulé, le vide) le
           referme (décision 2026-11-24-menu-se-ferme-au-toucher). */}
       <View

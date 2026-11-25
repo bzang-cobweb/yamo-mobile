@@ -21,5 +21,5 @@ export default function OfferReviewsRoute() {
   }, [chosen, offer]);
 
   // La note en tête, au style du titre de la fiche (décision 2026-11-25-liste-avis-note-style-titre-fiche).
-  return <ProfileListScreen key={offer} list={OFFER_REVIEWS_LIST} closable={false} headingType="subtitle" />;
+  return <ProfileListScreen key={offer} list={OFFER_REVIEWS_LIST} headingType="subtitle" />;
 }
