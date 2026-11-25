@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
+import { FilterSheet } from '@/features/list/components/FilterSheet';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { NetworkError } from '@/shared/api/errors';
@@ -45,6 +46,7 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
   const filters = useListFilters(NOTIFICATIONS_FILTERS);
   const query = useNotifications(search, filters.values);
   const [refreshing, setRefreshing] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const { refetch, refreshCount, markRead } = query;
   const filterFields = query.data?.filters;
 
@@ -187,7 +189,8 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
           search={{ value: searchText, onChange: setSearchText, placeholder: t('notifications.search') }}
           filter={
             filters.fields.length > 0 || (filterFields?.length ?? 0) > 0
-              ? { label: t('list.filters'), count: filterCount, onPress: () => router.push({ pathname: '/filters/[list]', params: { list: NOTIFICATIONS_FILTERS } }) }
+              ? // Dans le panneau qui monte du bas, comme partout (décision 2026-11-25-filtres-en-panneau).
+                { label: t('list.filters'), count: filterCount, onPress: () => setFiltersOpen(true) }
               : null
           }
           // Sous les filtres, le nombre de notifications en gras, comme « 3 logements » (décision 2026-11-22-notifications-nombre).
@@ -200,6 +203,7 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
           }
           contentContainerStyle={styles.items}
         />
+        <FilterSheet list={NOTIFICATIONS_FILTERS} visible={filtersOpen} onClose={() => setFiltersOpen(false)} />
       </View>
   );
 

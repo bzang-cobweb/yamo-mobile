@@ -1,6 +1,6 @@
-import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
+import { Platform, StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/shared/theme/theme';
+import { Fonts, fontFamilyFor, ThemeColor } from '@/shared/theme/theme';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
@@ -14,7 +14,12 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   // Un lien principal prend la couleur de marque, sauf couleur demandée.
   const color = theme[themeColor ?? (type === 'linkPrimary' ? 'primary' : 'text')];
 
-  return <Text style={[{ color }, styles[type], style]} {...rest} />;
+  // Nunito : le fichier de la graisse demandée (décision 2026-11-25-police-nunito) ; une famille donnée (le code) est
+  // gardée.
+  const flat: TextStyle = StyleSheet.flatten([styles[type], style]) ?? {};
+  const font = flat.fontFamily ? null : { fontFamily: fontFamilyFor(flat.fontWeight) };
+
+  return <Text style={[{ color }, styles[type], style, font]} {...rest} />;
 }
 
 const styles = StyleSheet.create({

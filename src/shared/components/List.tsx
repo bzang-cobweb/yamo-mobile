@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View, ty
 
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
-import { Spacing } from '@/shared/theme/theme';
+import { BRAND_FONTS, Spacing } from '@/shared/theme/theme';
 
 import { FilterLink, type ListFilter } from './FilterLink';
 
@@ -207,7 +207,8 @@ function Separator() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  bar: { gap: Spacing.two, paddingBottom: 0 },
+  // Un espace sous « Filtres » avant les items qui défilent (décision 2026-11-25-espace-sous-filtres).
+  bar: { gap: Spacing.two, paddingBottom: Spacing.three },
   // Plus grande, sur toutes les listes (décision 2026-11-21-recherche-plus-grande) : 48 de haut au moins.
   searchField: {
     flexDirection: 'row',
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     minHeight: SEARCH_HEIGHT,
   },
-  search: { flex: 1, paddingVertical: Spacing.three, fontSize: 17 },
+  search: { flex: 1, paddingVertical: Spacing.three, fontSize: 17, fontFamily: BRAND_FONTS[500] },
   create: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
   pressed: { opacity: 0.6 },
   header: { gap: Spacing.three, marginBottom: Spacing.three },

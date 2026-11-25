@@ -31,7 +31,7 @@ jest.mock('../services/OfferService', () => ({ offerService: { click: (...args: 
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-  return { SafeAreaView: View };
+  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }) };
 });
 // La barre du haut a ses propres tests.
 jest.mock('@/features/welcome/components/LocaleSwitcher', () => {
@@ -189,6 +189,31 @@ describe('Accueil : offres du pays', () => {
     expect(screen.getByTestId('browse-region-value')).toHaveTextContent('Littoral');
     const { result } = await renderHook(() => useListFilters('offer.browse'));
     expect(result.current.values).toEqual({ region: '34', rental_type: 'furnished' });
+    resetFilters();
+  });
+
+  it('« Filtres » ouvre les filtres dans un panneau qui monte du bas ; « Appliquer » le ferme (décision 2026-11-25-filtres-en-panneau)', async () => {
+    const rentalType = { name: 'rental_type', type: 'select', label: 'Type', placeholder: null, help: null, required: false, default: null, options: [{ value: 'furnished', label: 'Meublé' }] } as FormFieldDefinition;
+    mockList = { ...list(), filters: [rentalType] };
+    await show(<BrowseScreen />);
+    expect(screen.queryByTestId('filter-sheet')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('browse-list-filter'));
+
+    // Pas un autre écran : le panneau, par-dessus la recherche.
+    expect(router.push).not.toHaveBeenCalled();
+    expect(screen.getByTestId('filter-sheet')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('field-rental_type'));
+    await fireEvent.press(screen.getByTestId('field-rental_type-option-furnished'));
+    await fireEvent.press(screen.getByTestId('filter-apply'));
+    expect(screen.queryByTestId('filter-sheet')).toBeNull();
+
+    // « Fermer » le ferme sans rien changer.
+    await fireEvent.press(screen.getByTestId('browse-list-filter'));
+    await fireEvent.press(screen.getByTestId('filter-sheet-close'));
+    expect(screen.queryByTestId('filter-sheet')).toBeNull();
+    const { result } = await renderHook(() => useListFilters('offer.browse'));
+    expect(result.current.values).toEqual({ rental_type: 'furnished' });
     resetFilters();
   });
 

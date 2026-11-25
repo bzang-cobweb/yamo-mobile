@@ -59,11 +59,11 @@ describe('HomeScreen', () => {
     expect(screen.getByTestId('home-item-1')).toHaveTextContent(/Location meublée · Studio · Douala/);
     expect(screen.getByTestId('home-item-2')).toBeTruthy();
     // Plus petites que dans la recherche : une police réduite (décision 2026-11-23-accueil-deux-cartes).
-    expect(StyleSheet.flatten(screen.getByText('Location meublée · Studio · Douala').props.style)).toMatchObject({ fontSize: 11 });
+    expect(StyleSheet.flatten(screen.getByText('Location meublée · Studio · Douala').props.style)).toMatchObject({ fontSize: 10 });
     // Sans retrait : le texte a la largeur de la photo (décision 2026-11-23-accueil-texte-sans-retrait).
     expect(StyleSheet.flatten(screen.getByTestId('home-item-1-body').props.style)).toMatchObject({ paddingHorizontal: 0 });
     // Les étoiles de la note aussi.
-    expect(StyleSheet.flatten(within(screen.getByTestId('home-item-1-rating')).getAllByText(/★/)[0].parent?.props.style)).toMatchObject({ fontSize: 10 });
+    expect(StyleSheet.flatten(within(screen.getByTestId('home-item-1-rating')).getAllByText(/★/)[0].parent?.props.style)).toMatchObject({ fontSize: 9 });
     expect(screen.getByTestId('home-carousel-Yaoundé')).toHaveTextContent(/^Yaoundé/);
 
     await fireEvent.press(screen.getByTestId('home-item-3'));
@@ -88,7 +88,7 @@ describe('HomeScreen', () => {
     // La taille et la police des cartes des villes.
     const featuredWidth = StyleSheet.flatten(screen.getByTestId('home-featured-item-7').props.style).width;
     expect(featuredWidth).toBe(StyleSheet.flatten(screen.getByTestId('home-item-1').props.style).width);
-    expect(StyleSheet.flatten(screen.getByText('Villa · Bonapriso').props.style)).toMatchObject({ fontSize: 11 });
+    expect(StyleSheet.flatten(screen.getByText('Villa · Bonapriso').props.style)).toMatchObject({ fontSize: 10 });
     expect(screen.getByTestId('home-featured-item-9')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('home-featured-item-8'));

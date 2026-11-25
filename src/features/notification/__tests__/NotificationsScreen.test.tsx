@@ -193,9 +193,10 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     jest.mocked(notificationService.list).mockResolvedValue({ ...PAGE, filters });
     await show();
 
-    // Le lien « Filtres » ouvre l’écran des filtres de la liste « notifications ».
+    // Le lien « Filtres » ouvre le panneau des filtres de la liste « notifications » (décision 2026-11-25-filtres-en-panneau).
     await fireEvent.press(await screen.findByText('Filtres'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/filters/[list]', params: { list: 'notifications' } });
+    expect(screen.getByTestId('filter-sheet')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('filter-sheet-close'));
 
     // Une recherche, après la pause de frappe, puis un filtre choisi : les deux partent à l’API.
     jest.mocked(notificationService.list).mockResolvedValue({ items: [], next_cursor: null, filters });

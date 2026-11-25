@@ -13,6 +13,7 @@ import { openListFooter } from '@/features/list/utils/openListFooter';
 import { NetworkError } from '@/shared/api/errors';
 import { ListItemCard } from '@/features/list/components/ListItemCard';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
+import { FilterSheet } from '@/features/list/components/FilterSheet';
 import { List } from '@/shared/components/List';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -66,6 +67,7 @@ export function ProfileListScreen({ list }: { list: string }) {
   }, [list, filterFields]);
   const { reload, refetch } = query;
   const [refreshing, setRefreshing] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // La carte dont le menu « Actions » est ouvert (décision 2026-11-21-actions-en-menu).
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
@@ -198,7 +200,8 @@ export function ProfileListScreen({ list }: { list: string }) {
             ? {
                 label: t('list.filters'),
                 count: activeFilterCount(definition.filters, filters.values),
-                onPress: () => router.push({ pathname: '/filters/[list]', params: { list } }),
+                // Dans le panneau qui monte du bas, comme partout (décision 2026-11-25-filtres-en-panneau).
+                onPress: () => setFiltersOpen(true),
               }
             : null
         }
@@ -238,6 +241,7 @@ export function ProfileListScreen({ list }: { list: string }) {
       {definition.footer && (
         <FixedButtonBar label={definition.footer.label} onPress={() => definition.footer && openListFooter(definition.footer)} testID="profile-list-footer" />
       )}
+      <FilterSheet list={list} visible={filtersOpen} onClose={() => setFiltersOpen(false)} />
     </ProfileScreenShell>
   );
 }

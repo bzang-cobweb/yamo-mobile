@@ -1,7 +1,7 @@
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { FilterSheet } from '@/features/list/components/FilterSheet';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import { activeFilterCount, chooseFilter, isRequiredFilter, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import type { ListItem } from '@/features/list/types';
@@ -38,6 +38,7 @@ export function BrowseScreen() {
     }
   }, [filterFields]);
   const [refreshing, setRefreshing] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const definition = query.data;
   // Le filtre obligatoire de la recherche : la région (décision 2026-11-25-region-obligatoire-recherche).
@@ -74,42 +75,47 @@ export function BrowseScreen() {
   }
 
   return (
-    <List<ListItem>
-      testID="browse-list"
-      items={definition.items}
-      keyExtractor={(item) => item.id}
-      renderItem={(item) => <OfferCard item={item} testIDPrefix="browse-item" />}
-      hasMore={query.hasNextPage}
-      onLoadMore={() => query.fetchNextPage()}
-      loadingMore={query.isFetchingNextPage}
-      loadingMoreLabel={t('list.loading')}
-      refreshing={refreshing}
-      onRefresh={() => void refresh()}
-      // La région, toujours choisie, n'est pas un filtre ajouté : seuls les autres font dire « aucun résultat pour ces filtres ».
-      empty={activeFilterCount(definition.filters ?? [], filters.values) > 0 ? t('list.noFilterResults') : definition.empty}
-      // En premier, le sélecteur de région, obligatoire ; « Voir tout » d'un carrousel de l'accueil l'a déjà choisie
-      // (décision 2026-11-25-region-en-tete-recherche).
-      top={region ? <RegionSelector field={region} value={String(filters.values[region.name] ?? region.default ?? '')} onChange={(value) => chooseFilter(BROWSE_LIST, region.name, value)} /> : null}
-      filter={
-        definition.filters && definition.filters.length > 0
-          ? {
-              label: t('list.filters'),
-              count: activeFilterCount(definition.filters, filters.values),
-              onPress: () => router.push({ pathname: '/filters/[list]', params: { list: BROWSE_LIST } }),
-            }
-          : null
-      }
-      // Sous les filtres, le nombre d'offres trouvées, centré (« 12 logements », décisions 2026-11-25-recherche-nombre
-      // et 2026-11-25-nombre-centre).
-      header={
-        definition.heading?.title ? (
-          <ThemedText type="smallBold" style={styles.heading} testID="browse-heading">
-            {definition.heading.title}
-          </ThemedText>
-        ) : null
-      }
-      contentContainerStyle={styles.content}
-    />
+    <>
+      <List<ListItem>
+        testID="browse-list"
+        items={definition.items}
+        keyExtractor={(item) => item.id}
+        renderItem={(item) => <OfferCard item={item} testIDPrefix="browse-item" />}
+        hasMore={query.hasNextPage}
+        onLoadMore={() => query.fetchNextPage()}
+        loadingMore={query.isFetchingNextPage}
+        loadingMoreLabel={t('list.loading')}
+        refreshing={refreshing}
+        onRefresh={() => void refresh()}
+        // La région, toujours choisie, n'est pas un filtre ajouté : seuls les autres font dire « aucun résultat pour ces filtres ».
+        empty={activeFilterCount(definition.filters ?? [], filters.values) > 0 ? t('list.noFilterResults') : definition.empty}
+        // En premier, le sélecteur de région, obligatoire ; « Voir tout » d'un carrousel de l'accueil l'a déjà choisie
+        // (décision 2026-11-25-region-en-tete-recherche).
+        top={region ? <RegionSelector field={region} value={String(filters.values[region.name] ?? region.default ?? '')} onChange={(value) => chooseFilter(BROWSE_LIST, region.name, value)} /> : null}
+        filter={
+          definition.filters && definition.filters.length > 0
+            ? {
+                label: t('list.filters'),
+                count: activeFilterCount(definition.filters, filters.values),
+                // Dans un panneau qui monte du bas, comme les demandes d'un jour du calendrier (décision
+                // 2026-11-25-filtres-en-panneau).
+                onPress: () => setFiltersOpen(true),
+              }
+            : null
+        }
+        // Sous les filtres, le nombre d'offres trouvées, centré (« 12 logements », décisions 2026-11-25-recherche-nombre
+        // et 2026-11-25-nombre-centre).
+        header={
+          definition.heading?.title ? (
+            <ThemedText type="smallBold" style={styles.heading} testID="browse-heading">
+              {definition.heading.title}
+            </ThemedText>
+          ) : null
+        }
+        contentContainerStyle={styles.content}
+      />
+      <FilterSheet list={BROWSE_LIST} visible={filtersOpen} onClose={() => setFiltersOpen(false)} />
+    </>
   );
 }
 

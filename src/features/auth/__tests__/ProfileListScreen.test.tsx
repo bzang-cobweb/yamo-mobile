@@ -823,8 +823,9 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
       await fireEvent.press(screen.getByTestId('profile-list-footer-button'));
       expect(router.navigate).toHaveBeenCalledWith('/search');
+      // Les filtres dans le panneau qui monte du bas (décision 2026-11-25-filtres-en-panneau).
       await fireEvent.press(screen.getByText('Filtres'));
-      expect(router.push).toHaveBeenCalledWith({ pathname: '/filters/[list]', params: { list: 'payments.cards' } });
+      expect(screen.getByTestId('filter-sheet')).toBeTruthy();
     });
 
     it('l’image en entier quand l’API le demande, remplie sinon (décision 2026-11-24-mes-partenaires-logo-entier)', async () => {

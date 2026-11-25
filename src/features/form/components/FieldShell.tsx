@@ -35,7 +35,8 @@ export function FieldShell({ field, error, children }: PropsWithChildren<{ field
       ) : null}
       {/* Un libellé masqué par l'API n'est pas affiché ; les contrôles du champ portent le leur. */}
       {field.label !== null && !field.label_hidden && (
-        <ThemedText type="smallBold" nativeID={`${field.name}-label`}>
+        // Plus petit que le texte saisi (décision 2026-11-25-libelles-plus-petits).
+        <ThemedText type="smallBold" style={styles.label} nativeID={`${field.name}-label`}>
           {field.label}
           {field.required && <ThemedText style={styles.required}> *</ThemedText>}
         </ThemedText>
@@ -56,6 +57,7 @@ export function FieldShell({ field, error, children }: PropsWithChildren<{ field
 }
 
 const styles = StyleSheet.create({
+  label: { fontSize: 13, lineHeight: 18 },
   container: { gap: Spacing.one },
   required: { color: ERROR_COLOR },
   error: { color: ERROR_COLOR },

@@ -9,7 +9,7 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 
 /** La taille des étoiles d'une carte réduite, celle de sa police. */
-const COMPACT_STARS = 10;
+const COMPACT_STARS = 9;
 
 type Props = {
   item: ListItem;
@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
   // Sans fond, une bordure (décision 2026-11-18-liste-bordure).
   card: { borderRadius: 8, borderWidth: 1, padding: CARD_PADDING, gap: CARD_GAP },
   pressed: { opacity: 0.7 },
-  compactText: { fontSize: 11, lineHeight: 15 },
+  // Plus petite sur l'accueil (décisions 2026-11-23-accueil-deux-cartes et 2026-11-25-cartes-accueil-plus-petites).
+  compactText: { fontSize: 10, lineHeight: 14 },
   compactBody: { paddingHorizontal: 0 },
 });

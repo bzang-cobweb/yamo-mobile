@@ -63,6 +63,27 @@ export const Fonts = Platform.select({
   },
 });
 
+/**
+ * La police de l'app : Nunito, ronde, la même sur iOS, Android et le web (décision 2026-11-25-police-nunito). Une
+ * police chargée a un fichier par graisse : `fontFamilyFor()` donne celui d'une graisse.
+ */
+export const BRAND_FONTS = {
+  400: 'Nunito_400Regular',
+  500: 'Nunito_500Medium',
+  600: 'Nunito_600SemiBold',
+  700: 'Nunito_700Bold',
+  800: 'Nunito_800ExtraBold',
+} as const;
+
+/** Le fichier Nunito d'une graisse (« 700 », 700, « bold ») : la plus proche, 400 par défaut. */
+export function fontFamilyFor(weight: string | number | undefined): string {
+  const value = weight === 'bold' ? 700 : weight === 'normal' || weight === undefined ? 400 : Number(weight);
+  const known = [400, 500, 600, 700, 800] as const;
+  const nearest = known.reduce((best, candidate) => (Math.abs(candidate - value) < Math.abs(best - value) ? candidate : best), 400);
+
+  return BRAND_FONTS[Number.isNaN(value) ? 400 : nearest];
+}
+
 export const Spacing = {
   half: 2,
   one: 4,

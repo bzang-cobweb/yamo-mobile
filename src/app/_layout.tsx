@@ -1,5 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import {
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/nunito';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
@@ -25,6 +33,13 @@ bindQueriesToNetwork();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [queryClient] = useState(() => new QueryClient());
+  // La police de l'app, chargée avant le premier écran ; l'écran de démarrage reste affiché d'ici là (décision
+  // 2026-11-25-police-nunito). Un échec de chargement n'empêche pas l'app de s'ouvrir, en police système.
+  const [fontsLoaded, fontsError] = useFonts({ Nunito_400Regular, Nunito_500Medium, Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold });
+
+  if (!fontsLoaded && !fontsError) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

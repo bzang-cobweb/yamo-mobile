@@ -42,6 +42,25 @@ function withAll(field: FormFieldDefinition, label: string): FormFieldDefinition
 
 export function FilterScreen({ list }: { list: string }) {
   const { t } = useI18n();
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+        <BackStackProvider>
+          <BackHeader title={t('list.filters')} />
+          <FilterForm list={list} onDone={() => router.back()} />
+        </BackStackProvider>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+/**
+ * Les champs des filtres et leur barre « Effacer » / « Appliquer » : dans l'écran des filtres, ou dans le panneau qui
+ * monte du bas sur la recherche (décision 2026-11-25-filtres-en-panneau). `onDone` ferme l'un ou l'autre.
+ */
+export function FilterForm({ list, onDone }: { list: string; onDone: () => void }) {
+  const { t } = useI18n();
   const theme = useTheme();
   const { fields, values: current } = useListFilters(list);
   const [values, setValues] = useState<FormValues>(() =>
@@ -87,57 +106,53 @@ export function FilterScreen({ list }: { list: string }) {
     // Un filtre masqué par sa condition (« Logement » sans type de demande) n'est pas appliqué.
     const shown = new Set(visibleFields.map((field) => field.name));
     setFilterValues(list, Object.fromEntries(Object.entries(values).filter(([name]) => shown.has(name))));
-    router.back();
+    onDone();
   }
 
   function clear() {
     // Les filtres cachés restent : ils ne se choisissent pas ici ; un filtre obligatoire (la région de la recherche) garde
     // son choix (décision 2026-11-25-region-obligatoire-recherche).
     setFilterValues(list, fixedValues(fields, current));
-    router.back();
+    onDone();
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-        <BackStackProvider>
-          <BackHeader title={t('list.filters')} />
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="filter-screen">
-            {/* Un filtre caché filtre sans s'afficher (décision 2026-11-21-demandes-filtre-logement-cache). */}
-            {/* Un filtre obligatoire (la région de la recherche) se choisit sur la page de la liste, pas ici (décision
-                2026-11-25-region-en-tete-recherche) ; il reste appliqué. */}
-            {visibleFields.filter((field) => !isFixedFilter(field) && !isRequiredFilter(field)).map((field) => (
-              <FormField
-                key={field.name}
-                field={{ ...field, required: false }}
-                value={values[field.name] ?? initialValue(field)}
-                error={errors[field.name]}
-                onChange={(value) => change(field.name, value)}
-              />
-            ))}
-          </ScrollView>
-          <View style={[styles.bar, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background }]} testID="filter-bar">
-            <Pressable testID="filter-clear" accessibilityRole="button" onPress={clear} hitSlop={Spacing.two}>
-              <ThemedText type="linkPrimary">{t('list.clearFilters')}</ThemedText>
-            </Pressable>
-            <Pressable
-              testID="filter-apply"
-              accessibilityRole="button"
-              onPress={apply}
-              style={({ pressed }) => [styles.apply, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
-              <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
-                {t('list.applyFilters')}
-              </ThemedText>
-            </Pressable>
-          </View>
-        </BackStackProvider>
-      </SafeAreaView>
-    </ThemedView>
+    <>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="filter-screen">
+        {/* Un filtre caché filtre sans s'afficher (décision 2026-11-21-demandes-filtre-logement-cache). */}
+        {/* Un filtre obligatoire (la région de la recherche) se choisit sur la page de la liste, pas ici (décision
+            2026-11-25-region-en-tete-recherche) ; il reste appliqué. */}
+        {visibleFields.filter((field) => !isFixedFilter(field) && !isRequiredFilter(field)).map((field) => (
+          <FormField
+            key={field.name}
+            field={{ ...field, required: false }}
+            value={values[field.name] ?? initialValue(field)}
+            error={errors[field.name]}
+            onChange={(value) => change(field.name, value)}
+          />
+        ))}
+      </ScrollView>
+      <View style={[styles.bar, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background }]} testID="filter-bar">
+        <Pressable testID="filter-clear" accessibilityRole="button" onPress={clear} hitSlop={Spacing.two}>
+          <ThemedText type="linkPrimary">{t('list.clearFilters')}</ThemedText>
+        </Pressable>
+        <Pressable
+          testID="filter-apply"
+          accessibilityRole="button"
+          onPress={apply}
+          style={({ pressed }) => [styles.apply, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
+          <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
+            {t('list.applyFilters')}
+          </ThemedText>
+        </Pressable>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  scroll: { flexShrink: 1 },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   bar: {
     flexDirection: 'row',
