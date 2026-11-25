@@ -15,6 +15,7 @@ import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { currentToast, hideToast } from '@/shared/components/Toast';
 
 import { backWithNotice } from '../utils/profile-notice';
+import { reviewDate } from '@/shared/i18n/reviewDate';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -829,10 +830,11 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     });
 
     it('un avis disposé comme sur la fiche : le prénom, les étoiles · la date, le commentaire (décision 2026-11-25-liste-avis-generique)', async () => {
-      mockList = list([item('1', { title: 'Paul', subtitle: 'Bon rapport qualité-prix.', detail: '18 nov. 2026', rating: { average: 4, count: 1 }, layout: 'review' })]);
+      mockList = list([item('1', { title: 'Paul', subtitle: 'Bon rapport qualité-prix.', date: '2026-11-18T09:00:00+00:00', rating: { average: 4, count: 1 }, layout: 'review' })]);
       await renderScreen();
 
-      expect(screen.getByTestId('profile-list-detail-1').props.children).toBe('· 18 nov. 2026');
+      // La date formatée par l'app, comme sur la fiche (décision 2026-11-25-avis-date-formatee-app).
+      expect(screen.getByTestId('profile-list-review-date-1').props.children).toBe(`· ${reviewDate('2026-11-18T09:00:00+00:00', 'fr')}`);
       expect(screen.getByTestId('profile-list-item-1-rating')).toBeTruthy();
       expect(screen.getByTestId('profile-list-subtitle-1').props.children).toBe('Bon rapport qualité-prix.');
       // Le commentaire en entier ; une ligne au-dessus seulement, sans marge intérieure.

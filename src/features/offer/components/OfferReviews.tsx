@@ -6,6 +6,7 @@ import { setFilterValues } from '@/features/list/utils/filters';
 import { profileFormService, profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { Stars } from '@/shared/components/Stars';
 import { useI18n } from '@/shared/i18n/I18nContext';
+import { reviewDate } from '@/shared/i18n/reviewDate';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
@@ -193,7 +194,7 @@ export function ReviewRow({ review, bordered = true, lines }: { review: Review; 
         </View>
         {review.created_at && (
           <ThemedText type="small" themeColor="textSecondary" testID="offer-review-date">
-            {`· ${new Date(review.created_at).toLocaleDateString(locale, { dateStyle: 'medium' })}`}
+            {`· ${reviewDate(review.created_at, locale)}`}
           </ThemedText>
         )}
       </View>

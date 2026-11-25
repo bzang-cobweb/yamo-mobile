@@ -10,6 +10,7 @@ import { CARD_BODY, CARD_GAP, CARD_PADDING } from '@/shared/components/List';
 import { Stars } from '@/shared/components/Stars';
 import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
+import { reviewDate } from '@/shared/i18n/reviewDate';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -118,9 +119,10 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
                     <Stars value={item.rating.average} emptyColor={`${theme.textSecondary}66`} />
                   </View>
                 )}
-                {item.detail && (
-                  <ThemedText type="small" themeColor="textSecondary" testID={`${prefix}-detail-${item.id}`}>
-                    {item.rating ? `· ${item.detail}` : item.detail}
+                {/* La date brute servie, formatée comme sur la fiche (décision 2026-11-25-avis-date-formatee-app). */}
+                {item.date && (
+                  <ThemedText type="small" themeColor="textSecondary" testID={`${prefix}-review-date-${item.id}`}>
+                    {item.rating ? `· ${reviewDate(item.date, locale)}` : reviewDate(item.date, locale)}
                   </ThemedText>
                 )}
               </View>
