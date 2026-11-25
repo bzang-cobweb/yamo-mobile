@@ -51,8 +51,20 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
  * formulaire, ou un écran de l'app), des boutons sur une carte (« Accepter »,
  * « Refuser »), et un compteur de carte qui ouvre une autre liste déjà filtrée.
  */
-/** `closable={false}` : la flèche seule, sans croix (la liste des avis, décision 2026-11-25-liste-avis-generique). */
-export function ProfileListScreen({ list, closable = true }: { list: string; closable?: boolean }) {
+/**
+ * `closable={false}` : la flèche seule, sans croix (la liste des avis, décision 2026-11-25-liste-avis-generique).
+ * `headingType` : le style du titre en tête des items ; `subtitle`, celui du titre de la fiche d'une offre (la note de
+ * la liste des avis, décision 2026-11-25-liste-avis-note-style-titre-fiche).
+ */
+export function ProfileListScreen({
+  list,
+  closable = true,
+  headingType = 'smallBold',
+}: {
+  list: string;
+  closable?: boolean;
+  headingType?: 'smallBold' | 'subtitle';
+}) {
   const { t } = useAuth();
   const [searchText, setSearchText] = useState('');
   const search = useDebounced(searchText.trim(), SEARCH_DELAY);
@@ -214,7 +226,7 @@ export function ProfileListScreen({ list, closable = true }: { list: string; clo
           definition.heading ? (
             <View style={styles.heading} testID="profile-list-heading">
               {definition.heading.title && (
-                <ThemedText type="smallBold" style={styles.centered} testID="profile-list-heading-title">
+                <ThemedText type={headingType} style={styles.centered} testID="profile-list-heading-title">
                   {definition.heading.title}
                 </ThemedText>
               )}

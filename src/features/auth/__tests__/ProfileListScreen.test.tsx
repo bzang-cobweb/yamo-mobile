@@ -1,5 +1,6 @@
 import { act, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import type { ComponentProps } from 'react';
 import { StyleSheet } from 'react-native';
 import { Alert, type AlertButton } from 'react-native';
 
@@ -109,12 +110,12 @@ function list(items: ListItem[], overrides: Partial<ListDefinition> = {}): ListD
   };
 }
 
-async function renderScreen() {
+async function renderScreen(props: Partial<ComponentProps<typeof ProfileListScreen>> = {}) {
   const auth = { t: TEST_I18N.t };
   await render(
     <I18nContext.Provider value={TEST_I18N}>
       <AuthContext.Provider value={auth as unknown as AuthContextValue}>
-        <ProfileListScreen list="payments.cards" />
+        <ProfileListScreen list="payments.cards" {...props} />
       </AuthContext.Provider>
     </I18nContext.Provider>,
   );
@@ -842,6 +843,17 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-1').props.style)).toMatchObject({ borderWidth: 0, borderTopWidth: 1, padding: 0 });
       // Pas les étoiles des autres cartes, en bas à droite.
       expect(screen.queryByTestId('profile-list-item-1-reviews')).toBeNull();
+    });
+
+    it('la note en tête de la liste des avis au style du titre de la fiche (décision 2026-11-25-liste-avis-note-style-titre-fiche)', async () => {
+      const size = () => (StyleSheet.flatten(screen.getByTestId('profile-list-heading-title').props.style) as { fontSize?: number }).fontSize ?? 0;
+      mockList = list([item('1')], { heading: { title: '4,7', subtitle: '3 avis' } });
+      await renderScreen();
+      const small = size();
+
+      mockList = list([item('1')], { heading: { title: '4,7', subtitle: '3 avis' } });
+      await renderScreen({ headingType: 'subtitle' });
+      expect(size()).toBeGreaterThan(small);
     });
 
     it('seulement des filtres cachés (l’offre des avis) : pas de lien « Filtres » (décision 2026-11-25-liste-avis-generique)', async () => {
