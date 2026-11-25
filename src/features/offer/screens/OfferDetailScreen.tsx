@@ -10,7 +10,7 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { Accordion } from '@/shared/components/Accordion';
-import { BackHeader } from '@/shared/components/BackHeader';
+import { FloatingBack } from '@/shared/components/FloatingBack';
 import { Stars } from '@/shared/components/Stars';
 import { STATUS_ON_IMAGE, StatusTag } from '@/shared/components/StatusTag';
 import { showToast } from '@/shared/components/Toast';
@@ -39,6 +39,7 @@ import type { OfferDetail } from '../types';
  */
 export function OfferDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
+  const theme = useTheme();
   const query = useOfferDetail(id);
   const { user } = useAuth();
   // Ouvrir la fiche, par n'importe quel lien, compte un clic ; l'API ne le compte pas pour son propriétaire (décision
@@ -81,111 +82,120 @@ export function OfferDetailScreen({ id }: { id: string }) {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <BackStackProvider>
-          <BackHeader title={offer?.title ?? ''} />
-          {query.isPending ? (
-            <View style={styles.center}>
-              <ActivityIndicator testID="offer-loading" />
-            </View>
-          ) : !offer ? (
-            <View style={styles.center}>
-              <ThemedText themeColor="textSecondary" style={styles.centered} accessibilityRole="alert" testID="offer-unavailable">
-                {query.error instanceof ApiError && query.error.status === 404
-                  ? t('offer.unavailable')
-                  : query.error instanceof NetworkError
-                    ? t('offline.message')
-                    : t('error.unknown')}
-              </ThemedText>
-              {!(query.error instanceof ApiError && query.error.status === 404) && (
-                <Pressable accessibilityRole="button" testID="offer-retry" onPress={() => query.refetch()}>
-                  <ThemedText type="linkPrimary">{t('form.retry')}</ThemedText>
-                </Pressable>
-              )}
-            </View>
-          ) : (
-            <ScrollView contentContainerStyle={styles.content} testID="offer-detail">
-              <View style={{ width, alignSelf: 'center' }}>
-                <PhotoCarousel
-                  photos={offer.photos}
-                  gallery={offer.gallery}
-                  width={width}
-                  // « Réserver » aussi dans la galerie, en bas (décision 2026-11-25-galerie-plein-ecran).
-                  action={offer.booking ? { label: offer.booking.label, price: offer.price?.value ?? null, onPress: () => openBooking(offer.id, user !== null) } : null}
-                />
-                {/* Le cœur d'un membre connecté, en haut à droite (décision 2026-11-19-contrat-vedette-favoris) ;
-                    pour le propriétaire, à cette place, le statut (décision 2026-11-21-statut-a-la-place-du-coeur). */}
-                {offer.favorite ? (
-                  <FavoriteHeart favorite={offer.favorite} testID="offer-favorite" />
-                ) : (
-                  offer.status && <StatusTag tag={offer.status} style={STATUS_ON_IMAGE} testID="offer-status" />
+          <View style={styles.container}>
+            {query.isPending ? (
+              <View style={styles.center}>
+                {/* Sans photo (chargement, erreur) : le retour reste en haut à gauche. */}
+                <FloatingBack />
+                <ActivityIndicator testID="offer-loading" />
+              </View>
+            ) : !offer ? (
+              <View style={styles.center}>
+                <FloatingBack />
+                <ThemedText themeColor="textSecondary" style={styles.centered} accessibilityRole="alert" testID="offer-unavailable">
+                  {query.error instanceof ApiError && query.error.status === 404
+                    ? t('offer.unavailable')
+                    : query.error instanceof NetworkError
+                      ? t('offline.message')
+                      : t('error.unknown')}
+                </ThemedText>
+                {!(query.error instanceof ApiError && query.error.status === 404) && (
+                  <Pressable accessibilityRole="button" testID="offer-retry" onPress={() => query.refetch()}>
+                    <ThemedText type="linkPrimary">{t('form.retry')}</ThemedText>
+                  </Pressable>
                 )}
               </View>
-              <View style={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
-                {/* Le titre, puis le titre composé dessous, tous deux centrés (décision 2026-11-22-fiche-titres-centres). */}
-                <View style={styles.titles}>
-                  <ThemedText type="subtitle" style={styles.centered} testID="offer-title">
-                    {offer.title}
-                  </ThemedText>
-                  {offer.composed_title && (
-                    <ThemedText themeColor="textSecondary" style={styles.centered} testID="offer-composed-title">
-                      {offer.composed_title}
+            ) : (
+              <ScrollView contentContainerStyle={styles.content} testID="offer-detail">
+                <View style={{ width, alignSelf: 'center' }}>
+                  {/* Le retour, posé sur la photo : il défile avec elle (décision 2026-11-25-fiche-sans-barre). */}
+                  <FloatingBack />
+                  <PhotoCarousel
+                    photos={offer.photos}
+                    gallery={offer.gallery}
+                    width={width}
+                    // « Réserver » aussi dans la galerie, en bas (décision 2026-11-25-galerie-plein-ecran).
+                    action={offer.booking ? { label: offer.booking.label, price: offer.price?.value ?? null, onPress: () => openBooking(offer.id, user !== null) } : null}
+                  />
+                  {/* Le cœur d'un membre connecté, en haut à droite (décision 2026-11-19-contrat-vedette-favoris) ;
+                      pour le propriétaire, à cette place, le statut (décision 2026-11-21-statut-a-la-place-du-coeur). */}
+                  {offer.favorite ? (
+                    <FavoriteHeart favorite={offer.favorite} testID="offer-favorite" />
+                  ) : (
+                    offer.status && <StatusTag tag={offer.status} style={STATUS_ON_IMAGE} testID="offer-status" />
+                  )}
+                </View>
+                <View style={[styles.body, { maxWidth: MaxContentWidth / 2 }]}>
+                  {/* Le titre, puis le titre composé dessous, tous deux centrés (décision 2026-11-22-fiche-titres-centres). */}
+                  <View style={styles.titles}>
+                    <ThemedText type="subtitle" style={styles.centered} testID="offer-title">
+                      {offer.title}
+                    </ThemedText>
+                    {offer.composed_title && (
+                      <ThemedText themeColor="textSecondary" style={styles.centered} testID="offer-composed-title">
+                        {offer.composed_title}
+                      </ThemedText>
+                    )}
+                    {/* La note : étoiles, moyenne et nombre d'avis, centrée sous le titre composé (décision
+                        2026-11-22-fiche-note-sous-titre). */}
+                    {offer.reviews?.average != null && <TitleRating average={offer.reviews.average} count={offer.reviews.count} />}
+                  </View>
+                  {/* Le prix n'est plus ici : il est dans la barre fixe (décision 2026-11-19-contrat-reservations). */}
+
+                  {/* Les sections repliables, complètes, dans l'ordre et l'ouverture servis par
+                      Laravel (décisions 2026-11-19-sections-fiche-laravel et
+                      2026-11-19-sections-construites-laravel) : un seul aiguillage, sur le type. */}
+                  {(offer.sections ?? []).map((section, index) => {
+                    // Les sections séparées par une bordure, rien dans leur contenu (décision
+                    // 2026-11-25-fiche-bordures-sections) : une ligne au-dessus de chacune, sauf la première.
+                    const separated = index > 0 ? [styles.separated, { borderTopColor: theme.backgroundSelected }] : undefined;
+                    switch (section.type) {
+                      // Lignes « libellé — valeur » : caractéristiques, règles.
+                      case 'rows':
+                        return (
+                          <Accordion key={section.key} title={section.title} initiallyOpen={section.open} style={separated} testID={`offer-section-${section.key}`}>
+                            {(section.rows ?? []).map((row) => (
+                              <FactRow key={row.label} fact={row} testID={`offer-${section.key}-row`} />
+                            ))}
+                          </Accordion>
+                        );
+                      // Un texte et sa note : la localisation (adresse, indication), un bloc d'informations.
+                      case 'text':
+                        return (
+                          <Accordion key={section.key} title={section.title} initiallyOpen={section.open} style={separated} testID={`offer-section-${section.key}`}>
+                            <TextSection
+                              text={section.text ?? ''}
+                              note={section.note}
+                              // La description, repliée à quelques lignes avec « Voir plus » (décisions
+                              // 2026-11-22-description-voir-plus et 2026-11-22-fiche-sections-ordre).
+                              collapsible={section.key === 'description'}
+                              testID={`offer-${section.key}`}
+                            />
+                          </Accordion>
+                        );
+                      case 'reviews':
+                        return offer.reviews ? (
+                          <Accordion key={section.key} title={section.title} initiallyOpen={section.open} style={separated} testID={`offer-section-${section.key}`}>
+                            <OfferReviews offerId={offer.id} reviews={offer.reviews} />
+                          </Accordion>
+                        ) : null;
+                      default:
+                        return null;
+                    }
+                  })}
+
+                  {offer.published_at && (
+                    <ThemedText type="small" themeColor="textSecondary" testID="offer-published">
+                      {t('offer.publishedOn', { date: new Date(offer.published_at).toLocaleDateString(locale, { dateStyle: 'long' }) })}
                     </ThemedText>
                   )}
-                  {/* La note : étoiles, moyenne et nombre d'avis, centrée sous le titre composé (décision
-                      2026-11-22-fiche-note-sous-titre). */}
-                  {offer.reviews?.average != null && <TitleRating average={offer.reviews.average} count={offer.reviews.count} />}
                 </View>
-                {/* Le prix n'est plus ici : il est dans la barre fixe (décision 2026-11-19-contrat-reservations). */}
-
-                {/* Les sections repliables, complètes, dans l'ordre et l'ouverture servis par
-                    Laravel (décisions 2026-11-19-sections-fiche-laravel et
-                    2026-11-19-sections-construites-laravel) : un seul aiguillage, sur le type. */}
-                {(offer.sections ?? []).map((section) => {
-                  switch (section.type) {
-                    // Lignes « libellé — valeur » : caractéristiques, règles.
-                    case 'rows':
-                      return (
-                        <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
-                          {(section.rows ?? []).map((row) => (
-                            <FactRow key={row.label} fact={row} testID={`offer-${section.key}-row`} />
-                          ))}
-                        </Accordion>
-                      );
-                    // Un texte et sa note : la localisation (adresse, indication), un bloc d'informations.
-                    case 'text':
-                      return (
-                        <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
-                          <TextSection
-                            text={section.text ?? ''}
-                            note={section.note}
-                            // La description, repliée à quelques lignes avec « Voir plus » (décisions
-                            // 2026-11-22-description-voir-plus et 2026-11-22-fiche-sections-ordre).
-                            collapsible={section.key === 'description'}
-                            testID={`offer-${section.key}`}
-                          />
-                        </Accordion>
-                      );
-                    case 'reviews':
-                      return offer.reviews ? (
-                        <Accordion key={section.key} title={section.title} initiallyOpen={section.open} testID={`offer-section-${section.key}`}>
-                          <OfferReviews offerId={offer.id} reviews={offer.reviews} />
-                        </Accordion>
-                      ) : null;
-                    default:
-                      return null;
-                  }
-                })}
-
-                {offer.published_at && (
-                  <ThemedText type="small" themeColor="textSecondary" testID="offer-published">
-                    {t('offer.publishedOn', { date: new Date(offer.published_at).toLocaleDateString(locale, { dateStyle: 'long' }) })}
-                  </ThemedText>
-                )}
-              </View>
-            </ScrollView>
-          )}
-          {/* Barre fixe en bas : les boutons d'avis, le prix et le bouton de réservation
-              (décisions 2026-11-19-contrat-reservations et 2026-11-20-boutons-avis-fiche). */}
-          {offer && <BookingBar offer={offer} onReviewChanged={changed} />}
+              </ScrollView>
+            )}
+            {/* Barre fixe en bas : les boutons d'avis, le prix et le bouton de réservation
+                (décisions 2026-11-19-contrat-reservations et 2026-11-20-boutons-avis-fiche). */}
+            {offer && <BookingBar offer={offer} onReviewChanged={changed} />}
+          </View>
         </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
@@ -376,14 +386,12 @@ function Description({ text, testID }: { text: string; testID: string }) {
 
 /**
  * Le contenu d'une section `text` (la localisation, un bloc d'informations) : le
- * texte, sa note en dessous s'il y en a une, et le séparateur à la fin
+ * texte et sa note en dessous s'il y en a une, sans séparateur (décision 2026-11-25-fiche-bordures-sections)
  * (décision 2026-11-19-sections-construites-laravel).
  */
 function TextSection({ text, note, collapsible = false, testID }: { text: string; note?: string | null; collapsible?: boolean; testID: string }) {
-  const theme = useTheme();
-
   return (
-    <View style={[styles.text, { borderBottomColor: theme.backgroundSelected }]}>
+    <View style={styles.text}>
       {collapsible ? <Description text={text} testID={`${testID}-text`} /> : <ThemedText type="small" testID={`${testID}-text`}>{text}</ThemedText>}
       {note && (
         <ThemedText type="small" themeColor="textSecondary" testID={`${testID}-note`}>
@@ -396,10 +404,8 @@ function TextSection({ text, note, collapsible = false, testID }: { text: string
 
 /** Une ligne « libellé — valeur », des caractéristiques comme des règles. */
 function FactRow({ fact, testID }: { fact: { label: string; value: string }; testID: string }) {
-  const theme = useTheme();
-
   return (
-    <View style={[styles.fact, { borderBottomColor: theme.backgroundSelected }]} testID={testID}>
+    <View style={styles.fact} testID={testID}>
       <ThemedText type="small" themeColor="textSecondary" style={styles.factLabel}>
         {fact.label}
       </ThemedText>
@@ -420,13 +426,14 @@ const styles = StyleSheet.create({
   centered: { textAlign: 'center' },
   content: { paddingBottom: Spacing.five },
   body: { width: '100%', alignSelf: 'center', gap: Spacing.two, padding: Spacing.four },
-  fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: 1 },
+  fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.one },
   // Le texte d'une section, et le séparateur à sa fin.
   // Le même texte et les mêmes marges que les lignes des caractéristiques (décision 2026-11-22-fiche-texte-comme-lignes).
-  text: { gap: Spacing.one, paddingVertical: Spacing.two, borderBottomWidth: 1 },
+  text: { gap: Spacing.one, paddingVertical: Spacing.one },
   factLabel: { flexShrink: 0, maxWidth: '45%' },
   factValue: { flexShrink: 1, textAlign: 'right' },
   error: { color: ERROR_COLOR },
+  separated: { borderTopWidth: 1, paddingTop: Spacing.three },
   bar: { borderTopWidth: 1, paddingTop: Spacing.three, paddingHorizontal: Spacing.four },
   barContent: { width: '100%', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   barPrice: { flex: 1 },

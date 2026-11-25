@@ -8,7 +8,7 @@ import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
 import type { ListItem } from '@/features/list/types';
-import { activeFilterCount, setFilterFields, useListFilters } from '@/features/list/utils/filters';
+import { activeFilterCount, isFixedFilter, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import { openListFooter } from '@/features/list/utils/openListFooter';
 import { NetworkError } from '@/shared/api/errors';
 import { ListItemCard } from '@/features/list/components/ListItemCard';
@@ -51,7 +51,8 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
  * formulaire, ou un écran de l'app), des boutons sur une carte (« Accepter »,
  * « Refuser »), et un compteur de carte qui ouvre une autre liste déjà filtrée.
  */
-export function ProfileListScreen({ list }: { list: string }) {
+/** `closable={false}` : la flèche seule, sans croix (la liste des avis, décision 2026-11-25-liste-avis-generique). */
+export function ProfileListScreen({ list, closable = true }: { list: string; closable?: boolean }) {
   const { t } = useAuth();
   const [searchText, setSearchText] = useState('');
   const search = useDebounced(searchText.trim(), SEARCH_DELAY);
@@ -154,7 +155,7 @@ export function ProfileListScreen({ list }: { list: string }) {
 
   if (query.isPending || query.isError || !definition) {
     return (
-      <ProfileScreenShell title={definition?.title ?? ''}>
+      <ProfileScreenShell title={definition?.title ?? ''} closable={closable}>
         {query.isPending ? (
           <View style={styles.center} accessibilityLabel={t('list.loading')}>
             <ActivityIndicator />
@@ -174,7 +175,7 @@ export function ProfileListScreen({ list }: { list: string }) {
   }
 
   return (
-    <ProfileScreenShell title={definition.title} scrolls={false}>
+    <ProfileScreenShell title={definition.title} scrolls={false} closable={closable}>
       {/* Menu ouvert : un toucher ailleurs que sur un bouton ou une carte (entre les cartes, l'intitulé, le vide) le
           referme (décision 2026-11-24-menu-se-ferme-au-toucher). */}
       <View
@@ -193,10 +194,11 @@ export function ProfileListScreen({ list }: { list: string }) {
         loadingMoreLabel={t('list.loading')}
         refreshing={refreshing}
         onRefresh={() => void refresh()}
-        empty={Object.keys(filters.values).length > 0 ? t('list.noFilterResults') : search ? t('list.noResults') : definition.empty}
+        empty={activeFilterCount(definition.filters ?? [], filters.values) > 0 ? t('list.noFilterResults') : search ? t('list.noResults') : definition.empty}
         search={definition.search ? { value: searchText, onChange: setSearchText, placeholder: definition.search, onFocus: () => setOpenMenu(null) } : null}
         filter={
-          definition.filters && definition.filters.length > 0
+          // Pas de lien « Filtres » quand tous sont cachés (l'offre des avis, décision 2026-11-25-liste-avis-generique).
+          definition.filters && definition.filters.some((field) => !isFixedFilter(field))
             ? {
                 label: t('list.filters'),
                 count: activeFilterCount(definition.filters, filters.values),

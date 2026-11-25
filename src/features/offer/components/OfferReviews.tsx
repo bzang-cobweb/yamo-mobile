@@ -1,15 +1,19 @@
 import { router } from 'expo-router';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { setFilterValues } from '@/features/list/utils/filters';
 import { profileFormService, profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { Stars } from '@/shared/components/Stars';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
-import { Spacing } from '@/shared/theme/theme';
+import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import type { OfferReview as Review, OfferReviews as Reviews } from '../types';
+
+/** La liste de tous les avis d'une offre, servie par l'API, l'offre en filtre caché (décision 2026-11-25-liste-avis-generique). */
+export const OFFER_REVIEWS_LIST = 'offer.reviews';
 
 /** Le formulaire servi par l'API pour donner son avis. */
 export const REVIEW_FORM = 'offer.review';
@@ -85,48 +89,64 @@ export function useReviewRemoval(reviews: Reviews, onChanged: (message: string |
 
 /**
  * Section « Avis » de la fiche (décision 2026-11-19-contrat-avis-offres) : la
- * moyenne en étoiles et le nombre d'avis, les derniers servis par l'API, puis le
+ * moyenne dans le titre de la section, servi par l'API ; les derniers avis servis, puis le
  * bouton que donne `reviewActions` (« Donner mon avis », « Modifier mon avis » ou
  * « Voir tous les avis »). Un visiteur lit « Connectez-vous pour donner votre avis ».
  */
 export function OfferReviews({ offerId, reviews }: { offerId: string; reviews: Reviews }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
   const theme = useTheme();
-  const average = reviews.average?.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) ?? '';
   const actions = reviewActions(reviews, user !== null);
+  const { width } = useWindowDimensions();
+  // La largeur du contenu de la fiche, ses marges ôtées ; une carte en laisse voir la suivante.
+  const contentWidth = Math.min(width, MaxContentWidth / 2) - 2 * Spacing.four;
+  const cardWidth = Math.round(contentWidth * 0.85);
 
   return (
     // Le titre « Avis » est celui de la section repliable de la fiche (décision 2026-11-19-fiche-localisation-accordeon).
     <View style={styles.section} testID="offer-reviews">
 
-      {reviews.average !== null ? (
-        <View
-          style={styles.summary}
-          accessible
-          accessibilityLabel={t('list.ratingSummary', { average, count: String(reviews.count) })}
-          testID="offer-reviews-summary">
-          <Stars value={reviews.average} size={20} emptyColor={theme.backgroundSelected} />
-          <ThemedText type="smallBold">{average}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">{`(${reviews.count})`}</ThemedText>
-        </View>
-      ) : (
+      {/* La note moyenne est dans le titre de la section, « Avis (4,7) » (décision 2026-11-25-avis-note-dans-le-titre) ;
+          sans avis, une phrase le dit. */}
+      {reviews.count === 0 && (
         <ThemedText type="small" themeColor="textSecondary" testID="offer-reviews-empty">
           {t('offer.noReviews')}
         </ThemedText>
       )}
 
-      {reviews.latest.map((review) => (
-        <ReviewRow key={review.id} review={review} />
-      ))}
+      {/* Les derniers avis servis (10, réglés par Laravel) en carrousel horizontal (décision
+          2026-11-25-fiche-avis-carrousel) ; un seul avis prend toute la largeur. */}
+      {reviews.latest.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={reviews.latest.length > 1 ? cardWidth + Spacing.two : undefined}
+          decelerationRate="fast"
+          contentContainerStyle={styles.carousel}
+          testID="offer-reviews-carousel">
+          {reviews.latest.map((review) => (
+            <View
+              key={review.id}
+              style={[styles.card, { width: reviews.latest.length > 1 ? cardWidth : contentWidth, borderColor: theme.backgroundSelected }]}
+              testID="offer-review-card">
+              <ReviewRow review={review} bordered={false} lines={CARD_LINES} />
+            </View>
+          ))}
+        </ScrollView>
+      )}
       {actions.all && (
         <Pressable
           testID="offer-reviews-all"
           accessibilityRole="button"
-          onPress={() => router.push({ pathname: '/offers/[id]/reviews', params: { id: offerId } })}
+          onPress={() => {
+            // L'offre choisie avant d'ouvrir la liste des avis (décision 2026-11-25-liste-avis-generique).
+            setFilterValues(OFFER_REVIEWS_LIST, { offer: offerId });
+            router.push({ pathname: '/offers/[id]/reviews', params: { id: offerId } });
+          }}
           style={({ pressed }) => [styles.button, { borderColor: theme.primary }, pressed && styles.pressed]}>
           <ThemedText type="smallBold" style={{ color: theme.primary }}>
-            {t('offer.allReviews')}
+            {t('offer.allReviews', { count: String(reviews.count) })}
           </ThemedText>
         </Pressable>
       )}
@@ -152,34 +172,50 @@ export function OfferReviews({ offerId, reviews }: { offerId: string; reviews: R
   );
 }
 
-/** Un avis : prénom, date, étoiles, commentaire ; sur la fiche comme dans la liste complète. */
-export function ReviewRow({ review }: { review: Review }) {
+/**
+ * Un avis : prénom, étoiles · date, commentaire ; sur la fiche comme dans la liste complète. Sur la fiche, sans bordure
+ * (`bordered={false}`) : seules les sections en ont (décision 2026-11-25-fiche-bordures-sections).
+ */
+export function ReviewRow({ review, bordered = true, lines }: { review: Review; bordered?: boolean; lines?: number }) {
   const { t, locale } = useI18n();
   const theme = useTheme();
 
   return (
-    <View style={[styles.review, { borderBottomColor: theme.backgroundSelected }]} testID="offer-review">
-      <View style={styles.reviewHead}>
-        <ThemedText type="smallBold">{review.author}</ThemedText>
+    <View style={[styles.review, bordered && { borderBottomWidth: 1, borderBottomColor: theme.backgroundSelected }]} testID="offer-review">
+      {/* Le prénom ; puis les étoiles et la date sur une ligne, séparées par un point ; puis le commentaire (décision
+          2026-11-25-avis-note-et-date-sur-une-ligne). */}
+      <ThemedText type="smallBold">{review.author}</ThemedText>
+      <View style={styles.meta}>
+        <View accessible accessibilityLabel={t('form.ratingValue', { value: String(review.rating) })} testID="offer-review-stars">
+          {/* L'étoile vide en gris du texte secondaire, à 40 % : visible sur le fond des cartes (décision
+              2026-11-25-avis-etoile-vide-visible). */}
+          <Stars value={review.rating} emptyColor={`${theme.textSecondary}66`} testID="offer-review-stars-value" />
+        </View>
         {review.created_at && (
-          <ThemedText type="small" themeColor="textSecondary">
-            {new Date(review.created_at).toLocaleDateString(locale, { dateStyle: 'medium' })}
+          <ThemedText type="small" themeColor="textSecondary" testID="offer-review-date">
+            {`· ${new Date(review.created_at).toLocaleDateString(locale, { dateStyle: 'medium' })}`}
           </ThemedText>
         )}
       </View>
-      <View accessible accessibilityLabel={t('form.ratingValue', { value: String(review.rating) })}>
-        <Stars value={review.rating} emptyColor={theme.backgroundSelected} />
-      </View>
-      <ThemedText type="small">{review.comment}</ThemedText>
+      <ThemedText type="small" numberOfLines={lines}>
+        {review.comment}
+      </ThemedText>
     </View>
   );
 }
 
+/** Les lignes du commentaire dans une carte du carrousel : des cartes de même hauteur. */
+const CARD_LINES = 4;
+
 const styles = StyleSheet.create({
   section: { gap: Spacing.two },
+  carousel: { gap: Spacing.two },
+  // Sans fond, une bordure tout autour, coins arrondis comme les cartes des listes (décision
+  // 2026-11-25-avis-cartes-bordures).
+  card: { borderWidth: 1, borderRadius: 8, paddingHorizontal: Spacing.three },
   summary: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  review: { gap: Spacing.half, paddingVertical: Spacing.two, borderBottomWidth: 1 },
-  reviewHead: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.two },
+  review: { gap: Spacing.half, paddingVertical: Spacing.two },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   button: { alignSelf: 'stretch', alignItems: 'center', borderWidth: 1, borderRadius: 8, paddingVertical: Spacing.three },
   pressed: { opacity: 0.6 },
 });

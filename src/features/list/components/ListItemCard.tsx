@@ -7,6 +7,7 @@ import { profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { relativeTime } from '@/features/notification/utils/relativeTime';
 import { CARD_BODY, CARD_GAP, CARD_PADDING } from '@/shared/components/List';
+import { Stars } from '@/shared/components/Stars';
 import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -102,6 +103,34 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
       {item.title}
     </ThemedText>
   );
+  // Un avis, disposé comme sur la fiche : le prénom, « ★★★★☆ · 18 nov. 2026 », le commentaire (décision
+  // 2026-11-25-liste-avis-generique).
+  const reviewBody =
+    item.layout !== 'review' ? null : (
+            <View style={styles.body} testID={`${prefix}-body-${item.id}`}>
+              {itemTitle}
+              <View style={styles.reviewMeta}>
+                {item.rating && (
+                  <View
+                    accessible
+                    accessibilityLabel={t('form.ratingValue', { value: String(item.rating.average) })}
+                    testID={`${prefix}-item-${item.id}-rating`}>
+                    <Stars value={item.rating.average} emptyColor={`${theme.textSecondary}66`} />
+                  </View>
+                )}
+                {item.detail && (
+                  <ThemedText type="small" themeColor="textSecondary" testID={`${prefix}-detail-${item.id}`}>
+                    {item.rating ? `· ${item.detail}` : item.detail}
+                  </ThemedText>
+                )}
+              </View>
+              {item.subtitle && (
+                <ThemedText type="small" testID={`${prefix}-subtitle-${item.id}`}>
+                  {item.subtitle}
+                </ThemedText>
+              )}
+            </View>
+    );
   // Le message cité et, à sa droite, le nombre de notifications non lues en pastille (décision
   // 2026-11-22-demandes-pastille-nombre-message).
   const unreadCount = item.unread_count ?? 0;
@@ -209,7 +238,9 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
     : [];
 
   return (
-    <View style={[styles.row, stacked && styles.stacked, { borderColor: theme.backgroundSelected }]} testID={`${prefix}-row-${item.id}`}>
+    <View
+      style={[styles.row, stacked && styles.stacked, item.layout === 'review' && styles.reviewRow, { borderColor: theme.backgroundSelected }]}
+      testID={`${prefix}-row-${item.id}`}>
       {removeIcon ? (
         // Le texte, et la corbeille à sa droite (décision 2026-11-21-corbeille-a-droite).
         <View style={styles.head}>
@@ -225,6 +256,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
                 des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
             <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`${prefix}-item-${item.id}`} />
             {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
+            {reviewBody ?? (
             <View style={item.image ? CARD_BODY : styles.body} testID={`${prefix}-body-${item.id}`}>
               {tagsRow}
               {titleRow}
@@ -243,6 +275,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
               <ItemReviews item={item} testID={`${prefix}-item-${item.id}`} />
             </View>
+            )}
           </Pressable>
           {removeButton}
         </View>
@@ -272,6 +305,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
             <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`${prefix}-item-${item.id}`} />
           )}
           {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo) ; à côté d'une image à gauche, le reste de la ligne. */}
+          {reviewBody ?? (
           <View style={side ? styles.sideBody : item.image ? CARD_BODY : styles.body} testID={`${prefix}-body-${item.id}`}>
             {tagsRow}
             {titleRow}
@@ -290,6 +324,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
             {/* La note et la phrase mise en avant, quand l'API les sert. */}
             <ItemReviews item={item} testID={`${prefix}-item-${item.id}`} />
           </View>
+          )}
         </Pressable>
       )}
       {/* Ses autres compteurs (« 1 notification non lue », décision 2026-11-21-compteur-non-lues), pour information :
@@ -393,6 +428,7 @@ const SOFT_GREEN_TEXT = '#2E7D4F';
 
 const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
+  reviewMeta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   // Sans fond, une bordure (décision 2026-11-18-liste-bordure) ; les espacements de la carte de l'accueil : 8 de
   // marge intérieure, 4 entre les lignes (décision 2026-11-22-cartes-espacements-accueil).
   row: {
@@ -405,6 +441,9 @@ const styles = StyleSheet.create({
   },
   // Un item avec photo : en colonne.
   stacked: { flexDirection: 'column', alignItems: 'stretch' },
+  // Un avis : une ligne au-dessus seulement, sans cadre ni marge intérieure ; un peu d'air sous la ligne (décision
+  // 2026-11-25-liste-avis-generique).
+  reviewRow: { borderWidth: 0, borderTopWidth: 1, borderRadius: 0, padding: 0, paddingTop: Spacing.three },
   itemText: { flex: 1, gap: CARD_GAP },
   // Sans photo, le texte sans retrait.
   body: { gap: CARD_GAP },

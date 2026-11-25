@@ -75,6 +75,11 @@ export type ListItem = {
   image_fit?: 'contain' | null;
   /** L'image en petit à gauche du texte (`side`, « Mes partenaires », décision 2026-11-24-mes-partenaires-comme-partenaires) ; sinon au-dessus. */
   image_layout?: 'side' | null;
+  /**
+   * `review` : disposé comme un avis de la fiche d'une offre (décision 2026-11-25-liste-avis-generique) : le titre, puis
+   * les étoiles et la ligne à part séparées par un point, puis le sous-titre.
+   */
+  layout?: 'review' | null;
   /** Le sous-titre coupé à ce nombre de lignes, la suite en « … » (décision 2026-11-24-mes-partenaires-cartes) ; absent : entier. */
   subtitle_lines?: number | null;
   /** Toucher l'item ouvre ce formulaire, lié à l'enregistrement `record`. */

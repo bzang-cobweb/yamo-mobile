@@ -86,7 +86,7 @@ export const TEST_MESSAGES: Messages = {
   'offer.photoPosition': ':current / :total',
   'offer.details': 'Caractéristiques',
   'offer.rules': 'Règles',
-  'offer.allReviews': 'Voir tous les avis',
+  'offer.allReviews': 'Voir tous les :count avis',
   'offer.location': 'Localisation',
   'offer.description': 'Description',
   'offer.reviews': 'Avis',

@@ -131,6 +131,17 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     mockUser = null;
   });
 
+  it('pas de barre du haut : un retour flottant par-dessus la photo (décision 2026-11-25-fiche-sans-barre)', async () => {
+    await show();
+
+    expect(screen.queryByTestId('back-header')).toBeNull();
+    expect(screen.getByTestId('floating-back-link').props.accessibilityLabel).toBe('Retour');
+    await fireEvent.press(screen.getByTestId('floating-back-link'));
+    // Pas de croix de fermeture (décision 2026-11-25-fiche-sans-croix).
+    expect(screen.queryByTestId('floating-back-close')).toBeNull();
+    expect(router.back).toHaveBeenCalled();
+  });
+
   it('ouvrir la fiche compte un clic, une fois (décision 2026-11-25-clic-a-l-ouverture)', async () => {
     await show();
 
@@ -168,6 +179,18 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByText('Description')).toBeTruthy();
     expect(screen.getByTestId('offer-published').props.children).toMatch(/^Publiée le /);
     expect(screen.queryByTestId('offer-status')).toBeNull();
+  });
+
+  it('une bordure entre les sections, aucune dans leur contenu (décision 2026-11-25-fiche-bordures-sections)', async () => {
+    mockState = { data: OFFER, isPending: false, error: null };
+    await show();
+    await openSections();
+    const style = (id: string) => StyleSheet.flatten(screen.getByTestId(id).props.style as never) as { borderTopWidth?: number; borderBottomWidth?: number } | undefined;
+    expect(style('offer-section-facts')?.borderTopWidth).toBeUndefined();
+    expect(style('offer-section-description')?.borderTopWidth).toBe(1);
+    for (const row of screen.getAllByTestId('offer-facts-row')) {
+      expect((StyleSheet.flatten(row.props.style as never) as { borderBottomWidth?: number }).borderBottomWidth).toBeUndefined();
+    }
   });
 
   it('caractéristiques, localisation (adresse complète et indication), puis description ; le prix dans la barre fixe', async () => {
@@ -352,8 +375,23 @@ describe('OfferDetailScreen : avis', () => {
     await show();
     await openSections();
 
-    expect(screen.getByTestId('offer-reviews-summary').props.accessibilityLabel).toBe('Note moyenne 4,5 sur 5, 2 avis');
+    // La moyenne est dans le titre de la section, servi par l'API, plus dans son contenu (décision 2026-11-25-avis-note-dans-le-titre).
+    expect(screen.queryByTestId('offer-reviews-summary')).toBeNull();
     expect(screen.getAllByTestId('offer-review')).toHaveLength(2);
+    // En carrousel horizontal, une carte par avis (décision 2026-11-25-fiche-avis-carrousel).
+    expect(screen.getByTestId('offer-reviews-carousel').props.horizontal).toBe(true);
+    expect(screen.getAllByTestId('offer-review-card')).toHaveLength(2);
+    // Le prénom, puis les étoiles et la date séparées par un point, avant le commentaire (décision
+    // 2026-11-25-avis-note-et-date-sur-une-ligne).
+    const card = JSON.stringify(screen.getAllByTestId('offer-review-card')[0]);
+    expect(card.indexOf('offer-review-stars')).toBeLessThan(card.indexOf('offer-review-date'));
+    expect(String(screen.getAllByTestId('offer-review-date')[0].props.children)).toMatch(/^· /);
+    // Sans fond, une bordure tout autour (décision 2026-11-25-avis-cartes-bordures).
+    const cardStyle = StyleSheet.flatten(screen.getAllByTestId('offer-review-card')[0].props.style) as Record<string, unknown>;
+    expect(cardStyle).toMatchObject({ borderWidth: 1 });
+    expect(cardStyle.backgroundColor).toBeUndefined();
+    // L'étoile vide reste visible sur le fond de la carte (décision 2026-11-25-avis-etoile-vide-visible).
+    expect(JSON.stringify(screen.getAllByTestId('offer-review-stars-value')[0])).not.toContain('#E0E1E6');
     expect(screen.getByText('Paul')).toBeTruthy();
     expect(screen.getByText('Propre et calme.')).toBeTruthy();
     expect(screen.getByTestId('offer-reviews-sign-in').props.children).toBe('Connectez-vous pour donner votre avis.');
@@ -365,7 +403,7 @@ describe('OfferDetailScreen : avis', () => {
     await show();
     await openSections();
 
-    expect(screen.getByText('Voir tous les avis')).toBeTruthy();
+    expect(screen.getByText('Voir tous les 2 avis')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('offer-reviews-all'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/reviews', params: { id: OFFER.id } });
     // Un visiteur n'a aucun bouton d'avis dans la barre.

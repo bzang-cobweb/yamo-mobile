@@ -828,6 +828,29 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(screen.getByTestId('filter-sheet')).toBeTruthy();
     });
 
+    it('un avis disposé comme sur la fiche : le prénom, les étoiles · la date, le commentaire (décision 2026-11-25-liste-avis-generique)', async () => {
+      mockList = list([item('1', { title: 'Paul', subtitle: 'Bon rapport qualité-prix.', detail: '18 nov. 2026', rating: { average: 4, count: 1 }, layout: 'review' })]);
+      await renderScreen();
+
+      expect(screen.getByTestId('profile-list-detail-1').props.children).toBe('· 18 nov. 2026');
+      expect(screen.getByTestId('profile-list-item-1-rating')).toBeTruthy();
+      expect(screen.getByTestId('profile-list-subtitle-1').props.children).toBe('Bon rapport qualité-prix.');
+      // Le commentaire en entier ; une ligne au-dessus seulement, sans marge intérieure.
+      expect(screen.getByTestId('profile-list-subtitle-1').props.numberOfLines).toBeUndefined();
+      expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-1').props.style)).toMatchObject({ borderWidth: 0, borderTopWidth: 1, padding: 0 });
+      // Pas les étoiles des autres cartes, en bas à droite.
+      expect(screen.queryByTestId('profile-list-item-1-reviews')).toBeNull();
+    });
+
+    it('seulement des filtres cachés (l’offre des avis) : pas de lien « Filtres » (décision 2026-11-25-liste-avis-generique)', async () => {
+      mockList = list([item('1')], {
+        filters: [{ name: 'offer', type: 'hidden', label: null, placeholder: null, help: null, required: false, default: null, options: [] }],
+      });
+      await renderScreen();
+
+      expect(screen.queryByText('Filtres')).toBeNull();
+    });
+
     it('l’image en entier quand l’API le demande, remplie sinon (décision 2026-11-24-mes-partenaires-logo-entier)', async () => {
       mockList = list([item('1', { image: 'https://api.test/logo.png', image_fit: 'contain' }), item('2', { image: 'https://api.test/photo.jpg' })]);
       await renderScreen();

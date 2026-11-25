@@ -10,6 +10,8 @@ import { Spacing } from '@/shared/theme/theme';
 type Props = {
   /** Titre de l'écran, affiché au centre (« Créer un compte »). */
   title: string;
+  /** `false` : jamais de croix, la flèche seule (la liste des avis, décision 2026-11-25-liste-avis-titre-nombre). */
+  closable?: boolean;
 };
 
 /**
@@ -19,7 +21,7 @@ type Props = {
  * à l'étape précédente d'un formulaire à étapes, sinon à l'écran précédent
  * (`BackStackProvider`). Le placer hors du `ScrollView`.
  */
-export function BackHeader({ title }: Props) {
+export function BackHeader({ title, closable = true }: Props) {
   const theme = useTheme();
   const { t } = useI18n();
   const back = useBack();
@@ -42,7 +44,7 @@ export function BackHeader({ title }: Props) {
         <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={20} tintColor={theme.text} />
       </Pressable>
       {/* Plus d'un écran depuis le départ : la croix y ramène d'un coup. */}
-      {close && (
+      {closable && close && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('nav.close')}
