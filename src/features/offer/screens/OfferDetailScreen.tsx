@@ -39,6 +39,7 @@ import type { OfferDetail } from '../types';
 export function OfferDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
   const query = useOfferDetail(id);
+  const { user } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
   const width = Math.min(windowWidth, MaxContentWidth / 2);
   const offer = query.data;
@@ -97,7 +98,13 @@ export function OfferDetailScreen({ id }: { id: string }) {
           ) : (
             <ScrollView contentContainerStyle={styles.content} testID="offer-detail">
               <View style={{ width, alignSelf: 'center' }}>
-                <PhotoCarousel photos={offer.photos} width={width} />
+                <PhotoCarousel
+                  photos={offer.photos}
+                  gallery={offer.gallery}
+                  width={width}
+                  // « Réserver » aussi dans la galerie, en bas (décision 2026-11-25-galerie-plein-ecran).
+                  action={offer.booking ? { label: offer.booking.label, price: offer.price?.value ?? null, onPress: () => openBooking(offer.id, user !== null) } : null}
+                />
                 {/* Le cœur d'un membre connecté, en haut à droite (décision 2026-11-19-contrat-vedette-favoris) ;
                     pour le propriétaire, à cette place, le statut (décision 2026-11-21-statut-a-la-place-du-coeur). */}
                 {offer.favorite ? (
@@ -188,6 +195,16 @@ export function OfferDetailScreen({ id }: { id: string }) {
  * arrière (décision 2026-11-22-retirer-depuis-la-fiche). Au-dessus, sur une ligne, les boutons d'avis que donne
  * `reviewActions` (décision 2026-11-20-boutons-avis-fiche). Rien à montrer : pas de barre.
  */
+/** « Réserver » : le formulaire de réservation, ou la connexion pour un visiteur. */
+function openBooking(id: string, signedIn: boolean) {
+  if (!signedIn) {
+    router.push('/sign-in');
+
+    return;
+  }
+  router.push({ pathname: '/offers/[id]/book', params: { id } });
+}
+
 function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewChanged: (message: string | null, failed?: boolean) => void }) {
   const theme = useTheme();
   const { t } = useI18n();
@@ -270,9 +287,7 @@ function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewCh
           <Pressable
             testID="offer-booking"
             accessibilityRole="button"
-            onPress={() =>
-              user === null ? router.push('/sign-in') : router.push({ pathname: '/offers/[id]/book', params: { id: offer.id } })
-            }
+            onPress={() => openBooking(offer.id, user !== null)}
             style={({ pressed }) => [styles.bookButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
             <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
               {booking.label}

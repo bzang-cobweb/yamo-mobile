@@ -19,6 +19,8 @@ export type OfferDetail = {
   address?: string | null;
   indication?: string | null;
   photos: string[];
+  /** Les mêmes photos en grand, pour la galerie plein écran (décision 2026-11-25-galerie-plein-ecran) ; absent d'une API plus ancienne. */
+  gallery?: string[];
   description: string | null;
   /** Caractéristiques lisibles, dans l'ordre. */
   facts: { label: string; value: string }[];

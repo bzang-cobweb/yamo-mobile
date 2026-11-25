@@ -274,6 +274,44 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.getByTestId('offer-photo-position').props.children).toBe('2 / 2');
   });
 
+  it('toucher une photo ouvre la galerie plein écran sur elle, en grand ; la fermer garde la photo vue', async () => {
+    mockState = { data: { ...OFFER, gallery: ['http://api.test/storage/7-0-web.webp', 'http://api.test/storage/7-1-web.webp'] }, isPending: false, error: null };
+    await show();
+    expect(screen.queryByTestId('offer-gallery')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('offer-photo-open-1'));
+
+    // Décision 2026-11-25-galerie-plein-ecran : la conversion `web`, entière, sur la photo touchée.
+    expect(screen.getByTestId('offer-gallery')).toBeTruthy();
+    expect(screen.getByTestId('offer-gallery-photo-1').props.source).toEqual({ uri: 'http://api.test/storage/7-1-web.webp' });
+    expect(screen.getByTestId('offer-gallery-photo-1').props.contentFit).toBe('contain');
+    expect(screen.getByTestId('offer-gallery-list').props.initialScrollIndex).toBe(1);
+    expect(screen.getByTestId('offer-gallery-position').props.children).toBe('2 / 2');
+
+    // Le carrousel des miniatures, celles du carrousel de la fiche : la photo affichée est sélectionnée.
+    expect(screen.getByTestId('offer-gallery-thumbnail-1').props.accessibilityState).toEqual({ selected: true });
+    await fireEvent.press(screen.getByTestId('offer-gallery-thumbnail-0'));
+    expect(screen.getByTestId('offer-gallery-position').props.children).toBe('1 / 2');
+    expect(screen.getByTestId('offer-gallery-thumbnail-0').props.accessibilityState).toEqual({ selected: true });
+
+    await fireEvent(screen.getByTestId('offer-gallery-list'), 'onMomentumScrollEnd', { nativeEvent: { contentOffset: { x: 10000 } } });
+    expect(screen.getByTestId('offer-gallery-position').props.children).toBe('2 / 2');
+    await fireEvent(screen.getByTestId('offer-gallery-list'), 'onMomentumScrollEnd', { nativeEvent: { contentOffset: { x: 0 } } });
+    expect(screen.getByTestId('offer-gallery-position').props.children).toBe('1 / 2');
+
+    await fireEvent.press(screen.getByTestId('offer-gallery-close'));
+    expect(screen.queryByTestId('offer-gallery')).toBeNull();
+    expect(screen.getByTestId('offer-photo-position').props.children).toBe('1 / 2');
+  });
+
+  it('sans `gallery` (API plus ancienne) : la galerie montre les photos du carrousel', async () => {
+    await show();
+
+    await fireEvent.press(screen.getByTestId('offer-photo-open-0'));
+
+    expect(screen.getByTestId('offer-gallery-photo-0').props.source).toEqual({ uri: 'http://api.test/storage/7-0.jpg' });
+  });
+
   it('sans photo : un emplacement neutre ; le propriétaire voit le statut', async () => {
     mockState = { data: { ...OFFER, photos: [], favorite: null, status: { value: 'draft', label: 'Brouillon', tone: 'neutral' } }, isPending: false, error: null };
     await show();
@@ -452,6 +490,33 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     await show();
     await fireEvent.press(screen.getByTestId('offer-booking'));
     expect(router.push).toHaveBeenLastCalledWith({ pathname: '/offers/[id]/book', params: { id: OFFER.id } });
+  });
+
+  it('la galerie reprend « Réserver » en bas ; il s’ouvre une fois la galerie fermée', async () => {
+    mockState = { data: { ...OFFER, booking: { type: 'stay', label: 'Réserver', form: 'offer.booking' } }, isPending: false, error: null };
+    mockUser = { id: 3 };
+    jest.mocked(router.push).mockClear();
+    await show();
+    await fireEvent.press(screen.getByTestId('offer-photo-open-0'));
+
+    const modal = screen.getByTestId('offer-gallery-modal');
+    const bar = screen.getByTestId('offer-gallery-action-bar');
+    expect(within(bar).getByText('250 000 FCFA')).toBeTruthy();
+    await fireEvent.press(within(bar).getByText('Réserver'));
+
+    // Sur iOS, l'écran s'ouvre quand la galerie a fini de se fermer.
+    expect(screen.queryByTestId('offer-gallery')).toBeNull();
+    expect(router.push).not.toHaveBeenCalled();
+    await act(async () => modal.props.onDismiss());
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/book', params: { id: OFFER.id } });
+  });
+
+  it('sans réservation possible, la galerie n’a pas de zone du bas', async () => {
+    mockState = { data: { ...OFFER, booking: null }, isPending: false, error: null };
+    await show();
+    await fireEvent.press(screen.getByTestId('offer-photo-open-0'));
+
+    expect(screen.queryByTestId('offer-gallery-action-bar')).toBeNull();
   });
 
   it('une longue description : 4 lignes, puis « Voir plus » / « Voir moins » (décision 2026-11-22-description-voir-plus)', async () => {
