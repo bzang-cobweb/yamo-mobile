@@ -50,6 +50,8 @@ export type ListItem = {
   views?: Views | null;
   /** Une date ISO 8601 sous le message, à droite, dite en temps relatif (décision 2026-11-22-demandes-date-derniere-notification) ; absente : aucune. */
   date?: string | null;
+  /** Cette date dite en temps relatif par le serveur (« il y a 5 min », « hier à 10:30 », décision 2026-11-25-dates-formatees-serveur). */
+  date_text?: string | null;
   /** Le nombre de notifications non lues, en pastille à droite du message (décision 2026-11-22-demandes-pastille-nombre-message) ; absent : aucune. */
   unread_count?: number;
   /** Photo (URL), affichée au-dessus du titre ; `null` : aucune. */

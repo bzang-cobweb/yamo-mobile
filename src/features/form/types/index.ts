@@ -69,6 +69,8 @@ export type FormFieldDefinition = {
   max_length?: number | null;
   /** Bornes du calendrier d'une date (`AAAA-MM-JJ` ou `null`) ; absentes : toute date (décision 2026-11-19-bornes-des-dates). */
   date_range?: { min: string | null; max: string | null } | null;
+  /** Les formats de ses dates (options d'`Intl.DateTimeFormat`), servis par l'API (décision 2026-11-25-dates-formatees-serveur). */
+  date_formats?: Partial<import('../utils/dates').DateFormats> | null;
   /**
    * Grille de mois au lieu du sélecteur natif (décision 2026-11-19-contrat-calendrier-offre) :
    * jours indisponibles grisés ; `after` : le champ du début d'une période (les jours

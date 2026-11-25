@@ -6,7 +6,6 @@ import { setFilterValues } from '@/features/list/utils/filters';
 import { profileFormService, profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { Stars } from '@/shared/components/Stars';
 import { useI18n } from '@/shared/i18n/I18nContext';
-import { reviewDate } from '@/shared/i18n/reviewDate';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
@@ -178,7 +177,7 @@ export function OfferReviews({ offerId, reviews }: { offerId: string; reviews: R
  * (`bordered={false}`) : seules les sections en ont (décision 2026-11-25-fiche-bordures-sections).
  */
 export function ReviewRow({ review, bordered = true, lines }: { review: Review; bordered?: boolean; lines?: number }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const theme = useTheme();
 
   return (
@@ -192,9 +191,10 @@ export function ReviewRow({ review, bordered = true, lines }: { review: Review; 
               2026-11-25-avis-etoile-vide-visible). */}
           <Stars value={review.rating} emptyColor={`${theme.textSecondary}66`} testID="offer-review-stars-value" />
         </View>
-        {review.created_at && (
+        {/* La date formatée par le serveur, la même que dans la liste des avis (décision 2026-11-25-dates-formatees-serveur). */}
+        {review.date && (
           <ThemedText type="small" themeColor="textSecondary" testID="offer-review-date">
-            {`· ${reviewDate(review.created_at, locale)}`}
+            {`· ${review.date}`}
           </ThemedText>
         )}
       </View>

@@ -7,7 +7,7 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
 import type { FieldProps } from '../../types';
-import { formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
+import { dateFormats, formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
 import { FieldShell } from '../FieldShell';
 import { useInputStyle } from './inputStyle';
 
@@ -61,9 +61,11 @@ export function CalendarDateField({ field, value, onChange, error, disabled, aft
   }
 
   const monthKey = (offset: number) => toIsoDate(new Date(month.getFullYear(), month.getMonth() + offset, 1)).slice(0, 7);
-  const label = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(month);
+  // Les formats servis par l'API (décision 2026-11-25-dates-formatees-serveur).
+  const formats = dateFormats(field.date_formats);
+  const label = formatDate(month, locale, formats.month);
   const weekdays = Array.from({ length: 7 }, (_, offset) =>
-    new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(MONDAY.getFullYear(), MONDAY.getMonth(), MONDAY.getDate() + offset)),
+    formatDate(new Date(MONDAY.getFullYear(), MONDAY.getMonth(), MONDAY.getDate() + offset), locale, formats.weekday),
   );
 
   function choose(day: string) {
@@ -77,12 +79,12 @@ export function CalendarDateField({ field, value, onChange, error, disabled, aft
         testID={`field-${field.name}`}
         accessibilityRole="button"
         accessibilityLabel={field.label ?? field.name}
-        accessibilityValue={{ text: date ? formatDate(date, locale) : undefined }}
+        accessibilityValue={{ text: date ? formatDate(date, locale, formats.value) : undefined }}
         accessibilityState={{ expanded: open, disabled }}
         disabled={disabled}
         onPress={() => setOpen((current) => !current)}
         style={inputStyle}>
-        <ThemedText themeColor={date ? 'text' : 'textSecondary'}>{date ? formatDate(date, locale) : (field.placeholder ?? t('form.selectPlaceholder'))}</ThemedText>
+        <ThemedText themeColor={date ? 'text' : 'textSecondary'}>{date ? formatDate(date, locale, formats.value) : (field.placeholder ?? t('form.selectPlaceholder'))}</ThemedText>
       </Pressable>
       {open && (
         <View style={styles.grid}>

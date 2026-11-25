@@ -7,7 +7,7 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
 import type { FieldProps } from '../../types';
-import { formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
+import { dateFormats, formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
 import { FieldShell } from '../FieldShell';
 import { useInputStyle } from './inputStyle';
 
@@ -52,13 +52,13 @@ export function DateField({ field, value, onChange, error, disabled }: FieldProp
         testID={`field-${field.name}`}
         accessibilityRole="button"
         accessibilityLabel={field.label ?? field.name}
-        accessibilityValue={{ text: date ? formatDate(date, locale) : undefined }}
+        accessibilityValue={{ text: date ? formatDate(date, locale, dateFormats(field.date_formats).value) : undefined }}
         accessibilityState={{ expanded: open, disabled }}
         disabled={disabled}
         onPress={toggle}
         style={inputStyle}>
         <ThemedText themeColor={date ? 'text' : 'textSecondary'}>
-          {date ? formatDate(date, locale) : (field.placeholder ?? t('form.selectPlaceholder'))}
+          {date ? formatDate(date, locale, dateFormats(field.date_formats).value) : (field.placeholder ?? t('form.selectPlaceholder'))}
         </ThemedText>
       </Pressable>
 

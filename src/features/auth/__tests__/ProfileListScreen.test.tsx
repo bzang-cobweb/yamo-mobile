@@ -16,7 +16,6 @@ import { TONE_COLORS } from '@/shared/components/StatusTag';
 import { currentToast, hideToast } from '@/shared/components/Toast';
 
 import { backWithNotice } from '../utils/profile-notice';
-import { reviewDate } from '@/shared/i18n/reviewDate';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -446,8 +445,8 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
   it('la date de la dernière notification après le message, à droite, avec le mois en lettres (décisions 2026-11-22-demandes-date-apres-message et 2026-11-22-dates-sans-chiffres)', async () => {
     mockList = list([
-      item('7', { title: 'Awa Ndiaye', quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 5 * 60 * 1000).toISOString() }),
-      item('8', { title: 'Paul Mbia', date: '2026-01-03T10:00:00Z' }),
+      item('7', { title: 'Awa Ndiaye', quote: 'Arrivée vers 18 h.', date: new Date(Date.now() - 5 * 60 * 1000).toISOString(), date_text: 'il y a 5 min' }),
+      item('8', { title: 'Paul Mbia', date: '2026-01-03T10:00:00Z', date_text: '3 janv. 2026 11:00' }),
     ]);
     await renderScreen();
 
@@ -456,7 +455,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(StyleSheet.flatten(date.props.style)).toMatchObject({ textAlign: 'right' });
     const order = screen.getAllByText(/^(Awa Ndiaye|Arrivée vers 18 h\.|il y a 5 min)$/).map((node) => String(node.props.children));
     expect(order).toEqual(['Awa Ndiaye', 'Arrivée vers 18 h.', 'il y a 5 min']);
-    // Avant hier : la date, mois en lettres, et l'heure (décision 2026-11-22-dates-sans-chiffres).
+    // Le texte servi par le serveur (décision 2026-11-25-dates-formatees-serveur) : avant hier, la date, mois en lettres, et l'heure.
     expect(screen.getByTestId('profile-list-date-8')).toHaveTextContent(/^3 janv\. 2026 \d{2}:\d{2}$/);
   });
 
@@ -831,11 +830,11 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     });
 
     it('un avis disposé comme sur la fiche : le prénom, les étoiles · la date, le commentaire (décision 2026-11-25-liste-avis-generique)', async () => {
-      mockList = list([item('1', { title: 'Paul', subtitle: 'Bon rapport qualité-prix.', date: '2026-11-18T09:00:00+00:00', rating: { average: 4, count: 1 }, layout: 'review' })]);
+      mockList = list([item('1', { title: 'Paul', subtitle: 'Bon rapport qualité-prix.', detail: '18 nov. 2026', rating: { average: 4, count: 1 }, layout: 'review' })]);
       await renderScreen();
 
-      // La date formatée par l'app, comme sur la fiche (décision 2026-11-25-avis-date-formatee-app).
-      expect(screen.getByTestId('profile-list-review-date-1').props.children).toBe(`· ${reviewDate('2026-11-18T09:00:00+00:00', 'fr')}`);
+      // La date formatée par le serveur, comme sur la fiche (décision 2026-11-25-dates-formatees-serveur).
+      expect(screen.getByTestId('profile-list-detail-1').props.children).toBe('· 18 nov. 2026');
       expect(screen.getByTestId('profile-list-item-1-rating')).toBeTruthy();
       expect(screen.getByTestId('profile-list-subtitle-1').props.children).toBe('Bon rapport qualité-prix.');
       // Le commentaire en entier ; une ligne au-dessus seulement, sans marge intérieure.

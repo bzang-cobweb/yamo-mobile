@@ -62,6 +62,12 @@ describe('DateField', () => {
     expect(screen.getByTestId('field-birth_date')).toHaveTextContent('12 avril 1990');
   });
 
+  it('le format servi par l’API est appliqué, sans nouvelle version de l’app (décision 2026-11-25-dates-formatees-serveur)', async () => {
+    await renderField('1990-04-12', jest.fn(), { ...birthDate, date_formats: { value: { month: 'short', year: 'numeric' } } });
+
+    expect(screen.getByTestId('field-birth_date')).toHaveTextContent(new Intl.DateTimeFormat('fr', { month: 'short', year: 'numeric' }).format(new Date(1990, 3, 12)));
+  });
+
   it('ouvre le calendrier et renvoie la date choisie au format AAAA-MM-JJ', async () => {
     const onChange = await renderField('');
 

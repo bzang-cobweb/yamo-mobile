@@ -22,7 +22,7 @@ export class VerificationService {
 
     if ('next' in response) {
       return response.next === 'restore'
-        ? { kind: 'restore', challenge: response.challenge, deletionDate: response.deletion_date }
+        ? { kind: 'restore', challenge: response.challenge, deletionDate: response.deletion_date_text ?? response.deletion_date }
         : { kind: 'password', challenge: response.challenge };
     }
 

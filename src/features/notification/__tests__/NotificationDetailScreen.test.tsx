@@ -58,6 +58,8 @@ const NOTIFICATION: AppNotification = {
   },
   read: false,
   created_at: '2026-11-19T20:00:00Z',
+  date: 'hier à 20:00',
+  stamp: 'jeudi 19 novembre 2026 20:00',
 };
 
 // Le cache du test affiché : vidé avant de rendre les vrais services, pour qu'aucune requête encore en
@@ -93,10 +95,10 @@ describe('NotificationDetailScreen', () => {
     jest.spyOn(notificationService, 'get').mockResolvedValue({
       ...NOTIFICATION,
       history: [
-        { id: 's1', label: 'Demande envoyée', actor: { id: '37', name: 'Membre', initials: 'ME', photo: null, online: false, link: '/members/37' }, message: 'Bonjour !', created_at: '2026-11-20T09:00:00Z', edited: true },
-        { id: 's2', label: 'Demande acceptée', actor: { id: '4', name: 'Propriétaire', initials: 'PR', photo: null, online: false, link: '/members/4' }, message: null, created_at: '2026-11-20T10:00:00Z' },
+        { id: 's1', label: 'Demande envoyée', actor: { id: '37', name: 'Membre', initials: 'ME', photo: null, online: false, link: '/members/37' }, message: 'Bonjour !', created_at: '2026-11-20T09:00:00Z', stamp: '20 nov. 2026 09:00', edited: true },
+        { id: 's2', label: 'Demande acceptée', actor: { id: '4', name: 'Propriétaire', initials: 'PR', photo: null, online: false, link: '/members/4' }, message: null, created_at: '2026-11-20T10:00:00Z', stamp: '20 nov. 2026 10:00' },
         // Le lecteur (compte 1) : « Toi », sans photo.
-        { id: 's3', label: 'Demande annulée', actor: { id: '1', name: 'Moi Même', initials: 'MM', photo: null, online: false, link: '/members/1' }, message: null, created_at: '2026-11-20T11:00:00Z', delivery: 'delivered' },
+        { id: 's3', label: 'Demande annulée', actor: { id: '1', name: 'Moi Même', initials: 'MM', photo: null, online: false, link: '/members/1' }, message: null, created_at: '2026-11-20T11:00:00Z', stamp: '20 nov. 2026 11:00', delivery: 'delivered' },
       ],
     });
     await show();

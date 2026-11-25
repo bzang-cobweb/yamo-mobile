@@ -31,6 +31,8 @@ export type OfferDetail = {
   /** Sections repliables, complètes, dans l'ordre et l'ouverture servis par Laravel (décisions 2026-11-19-sections-fiche-laravel et 2026-11-19-sections-construites-laravel). */
   sections?: OfferSection[];
   published_at: string | null;
+  /** La date de publication formatée par le serveur (« 18 novembre 2026 », décision 2026-11-25-dates-formatees-serveur). */
+  published_on?: string | null;
   /** Statut, servi au seul propriétaire. */
   /** Pour le propriétaire : son statut, en pastille sur la photo (décision 2026-11-21-statut-a-la-place-du-coeur). */
   status: { value: string; label: string; tone: string } | null;
@@ -73,6 +75,8 @@ export type OfferReview = {
   rating: number;
   comment: string;
   created_at: string | null;
+  /** La date formatée par le serveur (« 18 nov. 2026 »), la même que dans la liste des avis (décision 2026-11-25-dates-formatees-serveur). */
+  date?: string | null;
 };
 
 /** Le bloc « Avis » de la fiche. */

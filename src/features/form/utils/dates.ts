@@ -26,7 +26,24 @@ export function toIsoDate(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-/** Date affichée dans la langue de l'app (« 12 avril 1990 », « April 12, 1990 »). */
-export function formatDate(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+/**
+ * Les formats des dates d'un champ date, servis par l'API avec le champ (`date_formats`, décision 2026-11-25-dates-formatees-serveur) : les changer côté
+ * serveur suffit, sans nouvelle version de l'app. Ceux-ci ne servent que si l'API n'en sert pas.
+ */
+export type DateFormats = { value: Intl.DateTimeFormatOptions; month: Intl.DateTimeFormatOptions; weekday: Intl.DateTimeFormatOptions };
+
+const DEFAULT_FORMATS: DateFormats = {
+  value: { day: 'numeric', month: 'long', year: 'numeric' },
+  month: { month: 'long', year: 'numeric' },
+  weekday: { weekday: 'short' },
+};
+
+/** Les formats servis, complétés par ceux par défaut. */
+export function dateFormats(served?: Partial<DateFormats> | null): DateFormats {
+  return { ...DEFAULT_FORMATS, ...(served ?? {}) };
+}
+
+/** Une date au format `options` servi (la date choisie : « 12 avril 1990 »). */
+export function formatDate(date: Date, locale: string, options: Intl.DateTimeFormatOptions = DEFAULT_FORMATS.value): string {
+  return new Intl.DateTimeFormat(locale, options).format(date);
 }

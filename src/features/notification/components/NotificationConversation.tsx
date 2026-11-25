@@ -9,7 +9,6 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
 
 import type { NotificationStep } from '../types';
-import { formatStamp } from '../utils/stamp';
 
 /**
  * Le suivi d'une demande comme une conversation, sur la page d'une notification
@@ -24,7 +23,7 @@ import { formatStamp } from '../utils/stamp';
  * s'est pas connecté depuis ; deux grises, connecté sans l'avoir lue ; deux vertes, lue.
  */
 export function NotificationConversation({ steps, onOpen }: { steps: NotificationStep[]; onOpen: (link: string) => void }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const theme = useTheme();
   const { user } = useAuth();
 
@@ -58,11 +57,12 @@ export function NotificationConversation({ steps, onOpen }: { steps: Notificatio
               <ThemedText type="small" testID={`notification-history-${index}-message`}>
                 {step.message ?? step.label}
               </ThemedText>
-              {(step.created_at || (mine && step.delivery)) && (
+              {(step.stamp || (mine && step.delivery)) && (
                 <View style={styles.footer}>
-                  {step.created_at && (
+                  {/* Le moment formaté par le serveur (décision 2026-11-25-dates-formatees-serveur). */}
+                  {step.stamp && (
                     <ThemedText type="small" themeColor="textSecondary" testID={`notification-history-${index}-date`}>
-                      {step.edited ? `${t('notifications.edited')} ${formatStamp(step.created_at, locale)}` : formatStamp(step.created_at, locale)}
+                      {step.edited ? `${t('notifications.edited')} ${step.stamp}` : step.stamp}
                     </ThemedText>
                   )}
                   {mine && step.delivery && <Ticks delivery={step.delivery} color={theme.textSecondary} testID={`notification-history-${index}-delivery`} />}

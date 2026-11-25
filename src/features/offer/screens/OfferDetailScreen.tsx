@@ -38,7 +38,7 @@ import type { OfferDetail } from '../types';
  * listes se rechargent, et le message de l'API s'affiche.
  */
 export function OfferDetailScreen({ id }: { id: string }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const theme = useTheme();
   const query = useOfferDetail(id);
   const { user } = useAuth();
@@ -184,9 +184,10 @@ export function OfferDetailScreen({ id }: { id: string }) {
                     }
                   })}
 
-                  {offer.published_at && (
+                  {/* La date formatée par le serveur (décision 2026-11-25-dates-formatees-serveur). */}
+                  {offer.published_on && (
                     <ThemedText type="small" themeColor="textSecondary" testID="offer-published">
-                      {t('offer.publishedOn', { date: new Date(offer.published_at).toLocaleDateString(locale, { dateStyle: 'long' }) })}
+                      {t('offer.publishedOn', { date: offer.published_on })}
                     </ThemedText>
                   )}
                 </View>

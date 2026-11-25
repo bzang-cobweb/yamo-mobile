@@ -33,6 +33,9 @@ export type AppNotification = {
   /** Lue ; pour la carte d'une demande, toutes ses étapes le sont. */
   read: boolean;
   created_at: string | null;
+  /** Formatées par le serveur (décision 2026-11-25-dates-formatees-serveur) : relative pour la carte (« il y a 5 min »), complète pour le détail. */
+  date?: string | null;
+  stamp?: string | null;
   /**
    * Sur la page d'une notification : le suivi de la demande, de la plus ancienne étape
    * à la plus récente, des deux côtés ; vide sans demande (décision 2026-11-20-suivi-demande).
@@ -74,6 +77,8 @@ export type NotificationStep = {
   actor: NotificationActor | null;
   message: string | null;
   created_at: string | null;
+  /** Le moment de l'étape, formaté par le serveur (« 10:30 », « 18 nov. 2026 10:30 », décision 2026-11-25-dates-formatees-serveur). */
+  stamp?: string | null;
   /** Pour une étape du lecteur : sa notification envoyée, remise (l'autre s'est connecté depuis), lue ; `null` sinon. */
   /** Une étape modifiée (« Demande modifiée ») : « Modifié » avant sa date. */
   edited?: boolean;

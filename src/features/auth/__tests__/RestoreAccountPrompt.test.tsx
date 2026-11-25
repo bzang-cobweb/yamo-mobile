@@ -19,7 +19,7 @@ async function renderPrompt(onCancel = jest.fn(), signIn = jest.fn().mockResolve
   const auth = { user: null, locale: 'fr', t: TEST_I18N.t, signIn } as unknown as AuthContextValue;
   await render(
     <AuthContext.Provider value={auth}>
-      <RestoreAccountPrompt challenge="abc" deletionDate="2026-12-20" onCancel={onCancel} />
+      <RestoreAccountPrompt challenge="abc" deletionDate="20 décembre 2026" onCancel={onCancel} />
     </AuthContext.Provider>,
   );
 

@@ -5,12 +5,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
-import { relativeTime } from '@/features/notification/utils/relativeTime';
 import { CARD_BODY, CARD_GAP, CARD_PADDING } from '@/shared/components/List';
 import { Stars } from '@/shared/components/Stars';
 import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
-import { reviewDate } from '@/shared/i18n/reviewDate';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -52,7 +50,7 @@ type Props = {
  * chacun seulement s'il est servi.
  */
 export function ListItemCard({ item, menu = false, open = false, onMenuChange, onCloseMenu, onAction, onRemove, fullWidthActions = false, testID: prefix = 'profile-list' }: Props) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const theme = useTheme();
   const close = () => onCloseMenu?.() ?? false;
 
@@ -71,7 +69,8 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   const titleLink = item.title_link && ITEM_LINK.test(item.title_link) ? item.title_link : null;
   // En gras, à la taille de l'accueil ; en lien, dans la couleur des liens (décision 2026-11-22-cartes-titre-gras).
   // La date de la dernière notification (décision 2026-11-22-demandes-date-derniere-notification).
-  const dateText = item.date ? relativeTime(item.date, t, locale) : null;
+  // Dite en temps relatif par le serveur (décision 2026-11-25-dates-formatees-serveur).
+  const dateText = item.date_text ?? null;
   // Le sous-titre en lien (le titre saisi d'une offre dans « Mes réservations », décision 2026-11-22-reservations-lien-offre).
   const subtitleLink = item.subtitle_link && ITEM_LINK.test(item.subtitle_link) ? item.subtitle_link : null;
   const itemSubtitle = !item.subtitle ? null : subtitleLink ? (
@@ -119,10 +118,10 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
                     <Stars value={item.rating.average} emptyColor={`${theme.textSecondary}66`} />
                   </View>
                 )}
-                {/* La date brute servie, formatée comme sur la fiche (décision 2026-11-25-avis-date-formatee-app). */}
-                {item.date && (
-                  <ThemedText type="small" themeColor="textSecondary" testID={`${prefix}-review-date-${item.id}`}>
-                    {item.rating ? `· ${reviewDate(item.date, locale)}` : reviewDate(item.date, locale)}
+                {/* La date formatée par le serveur, la même que sur la fiche (décision 2026-11-25-dates-formatees-serveur). */}
+                {item.detail && (
+                  <ThemedText type="small" themeColor="textSecondary" testID={`${prefix}-detail-${item.id}`}>
+                    {item.rating ? `· ${item.detail}` : item.detail}
                   </ThemedText>
                 )}
               </View>

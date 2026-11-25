@@ -23,11 +23,12 @@ type Props = {
  * « Récupérer mon compte » (restauré et connecté) ou « Annuler ».
  */
 export function RestoreAccountPrompt({ challenge, deletionDate, onCancel }: Props) {
-  const { signIn, t, locale } = useAuth();
+  const { signIn, t } = useAuth();
   const theme = useTheme();
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const date = new Date(`${deletionDate}T00:00:00`).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  // La date formatée par le serveur (« 12 avril 2027 », décision 2026-11-25-dates-formatees-serveur).
+  const date = deletionDate;
 
   async function restore() {
     setRestoring(true);

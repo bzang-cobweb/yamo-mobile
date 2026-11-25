@@ -20,7 +20,6 @@ import { NotificationConversation } from '../components/NotificationConversation
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
 import type { BookingLine } from '../types';
-import { formatStamp } from '../utils/stamp';
 
 /** Les lignes d'une demande toujours visibles, avant « Voir plus » (décision 2026-11-21-voir-plus-apres-deux-lignes). */
 const VISIBLE_LINES = 2;
@@ -114,7 +113,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
   }
 
   // L'heure seule le jour même (décision 2026-11-20-suivi-conversation).
-  const date = notification?.created_at ? formatStamp(notification.created_at, locale, 'full') : null;
+  // La date complète, formatée par le serveur (décision 2026-11-25-dates-formatees-serveur).
+  const date = notification?.stamp ?? null;
 
   return (
     <ThemedView style={styles.container}>

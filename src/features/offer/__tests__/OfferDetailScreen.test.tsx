@@ -79,13 +79,14 @@ const OFFER: OfferDetail = {
     { label: 'Équipements', value: 'Wifi, Parking, Gardien / sécurité, Climatisation, Eau chaude' },
   ],
   published_at: '2026-11-18T10:00:00+00:00',
+  published_on: '18 novembre 2026',
   status: null,
   reviews: {
     average: 4.5,
     count: 2,
     latest: [
-      { id: '2', author: 'Paul', rating: 5, comment: 'Propre et calme.', created_at: '2026-11-19T09:00:00+00:00' },
-      { id: '1', author: 'Awa', rating: 4, comment: 'Très bon accueil.', created_at: '2026-11-18T09:00:00+00:00' },
+      { id: '2', author: 'Paul', rating: 5, comment: 'Propre et calme.', created_at: '2026-11-19T09:00:00+00:00', date: '19 nov. 2026' },
+      { id: '1', author: 'Awa', rating: 4, comment: 'Très bon accueil.', created_at: '2026-11-18T09:00:00+00:00', date: '18 nov. 2026' },
     ],
     mine: null,
     can_review: false,

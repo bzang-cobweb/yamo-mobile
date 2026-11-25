@@ -19,7 +19,6 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { useNotifications } from '../hooks/useNotifications';
 import type { AppNotification } from '../types';
-import { relativeTime } from '../utils/relativeTime';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 
 /**
@@ -38,7 +37,7 @@ export const NOTIFICATIONS_FILTERS = 'notifications';
  * par-dessus les onglets, avec un en-tête et son bouton retour (décision 2026-11-21-notifications-avec-retour).
  */
 export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
   const theme = useTheme();
   const [searchText, setSearchText] = useState('');
@@ -154,7 +153,8 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
         )}
         {/* La date, après le message, alignée à droite. */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.date} testID={`notification-${item.id}-date`}>
-          {relativeTime(item.created_at, t, locale)}
+          {/* Dite en temps relatif par le serveur (décision 2026-11-25-dates-formatees-serveur). */}
+          {item.date}
         </ThemedText>
         {item.links.map((link, index) => (
           <Pressable
