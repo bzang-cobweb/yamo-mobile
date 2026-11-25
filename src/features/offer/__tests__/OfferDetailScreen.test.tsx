@@ -10,7 +10,7 @@ import { I18nContext } from '@/shared/i18n/I18nContext';
 import { currentToast } from '@/shared/components/Toast';
 
 import { OfferDetailScreen } from '../screens/OfferDetailScreen';
-import { OfferService } from '../services/OfferService';
+import { OfferService, offerService } from '../services/OfferService';
 import type { OfferDetail, OfferSection } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
@@ -122,11 +122,20 @@ async function openSections() {
   }
 }
 
+const mockClick = jest.spyOn(offerService, 'click').mockResolvedValue(undefined);
+
 describe('OfferDetailScreen (fiche décrite par l’API)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockState = { data: OFFER, isPending: false, error: null };
     mockUser = null;
+  });
+
+  it('ouvrir la fiche compte un clic, une fois (décision 2026-11-25-clic-a-l-ouverture)', async () => {
+    await show();
+
+    expect(mockClick).toHaveBeenCalledTimes(1);
+    expect(mockClick).toHaveBeenCalledWith(OFFER.id);
   });
 
   it('montre photos, titre, prix (sans libellé), description, caractéristiques et date', async () => {

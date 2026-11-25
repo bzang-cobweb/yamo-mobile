@@ -1,4 +1,5 @@
 import type { StatusTagValue } from '@/shared/components/StatusTag';
+import type { Views } from '@/shared/components/ViewsCount';
 
 /** Un partenaire de l'accueil, ses textes dans la langue de l'app (décision 2026-11-23-module-partenaires). */
 export type Partner = {
@@ -18,6 +19,8 @@ export type Partner = {
   contact_phone?: string | null;
   /** Sur sa page, pour ses comptes seulement : sa pastille, comme dans « Mes partenaires » (décision 2026-11-24-partenaire-page-statut). */
   status?: StatusTagValue | null;
+  /** Sur sa page, pour ses comptes seulement : ses vues (décisions 2026-11-25-partenaire-vues-sur-sa-page et 2026-11-25-vues-oeil). */
+  views?: Views | null;
 };
 
 /**

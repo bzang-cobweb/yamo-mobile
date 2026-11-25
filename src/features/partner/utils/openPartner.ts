@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
-import { partnerService } from '../services/PartnerService';
 import type { Partner } from '../types';
 
 /**
@@ -15,11 +14,9 @@ export function openPartner(partner: Pick<Partner, 'website'>) {
 }
 
 /**
- * Un partenaire touché dans le carrousel de l'accueil ou la page « Partenaires » : un clic de plus, puis sa fiche
- * (décision 2026-11-25-compteurs-partenaires). L'API ne le compte pas pour ses propres comptes ; une erreur réseau ne
- * bloque pas l'ouverture.
+ * Un partenaire touché dans le carrousel de l'accueil ou la page « Partenaires » : sa page, qui compte le clic
+ * (décision 2026-11-25-clic-a-l-ouverture).
  */
 export function openPartnerDetail(id: string) {
-  void partnerService.click(id).catch(() => undefined);
   router.push({ pathname: '/partners/[id]', params: { id } });
 }

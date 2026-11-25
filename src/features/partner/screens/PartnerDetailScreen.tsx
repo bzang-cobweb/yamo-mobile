@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -5,6 +6,7 @@ import { ApiError, NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { StatusTag } from '@/shared/components/StatusTag';
+import { ViewsCount } from '@/shared/components/ViewsCount';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -14,6 +16,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { PartnerLogo } from '../components/PartnerLogo';
 import { usePartner } from '../hooks/usePartners';
+import { partnerService } from '../services/PartnerService';
 import { openPartner } from '../utils/openPartner';
 
 const LOGO_SIZE = 120;
@@ -28,6 +31,11 @@ export function PartnerDetailScreen({ id }: { id: string }) {
   const { t } = useI18n();
   const theme = useTheme();
   const query = usePartner(id);
+  // Ouvrir sa page, par n'importe quel lien, compte un clic ; l'API ne le compte pas pour ses comptes (décision
+  // 2026-11-25-clic-a-l-ouverture). Une fois par ouverture ; une erreur réseau ne gêne pas la page.
+  useEffect(() => {
+    void partnerService.click(id).catch(() => undefined);
+  }, [id]);
   const partner = query.data;
   const gone = query.error instanceof ApiError && query.error.status === 404;
 
@@ -68,6 +76,9 @@ export function PartnerDetailScreen({ id }: { id: string }) {
                           {partner.slogan}
                         </ThemedText>
                       )}
+                      {/* Ses vues, pour ses comptes seulement : un œil et le nombre, après le slogan (décisions
+                          2026-11-25-partenaire-vues-sur-sa-page et 2026-11-25-vues-oeil). */}
+                      {partner.views && <ViewsCount views={partner.views} style={styles.views} testID="partner-views" />}
                     </View>
                   </View>
                   {/* Son e-mail et son téléphone ; les toucher ouvre l'e-mail ou l'appel (décision 2026-11-24-partenaire-contact). */}
@@ -118,6 +129,7 @@ function ContactRow({ label, value, url, testID }: { label: string; value: strin
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1 },
+  views: { alignSelf: 'center' },
   status: { position: 'absolute', top: Spacing.three, right: Spacing.three, zIndex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   body: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four, gap: Spacing.four },

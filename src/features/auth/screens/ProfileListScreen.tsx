@@ -209,12 +209,12 @@ export function ProfileListScreen({ list }: { list: string }) {
           definition.heading ? (
             <View style={styles.heading} testID="profile-list-heading">
               {definition.heading.title && (
-                <ThemedText type="smallBold" testID="profile-list-heading-title">
+                <ThemedText type="smallBold" style={styles.centered} testID="profile-list-heading-title">
                   {definition.heading.title}
                 </ThemedText>
               )}
               {definition.heading.subtitle && (
-                <ThemedText type="small" themeColor="textSecondary" testID="profile-list-heading-subtitle">
+                <ThemedText type="small" themeColor="textSecondary" style={styles.centered} testID="profile-list-heading-subtitle">
                   {definition.heading.subtitle}
                 </ThemedText>
               )}
@@ -247,6 +247,8 @@ export { SEARCH_DELAY };
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
   error: { color: ERROR_COLOR },
-  heading: { gap: Spacing.half },
+  // Centré, comme partout : le nombre d'éléments trouvés (décision 2026-11-25-nombre-centre).
+  heading: { gap: Spacing.half, alignItems: 'center' },
+  centered: { textAlign: 'center' },
   fill: { flex: 1 },
 });

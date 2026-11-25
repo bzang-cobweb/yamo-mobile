@@ -1,4 +1,5 @@
 import type { FormFieldDefinition, FormSubmit } from '@/features/form/types';
+import type { Views } from '@/shared/components/ViewsCount';
 
 /**
  * Retrait d'un item : libellé du bouton, question de confirmation, et envoi
@@ -45,6 +46,8 @@ export type ListItem = {
   subtitle: string | null;
   /** Une ligne à part sous le sous-titre (le type de demande et les dates d'une réservation, décision 2026-11-22-reservations-ligne-dates) ; absente : aucune. */
   detail?: string | null;
+  /** Les vues : un œil suivi du nombre (décision 2026-11-25-vues-oeil) ; absent : rien. */
+  views?: Views | null;
   /** Une date ISO 8601 sous le message, à droite, dite en temps relatif (décision 2026-11-22-demandes-date-derniere-notification) ; absente : aucune. */
   date?: string | null;
   /** Le nombre de notifications non lues, en pastille à droite du message (décision 2026-11-22-demandes-pastille-nombre-message) ; absent : aucune. */

@@ -23,7 +23,7 @@ type Props = {
 /**
  * La carte d'une offre, la même dans la recherche et sur l'accueil (décision 2026-11-23-accueil-carrousels-par-ville) :
  * la photo et le cœur, le titre, le sous-titre, puis la note. Toucher la carte ouvre la fiche de l'offre (décision
- * 2026-11-18-fiche-offre).
+ * 2026-11-18-fiche-offre) ; c'est la fiche qui compte le clic (décision 2026-11-25-clic-a-l-ouverture).
  */
 export function OfferCard({ item, testIDPrefix, style, compact = false }: Props) {
   const theme = useTheme();

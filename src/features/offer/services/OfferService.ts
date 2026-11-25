@@ -16,6 +16,14 @@ export class OfferService {
     return { featured: data.featured ?? [], carousels: data.carousels ?? [] };
   }
 
+  /**
+   * `POST /api/v1/offers/{id}/click` — une carte de l'accueil ou de la recherche touchée compte un clic ; pas pour son
+   * propriétaire (décision 2026-11-25-compteurs-offres).
+   */
+  async click(id: string): Promise<void> {
+    await this.client.post(`/v1/offers/${encodeURIComponent(id)}/click`);
+  }
+
   /** `GET /api/v1/offers/{id}` — la fiche, ouverte sans connexion. */
   async get(id: string): Promise<OfferDetail> {
     return (await this.client.get<OfferDetailResponse>(`/v1/offers/${encodeURIComponent(id)}`)).data;

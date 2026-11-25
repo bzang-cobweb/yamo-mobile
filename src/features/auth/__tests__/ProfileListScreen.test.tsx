@@ -307,6 +307,10 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
 
     expect(screen.getByTestId('profile-list-heading-title')).toHaveTextContent('Studio meublé à Akwa');
     expect(screen.getByTestId('profile-list-heading-subtitle')).toHaveTextContent('Location meublée · Studio · Douala');
+    // Centrés (décision 2026-11-25-nombre-centre).
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-heading').props.style)).toMatchObject({ alignItems: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-heading-title').props.style)).toMatchObject({ textAlign: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-heading-subtitle').props.style)).toMatchObject({ textAlign: 'center' });
   });
 
   it('un intitulé sans titre : son sous-titre seul (décision 2026-11-21-demandes-titre-logement-barre)', async () => {
@@ -424,6 +428,18 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.getByTestId('profile-list-detail-7')).toHaveTextContent('Séjour · du 2 déc. 2026 au 6 déc. 2026');
     // En gris, comme le sous-titre.
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-detail-7').props.style).color).toBe(StyleSheet.flatten(screen.getByText('Studio meublé à Akwa').props.style).color);
+  });
+
+  it('les vues : un œil suivi du nombre, sous le sous-titre, sur une carte à photo ou à image de côté (décision 2026-11-25-vues-oeil)', async () => {
+    mockList = list([item('7', { subtitle: 'Studio meublé à Akwa', views: { count: 12, label: '12 vues' } }), item('8', { image_layout: 'side', views: { count: 0, label: 'Aucune vue' } })]);
+    await renderScreen();
+
+    expect(screen.getByTestId('profile-list-views-7-count')).toHaveTextContent('12');
+    expect(screen.getByLabelText('12 vues')).toBeTruthy();
+    expect(screen.getByTestId('profile-list-views-8-count')).toHaveTextContent('0');
+    // Plus petit sur une carte à image de côté (« Mes partenaires », décision 2026-11-25-vues-cartes-partenaires).
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-views-8-count').props.style).fontSize).toBe(12);
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-views-7-count').props.style).fontSize).toBe(14);
   });
 
   it('la date de la dernière notification après le message, à droite, avec le mois en lettres (décisions 2026-11-22-demandes-date-apres-message et 2026-11-22-dates-sans-chiffres)', async () => {

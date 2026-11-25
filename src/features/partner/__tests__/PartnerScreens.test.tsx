@@ -89,8 +89,8 @@ describe('la page « Partenaires »', () => {
     mockClick.mockClear();
     await fireEvent.press(screen.getByTestId('partners-item-4'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '4' } });
-    // Ouvrir la fiche compte un clic (décision 2026-11-25-compteurs-partenaires).
-    expect(mockClick).toHaveBeenCalledWith('4');
+    // La carte ne compte pas le clic : la page le fait (décision 2026-11-25-clic-a-l-ouverture).
+    expect(mockClick).not.toHaveBeenCalled();
   });
 
   it('« Devenir partenaire », servi par l’API : visiteur, la connexion ; connecté, le formulaire (décision 2026-11-24-devenir-partenaire)', async () => {
@@ -126,12 +126,18 @@ describe('la page « Partenaires »', () => {
 describe('la page d’un partenaire', () => {
   it('son nom, sa description, et son bouton qui compte un clic et ouvre son lien', async () => {
     mockOne = { isPending: false, isError: false, error: null, data: wouri };
+    mockClick.mockClear();
     await show(<PartnerDetailScreen id="3" />);
+    // Ouvrir sa page compte un clic, une fois (décision 2026-11-25-clic-a-l-ouverture).
+    expect(mockClick).toHaveBeenCalledTimes(1);
+    expect(mockClick).toHaveBeenCalledWith('3');
 
     expect(screen.getByTestId('partner-name')).toHaveTextContent('Déménageurs du Wouri');
     // Sans slogan, rien sous le nom.
     expect(screen.queryByTestId('partner-slogan')).toBeNull();
     expect(screen.getByTestId('partner-description')).toHaveTextContent('Déménagement clés en main.');
+    // Un visiteur ne voit pas ses vues (décision 2026-11-25-partenaire-vues-sur-sa-page).
+    expect(screen.queryByTestId('partner-views')).toBeNull();
     // En gris, comme un texte secondaire (décision 2026-11-24-partenaire-description-grise).
     expect(StyleSheet.flatten(screen.getByTestId('partner-description').props.style).color).toBe(Colors.light.textSecondary);
     expect(screen.getByTestId('partner-cta-button')).toHaveTextContent('Demander un devis');
@@ -215,5 +221,24 @@ describe('la page d’un partenaire', () => {
 
     expect(screen.getByTestId('partner-error')).toHaveTextContent("Ce partenaire n'est plus disponible.");
     expect(screen.queryByTestId('partner-retry')).toBeNull();
+  });
+});
+
+describe('PartnerDetailScreen : les vues pour ses comptes', () => {
+  it('un œil et le nombre, après le slogan (décisions 2026-11-25-partenaire-vues-sur-sa-page et 2026-11-25-vues-oeil)', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, slogan: 'On porte, vous respirez.', views: { count: 12, label: '12 vues' } } };
+    await show(<PartnerDetailScreen id="3" />);
+
+    expect(screen.getByTestId('partner-views-count')).toHaveTextContent('12');
+    expect(screen.getByLabelText('12 vues')).toBeTruthy();
+    expect(screen.getAllByTestId(/^partner-(slogan|views|description)$/).map((element) => element.props.testID)).toEqual(['partner-slogan', 'partner-views', 'partner-description']);
+  });
+
+  it('une réponse d’une autre forme (ancienne, gardée en cache) n’affiche rien et ne casse pas la page', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, views: '21 vues' as unknown as Partner['views'] } };
+    await show(<PartnerDetailScreen id="3" />);
+
+    expect(screen.queryByTestId('partner-views')).toBeNull();
+    expect(screen.getByTestId('partner-description')).toBeTruthy();
   });
 });

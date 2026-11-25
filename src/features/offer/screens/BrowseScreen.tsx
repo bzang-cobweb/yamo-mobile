@@ -101,6 +101,15 @@ export function BrowseScreen() {
             }
           : null
       }
+      // Sous les filtres, le nombre d'offres trouvées, centré (« 12 logements », décisions 2026-11-25-recherche-nombre
+      // et 2026-11-25-nombre-centre).
+      header={
+        definition.heading?.title ? (
+          <ThemedText type="smallBold" style={styles.heading} testID="browse-heading">
+            {definition.heading.title}
+          </ThemedText>
+        ) : null
+      }
       contentContainerStyle={styles.content}
     />
   );
@@ -109,4 +118,5 @@ export function BrowseScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four },
+  heading: { textAlign: 'center' },
 });

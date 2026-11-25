@@ -61,8 +61,8 @@ describe('PartnersStrip', () => {
 
     await fireEvent.press(screen.getByTestId('home-partner-3'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/partners/[id]', params: { id: '3' } });
-    // Ouvrir la fiche compte un clic (décision 2026-11-25-compteurs-partenaires).
-    expect(mockClick).toHaveBeenCalledWith('3');
+    // Le logo ne compte pas le clic : la page le fait (décision 2026-11-25-clic-a-l-ouverture).
+    expect(mockClick).not.toHaveBeenCalled();
 
     await fireEvent.press(screen.getByTestId('home-partners-see-all'));
     expect(router.push).toHaveBeenLastCalledWith('/partners');

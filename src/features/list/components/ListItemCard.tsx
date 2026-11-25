@@ -12,6 +12,7 @@ import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
+import { ViewsCount } from '@/shared/components/ViewsCount';
 
 import { ITEM_LINK } from '../services/ListService';
 import type { ListItem, ListItemAction } from '../types';
@@ -234,6 +235,8 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
                   {item.detail}
                 </ThemedText>
               )}
+              {/* Ses vues : un œil suivi du nombre (décision 2026-11-25-vues-oeil). */}
+              {item.views && <ViewsCount views={item.views} testID={`${prefix}-views-${item.id}`} />}
               {/* Le message, après le texte (décision 2026-11-22-demandes-message-apres-texte). */}
               {messageRow}
               {dateRow}
@@ -279,6 +282,8 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
                 {item.detail}
               </ThemedText>
             )}
+            {/* Ses vues : un œil suivi du nombre (décision 2026-11-25-vues-oeil). */}
+            {item.views && <ViewsCount views={item.views} compact testID={`${prefix}-views-${item.id}`} />}
             {/* Le message, après le texte (décision 2026-11-22-demandes-message-apres-texte). */}
             {messageRow}
             {dateRow}

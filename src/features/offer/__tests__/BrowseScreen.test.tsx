@@ -18,6 +18,8 @@ jest.mock('expo-image', () => {
   return { Image: View };
 });
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+const mockClick = jest.fn().mockResolvedValue(undefined);
+jest.mock('../services/OfferService', () => ({ offerService: { click: (...args: unknown[]) => mockClick(...args) } }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
@@ -152,6 +154,17 @@ describe('Accueil : offres du pays', () => {
     await fireEvent.press(screen.getByTestId('browse-item-7'));
 
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '7' } });
+    // La carte ne compte pas le clic : la fiche le fait (décision 2026-11-25-clic-a-l-ouverture).
+    expect(mockClick).not.toHaveBeenCalled();
+  });
+
+  it('le nombre d’offres trouvées en tête (décision 2026-11-25-recherche-nombre)', async () => {
+    mockList = { ...list(), heading: { title: '12 logements', subtitle: null } };
+    await show(<BrowseScreen />);
+
+    expect(screen.getByTestId('browse-heading')).toHaveTextContent('12 logements');
+    // Centré (décision 2026-11-25-nombre-centre).
+    expect(StyleSheet.flatten(screen.getByTestId('browse-heading').props.style)).toMatchObject({ textAlign: 'center' });
   });
 
   it('charge la suite en approchant du bas', async () => {

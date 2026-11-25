@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -24,6 +24,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { OfferReviews, openReviewForm, reviewActions, useReviewRemoval } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { useOfferDetail } from '../hooks/useOfferDetail';
+import { offerService } from '../services/OfferService';
 import type { OfferDetail } from '../types';
 
 /**
@@ -40,6 +41,11 @@ export function OfferDetailScreen({ id }: { id: string }) {
   const { t, locale } = useI18n();
   const query = useOfferDetail(id);
   const { user } = useAuth();
+  // Ouvrir la fiche, par n'importe quel lien, compte un clic ; l'API ne le compte pas pour son propriétaire (décision
+  // 2026-11-25-clic-a-l-ouverture). Une fois par ouverture ; une erreur réseau ne gêne pas la fiche.
+  useEffect(() => {
+    void offerService.click(id).catch(() => undefined);
+  }, [id]);
   const { width: windowWidth } = useWindowDimensions();
   const width = Math.min(windowWidth, MaxContentWidth / 2);
   const offer = query.data;

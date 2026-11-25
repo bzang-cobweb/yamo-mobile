@@ -18,6 +18,8 @@ jest.mock('expo-image', () => {
   return { Image: View };
 });
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), navigate: jest.fn() } }));
+const mockClick = jest.fn().mockResolvedValue(undefined);
+jest.mock('../services/OfferService', () => ({ offerService: { click: (...args: unknown[]) => mockClick(...args) } }));
 let mockState: { data?: HomeCarousel[]; isPending: boolean; isError: boolean; error: unknown } = { isPending: true, isError: false, error: null };
 const mockRefetch = jest.fn();
 jest.mock('@/features/partner/hooks/usePartners', () => ({ usePartners: () => ({ data: { partners: [], become: null }, refetch: jest.fn() }) }));
@@ -66,6 +68,8 @@ describe('HomeScreen', () => {
 
     await fireEvent.press(screen.getByTestId('home-item-3'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '3' } });
+    // La carte ne compte pas le clic : la fiche le fait (décision 2026-11-25-clic-a-l-ouverture).
+    expect(mockClick).not.toHaveBeenCalled();
   });
 
   it('« À la une » en haut, avant les villes, sans carrousel : les cartes des villes, toutes visibles (décision 2026-11-25-bloc-a-la-une)', async () => {
