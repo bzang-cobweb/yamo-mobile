@@ -1,6 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { STAR_COLOR } from '@/shared/components/Stars';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
@@ -37,7 +36,7 @@ export function RatingField({ field, value, onChange, error, disabled }: FieldPr
               hitSlop={Spacing.one}
               onPress={() => onChange(star)}
               style={({ pressed }) => [styles.star, pressed && styles.pressed]}>
-              <Text style={[styles.glyph, { color: Number(star) <= current ? STAR_COLOR : theme.backgroundSelected }]}>★</Text>
+              <Text style={[styles.glyph, { color: Number(star) <= current ? theme.text : theme.backgroundSelected }]}>★</Text>
             </Pressable>
           );
         })}

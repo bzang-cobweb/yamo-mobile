@@ -12,6 +12,7 @@ import { currentToast } from '@/shared/components/Toast';
 import { OfferDetailScreen } from '../screens/OfferDetailScreen';
 import { OfferService, offerService } from '../services/OfferService';
 import type { OfferDetail, OfferSection } from '../types';
+import { Colors } from '@/shared/theme/theme';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -391,6 +392,8 @@ describe('OfferDetailScreen : avis', () => {
     const cardStyle = StyleSheet.flatten(screen.getAllByTestId('offer-review-card')[0].props.style) as Record<string, unknown>;
     expect(cardStyle).toMatchObject({ borderWidth: 1 });
     expect(cardStyle.backgroundColor).toBeUndefined();
+    // Les étoiles pleines dans la couleur des titres (décision 2026-11-26-etoiles-couleur-titre).
+    expect(StyleSheet.flatten(screen.getAllByTestId('offer-review-stars-value-full')[0].props.style)).toMatchObject({ color: Colors.light.text });
     // L'étoile vide reste visible sur le fond de la carte (décision 2026-11-25-avis-etoile-vide-visible).
     expect(JSON.stringify(screen.getAllByTestId('offer-review-stars-value')[0])).not.toContain('#E0E1E6');
     expect(screen.getByText('Paul')).toBeTruthy();

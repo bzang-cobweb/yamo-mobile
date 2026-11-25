@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
-import { STAR_COLOR } from '@/shared/components/Stars';
+import { Colors } from '@/shared/theme/theme';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
@@ -43,6 +43,6 @@ describe('RatingField (type « rating »)', () => {
     expect(screen.getByTestId('field-rating-star-3').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
     expect(screen.getByTestId('field-rating-star-4').props.accessibilityState).toEqual(expect.objectContaining({ selected: false }));
     expect(screen.getByLabelText('Note')).toBeTruthy();
-    expect(screen.getAllByText('★').map((star) => StyleSheet.flatten(star.props.style).color).filter((c) => c === STAR_COLOR)).toHaveLength(3);
+    expect(screen.getAllByText('★').map((star) => StyleSheet.flatten(star.props.style).color).filter((c) => c === Colors.light.text)).toHaveLength(3);
   });
 });
