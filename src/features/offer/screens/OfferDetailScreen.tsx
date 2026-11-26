@@ -23,6 +23,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { OfferReviews, openReviewForm, reviewActions, useReviewRemoval } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
+import { SectionAction } from '../components/SectionAction';
 import { useOfferDetail } from '../hooks/useOfferDetail';
 import { offerService } from '../services/OfferService';
 import type { OfferDetail } from '../types';
@@ -157,6 +158,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                             {(section.rows ?? []).map((row) => (
                               <FactRow key={row.label} fact={row} testID={`offer-${section.key}-row`} />
                             ))}
+                            {section.action && <SectionAction action={section.action} testID={`offer-${section.key}-action`} />}
                           </Accordion>
                         );
                       // Un texte et sa note : la localisation (adresse, indication), un bloc d'informations.

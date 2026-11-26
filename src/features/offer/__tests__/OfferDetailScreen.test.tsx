@@ -260,6 +260,41 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     expect(screen.queryByTestId('offer-section-location')).toBeNull();
   });
 
+  it('une section peut porter un bouton : « Envoyer un message » sous l’éditeur ; un visiteur passe par la connexion (décision 2026-11-26-messages-editeur)', async () => {
+    const publisher: OfferSection = {
+      key: 'publisher',
+      type: 'rows',
+      title: 'Éditeur',
+      open: true,
+      rows: [{ label: 'Publié par', value: 'Awa' }],
+      action: { label: 'Envoyer un message', link: '/profile/offer.message?record=1' },
+    };
+    mockState = { data: { ...OFFER, sections: [publisher] }, isPending: false, error: null };
+    await show();
+
+    const button = screen.getByTestId('offer-publisher-action');
+    expect(button).toHaveTextContent('Envoyer un message');
+    await fireEvent.press(button);
+    expect(router.push).toHaveBeenLastCalledWith('/sign-in');
+
+    // Un membre connecté : le formulaire de message.
+    mockUser = { id: 7 };
+    await show();
+    await fireEvent.press(screen.getByTestId('offer-publisher-action'));
+    expect(router.push).toHaveBeenLastCalledWith('/profile/offer.message?record=1');
+  });
+
+  it('sans action servie (sa propre offre), pas de bouton dans la section', async () => {
+    mockState = {
+      data: { ...OFFER, sections: [{ key: 'publisher', type: 'rows', title: 'Éditeur', open: true, rows: [{ label: 'Publié par', value: 'Awa' }], action: null }] },
+      isPending: false,
+      error: null,
+    };
+    await show();
+
+    expect(screen.queryByTestId('offer-publisher-action')).toBeNull();
+  });
+
   it('règles dans leur section ; rien sans valeur', async () => {
     // Décision 2026-11-19-contrat-regles-informations.
     mockState = {

@@ -66,7 +66,12 @@ export type OfferSection = {
   rows?: { label: string; value: string }[];
   text?: string;
   note?: string | null;
+  /** Un bouton sous le contenu (« Envoyer un message » dans « Éditeur », décision 2026-11-26-messages-editeur) ; absent : aucun. */
+  action?: OfferSectionAction | null;
 };
+
+/** Le bouton d'une section : son libellé et le lien de l'app qu'il ouvre. */
+export type OfferSectionAction = { label: string; link: string };
 
 /** Un avis : prénom de l'auteur, note de 1 à 5, commentaire, date. */
 export type OfferReview = {
