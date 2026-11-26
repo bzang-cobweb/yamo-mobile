@@ -47,6 +47,11 @@ export type AppNotification = {
    */
   heading?: NotificationHeading | null;
   /**
+   * Sur la page d'une notification : des lignes sous l'en-tête, données par le module du fil (les dernières
+   * modifications d'un partenaire) ; `null` (ou absent) : aucune (décision 2026-11-26-partenaire-dernieres-modifications).
+   */
+  lines?: SummaryLine[] | null;
+  /**
    * Sur la page d'une notification du fil d'une demande : la demande, ajoutée par le
    * module Offer (décision 2026-11-20-notification-generique) ; absent sinon.
    */
@@ -113,4 +118,8 @@ export type NotificationPage = {
 };
 
 /** Une ligne d'une demande ; `link` : un écran de l'app ouvert par la valeur (le nom de l'hôte ou du membre → `/members/12`). */
-export type BookingLine = { key: string; label: string; value: string; link?: string | null };
+/** Une ligne d'une page de notification, libellé et valeur ; `link` : un écran de l'app ouvert par la valeur. */
+export type SummaryLine = { key: string; label: string; value: string; link?: string | null };
+
+/** Une ligne d'une demande. */
+export type BookingLine = SummaryLine;

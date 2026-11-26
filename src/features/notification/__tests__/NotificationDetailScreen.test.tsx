@@ -189,6 +189,27 @@ describe('NotificationDetailScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
   });
 
+  it('un partenaire : ses dernières modifications en lignes sous l’en-tête (décision 2026-11-26-partenaire-dernieres-modifications)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({
+      ...NOTIFICATION,
+      heading: { title: 'Déménagement Express', subtitle: 'En une journée.', link: '/partners/18' },
+      booking: undefined,
+      lines: [
+        { key: 'slogan', label: 'Slogan', value: '« En une journée. » → « En une journée, sans casse. »' },
+        { key: 'website', label: 'Lien', value: '(vide) → « https://demenagement.test »' },
+        { key: 'description', label: 'Description', value: '« Camions. » → « Camions et cartons. »' },
+      ],
+    });
+    await show();
+
+    expect(await screen.findByTestId('notification-detail-line-slogan-value')).toHaveTextContent('« En une journée. » → « En une journée, sans casse. »');
+    expect(screen.getByTestId('notification-detail-line-website-label')).toHaveTextContent('Lien\u00a0:');
+    // Deux lignes, puis « Voir plus », comme les lignes d'une demande.
+    expect(screen.queryByTestId('notification-detail-line-description')).toBeNull();
+    await fireEvent.press(screen.getByTestId('notification-detail-more'));
+    expect(screen.getByTestId('notification-detail-line-description')).toBeTruthy();
+  });
+
   it('un en-tête sans lien ni sous-titre, sans demande : le titre seul, pas de texte ni de lignes (décision 2026-11-26-booking-summary)', async () => {
     jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, heading: { title: 'Agence du port', subtitle: null, link: null }, booking: undefined });
     await show();
