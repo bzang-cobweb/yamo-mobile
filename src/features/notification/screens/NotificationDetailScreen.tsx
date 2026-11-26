@@ -1,9 +1,10 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { BookingSummary } from '@/features/offer/components/BookingSummary';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
@@ -19,10 +20,6 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { NotificationConversation } from '../components/NotificationConversation';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
 import { useMarkRead, useNotification } from '../hooks/useNotifications';
-import type { BookingLine } from '../types';
-
-/** Les lignes d'une demande toujours visibles, avant « Voir plus » (décision 2026-11-21-voir-plus-apres-deux-lignes). */
-const VISIBLE_LINES = 2;
 
 /**
  * La page d'une notification (`/notifications/[id]`), ouverte depuis la liste
@@ -38,10 +35,8 @@ const VISIBLE_LINES = 2;
  * Ouverte, elle est marquée lue.
  */
 export function NotificationDetailScreen({ id }: { id: string }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const theme = useTheme();
-  // Les lignes de la demande, fermées d'abord ; le nom de l'offre les déplie ou les plie.
-  const [open, setOpen] = useState(false);
   const query = useNotification(id);
   const markRead = useMarkRead();
   const { refetch } = query;
@@ -63,48 +58,6 @@ export function NotificationDetailScreen({ id }: { id: string }) {
       void markRead(notification.id);
     }
   }, [notification, markRead]);
-
-  // Les deux premières lignes, puis la suite derrière « Voir plus ».
-  const lines = notification?.booking?.lines ?? [];
-  const split = VISIBLE_LINES;
-  const firstLines = lines.slice(0, split);
-  const moreLines = lines.slice(split);
-
-  function renderLine(line: BookingLine) {
-    return (
-      <View key={line.key} style={[styles.headRow, styles.lineRow]} testID={`notification-detail-line-${line.key}`}>
-        <ThemedText
-          type={line.key === 'total' ? 'smallBold' : 'small'}
-          themeColor={line.key === 'total' ? undefined : 'textSecondary'}
-          testID={`notification-detail-line-${line.key}-label`}>
-          {/* « Arrivée : » ; en français, une espace insécable avant les deux-points (décision
-              2026-11-22-detail-libelles-deux-points). */}
-          {`${line.label}${locale.startsWith('fr') ? '\u00a0:' : ':'}`}
-        </ThemedText>
-        {/* Une valeur avec un lien : le nom de l'hôte ou du membre, vers sa page
-            (décision 2026-11-21-detail-reservation-contact). */}
-        {line.link && APP_LINK.test(line.link) ? (
-          <ThemedText
-            type="linkPrimary"
-            accessibilityRole="link"
-            onPress={() => line.link && go(line.link)}
-            style={styles.dateValue}
-            testID={`notification-detail-line-${line.key}-value`}>
-            {line.value}
-          </ThemedText>
-        ) : (
-          <ThemedText
-            type="small"
-            themeColor={line.key === 'total' ? undefined : 'textSecondary'}
-            style={[styles.dateValue, line.key === 'total' && styles.total]}
-            selectable
-            testID={`notification-detail-line-${line.key}-value`}>
-            {line.value}
-          </ThemedText>
-        )}
-      </View>
-    );
-  }
 
   function go(link: string) {
     if (APP_LINK.test(link)) {
@@ -147,28 +100,28 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       <StatusTag tag={notification.tag} testID="notification-detail-tag" />
                     </View>
                   )}
-                  {/* Le nom de l'offre, sous le type de location et la pastille : le toucher ouvre la fiche du
-                      logement (décision 2026-11-21-detail-reservation-voir-plus). */}
-                  {notification.booking?.offer.title && (
+                  {/* L'en-tête servi par le module du fil (décision 2026-11-26-booking-summary) : le titre en gras, centré,
+                      en lien vers sa page s'il en a une (le nom du logement vers sa fiche, décision
+                      2026-11-21-detail-reservation-voir-plus) ; dessous, le sous-titre (le titre composé, décision
+                      2026-11-22-detail-titre-compose-sous-titre). */}
+                  {notification.heading && (
                     <ThemedText
-                      accessibilityRole="link"
-                      onPress={() => notification.booking && go(`/offers/${notification.booking.offer_id}`)}
+                      accessibilityRole={notification.heading.link ? 'link' : undefined}
+                      onPress={notification.heading.link ? () => notification.heading?.link && go(notification.heading.link) : undefined}
                       // Centré, le lien sur le texte seul (décision 2026-11-22-liens-sur-le-texte).
-                      style={[styles.offerLink, styles.centered, styles.linkOnly]}
-                      testID="notification-detail-offer-title">
-                      {notification.booking.offer.title}
+                      style={[styles.heading, styles.centered, styles.linkOnly]}
+                      testID="notification-detail-heading-title">
+                      {notification.heading.title}
                     </ThemedText>
                   )}
-                  {/* Le titre composé sans la ville, sous le nom du logement (décisions 2026-11-22-detail-titre-compose-sous-titre et
-                      2026-11-22-detail-titre-compose-sans-ville). */}
-                  {notification.booking?.composed_title && (
-                    <ThemedText type="small" themeColor="textSecondary" style={styles.centered} testID="notification-detail-composed-title">
-                      {notification.booking.composed_title}
+                  {notification.heading?.subtitle && (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.centered} testID="notification-detail-heading-subtitle">
+                      {notification.heading.subtitle}
                     </ThemedText>
                   )}
-                  {/* Le texte, pour une notification sans demande : une demande se dit par ses lignes
+                  {/* Sans en-tête, le texte de la notification ; une demande se dit par son en-tête et ses lignes
                       (décision 2026-11-20-titre-demande). */}
-                  {!notification.booking && (
+                  {!notification.heading && (
                     <NotificationText
                       type="default"
                       body={notification.summary ?? notification.body}
@@ -177,26 +130,8 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                       testID="notification-detail-text"
                     />
                   )}
-                  {/* Les lignes de la demande, dans l'ordre servi, le libellé à gauche et la valeur à droite :
-                      les deux premières, toujours ; puis « Voir plus » déplie la suite : coordonnées, dates, durée, prix,
-                      total en gras (décisions 2026-11-20-lignes-demande, 2026-11-21-detail-reservation-voir-plus et
-                      2026-11-21-voir-plus-apres-une-ligne). */}
-                  {firstLines.map(renderLine)}
-                  {open && moreLines.map(renderLine)}
-                  {/* À la fin, même dépliée, à droite, sans icône : « Voir plus » / « Voir moins »
-                      (décision 2026-11-21-detail-reservation-voir-plus). */}
-                  {moreLines.length > 0 && (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityState={{ expanded: open }}
-                      onPress={() => setOpen((value) => !value)}
-                      style={({ pressed }) => [styles.more, pressed && styles.pressed]}
-                      testID="notification-detail-more">
-                      <ThemedText type="linkPrimary" testID="notification-detail-more-label">
-                        {t(open ? 'notifications.less' : 'notifications.more')}
-                      </ThemedText>
-                    </Pressable>
-                  )}
+                  {/* Ce qui est propre à une demande : ses lignes et « Voir plus ». */}
+                  {notification.booking && <BookingSummary booking={notification.booking} onOpen={go} />}
                 </View>
               </View>
               {/* Sans marge ajoutée par iOS en haut du contenu. */}
@@ -243,22 +178,14 @@ const styles = StyleSheet.create({
   error: { color: ERROR_COLOR },
   head: { borderBottomWidth: 1, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
   headContent: { width: '100%', alignSelf: 'center', gap: Spacing.two },
-  headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   // Le titre et le titre composé, centrés (décision 2026-11-22-detail-titres-centres).
   centered: { textAlign: 'center' },
   linkOnly: { alignSelf: 'center' },
-  // Le libellé en haut de sa ligne, même si la valeur en prend plusieurs (décision 2026-11-22-detail-libelle-en-haut).
-  lineRow: { alignItems: 'flex-start' },
   // La pastille seule, à gauche.
   // La pastille du statut, centrée comme le nom du logement en dessous (décision 2026-11-24-detail-statut-centre).
   tagRow: { flexDirection: 'row', justifyContent: 'center' },
-  // La valeur à droite de son libellé, sur plusieurs lignes au besoin.
-  dateValue: { flexShrink: 1, textAlign: 'right' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
-  total: { fontWeight: '700' },
-  // Le nom de l'offre, en gras.
-  offerLink: { fontWeight: '700' },
-  pressed: { opacity: 0.7 },
-  more: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, alignSelf: 'flex-end' },
+  // Le titre de l'en-tête, en gras.
+  heading: { fontWeight: '700' },
 });

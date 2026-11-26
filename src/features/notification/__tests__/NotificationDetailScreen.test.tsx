@@ -41,6 +41,7 @@ const NOTIFICATION: AppNotification = {
     { text: 'Studio photos', link: '/offers/22' },
   ],
   link_label: 'Traiter la demande',
+  heading: { title: 'Studio photos', subtitle: 'Location meublée · Studio', link: '/offers/22' },
   booking: {
     id: '9', offer_id: '22', type: 'stay', status: 'pending', check_in: '2026-12-01', check_out: '2026-12-04', guests: 2,
     offer: { title: 'Studio photos', rental_type: 'Location meublée', property_type: 'Studio' },
@@ -175,14 +176,28 @@ describe('NotificationDetailScreen', () => {
     await waitFor(() => expect(notificationService.read).toHaveBeenCalledWith('n1'));
   });
 
-  it('sans demande : le texte, sans le nom de qui agit, et ses liens', async () => {
-    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, booking: undefined });
+  it('sans en-tête ni demande : le texte, sans le nom de qui agit, et ses liens', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, heading: null, booking: undefined });
     await show();
+
+    expect(screen.queryByTestId('notification-detail-heading-title')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-more')).toBeNull();
 
     expect(await screen.findByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
     expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
     await fireEvent.press(screen.getByText('Studio photos'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
+  });
+
+  it('un en-tête sans lien ni sous-titre, sans demande : le titre seul, pas de texte ni de lignes (décision 2026-11-26-booking-summary)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, heading: { title: 'Agence du port', subtitle: null, link: null }, booking: undefined });
+    await show();
+
+    expect(await screen.findByTestId('notification-detail-heading-title')).toHaveTextContent('Agence du port');
+    expect(screen.getByTestId('notification-detail-heading-title').props.accessibilityRole).toBeUndefined();
+    expect(screen.queryByTestId('notification-detail-heading-subtitle')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-text')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-line-member')).toBeNull();
   });
 
   it('les lignes jusqu’au départ, puis « Voir plus » déplie la suite ; le bouton ouvre son écran', async () => {
@@ -202,18 +217,18 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-more-icon')).toBeNull();
     expect(screen.getByTestId('notification-detail-more').props.accessibilityState).toEqual({ expanded: false });
     // Le nom de l'offre, en gras, ouvre la fiche du logement ; plus de « Voir le logement ».
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-heading-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
     expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
     // Le titre composé sans la ville, sous le nom du logement (décisions 2026-11-22-detail-titre-compose-sous-titre et
     // 2026-11-22-detail-titre-compose-sans-ville).
-    expect(screen.getByTestId('notification-detail-composed-title')).toHaveTextContent('Location meublée · Studio');
+    expect(screen.getByTestId('notification-detail-heading-subtitle')).toHaveTextContent('Location meublée · Studio');
     // Le titre et le titre composé, centrés (décision 2026-11-22-detail-titres-centres).
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-offer-title').props.style)).toMatchObject({ textAlign: 'center', alignSelf: 'center' });
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-composed-title').props.style)).toMatchObject({ textAlign: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-heading-title').props.style)).toMatchObject({ textAlign: 'center', alignSelf: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-heading-subtitle').props.style)).toMatchObject({ textAlign: 'center' });
     const tree = JSON.stringify(screen.toJSON());
-    expect(tree.indexOf('"notification-detail-offer-title"')).toBeLessThan(tree.indexOf('"notification-detail-composed-title"'));
+    expect(tree.indexOf('"notification-detail-heading-title"')).toBeLessThan(tree.indexOf('"notification-detail-heading-subtitle"'));
     expect(screen.queryByTestId('notification-detail-period')).toBeNull();
-    await fireEvent.press(screen.getByTestId('notification-detail-offer-title'));
+    await fireEvent.press(screen.getByTestId('notification-detail-heading-title'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
     await fireEvent.press(screen.getByTestId('notification-detail-more'));
     expect(screen.getByTestId('notification-detail-line-total')).toBeTruthy();

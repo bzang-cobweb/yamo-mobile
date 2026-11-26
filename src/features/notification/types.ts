@@ -42,11 +42,20 @@ export type AppNotification = {
    */
   history?: NotificationStep[];
   /**
+   * Sur la page d'une notification : l'en-tête sous la pastille, donné par le module du fil (une demande : le nom du
+   * logement vers sa fiche, et son titre composé) ; `null` (ou absent) : le texte de la notification à la place
+   * (décision 2026-11-26-booking-summary).
+   */
+  heading?: NotificationHeading | null;
+  /**
    * Sur la page d'une notification du fil d'une demande : la demande, ajoutée par le
    * module Offer (décision 2026-11-20-notification-generique) ; absent sinon.
    */
   booking?: NotificationBooking | null;
 };
+
+/** L'en-tête de la page d'une notification : un titre, en lien vers `link` s'il y en a un, et un sous-titre. */
+export type NotificationHeading = { title: string; subtitle: string | null; link: string | null };
 
 /** Une demande, en léger : son offre et ses lignes à afficher. */
 export type NotificationBooking = {
