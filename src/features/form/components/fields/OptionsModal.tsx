@@ -101,7 +101,7 @@ export function OptionsModal({ visible, title, options, selected, onSelect, onCl
                     <SymbolView
                       testID={`${testIDPrefix}-option-${option.value}-icon`}
                       name={icon}
-                      tintColor={option.value === selected ? theme.primary : theme.textSecondary}
+                      tintColor={option.value === selected ? theme.text : theme.textSecondary}
                       size={18}
                     />
                   )}

@@ -2,6 +2,7 @@ import type { FieldProps, FieldValue, RepeaterItem } from '../types';
 import { isYesNoSwitch } from '../utils/values';
 import { CheckboxField } from './fields/CheckboxField';
 import { CheckboxGroupField } from './fields/CheckboxGroupField';
+import { ChipsField } from './fields/ChipsField';
 import { CodeField } from './fields/CodeField';
 import { CalendarDateField } from './fields/CalendarDateField';
 import { DateField } from './fields/DateField';
@@ -73,6 +74,8 @@ export function FormField({ field, value, onChange, error, disabled, onSubmitEdi
       return <SegmentedField {...common} value={asText} onChange={onChange} />;
     case 'multiselect':
       return <MultiSelectField {...common} value={asList} onChange={onChange} />;
+    case 'chips':
+      return <ChipsField {...common} value={asList} onChange={onChange} />;
     case 'range':
       return <RangeField {...common} value={asList} onChange={onChange} />;
     case 'rating':

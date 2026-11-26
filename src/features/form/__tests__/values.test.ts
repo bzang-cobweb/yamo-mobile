@@ -6,6 +6,14 @@ function field(visibleWhen: FormFieldDefinition['visible_when']): FormFieldDefin
 }
 
 describe('isVisible (champ conditionnel)', () => {
+  it('une liste (des puces) : rien de choisi vaut « vide » ; sinon chaque choix doit être attendu (décision 2026-11-26-filtres-en-puces)', () => {
+    const availableFrom = field({ field: 'rental_type', value: '', values: ['', 'long_term', 'shared'] });
+
+    expect(isVisible(availableFrom, { rental_type: [] })).toBe(true);
+    expect(isVisible(availableFrom, { rental_type: ['long_term', 'shared'] })).toBe(true);
+    expect(isVisible(availableFrom, { rental_type: ['long_term', 'furnished'] })).toBe(false);
+  });
+
   it('une seule valeur : affiché quand le champ la vaut', () => {
     const offer = field({ field: 'type', value: 'a' });
 

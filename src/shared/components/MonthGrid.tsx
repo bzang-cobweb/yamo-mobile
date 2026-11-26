@@ -143,8 +143,9 @@ export function MonthGrid({ label, weekdays, offset, cells, onPress, onPrevious,
 function cellColors(cell: MonthGridCell, theme: ReturnType<typeof useTheme>) {
   const white = { color: '#ffffff' };
 
+  // Le jour choisi : fond noir, texte blanc, comme toute sélection d'un champ (décision 2026-11-26-selection-noir-et-blanc).
   if (cell.selected) {
-    return { box: { backgroundColor: theme.primary }, text: { color: theme.onPrimary } };
+    return { box: { backgroundColor: theme.text }, text: { color: theme.background } };
   }
   if (cell.inRange) {
     return { box: { backgroundColor: theme.backgroundSelected }, text: {} };

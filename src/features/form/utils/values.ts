@@ -20,6 +20,7 @@ export function initialValue(field: FormFieldDefinition): FieldValue {
       return field.default === true;
     case 'checkbox_group':
     case 'multiselect':
+    case 'chips':
     case 'upload':
       return Array.isArray(field.default) ? field.default.map(String) : [];
     case 'repeater':
@@ -66,9 +67,17 @@ export function isVisible(field: FormFieldDefinition, values: FormValues): boole
   if (!field.visible_when) {
     return true;
   }
-  const value = String(values[field.visible_when.field] ?? '');
+  const expected = field.visible_when.values ?? [field.visible_when.value];
+  const current = values[field.visible_when.field];
+  // Une liste (des puces) : rien de choisi vaut « vide » ; sinon, chaque choix doit être attendu (décision
+  // 2026-11-26-filtres-en-puces).
+  if (Array.isArray(current)) {
+    const chosen = current.map(String);
 
-  return (field.visible_when.values ?? [field.visible_when.value]).includes(value);
+    return chosen.length === 0 ? expected.includes('') : chosen.every((item) => expected.includes(item));
+  }
+
+  return expected.includes(String(current ?? ''));
 }
 
 /**

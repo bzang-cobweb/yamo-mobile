@@ -27,6 +27,8 @@ export type FieldType =
   | 'rating'
   /** Liste déroulante à choix multiples : la liste des options choisies. */
   | 'multiselect'
+  /** Choix multiples en puces sur une ligne qui défile ; valeur : la liste des options choisies (décision 2026-11-26-filtres-en-puces). */
+  | 'chips'
   /** Intervalle `[min, max]`, chaque borne facultative. */
   | 'range'
   /** Fichiers envoyés un à un ; valeur : la liste ordonnée de leurs identifiants (décision 2026-11-19-contrat-champ-upload-photos). */

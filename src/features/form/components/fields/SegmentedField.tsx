@@ -9,7 +9,8 @@ import { FieldShell } from '../FieldShell';
 
 /**
  * Choix parmi quelques options, en boutons côte à côte, une seule active
- * (ex. « E-mail | Téléphone » pour l'identifiant de connexion).
+ * (ex. « E-mail | Téléphone » pour l'identifiant de connexion). L'option choisie : fond noir, texte blanc, comme
+ * toute sélection d'un champ (décision 2026-11-26-selection-noir-et-blanc).
  */
 export function SegmentedField({ field, value, onChange, error, disabled }: FieldProps<string>) {
   const theme = useTheme();
@@ -31,8 +32,8 @@ export function SegmentedField({ field, value, onChange, error, disabled }: Fiel
               accessibilityState={{ selected, disabled }}
               disabled={disabled}
               onPress={() => onChange(option.value)}
-              style={[styles.segment, selected && { backgroundColor: theme.primary }]}>
-              <ThemedText type="smallBold" style={selected ? { color: theme.onPrimary } : undefined}>
+              style={[styles.segment, selected && { backgroundColor: theme.text }]}>
+              <ThemedText type="smallBold" style={selected ? { color: theme.background } : undefined}>
                 {option.label}
               </ThemedText>
             </Pressable>
