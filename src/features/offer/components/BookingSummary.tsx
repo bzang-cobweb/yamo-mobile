@@ -6,6 +6,6 @@ import type { NotificationBooking } from '@/features/notification/types';
  * lignes (coordonnées, dates, durée, prix, total en gras), par `SummaryLines`. Le nom du logement et son titre composé
  * ne sont pas ici : ils sont l'en-tête de la page (`heading`).
  */
-export function BookingSummary({ booking, onOpen, testID = 'notification-detail' }: { booking: NotificationBooking; onOpen: (link: string) => void; testID?: string }) {
-  return <SummaryLines lines={booking.lines} onOpen={onOpen} testID={testID} />;
+export function BookingSummary({ booking, title, onOpen, testID = 'notification-detail' }: { booking: NotificationBooking; title?: string | null; onOpen: (link: string) => void; testID?: string }) {
+  return <SummaryLines lines={booking.lines} title={title} onOpen={onOpen} testID={testID} />;
 }

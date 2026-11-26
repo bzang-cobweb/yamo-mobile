@@ -132,9 +132,9 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     />
                   )}
                   {/* Ce qui est propre à une demande : ses lignes et « Voir plus ». */}
-                  {notification.booking && <BookingSummary booking={notification.booking} onOpen={go} />}
+                  {notification.booking && <BookingSummary booking={notification.booking} title={notification.lines_title} onOpen={go} />}
                   {/* Les lignes servies par le module du fil (les dernières modifications d'un partenaire). */}
-                  {notification.lines && notification.lines.length > 0 && <SummaryLines lines={notification.lines} onOpen={go} />}
+                  {notification.lines && notification.lines.length > 0 && <SummaryLines lines={notification.lines} title={notification.lines_title} onOpen={go} />}
                 </View>
               </View>
               {/* Sans marge ajoutée par iOS en haut du contenu. */}

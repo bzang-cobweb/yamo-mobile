@@ -51,6 +51,8 @@ export type AppNotification = {
    * modifications d'un partenaire) ; `null` (ou absent) : aucune (décision 2026-11-26-partenaire-dernieres-modifications).
    */
   lines?: SummaryLine[] | null;
+  /** Le titre du panneau de « Voir plus » (« Modifications », « Détails de la demande ») ; `null` : « Détails » (décision 2026-11-26-lignes-en-panneau). */
+  lines_title?: string | null;
   /**
    * Sur la page d'une notification du fil d'une demande : la demande, ajoutée par le
    * module Offer (décision 2026-11-20-notification-generique) ; absent sinon.
