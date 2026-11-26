@@ -152,7 +152,9 @@ export function FilterForm({ list, onDone }: { list: string; onDone: () => void 
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { flexShrink: 1 },
+  // Les champs prennent la place libre : la barre « Effacer » / « Appliquer » reste en bas, même dans un panneau ouvert
+  // à sa taille maximale (décision 2026-11-26-panneaux-taille-maximale).
+  scroll: { flex: 1 },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   bar: {
     flexDirection: 'row',

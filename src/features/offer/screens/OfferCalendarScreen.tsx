@@ -14,6 +14,7 @@ import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { MonthGrid } from '@/shared/components/MonthGrid';
 import { TONE_COLORS } from '@/shared/components/StatusTag';
+import { useSheetHeight } from '@/shared/hooks/useSheetHeight';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -38,6 +39,7 @@ const LEGEND_COLORS: Record<string, string> = {
  */
 export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: string; /** Mois ouvert d'abord (`AAAA-MM`) ; `null` : le mois courant. */ month?: string | null }) {
   const { t } = useI18n();
+  const sheetHeight = useSheetHeight();
   const queryClient = useQueryClient();
   const [month, setMonth] = useState<string | null>(initialMonth);
   const [selected, setSelected] = useState<string | null>(null);
@@ -154,7 +156,8 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
 
           <Modal visible={selected !== null} transparent animationType="slide" onRequestClose={() => setSelected(null)}>
             <Pressable style={styles.backdrop} accessibilityRole="button" accessibilityLabel={t('form.closeCalendar')} onPress={() => setSelected(null)} />
-            <ThemedView style={styles.sheet} testID="offer-calendar-day">
+            {/* Ouvert à sa taille maximale (décision 2026-11-26-panneaux-taille-maximale). */}
+            <ThemedView style={[styles.sheet, { height: sheetHeight }]} testID="offer-calendar-day">
               <View style={styles.sheetHeader}>
                 <ThemedText type="smallBold" style={styles.sheetTitle} accessibilityRole="header">
                   {panel?.title ?? ''}
@@ -166,7 +169,7 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
               {day.isPending || !panel ? (
                 <ActivityIndicator style={styles.sheetLoading} />
               ) : (
-                <ScrollView contentContainerStyle={styles.sheetBody}>
+                <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.sheetBody}>
                   {panel.items.length === 0 ? (
                     <ThemedText type="small" themeColor="textSecondary" testID="offer-calendar-day-empty">
                       {panel.empty}
@@ -206,9 +209,10 @@ const styles = StyleSheet.create({
   legendBox: { width: 18, height: 18, borderRadius: 4 },
   legendDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 5 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
-  sheet: { maxHeight: '70%', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: Spacing.four, paddingBottom: Spacing.six, gap: Spacing.two },
+  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: Spacing.four, paddingBottom: Spacing.six, gap: Spacing.two },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   sheetTitle: { flex: 1 },
   sheetLoading: { paddingVertical: Spacing.four },
+  sheetScroll: { flex: 1 },
   sheetBody: { gap: Spacing.three, paddingBottom: Spacing.four },
 });

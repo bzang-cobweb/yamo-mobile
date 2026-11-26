@@ -1,7 +1,8 @@
 import { SymbolView } from 'expo-symbols';
-import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useSheetHeight } from '@/shared/hooks/useSheetHeight';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { ThemedView } from '@/shared/theme/components/themed-view';
@@ -19,8 +20,8 @@ export function FilterSheet({ list, visible, onClose }: { list: string; visible:
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  // 80 % de l'écran au plus : un pourcentage se calcule sur le parent, plus haut que l'écran dans une fenêtre présentée.
-  const { height } = useWindowDimensions();
+  // Ouvert à sa taille maximale (décision 2026-11-26-panneaux-taille-maximale).
+  const height = useSheetHeight();
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -28,7 +29,7 @@ export function FilterSheet({ list, visible, onClose }: { list: string; visible:
           2026-11-25-filtres-en-panneau). */}
       <View style={styles.root}>
         <Pressable style={styles.backdrop} accessibilityRole="button" accessibilityLabel={t('nav.close')} onPress={onClose} testID="filter-sheet-backdrop" />
-        <ThemedView style={[styles.sheet, { maxHeight: height * 0.8, paddingBottom: insets.bottom }]} testID="filter-sheet">
+        <ThemedView style={[styles.sheet, { height, paddingBottom: insets.bottom }]} testID="filter-sheet">
           {/* Une bordure sous la ligne « Filtres » (décision 2026-11-25-filtres-en-panneau). */}
           <View style={[styles.header, { borderBottomColor: theme.backgroundSelected }]} testID="filter-sheet-header">
             <ThemedText type="smallBold" style={styles.title} accessibilityRole="header">
