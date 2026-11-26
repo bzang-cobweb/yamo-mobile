@@ -7,6 +7,7 @@ import { FormField } from '@/features/form/components/FormField';
 import type { FieldValue, FormFieldDefinition, FormValues } from '@/features/form/types';
 import { dependentOptions, initialValue, isVisible } from '@/features/form/utils/values';
 import { BackHeader } from '@/shared/components/BackHeader';
+import { SheetBar } from '@/shared/components/SheetBar';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -132,7 +133,7 @@ export function FilterForm({ list, onDone }: { list: string; onDone: () => void 
           />
         ))}
       </ScrollView>
-      <View style={[styles.bar, { borderTopColor: theme.backgroundSelected, backgroundColor: theme.background }]} testID="filter-bar">
+      <SheetBar row testID="filter-bar">
         <Pressable testID="filter-clear" accessibilityRole="button" onPress={clear} hitSlop={Spacing.two}>
           <ThemedText type="linkPrimary">{t('list.clearFilters')}</ThemedText>
         </Pressable>
@@ -145,7 +146,7 @@ export function FilterForm({ list, onDone }: { list: string; onDone: () => void 
             {t('list.applyFilters')}
           </ThemedText>
         </Pressable>
-      </View>
+      </SheetBar>
     </>
   );
 }
@@ -156,15 +157,6 @@ const styles = StyleSheet.create({
   // à sa taille maximale (décision 2026-11-26-panneaux-taille-maximale).
   scroll: { flex: 1 },
   content: { width: '100%', maxWidth: MaxContentWidth / 2, alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
-  bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.three,
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three,
-    borderTopWidth: 1,
-  },
   apply: { flex: 1, maxWidth: 240, alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.three },
   pressed: { opacity: 0.6 },
 });

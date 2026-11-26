@@ -18,7 +18,7 @@ jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn(), ca
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
+  return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
 });
 
 const DECEMBER: OfferCalendarMonth = {
@@ -146,6 +146,10 @@ describe('OfferCalendarScreen (décision 2026-11-19-contrat-calendrier-offre)', 
     const json = JSON.stringify(screen.toJSON());
     expect(json.indexOf('"testID":"calendar-date-9"')).toBeLessThan(json.indexOf('"testID":"calendar-action-9-buttons"'));
     expect(screen.getByTestId('calendar-action-9-destructive')).toBeTruthy();
+    // « Bloquer ce jour » dans la barre fixe du bas, hors de la liste qui défile (décision 2026-11-26-calendrier-barre-du-bas).
+    expect(screen.getByTestId('offer-calendar-day-bar')).toContainElement(screen.getByText('Bloquer ce jour'));
+    expect(StyleSheet.flatten(screen.getByTestId('offer-calendar-day-bar').props.style)).toMatchObject({ borderTopWidth: 1 });
+    expect(json.indexOf('"testID":"calendar-action-9-buttons"')).toBeLessThan(json.indexOf('"testID":"offer-calendar-day-bar"'));
 
     await fireEvent.press(screen.getByText('Bloquer ce jour'));
     await waitFor(() => expect(submit).toHaveBeenCalledWith(expect.objectContaining({ method: 'PUT', endpoint: '/v1/offers/7/blocked-dates/2026-12-03' }), {}));

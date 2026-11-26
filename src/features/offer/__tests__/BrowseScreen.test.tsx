@@ -31,7 +31,7 @@ jest.mock('../services/OfferService', () => ({ offerService: { click: (...args: 
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }) };
+  return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }) };
 });
 // La barre du haut a ses propres tests.
 jest.mock('@/features/welcome/components/LocaleSwitcher', () => {

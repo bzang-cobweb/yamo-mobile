@@ -1,20 +1,21 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { ItemActionButtons } from '@/features/list/components/ItemActionButtons';
 import { ListItemCard } from '@/features/list/components/ListItemCard';
 import type { ListItem } from '@/features/list/types';
+import { BottomSheet } from '@/shared/components/BottomSheet';
+import { SheetBar } from '@/shared/components/SheetBar';
 import { ToastHost } from '@/shared/components/Toast';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { MonthGrid } from '@/shared/components/MonthGrid';
 import { TONE_COLORS } from '@/shared/components/StatusTag';
-import { useSheetHeight } from '@/shared/hooks/useSheetHeight';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -39,7 +40,6 @@ const LEGEND_COLORS: Record<string, string> = {
  */
 export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: string; /** Mois ouvert d'abord (`AAAA-MM`) ; `null` : le mois courant. */ month?: string | null }) {
   const { t } = useI18n();
-  const sheetHeight = useSheetHeight();
   const queryClient = useQueryClient();
   const [month, setMonth] = useState<string | null>(initialMonth);
   const [selected, setSelected] = useState<string | null>(null);
@@ -154,41 +154,40 @@ export function OfferCalendarScreen({ id, month: initialMonth = null }: { id: st
             </ScrollView>
           )}
 
-          <Modal visible={selected !== null} transparent animationType="slide" onRequestClose={() => setSelected(null)}>
-            <Pressable style={styles.backdrop} accessibilityRole="button" accessibilityLabel={t('form.closeCalendar')} onPress={() => setSelected(null)} />
-            {/* Ouvert à sa taille maximale (décision 2026-11-26-panneaux-taille-maximale). */}
-            <ThemedView style={[styles.sheet, { height: sheetHeight }]} testID="offer-calendar-day">
-              <View style={styles.sheetHeader}>
-                <ThemedText type="smallBold" style={styles.sheetTitle} accessibilityRole="header">
-                  {panel?.title ?? ''}
-                </ThemedText>
-                <Pressable testID="offer-calendar-day-close" accessibilityRole="button" hitSlop={Spacing.two} onPress={() => setSelected(null)}>
-                  <ThemedText type="linkPrimary">{t('form.closeCalendar')}</ThemedText>
-                </Pressable>
-              </View>
-              {day.isPending || !panel ? (
-                <ActivityIndicator style={styles.sheetLoading} />
-              ) : (
-                <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.sheetBody}>
-                  {panel.items.length === 0 ? (
-                    <ThemedText type="small" themeColor="textSecondary" testID="offer-calendar-day-empty">
-                      {panel.empty}
-                    </ThemedText>
-                  ) : (
-                    panel.items.map(renderCard)
-                  )}
-                  {panel.note && (
-                    <ThemedText type="small" themeColor="textSecondary" testID="offer-calendar-day-note">
-                      {panel.note}
-                    </ThemedText>
-                  )}
-                  {panel.action && <ItemActionButtons actions={[panel.action]} testID="offer-calendar-day-action" onPress={press} />}
-                </ScrollView>
-              )}
-            </ThemedView>
-            {/* Le bandeau par-dessus le panneau, une fenêtre native qui couvre celui de l'app. */}
-            <ToastHost announce={false} />
-          </Modal>
+          {/* Le panneau des demandes du jour, à sa taille maximale (décisions 2026-11-26-panneaux-taille-maximale et
+              2026-11-26-bottom-sheet) ; le bandeau des messages par-dessus, une fenêtre native qui couvre celui de l'app. */}
+          <BottomSheet
+            visible={selected !== null}
+            title={panel?.title ?? ''}
+            onClose={() => setSelected(null)}
+            overlay={<ToastHost announce={false} />}
+            testID="offer-calendar-day">
+            {day.isPending || !panel ? (
+              <ActivityIndicator style={styles.sheetLoading} />
+            ) : (
+              <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.sheetBody}>
+                {panel.items.length === 0 ? (
+                  <ThemedText type="small" themeColor="textSecondary" testID="offer-calendar-day-empty">
+                    {panel.empty}
+                  </ThemedText>
+                ) : (
+                  panel.items.map(renderCard)
+                )}
+              </ScrollView>
+            )}
+            {/* Ce qui vient sous les demandes, dans une barre fixe en bas : la note (un séjour accepté) ou « Bloquer ce jour »
+                / « Débloquer » ; les demandes défilent au-dessus (décision 2026-11-26-calendrier-barre-du-bas). */}
+            {panel && !day.isPending && (panel.note || panel.action) && (
+              <SheetBar testID="offer-calendar-day-bar">
+                {panel.note && (
+                  <ThemedText type="small" themeColor="textSecondary" testID="offer-calendar-day-note">
+                    {panel.note}
+                  </ThemedText>
+                )}
+                {panel.action && <ItemActionButtons actions={[panel.action]} testID="offer-calendar-day-action" onPress={press} />}
+              </SheetBar>
+            )}
+          </BottomSheet>
         </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
@@ -208,11 +207,8 @@ const styles = StyleSheet.create({
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   legendBox: { width: 18, height: 18, borderRadius: 4 },
   legendDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 5 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
-  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: Spacing.four, paddingBottom: Spacing.six, gap: Spacing.two },
-  sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
-  sheetTitle: { flex: 1 },
-  sheetLoading: { paddingVertical: Spacing.four },
+  sheetLoading: { padding: Spacing.four },
   sheetScroll: { flex: 1 },
-  sheetBody: { gap: Spacing.three, paddingBottom: Spacing.four },
+  // Les marges du contenu, sous la ligne du titre du panneau.
+  sheetBody: { gap: Spacing.three, padding: Spacing.four },
 });
