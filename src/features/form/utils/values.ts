@@ -83,15 +83,17 @@ export function isVisible(field: FormFieldDefinition, values: FormValues): boole
 /**
  * Les options d'une liste dépendante (`depends_on`) : celles dont le parent est la valeur choisie dans le champ
  * parent (la région du pays ; le statut du type de notification, décision
- * 2026-11-24-notifications-types-reservation-partenaire).
+ * 2026-11-24-notifications-types-reservation-partenaire) ; un parent en puces : celles de chacune de ses valeurs.
  */
 export function dependentOptions(field: FormFieldDefinition, values: FormValues): FieldOption[] {
   if (!field.depends_on) {
     return field.options;
   }
-  const parent = String(values[field.depends_on] ?? '');
+  const value = values[field.depends_on];
+  // Des puces : les options de chaque valeur choisie (décision 2026-11-26-filtre-type-en-puces).
+  const parents = Array.isArray(value) ? value.map(String) : [String(value ?? '')];
 
-  return field.options.filter((option) => option.parent === parent);
+  return field.options.filter((option) => option.parent !== undefined && option.parent !== null && parents.includes(String(option.parent)));
 }
 
 /**
