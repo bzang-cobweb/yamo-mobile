@@ -32,7 +32,22 @@ jest.mock('expo-image', () => {
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }) };
+  return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }) };
+});
+// Le formulaire de message : un bouton qui l'envoie ; son titre, servi par sa définition.
+jest.mock('@/features/form/hooks/useFormDefinition', () => ({ useFormDefinition: () => ({ data: { title: 'Envoyer un message' } }) }));
+jest.mock('@/features/auth/screens/ProfileFormScreen', () => {
+  const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return {
+    profileContentStyle: {},
+    formTitle: (definition?: { title?: string }) => definition?.title ?? '',
+    ProfileForm: ({ form, record, onDone }: { form: string; record?: string; onDone: (success: { action: string; message: string }) => void }) => (
+      <Pressable testID="profile-form" onPress={() => onDone({ action: 'back', message: 'Message envoyé.' })}>
+        <Text>{`${form}:${record}`}</Text>
+      </Pressable>
+    ),
+  };
 });
 
 let mockState: { data?: OfferDetail; isPending: boolean; error: unknown } = { isPending: true, error: null };
@@ -277,11 +292,37 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     await fireEvent.press(button);
     expect(router.push).toHaveBeenLastCalledWith('/sign-in');
 
-    // Un membre connecté : le formulaire de message.
+    // Un membre connecté : le formulaire de message, dans un panneau à sa hauteur, pas un écran (décision
+    // 2026-11-26-message-editeur-en-panneau).
     mockUser = { id: 7 };
+    jest.mocked(router.push).mockClear();
     await show();
     await fireEvent.press(screen.getByTestId('offer-publisher-action'));
-    expect(router.push).toHaveBeenLastCalledWith('/profile/offer.message?record=1');
+    expect(router.push).not.toHaveBeenCalled();
+    expect(screen.getByTestId('offer-publisher-action-form-header')).toHaveTextContent('Envoyer un message');
+    expect(screen.getByTestId('profile-form')).toHaveTextContent('offer.message:1');
+    // Envoyé : le panneau se ferme, le message du serveur s'affiche.
+    await act(async () => fireEvent.press(screen.getByTestId('profile-form')));
+    expect(screen.queryByTestId('offer-publisher-action-form')).toBeNull();
+    expect(currentToast()?.message).toBe('Message envoyé.');
+  });
+
+  it('déjà écrit à l’éditeur : le bouton ouvre la conversation, pas de panneau (décision 2026-11-27-message-vers-conversation)', async () => {
+    const publisher: OfferSection = {
+      key: 'publisher',
+      type: 'rows',
+      title: 'Éditeur',
+      open: true,
+      rows: [{ label: 'Publié par', value: 'Awa' }],
+      action: { label: 'Envoyer un message', link: '/notifications/3f1c2a7e-0b9d-4c2e-9a51-6d2f8e7b1c40' },
+    };
+    mockState = { data: { ...OFFER, sections: [publisher] }, isPending: false, error: null };
+    mockUser = { id: 7 };
+    await show();
+
+    await fireEvent.press(screen.getByTestId('offer-publisher-action'));
+    expect(router.push).toHaveBeenLastCalledWith('/notifications/3f1c2a7e-0b9d-4c2e-9a51-6d2f8e7b1c40');
+    expect(screen.queryByTestId('offer-publisher-action-form')).toBeNull();
   });
 
   it('sans action servie (sa propre offre), pas de bouton dans la section', async () => {
@@ -485,8 +526,17 @@ describe('OfferDetailScreen : avis', () => {
     expect(screen.getByTestId('offer-review-write')).toHaveTextContent('Donner mon avis');
     expect(screen.queryByTestId('offer-reviews-all')).toBeNull();
     expect(screen.queryByTestId('offer-review-bar')).toBeNull();
+    // Le formulaire d'avis dans un panneau à sa hauteur, pas un écran (décision 2026-11-26-avis-en-panneau).
+    jest.mocked(router.push).mockClear();
     await fireEvent.press(screen.getByTestId('offer-review-write'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/review', params: { id: '7' } });
+    expect(router.push).not.toHaveBeenCalled();
+    expect(screen.getByTestId('profile-form')).toHaveTextContent('offer.review:7');
+    // Envoyé : le panneau se ferme, le message s'affiche, la fiche se recharge.
+    mockRefetch.mockClear();
+    await act(async () => fireEvent.press(screen.getByTestId('profile-form')));
+    expect(screen.queryByTestId('offer-review-form')).toBeNull();
+    expect(currentToast()?.message).toBe('Message envoyé.');
+    expect(mockRefetch).toHaveBeenCalled();
   });
 
   it('un seul avis, le sien : « Modifier mon avis » dans la section, sans suppression', async () => {
@@ -513,7 +563,9 @@ describe('OfferDetailScreen : avis', () => {
     const bar = screen.getByTestId('offer-review-bar');
     expect(within(bar).getByText('Donner mon avis')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('offer-review-bar-write'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]/review', params: { id: '7' } });
+    expect(screen.getByTestId('profile-form')).toHaveTextContent('offer.review:7');
+    await fireEvent.press(screen.getByTestId('offer-review-form-close'));
+    expect(screen.queryByTestId('offer-review-form')).toBeNull();
 
     mockState = { data: OFFER, isPending: false, error: null };
     await show();
@@ -606,7 +658,7 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     expect(screen.queryByTestId('offer-gallery-action-bar')).toBeNull();
   });
 
-  it('une longue description : 4 lignes, puis « Voir plus » / « Voir moins » (décision 2026-11-22-description-voir-plus)', async () => {
+  it('une longue description : 4 lignes, puis « Voir plus » ouvre le texte entier dans un panneau (décisions 2026-11-22-description-voir-plus et 2026-11-27-description-en-panneau)', async () => {
     await show();
     await openSections();
     const description = screen.getByTestId('offer-description-text');
@@ -618,9 +670,14 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     expect(screen.getByTestId('offer-description-text').props.numberOfLines).toBe(4);
     expect(screen.getByTestId('offer-description-text-more')).toHaveTextContent('Voir plus');
 
+    expect(screen.queryByTestId('offer-description-text-sheet')).toBeNull();
     await fireEvent.press(screen.getByTestId('offer-description-text-more'));
-    expect(screen.getByTestId('offer-description-text').props.numberOfLines).toBeUndefined();
-    expect(screen.getByTestId('offer-description-text-more')).toHaveTextContent('Voir moins');
+    // Le texte entier dans le panneau, titré de la section ; la fiche reste repliée.
+    expect(screen.getByTestId('offer-description-text-sheet-header')).toHaveTextContent(/Description/);
+    expect(screen.getByTestId('offer-description-text-full').props.children).toBe(screen.getByTestId('offer-description-text').props.children);
+    expect(screen.getByTestId('offer-description-text').props.numberOfLines).toBe(4);
+    await fireEvent.press(screen.getByTestId('offer-description-text-sheet-close'));
+    expect(screen.queryByTestId('offer-description-text-sheet')).toBeNull();
   });
 
   it('une courte description : pas de « Voir plus »', async () => {

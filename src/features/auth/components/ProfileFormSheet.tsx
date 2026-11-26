@@ -24,6 +24,8 @@ type Props = {
   onClose: () => void;
   /** Envoyé : le message du serveur (« Demande modifiée. »). Le panneau ne se ferme pas seul. */
   onDone: (message: string) => void;
+  /** Vrai : le panneau prend la hauteur du formulaire (un message, quelques champs) ; faux : sa taille maximale. */
+  fitContent?: boolean;
   testID?: string;
 };
 
@@ -38,12 +40,12 @@ export function ProfileFormSheet({ link, ...props }: Props) {
   return target === null ? null : <FormSheet key={link ?? ''} {...target} {...props} />;
 }
 
-function FormSheet({ form, record, onClose, onDone, testID = 'profile-form-sheet' }: Omit<Props, 'link'> & { form: string; record?: string }) {
+function FormSheet({ form, record, onClose, onDone, fitContent = false, testID = 'profile-form-sheet' }: Omit<Props, 'link'> & { form: string; record?: string }) {
   const definition = useFormDefinition(form, record);
 
   return (
-    <BottomSheet visible title={formTitle(definition.data)} onClose={onClose} overlay={<ToastHost announce={false} />} testID={testID}>
-      <FixedFooterLayout contentStyle={styles.content} testID={`${testID}-scroll`}>
+    <BottomSheet visible title={formTitle(definition.data)} onClose={onClose} fitContent={fitContent} overlay={<ToastHost announce={false} />} testID={testID}>
+      <FixedFooterLayout contentStyle={styles.content} fit={fitContent} testID={`${testID}-scroll`}>
         <ProfileForm form={form} record={record} onDone={({ message }) => onDone(message)} />
       </FixedFooterLayout>
     </BottomSheet>

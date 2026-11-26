@@ -49,9 +49,12 @@ export function reviewActions(reviews: Reviews, signedIn: boolean): { section: R
   return { section: null, all: true, bar: can ? ['write'] : [] };
 }
 
-/** Ouvre le formulaire d'avis de l'offre (`offer.review`), pour le donner ou le modifier. */
-export function openReviewForm(offerId: string) {
-  router.push({ pathname: '/offers/[id]/review', params: { id: offerId } });
+/**
+ * Le lien du formulaire d'avis de l'offre (`offer.review`), pour le donner ou le modifier : la fiche l'ouvre dans un
+ * panneau à sa hauteur (décision 2026-11-26-avis-en-panneau).
+ */
+export function reviewFormLink(offerId: string): string {
+  return `/profile/${REVIEW_FORM}?record=${offerId}`;
 }
 
 /**
@@ -93,7 +96,7 @@ export function useReviewRemoval(reviews: Reviews, onChanged: (message: string |
  * bouton que donne `reviewActions` (« Donner mon avis », « Modifier mon avis » ou
  * « Voir tous les avis »). Un visiteur lit « Connectez-vous pour donner votre avis ».
  */
-export function OfferReviews({ offerId, reviews }: { offerId: string; reviews: Reviews }) {
+export function OfferReviews({ offerId, reviews, onWrite }: { offerId: string; reviews: Reviews; onWrite: () => void }) {
   const { t } = useI18n();
   const { user } = useAuth();
   const theme = useTheme();
@@ -161,7 +164,7 @@ export function OfferReviews({ offerId, reviews }: { offerId: string; reviews: R
           <Pressable
             testID="offer-review-write"
             accessibilityRole="button"
-            onPress={() => openReviewForm(offerId)}
+            onPress={onWrite}
             style={({ pressed }) => [styles.button, { borderColor: theme.primary }, pressed && styles.pressed]}>
             <ThemedText type="smallBold" style={{ color: theme.primary }}>
               {actions.section === 'edit' ? t('offer.editReview') : t('offer.writeReview')}

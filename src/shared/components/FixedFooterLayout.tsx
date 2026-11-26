@@ -27,6 +27,11 @@ type Props = PropsWithChildren<{
   contentStyle?: StyleProp<ViewStyle>;
   /** Ajouter la marge du bas de l'écran (barre d'accueil) sous la barre : quand l'écran ne la prend pas déjà. */
   bottomInset?: boolean;
+  /**
+   * Vrai : la mise en page prend la hauteur de son contenu (dans un panneau à la taille du contenu), et ne défile que
+   * si elle dépasse la place donnée ; faux (par défaut) : elle remplit la place (`flex: 1`).
+   */
+  fit?: boolean;
   testID?: string;
 }>;
 
@@ -38,7 +43,7 @@ type Props = PropsWithChildren<{
  * Clavier ouvert, la barre remonte juste au-dessus (sans `KeyboardAvoidingView`, qui
  * mesure mal sa place sous un en-tête ou dans un onglet).
  */
-export function FixedFooterLayout({ contentStyle, bottomInset = false, testID, children }: Props) {
+export function FixedFooterLayout({ contentStyle, bottomInset = false, fit = false, testID, children }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [entries, setEntries] = useState<[string, ReactNode][]>([]);
@@ -100,8 +105,13 @@ export function FixedFooterLayout({ contentStyle, bottomInset = false, testID, c
 
   return (
     <FixedFooterContext.Provider value={value}>
-      <View ref={frame} collapsable={false} style={[styles.frame, { paddingBottom: lift }]}>
-        <ScrollView ref={scroll} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" testID={testID}>
+      <View ref={frame} collapsable={false} style={[fit ? styles.frameFit : styles.frame, { paddingBottom: lift }]}>
+        <ScrollView
+          ref={scroll}
+          style={fit ? styles.scrollFit : undefined}
+          contentContainerStyle={fit ? undefined : styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          testID={testID}>
           <View ref={content} collapsable={false} style={[styles.grow, contentStyle]}>
             {children}
           </View>
@@ -146,6 +156,9 @@ function contentWidth(style: StyleProp<ViewStyle>): ViewStyle {
 
 const styles = StyleSheet.create({
   frame: { flex: 1 },
+  // À la taille du contenu : rétrécit seulement quand il dépasse ; la zone qui défile aussi, la barre restant visible.
+  frameFit: { flexShrink: 1 },
+  scrollFit: { flexGrow: 0, flexShrink: 1 },
   scroll: { flexGrow: 1 },
   grow: { flexGrow: 1 },
   bar: { borderTopWidth: 1, paddingTop: Spacing.three, paddingBottom: Spacing.three },

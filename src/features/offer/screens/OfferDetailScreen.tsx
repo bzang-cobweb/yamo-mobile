@@ -4,12 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ProfileFormSheet } from '@/features/auth/components/ProfileFormSheet';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { profileFormService, profileSubmission } from '@/features/auth/services/ProfileFormService';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { FavoriteHeart } from '@/features/list/components/FavoriteHeart';
 import { ApiError, NetworkError } from '@/shared/api/errors';
 import { Accordion } from '@/shared/components/Accordion';
+import { BottomSheet } from '@/shared/components/BottomSheet';
 import { FloatingBack } from '@/shared/components/FloatingBack';
 import { Stars } from '@/shared/components/Stars';
 import { STATUS_ON_IMAGE, StatusTag } from '@/shared/components/StatusTag';
@@ -21,7 +23,7 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
-import { OfferReviews, openReviewForm, reviewActions, useReviewRemoval } from '../components/OfferReviews';
+import { OfferReviews, reviewActions, reviewFormLink, useReviewRemoval } from '../components/OfferReviews';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { SectionAction } from '../components/SectionAction';
 import { useOfferDetail } from '../hooks/useOfferDetail';
@@ -54,6 +56,8 @@ export function OfferDetailScreen({ id }: { id: string }) {
   const queryClient = useQueryClient();
   const shown = useRef(false);
   const { refetch } = query;
+  // Le formulaire d'avis (donner, modifier), dans un panneau à sa hauteur (décision 2026-11-26-avis-en-panneau).
+  const [reviewing, setReviewing] = useState(false);
 
   // Un avis donné ou retiré : la fiche, et les listes (note, dernier avis), sont à recharger ; son
   // message dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
@@ -171,6 +175,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                               // La description, repliée à quelques lignes avec « Voir plus » (décisions
                               // 2026-11-22-description-voir-plus et 2026-11-22-fiche-sections-ordre).
                               collapsible={section.key === 'description'}
+                              title={section.title}
                               testID={`offer-${section.key}`}
                             />
                           </Accordion>
@@ -178,7 +183,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
                       case 'reviews':
                         return offer.reviews ? (
                           <Accordion key={section.key} title={section.title} initiallyOpen={section.open} style={separated} testID={`offer-section-${section.key}`}>
-                            <OfferReviews offerId={offer.id} reviews={offer.reviews} />
+                            <OfferReviews offerId={offer.id} reviews={offer.reviews} onWrite={() => setReviewing(true)} />
                           </Accordion>
                         ) : null;
                       default:
@@ -197,7 +202,18 @@ export function OfferDetailScreen({ id }: { id: string }) {
             )}
             {/* Barre fixe en bas : les boutons d'avis, le prix et le bouton de réservation
                 (décisions 2026-11-19-contrat-reservations et 2026-11-20-boutons-avis-fiche). */}
-            {offer && <BookingBar offer={offer} onReviewChanged={changed} />}
+            {offer && <BookingBar offer={offer} onReviewChanged={changed} onWrite={() => setReviewing(true)} />}
+            {/* Envoyé : le panneau se ferme, le message s'affiche, la fiche et les listes se rechargent. */}
+            <ProfileFormSheet
+              link={offer && reviewing ? reviewFormLink(offer.id) : null}
+              fitContent
+              onClose={() => setReviewing(false)}
+              onDone={(message) => {
+                setReviewing(false);
+                changed(message);
+              }}
+              testID="offer-review-form"
+            />
           </View>
         </BackStackProvider>
       </SafeAreaView>
@@ -224,7 +240,7 @@ function openBooking(id: string, signedIn: boolean) {
   router.push({ pathname: '/offers/[id]/book', params: { id } });
 }
 
-function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewChanged: (message: string | null, failed?: boolean) => void }) {
+function BookingBar({ offer, onReviewChanged, onWrite }: { offer: OfferDetail; onReviewChanged: (message: string | null, failed?: boolean) => void; onWrite: () => void }) {
   const theme = useTheme();
   const { t } = useI18n();
   const { user } = useAuth();
@@ -276,7 +292,7 @@ function BookingBar({ offer, onReviewChanged }: { offer: OfferDetail; onReviewCh
               key={action}
               testID={`offer-review-bar-${action}`}
               accessibilityRole="button"
-              onPress={() => (action === 'delete' ? removeReview?.() : openReviewForm(offer.id))}
+              onPress={() => (action === 'delete' ? removeReview?.() : onWrite())}
               style={({ pressed }) => [styles.reviewButton, { borderColor: action === 'delete' ? ERROR_COLOR : theme.primary }, pressed && styles.pressed]}>
               <ThemedText type="smallBold" style={{ color: action === 'delete' ? ERROR_COLOR : theme.primary }}>
                 {action === 'delete' ? (reviews.delete?.label ?? '') : action === 'edit' ? t('offer.editReview') : t('offer.writeReview')}
@@ -350,11 +366,12 @@ function TitleRating({ average, count }: { average: number; count: number }) {
 const DESCRIPTION_LINES = 4;
 
 /**
- * La description, repliée à `DESCRIPTION_LINES` lignes quand elle est plus longue, avec « Voir plus » / « Voir moins »
- * dessous, à droite, comme les lignes d'une demande (décision 2026-11-22-description-voir-plus). Ses lignes sont
- * comptées au premier affichage, texte entier.
+ * La description, repliée à `DESCRIPTION_LINES` lignes quand elle est plus longue, avec « Voir plus » dessous, à
+ * droite, comme les lignes d'une demande (décision 2026-11-22-description-voir-plus). « Voir plus » ouvre le texte
+ * entier dans un panneau à sa hauteur, titré de la section, qui défile s'il est long (décision
+ * 2026-11-27-description-en-panneau). Ses lignes sont comptées au premier affichage, texte entier.
  */
-function Description({ text, testID }: { text: string; testID: string }) {
+function Description({ text, title, testID }: { text: string; title: string; testID: string }) {
   const { t } = useI18n();
   const [lines, setLines] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
@@ -365,7 +382,7 @@ function Description({ text, testID }: { text: string; testID: string }) {
       <ThemedText
         type="small"
         testID={testID}
-        numberOfLines={long && !open ? DESCRIPTION_LINES : undefined}
+        numberOfLines={long ? DESCRIPTION_LINES : undefined}
         onTextLayout={(event) => {
           if (lines === null) {
             setLines(event.nativeEvent.lines.length);
@@ -378,12 +395,19 @@ function Description({ text, testID }: { text: string; testID: string }) {
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
           hitSlop={Spacing.one}
-          onPress={() => setOpen((value) => !value)}
+          onPress={() => setOpen(true)}
           style={({ pressed }) => [styles.more, pressed && styles.pressed]}
           testID={`${testID}-more`}>
-          <ThemedText type="linkPrimary">{t(open ? 'offer.less' : 'offer.more')}</ThemedText>
+          <ThemedText type="linkPrimary">{t('offer.more')}</ThemedText>
         </Pressable>
       )}
+      <BottomSheet visible={open} title={title} onClose={() => setOpen(false)} fitContent testID={`${testID}-sheet`}>
+        <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.sheetText}>
+          <ThemedText type="small" testID={`${testID}-full`}>
+            {text}
+          </ThemedText>
+        </ScrollView>
+      </BottomSheet>
     </View>
   );
 }
@@ -393,10 +417,10 @@ function Description({ text, testID }: { text: string; testID: string }) {
  * texte et sa note en dessous s'il y en a une, sans séparateur (décision 2026-11-25-fiche-bordures-sections)
  * (décision 2026-11-19-sections-construites-laravel).
  */
-function TextSection({ text, note, collapsible = false, testID }: { text: string; note?: string | null; collapsible?: boolean; testID: string }) {
+function TextSection({ text, note, collapsible = false, title = '', testID }: { text: string; note?: string | null; collapsible?: boolean; title?: string; testID: string }) {
   return (
     <View style={styles.text}>
-      {collapsible ? <Description text={text} testID={`${testID}-text`} /> : <ThemedText type="small" testID={`${testID}-text`}>{text}</ThemedText>}
+      {collapsible ? <Description text={text} title={title} testID={`${testID}-text`} /> : <ThemedText type="small" testID={`${testID}-text`}>{text}</ThemedText>}
       {note && (
         <ThemedText type="small" themeColor="textSecondary" testID={`${testID}-note`}>
           {note}
@@ -425,6 +449,9 @@ const styles = StyleSheet.create({
   titles: { gap: Spacing.one },
   titleRating: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.one },
   more: { alignSelf: 'flex-end', paddingTop: Spacing.one },
+  // Le texte entier, dans le panneau : à sa hauteur, il défile seulement s'il dépasse.
+  sheetScroll: { flexGrow: 0, flexShrink: 1 },
+  sheetText: { padding: Spacing.four },
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   centered: { textAlign: 'center' },

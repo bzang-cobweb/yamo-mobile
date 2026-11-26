@@ -1,21 +1,16 @@
-import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { BottomSheet } from "@/shared/components/BottomSheet";
-import { MonthGrid, type MonthGridCell } from "@/shared/components/MonthGrid";
-import { useI18n } from "@/shared/i18n/I18nContext";
-import { ThemedText } from "@/shared/theme/components/themed-text";
-import { Spacing } from "@/shared/theme/theme";
+import { BottomSheet } from '@/shared/components/BottomSheet';
+import { MonthGrid, type MonthGridCell } from '@/shared/components/MonthGrid';
+import { useI18n } from '@/shared/i18n/I18nContext';
+import { ThemedText } from '@/shared/theme/components/themed-text';
+import { Spacing } from '@/shared/theme/theme';
 
-import type { FieldProps } from "../../types";
-import {
-  dateFormats,
-  formatDate,
-  parseIsoDate,
-  toIsoDate,
-} from "../../utils/dates";
-import { FieldShell } from "../FieldShell";
-import { useInputStyle } from "./inputStyle";
+import type { FieldProps } from '../../types';
+import { dateFormats, formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
+import { FieldShell } from '../FieldShell';
+import { useInputStyle } from './inputStyle';
 
 /** Un lundi connu, pour nommer les jours de la semaine dans la langue. */
 const MONDAY = new Date(2024, 0, 1);
@@ -29,14 +24,7 @@ const MONDAY = new Date(2024, 0, 1);
  * plus tard le premier jour pris qui le suit (on part le matin), la période choisie
  * est surlignée.
  */
-export function CalendarDateField({
-  field,
-  value,
-  onChange,
-  error,
-  disabled,
-  afterValue,
-}: FieldProps<string>) {
+export function CalendarDateField({ field, value, onChange, error, disabled, afterValue }: FieldProps<string>) {
   const { t, locale } = useI18n();
   const inputStyle = useInputStyle(Boolean(error));
   const [open, setOpen] = useState(false);
@@ -45,20 +33,11 @@ export function CalendarDateField({
   const max = field.date_range?.max ?? null;
   const unavailable = new Set(field.calendar?.unavailable ?? []);
   const isEnd = Boolean(field.calendar?.after);
-  const start = isEnd ? (afterValue ?? "") : "";
+  const start = isEnd ? (afterValue ?? '') : '';
   // Fin de période : au plus tard le premier jour pris après le début.
-  const limit =
-    isEnd && start
-      ? ([...unavailable].filter((day) => day > start).sort()[0] ?? null)
-      : null;
-  const first =
-    parseIsoDate(value) ??
-    parseIsoDate(start) ??
-    parseIsoDate(min ?? "") ??
-    new Date();
-  const [month, setMonth] = useState(
-    new Date(first.getFullYear(), first.getMonth(), 1),
-  );
+  const limit = isEnd && start ? ([...unavailable].filter((day) => day > start).sort()[0] ?? null) : null;
+  const first = parseIsoDate(value) ?? parseIsoDate(start) ?? parseIsoDate(min ?? '') ?? new Date();
+  const [month, setMonth] = useState(new Date(first.getFullYear(), first.getMonth(), 1));
 
   function isDisabled(day: string): boolean {
     if ((min && day < min) || (max && day > max)) {
@@ -72,39 +51,23 @@ export function CalendarDateField({
   }
 
   const cells: MonthGridCell[] = [];
-  for (
-    let day = new Date(month);
-    day.getMonth() === month.getMonth();
-    day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)
-  ) {
+  for (let day = new Date(month); day.getMonth() === month.getMonth(); day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)) {
     const iso = toIsoDate(day);
     cells.push({
       date: iso,
       day: day.getDate(),
       disabled: isDisabled(iso),
       selected: iso === value || (isEnd && iso === start),
-      inRange:
-        isEnd && Boolean(start) && Boolean(value) && iso > start && iso < value,
+      inRange: isEnd && Boolean(start) && Boolean(value) && iso > start && iso < value,
     });
   }
 
-  const monthKey = (offset: number) =>
-    toIsoDate(
-      new Date(month.getFullYear(), month.getMonth() + offset, 1),
-    ).slice(0, 7);
+  const monthKey = (offset: number) => toIsoDate(new Date(month.getFullYear(), month.getMonth() + offset, 1)).slice(0, 7);
   // Les formats servis par l'API (décision 2026-11-25-dates-formatees-serveur).
   const formats = dateFormats(field.date_formats);
   const label = formatDate(month, locale, formats.month);
   const weekdays = Array.from({ length: 7 }, (_, offset) =>
-    formatDate(
-      new Date(
-        MONDAY.getFullYear(),
-        MONDAY.getMonth(),
-        MONDAY.getDate() + offset,
-      ),
-      locale,
-      formats.weekday,
-    ),
+    formatDate(new Date(MONDAY.getFullYear(), MONDAY.getMonth(), MONDAY.getDate() + offset), locale, formats.weekday),
   );
 
   function choose(day: string) {
@@ -118,64 +81,31 @@ export function CalendarDateField({
         testID={`field-${field.name}`}
         accessibilityRole="button"
         accessibilityLabel={field.label ?? field.name}
-        accessibilityValue={{
-          text: date ? formatDate(date, locale, formats.value) : undefined,
-        }}
+        accessibilityValue={{ text: date ? formatDate(date, locale, formats.value) : undefined }}
         accessibilityState={{ expanded: open, disabled }}
         disabled={disabled}
         onPress={() => setOpen((current) => !current)}
-        style={inputStyle}
-      >
-        <ThemedText themeColor={date ? "text" : "textSecondary"}>
-          {date
-            ? formatDate(date, locale, formats.value)
-            : (field.placeholder ?? t("form.selectPlaceholder"))}
-        </ThemedText>
+        style={inputStyle}>
+        <ThemedText themeColor={date ? 'text' : 'textSecondary'}>{date ? formatDate(date, locale, formats.value) : (field.placeholder ?? t('form.selectPlaceholder'))}</ThemedText>
       </Pressable>
-      <BottomSheet
-        visible={open}
-        title={field.label ?? ""}
-        onClose={() => setOpen(false)}
-        fitContent
-        testID={`field-${field.name}-sheet`}
-      >
+      <BottomSheet visible={open} title={field.label ?? ''} onClose={() => setOpen(false)} fitContent testID={`field-${field.name}-sheet`}>
         <View style={styles.grid}>
           {isEnd && !start ? (
-            <ThemedText
-              type="small"
-              themeColor="textSecondary"
-              testID={`field-${field.name}-hint`}
-            >
-              {t("form.chooseStartFirst")}
+            <ThemedText type="small" themeColor="textSecondary" testID={`field-${field.name}-hint`}>
+              {t('form.chooseStartFirst')}
             </ThemedText>
           ) : null}
           <MonthGrid
             testID={`field-${field.name}-grid`}
             label={label.charAt(0).toUpperCase() + label.slice(1)}
-            weekdays={weekdays.map(
-              (weekday) => weekday.charAt(0).toUpperCase() + weekday.slice(1),
-            )}
+            weekdays={weekdays.map((weekday) => weekday.charAt(0).toUpperCase() + weekday.slice(1))}
             offset={(month.getDay() + 6) % 7}
             cells={cells}
             onPress={choose}
-            onPrevious={
-              !min || monthKey(0) > min.slice(0, 7)
-                ? () =>
-                    setMonth(
-                      new Date(month.getFullYear(), month.getMonth() - 1, 1),
-                    )
-                : null
-            }
-            onNext={
-              !max || monthKey(0) < max.slice(0, 7)
-                ? () =>
-                    setMonth(
-                      new Date(month.getFullYear(), month.getMonth() + 1, 1),
-                    )
-                : null
-            }
-            previousLabel={t("form.previousMonth")}
-            nextLabel={t("form.nextMonth")}
+            onPrevious={!min || monthKey(0) > min.slice(0, 7) ? () => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1)) : null}
+            onNext={!max || monthKey(0) < max.slice(0, 7) ? () => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1)) : null}
+            previousLabel={t('form.previousMonth')}
+            nextLabel={t('form.nextMonth')}
           />
         </View>
       </BottomSheet>
