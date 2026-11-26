@@ -20,6 +20,8 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 import { useNotifications } from '../hooks/useNotifications';
 import type { AppNotification } from '../types';
 import { APP_LINK, NotificationText } from '../components/NotificationText';
+import { NotificationType } from '../components/NotificationType';
+import { NOTIFICATION_CARD_MAX, plainText, truncate } from '../utils/preview';
 
 /**
  * L'onglet « Notifications » (décision 2026-11-19-contrat-centre-notifications) : la
@@ -105,12 +107,15 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
   function renderCard(item: AppNotification) {
     // Qui envoie, sauf nous (la copie de sa propre demande n'a pas d'auteur).
     const sender = item.actor && String(item.actor.id) !== String(user?.id) ? item.actor : null;
+    const text = sender && item.summary ? item.summary : item.body;
+    // Le message, sauf s'il est déjà le texte de la carte (un message à l'éditeur, décision 2026-11-26-carte-message-texte).
+    const message = item.message && plainText(item.message) !== plainText(text) ? item.message : null;
 
     return (
     <Pressable
       testID={`notification-${item.id}`}
       accessibilityRole="button"
-      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.card_title ?? item.title}. ${sender && item.summary ? item.summary : item.body}${sender ? `, ${sender.name}` : ''}${item.message ? `. ${item.message}` : ''}`}
+      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}. ${plainText(sender && item.summary ? item.summary : item.body)}${sender ? `, ${sender.name}` : ''}${item.message ? `. ${plainText(item.message)}` : ''}`}
       onPress={() => open(item)}
       style={({ pressed }) => [
         styles.item,
@@ -122,16 +127,19 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
             2026-11-22-notification-par-action) ; plus de logement ni de statut. Puis le texte ; le nom de qui envoie ;
             son message en italique gris, sur une ligne ; la date. Toucher ailleurs ouvre le détail (décision
             2026-11-22-carte-notification-type-auteur-message-date). */}
-        <ThemedText type="smallBold" testID={`notification-${item.id}-type`}>
-          {item.card_title ?? item.title}
-        </ThemedText>
+        {/* La pastille du statut de nouveau, en haut à droite, sur la ligne du type (décisions
+            2026-11-20-statut-en-haut-a-droite et 2026-11-26-carte-notification-statut) : le statut réel d'une demande,
+            celui d'un partenaire ; rien pour un message. */}
+        <NotificationType type={item.title} tag={item.tag} testID={`notification-${item.id}`} />
         {/* Le texte de la notification, après le type (décision 2026-11-22-carte-notification-texte) :
             sans le nom de qui envoie quand il est affiché dessous ; le nom du logement, et du membre, ouvrent leur page (décision
             2026-11-22-lien-nom-logement). */}
         <NotificationText
-          body={sender && item.summary ? item.summary : item.body}
+          body={text}
           links={item.text_links ?? []}
           onLink={(link) => open(item, link)}
+          // Tronqué, quel que soit le type (décision 2026-11-26-cartes-notifications-tronquees) : la page montre tout.
+          maxLength={NOTIFICATION_CARD_MAX}
           testID={`notification-${item.id}-text`}
         />
         {/* Le nom de qui envoie, sauf si c'est nous : il ouvre sa page (décisions 2026-11-22-carte-notification-lien-expediteur
@@ -146,9 +154,9 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
             {sender.name}
           </ThemedText>
         )}
-        {item.message && (
+        {message && (
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.message} testID={`notification-${item.id}-message`}>
-            {item.message}
+            {truncate(plainText(message), NOTIFICATION_CARD_MAX)}
           </ThemedText>
         )}
         {/* La date, après le message, alignée à droite. */}

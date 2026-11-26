@@ -9,6 +9,7 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { NotificationsScreen } from '../screens/NotificationsScreen';
 import { notificationService } from '../services/NotificationService';
+import { NOTIFICATION_CARD_MAX } from '../utils/preview';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -34,7 +35,7 @@ jest.mock('../services/NotificationService', () => ({
 
 const PAGE = {
   items: [
-    { id: 'a', title: 'Demande de logement', card_title: 'Nouvelle demande', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', actor: { id: '4', name: 'Marie Curie', initials: 'MC', photo: null, online: true, link: '/members/4' }, summary: 'Demande de location « Studio » du 5 au 7 déc.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }, { text: 'Studio', link: '/offers/12' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
+    { id: 'a', title: 'Nouvelle demande', tag: { label: 'En attente', tone: 'warning' }, body: 'Marie Curie demande un séjour.', actor: { id: '4', name: 'Marie Curie', initials: 'MC', photo: null, online: true, link: '/members/4' }, summary: 'Demande de location « Studio » du 5 au 7 déc.', message: 'Je viens pour le travail.', link: '/profile/lists/offer.bookings.received', links: [{ label: 'Voir l’annonce', link: '/offers/12' }], text_links: [{ text: 'Marie Curie', link: '/members/4' }, { text: 'Studio', link: '/offers/12' }], link_label: 'Réservations reçues', read: false, created_at: new Date().toISOString() },
     { id: 'b', title: 'Demande de logement', tag: null, body: 'Votre demande est acceptée.', message: null, link: 'https://exemple.test', links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' },
   ],
   next_cursor: null,
@@ -62,16 +63,45 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     jest.mocked(notificationService.readAll).mockResolvedValue(undefined);
   });
 
+  it('une carte tronque son texte et son message, quel que soit le type (décision 2026-11-26-cartes-notifications-tronquees)', async () => {
+    const long = `Bonjour,\n<b>Je suis très intéressé</b> par votre logement. ${'Pouvez-vous me rappeler ? '.repeat(10)}Merci`;
+    jest.mocked(notificationService.list).mockResolvedValue({
+      ...PAGE,
+      items: [{ id: 'm', title: 'Message', tag: null, body: long, message: `PS : ${long}`, link: null, links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' }],
+    });
+    await show();
+
+    const text = (await screen.findByTestId('notification-m-text')).props.children.flat().join('');
+    expect(text.length).toBeLessThanOrEqual(NOTIFICATION_CARD_MAX + 1);
+    expect(text.startsWith('Bonjour, Je suis très intéressé par votre logement.')).toBe(true);
+    expect(text.endsWith('…')).toBe(true);
+    expect(text).not.toContain('<b>');
+    const message = screen.getByTestId('notification-m-message').props.children as string;
+    expect(message.length).toBeLessThanOrEqual(NOTIFICATION_CARD_MAX + 1);
+    expect(message.endsWith('…')).toBe(true);
+  });
+
+  it('un message à l’éditeur : son texte sur la carte, une seule fois (décision 2026-11-26-carte-message-texte)', async () => {
+    jest.mocked(notificationService.list).mockResolvedValue({
+      ...PAGE,
+      items: [{ id: 'm', title: 'Message', tag: null, body: 'Le studio est-il libre ?', summary: 'Le studio est-il libre ?', message: 'Le studio est-il libre ?', actor: { id: '4', name: 'Jean', initials: 'J', photo: null, online: false, link: '/members/4' }, link: null, links: [], text_links: [], link_label: null, read: true, created_at: '2026-01-02T10:00:00Z' }],
+    });
+    await show();
+
+    expect(await screen.findByTestId('notification-m-text')).toHaveTextContent('Le studio est-il libre ?');
+    expect(screen.queryByTestId('notification-m-message')).toBeNull();
+  });
+
   it('la plus récente en tête, les non lues mises en avant', async () => {
     await show();
 
     expect(await screen.findByTestId('notification-a-type')).toBeTruthy();
-    // Plus de statut sur la carte (décision 2026-11-22-carte-notification-ville-sans-statut).
-    expect(screen.queryByTestId('notification-a-tag')).toBeNull();
-    // Le type en gras, sur chaque notification, et le statut dessous.
+    // La pastille du statut de nouveau sur la carte, en haut à droite (décision 2026-11-26-carte-notification-statut) ;
+    // aucune sans statut.
+    expect(screen.getByTestId('notification-a-tag')).toHaveTextContent('En attente');
+    // Le type en gras, sur chaque notification.
     expect(screen.getByTestId('notification-a-type')).toHaveTextContent('Nouvelle demande');
     expect(screen.getByTestId('notification-b-type')).toHaveTextContent('Demande de logement');
-    expect(screen.queryByText('En attente')).toBeNull();
     expect(screen.queryByTestId('notification-b-tag')).toBeNull();
     expect(screen.getByText('Je viens pour le travail.')).toBeTruthy();
     expect(screen.queryByTestId('notification-b-message')).toBeNull();

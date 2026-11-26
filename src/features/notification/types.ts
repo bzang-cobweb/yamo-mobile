@@ -7,9 +7,8 @@ import type { StatusTagValue } from '@/shared/components/StatusTag';
  */
 export type AppNotification = {
   id: string;
+  /** Le titre, calculé par le serveur dans la langue du lecteur (« Demande de séjour acceptée », « Partenaire modifié », « Message ») : la carte et la page (décision 2026-11-26-titre-calcule). */
   title: string;
-  /** Le titre de sa carte dans la liste, le type de l'action (« Demande acceptée ») ; `null` (ou absent) : `title`. */
-  card_title?: string | null;
   /** Statut en pastille sous le titre (« En attente », ton `warning`), ou `null`. */
   tag: StatusTagValue | null;
   body: string;
