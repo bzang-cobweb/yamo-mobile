@@ -3,7 +3,9 @@
  * type de la notification, le texte et le message sont tronqués à `NOTIFICATION_CARD_MAX` caractères visibles. La page
  * de la notification, elle, montre tout.
  */
-export const NOTIFICATION_CARD_MAX = 120;
+// 80 caractères, environ deux lignes sur un téléphone ; à 120 (trois lignes), la coupe ne se voyait pas (décision
+// 2026-11-26-carte-expediteur-avant-texte).
+export const NOTIFICATION_CARD_MAX = 80;
 
 /** Le signe qui termine un texte tronqué. */
 const ELLIPSIS = '…';

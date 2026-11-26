@@ -158,9 +158,10 @@ describe('NotificationsScreen (décision 2026-11-19-contrat-centre-notifications
     };
     walk(card as never);
     expect(ids.filter((id) => /-(type|actor|text|message|date)$/.test(id))).toEqual([
+      // Le nom de qui envoie avant le texte (décision 2026-11-26-carte-expediteur-avant-texte).
       'notification-a-type',
-      'notification-a-text',
       'notification-a-actor',
+      'notification-a-text',
       'notification-a-message',
       'notification-a-date',
     ]);

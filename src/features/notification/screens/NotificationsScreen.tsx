@@ -115,7 +115,7 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
     <Pressable
       testID={`notification-${item.id}`}
       accessibilityRole="button"
-      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}. ${plainText(sender && item.summary ? item.summary : item.body)}${sender ? `, ${sender.name}` : ''}${item.message ? `. ${plainText(item.message)}` : ''}`}
+      accessibilityLabel={`${item.read ? '' : `${t('notifications.unread')} : `}${item.title}. ${sender ? `${sender.name}, ` : ''}${plainText(text)}${item.message ? `. ${plainText(item.message)}` : ''}`}
       onPress={() => open(item)}
       style={({ pressed }) => [
         styles.item,
@@ -124,26 +124,15 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
       ]}>
       <View style={styles.texts}>
         {/* Le type de l'action en gras (« Nouvelle demande », « Demande acceptée », décision
-            2026-11-22-notification-par-action) ; plus de logement ni de statut. Puis le texte ; le nom de qui envoie ;
-            son message en italique gris, sur une ligne ; la date. Toucher ailleurs ouvre le détail (décision
+            2026-11-22-notification-par-action) et sa pastille. Puis le nom de qui envoie ; le texte ; son message en
+            italique gris, sur une ligne ; la date. Toucher ailleurs ouvre le détail (décision
             2026-11-22-carte-notification-type-auteur-message-date). */}
         {/* La pastille du statut de nouveau, en haut à droite, sur la ligne du type (décisions
             2026-11-20-statut-en-haut-a-droite et 2026-11-26-carte-notification-statut) : le statut réel d'une demande,
             celui d'un partenaire ; rien pour un message. */}
         <NotificationType type={item.title} tag={item.tag} testID={`notification-${item.id}`} />
-        {/* Le texte de la notification, après le type (décision 2026-11-22-carte-notification-texte) :
-            sans le nom de qui envoie quand il est affiché dessous ; le nom du logement, et du membre, ouvrent leur page (décision
-            2026-11-22-lien-nom-logement). */}
-        <NotificationText
-          body={text}
-          links={item.text_links ?? []}
-          onLink={(link) => open(item, link)}
-          // Tronqué, quel que soit le type (décision 2026-11-26-cartes-notifications-tronquees) : la page montre tout.
-          maxLength={NOTIFICATION_CARD_MAX}
-          testID={`notification-${item.id}-text`}
-        />
-        {/* Le nom de qui envoie, sauf si c'est nous : il ouvre sa page (décisions 2026-11-22-carte-notification-lien-expediteur
-            et 2026-11-22-carte-notification-date-apres-message). */}
+        {/* Le nom de qui envoie, sauf si c'est nous, avant le texte : il ouvre sa page (décisions
+            2026-11-22-carte-notification-lien-expediteur et 2026-11-26-carte-expediteur-avant-texte). */}
         {sender && (
           <ThemedText
             type="smallBold"
@@ -154,6 +143,17 @@ export function NotificationsScreen({ back = false }: { back?: boolean } = {}) {
             {sender.name}
           </ThemedText>
         )}
+        {/* Le texte de la notification, après le type (décision 2026-11-22-carte-notification-texte) :
+            sans le nom de qui envoie quand il est affiché au-dessus ; le nom du logement, et du membre, ouvrent leur page (décision
+            2026-11-22-lien-nom-logement). */}
+        <NotificationText
+          body={text}
+          links={item.text_links ?? []}
+          onLink={(link) => open(item, link)}
+          // Tronqué, quel que soit le type (décision 2026-11-26-cartes-notifications-tronquees) : la page montre tout.
+          maxLength={NOTIFICATION_CARD_MAX}
+          testID={`notification-${item.id}-text`}
+        />
         {message && (
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.message} testID={`notification-${item.id}-message`}>
             {truncate(plainText(message), NOTIFICATION_CARD_MAX)}
