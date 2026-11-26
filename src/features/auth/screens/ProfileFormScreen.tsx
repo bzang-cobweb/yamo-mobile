@@ -55,15 +55,41 @@ export function ProfileScreenShell({ title, scrolls = true, children }: PropsWit
  * l'envoi (méthode, point d'API, suite au succès ; décision
  * 2026-11-17-formulaires-profil-generiques).
  *
- * Selon la réponse : un code demandé → étape du code ; le compte renvoyé → mis à
- * jour (langue comprise) ; puis retour au profil avec le message, retour à la
- * liste d'où il a été ouvert, ou message et déconnexion. Un formulaire sans envoi
- * exécutable affiche une erreur et n'envoie rien.
+ * Après l'envoi : retour au profil avec le message, ou retour à la liste d'où il a été ouvert.
  *
  * `record` : formulaire ouvert depuis un item d'une liste (décision
  * 2026-11-18-adresses-liste-generique), prérempli avec cet enregistrement.
  */
 export function ProfileFormScreen({ form, record }: { form: string; record?: string }) {
+  const definition = useFormDefinition(form, record);
+
+  return (
+    // La barre du haut : le titre de navigation, sinon le titre (décision 2026-11-22-formulaire-titre-navigation).
+    <ProfileScreenShell title={formTitle(definition.data)}>
+      <ProfileForm
+        form={form}
+        record={record}
+        onDone={({ action, message }) => (action === 'back' ? backWithNotice(message) : backToProfile(message))}
+      />
+    </ProfileScreenShell>
+  );
+}
+
+/** Le titre d'un formulaire dans une barre : son titre de navigation, sinon son titre. */
+export function formTitle(definition: { navigation_title?: string | null; title?: string | null } | undefined): string {
+  return definition?.navigation_title || definition?.title || '';
+}
+
+/**
+ * Le contenu d'un formulaire du profil, sans cadre : un écran (`ProfileFormScreen`) ou un panneau
+ * (`ProfileFormSheet`) le pose dans le sien (décision 2026-11-26-formulaires-en-panneau).
+ *
+ * Selon la réponse : un code demandé → étape du code ; le compte renvoyé → mis à
+ * jour (langue comprise) ; « sign-out » → message et déconnexion ; sinon `onDone`, à qui
+ * revient la suite (revenir en arrière, fermer le panneau). Un formulaire sans envoi
+ * exécutable affiche une erreur et n'envoie rien.
+ */
+export function ProfileForm({ form, record, onDone }: { form: string; record?: string; onDone: (success: ProfileSubmission['success']) => void }) {
   const { t, setUser, signOut } = useAuth();
   const definition = useFormDefinition(form, record);
   const submission = definition.data ? profileSubmission(definition.data.submit) : null;
@@ -72,10 +98,8 @@ export function ProfileFormScreen({ form, record }: { form: string; record?: str
     if (success.action === 'sign-out') {
       Alert.alert(success.message);
       await signOut();
-    } else if (success.action === 'back') {
-      backWithNotice(success.message);
     } else {
-      backToProfile(success.message);
+      onDone(success);
     }
   }
 
@@ -99,28 +123,23 @@ export function ProfileFormScreen({ form, record }: { form: string; record?: str
     return null;
   }
 
-  return (
-    // La barre du haut : le titre de navigation, sinon le titre (décision 2026-11-22-formulaire-titre-navigation).
-    <ProfileScreenShell title={definition.data?.navigation_title || definition.data?.title || ''}>
-      {definition.data && submission === null ? (
-        <ThemedText style={styles.error} accessibilityRole="alert" testID="profile-form-unsupported">
-          {t('error.unknown')}
-        </ThemedText>
-      ) : (
-        <ChallengeFlow
-          hideFormTitle
-          form={form}
-          record={record}
-          start={start}
-          onVerified={async (result) => {
-            if (result.kind === 'user' && submission !== null) {
-              setUser(result.user);
-              await succeed(submission);
-            }
-          }}
-        />
-      )}
-    </ProfileScreenShell>
+  return definition.data && submission === null ? (
+    <ThemedText style={styles.error} accessibilityRole="alert" testID="profile-form-unsupported">
+      {t('error.unknown')}
+    </ThemedText>
+  ) : (
+    <ChallengeFlow
+      hideFormTitle
+      form={form}
+      record={record}
+      start={start}
+      onVerified={async (result) => {
+        if (result.kind === 'user' && submission !== null) {
+          setUser(result.user);
+          await succeed(submission);
+        }
+      }}
+    />
   );
 }
 

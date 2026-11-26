@@ -12,6 +12,12 @@ type MockPickerProps = { onChange: (event: { type: string }, date?: Date) => voi
 let mockBounds: { minimumDate?: Date; maximumDate?: Date; value?: Date } = {};
 
 /** Le sélecteur natif est remplacé par un bouton qui choisit le 12 avril 1990. */
+jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+jest.mock('react-native-safe-area-context', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
+});
 jest.mock('@react-native-community/datetimepicker', () => {
   const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Picker = ({ onChange, testID, minimumDate, maximumDate, value }: MockPickerProps) => {

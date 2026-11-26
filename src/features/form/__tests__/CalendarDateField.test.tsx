@@ -8,6 +8,11 @@ import { CalendarDateField } from '../components/fields/CalendarDateField';
 import type { FormFieldDefinition } from '../types';
 
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+jest.mock('react-native-safe-area-context', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
+});
 
 /** Champ de base : décembre 2026, du 1er au 31. */
 function field(name: string, calendar: FormFieldDefinition['calendar']): FormFieldDefinition {
@@ -46,6 +51,8 @@ describe('CalendarDateField (décision 2026-11-19-contrat-calendrier-offre)', ()
     await show(field('check_in', { unavailable: ['2026-12-05', '2026-12-06'], after: null }));
 
     await fireEvent.press(screen.getByTestId('field-check_in'));
+    // Dans un panneau titré du libellé du champ, pas sous le champ (décision 2026-11-26-calendrier-en-panneau).
+    expect(screen.getByTestId('field-check_in-sheet-header')).toHaveTextContent('check_in');
     expect(screen.getByTestId('field-check_in-grid-label')).toHaveTextContent(/décembre 2026/i);
     expect(disabled('field-check_in-grid-day-2026-12-05')).toBe(true);
     expect(disabled('field-check_in-grid-day-2026-12-04')).toBe(false);

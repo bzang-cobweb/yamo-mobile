@@ -11,6 +11,8 @@ import { FieldShell } from '../FieldShell';
  * Choix multiples en puces, sur une ligne qui défile (décision 2026-11-26-filtres-en-puces) : chaque option est
  * une puce bordée aux coins arrondis ; un appui la choisit ou la retire. Choisie, elle passe en fond noir, texte
  * blanc (les couleurs du texte et du fond du thème, inversées). La valeur est la liste des options choisies.
+ * Une puce choisie ou plus : leur nombre entre parenthèses après le libellé, « Statut (2) » (décision
+ * 2026-11-26-puces-nombre-choisi).
  */
 export function ChipsField({ field, value, onChange, error, disabled }: FieldProps<string[]>) {
   const theme = useTheme();
@@ -19,8 +21,10 @@ export function ChipsField({ field, value, onChange, error, disabled }: FieldPro
     onChange(value.includes(option) ? value.filter((item) => item !== option) : [...value, option]);
   }
 
+  const labelled = field.label !== null && value.length > 0 ? { ...field, label: `${field.label} (${value.length})` } : field;
+
   return (
-    <FieldShell field={field} error={error}>
+    <FieldShell field={labelled} error={error}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

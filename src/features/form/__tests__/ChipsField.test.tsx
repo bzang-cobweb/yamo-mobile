@@ -47,6 +47,17 @@ describe('ChipsField (type « chips », décision 2026-11-26-filtres-en-puces)',
     expect(initialValue(field())).toEqual([]);
   });
 
+  it('le nombre de puces choisies entre parenthèses après le libellé ; aucune, le libellé seul (décision 2026-11-26-puces-nombre-choisi)', async () => {
+    await show(['1', '2']);
+    expect(screen.getByText('Équipements (2)')).toBeTruthy();
+    await screen.rerender(
+      <I18nContext.Provider value={TEST_I18N}>
+        <FormField field={field()} value={[]} onChange={jest.fn()} />
+      </I18nContext.Provider>,
+    );
+    expect(screen.getByText('Équipements')).toBeTruthy();
+  });
+
   it('un appui ajoute la puce aux choix, un autre la retire', async () => {
     const onChange = await show(['2']);
 

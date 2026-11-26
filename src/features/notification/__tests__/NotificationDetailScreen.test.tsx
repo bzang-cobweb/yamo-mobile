@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
+import { currentToast } from '@/shared/components/Toast';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
@@ -23,6 +24,21 @@ jest.mock('react-native-safe-area-context', () => {
   return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
 });
 jest.mock('@/features/auth/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 } }) }));
+// Le formulaire du profil : un bouton qui l'envoie ; son titre, servi par sa définition.
+jest.mock('@/features/form/hooks/useFormDefinition', () => ({ useFormDefinition: () => ({ data: { title: 'Modifier la demande de séjour' } }) }));
+jest.mock('@/features/auth/screens/ProfileFormScreen', () => {
+  const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return {
+    profileContentStyle: {},
+    formTitle: (definition?: { title?: string }) => definition?.title ?? '',
+    ProfileForm: ({ form, record, onDone }: { form: string; record?: string; onDone: (success: { action: string; message: string }) => void }) => (
+      <Pressable testID="profile-form" onPress={() => onDone({ action: 'back', message: 'Demande modifiée.' })}>
+        <Text>{`${form}:${record}`}</Text>
+      </Pressable>
+    ),
+  };
+});
 
 const { router, useFocusEffect } = jest.requireMock<{ router: { push: jest.Mock }; useFocusEffect: jest.Mock }>('expo-router');
 
@@ -280,7 +296,7 @@ describe('NotificationDetailScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/profile/lists/offer.bookings.received');
   });
 
-  it('le membre, demande en attente : « Modifier » ouvre le formulaire ; au retour, la demande est relue (décision 2026-11-21-detail-reservation-modifier)', async () => {
+  it('le membre, demande en attente : « Modifier » et « Annuler » ouvrent leur formulaire dans un panneau ; envoyé, il se ferme et la demande est relue (décision 2026-11-26-formulaires-en-panneau)', async () => {
     jest.spyOn(notificationService, 'get').mockResolvedValue({
       ...NOTIFICATION,
       link: '/profile/offer.booking.edit?record=9',
@@ -290,15 +306,37 @@ describe('NotificationDetailScreen', () => {
     });
     await show();
 
-    await fireEvent.press(await screen.findByTestId('notification-detail-open-button'));
-    expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Modifier');
-    expect(router.push).toHaveBeenLastCalledWith('/profile/offer.booking.edit?record=9');
-    // « Annuler », à gauche, ouvre le formulaire d'annulation (décision 2026-11-21-annuler-depuis-le-detail).
+    expect(await screen.findByTestId('notification-detail-open-button')).toHaveTextContent('Modifier');
+    await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
+    // Le panneau, pas un écran : titré par le formulaire, le formulaire et son enregistrement dedans.
+    expect(router.push).not.toHaveBeenCalled();
+    expect(screen.getByTestId('notification-detail-form-header')).toHaveTextContent('Modifier la demande de séjour');
+    expect(screen.getByTestId('profile-form')).toHaveTextContent('offer.booking.edit:9');
+
+    // Envoyé : le panneau se ferme, le message s'affiche, la demande est relue.
+    await act(async () => fireEvent.press(screen.getByTestId('profile-form')));
+    expect(screen.queryByTestId('notification-detail-form')).toBeNull();
+    expect(currentToast()?.message).toBe('Demande modifiée.');
+    expect(notificationService.get).toHaveBeenCalledTimes(2);
+
+    // « Annuler », à gauche (décision 2026-11-21-annuler-depuis-le-detail) : son formulaire ; la croix le ferme sans envoyer.
     expect(screen.getByTestId('notification-detail-open-secondary')).toHaveTextContent('Annuler');
     await fireEvent.press(screen.getByTestId('notification-detail-open-secondary'));
-    expect(router.push).toHaveBeenLastCalledWith('/profile/offer.booking.cancel?record=9');
+    expect(screen.getByTestId('profile-form')).toHaveTextContent('offer.booking.cancel:9');
+    await fireEvent.press(screen.getByTestId('notification-detail-form-close'));
+    expect(screen.queryByTestId('notification-detail-form')).toBeNull();
+    expect(notificationService.get).toHaveBeenCalledTimes(2);
+  });
 
-    // La première mise au premier plan ne relit rien ; la suivante (retour du formulaire), si.
+  it('un bouton vers un autre écran que le profil (« Laisser un avis ») l’ouvre ; au retour, la demande est relue (décision 2026-11-21-detail-reservation-modifier)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, link: '/offers/5/review', link_label: 'Laisser un avis' });
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-open-button'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/5/review');
+    expect(screen.queryByTestId('notification-detail-form')).toBeNull();
+
+    // La première mise au premier plan ne relit rien ; la suivante (retour de l'écran), si.
     const focus = useFocusEffect.mock.calls.at(-1)?.[0] as () => void;
     focus();
     expect(notificationService.get).toHaveBeenCalledTimes(1);

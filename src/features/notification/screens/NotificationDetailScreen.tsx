@@ -1,14 +1,16 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ProfileFormSheet, profileFormLink } from '@/features/auth/components/ProfileFormSheet';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { BookingSummary } from '@/features/offer/components/BookingSummary';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { Quote } from '@/shared/components/Quote';
+import { showToast } from '@/shared/components/Toast';
 import { StatusTag } from '@/shared/components/StatusTag';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { BackStackProvider } from '@/shared/navigation/BackStack';
@@ -41,7 +43,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
   const query = useNotification(id);
   const markRead = useMarkRead();
   const { refetch } = query;
-  // Au retour sur la page (« Modifier » enregistré, décision 2026-11-21-detail-reservation-modifier),
+  // Au retour sur la page (un lien suivi, décision 2026-11-21-detail-reservation-modifier),
   // la demande est relue : ses dates, son total. Pas à la première ouverture, déjà chargée.
   const shown = useRef(false);
   useFocusEffect(
@@ -63,6 +65,18 @@ export function NotificationDetailScreen({ id }: { id: string }) {
   function go(link: string) {
     if (APP_LINK.test(link)) {
       router.push(link as Href);
+    }
+  }
+
+  // Le formulaire ouvert par un bouton du bas (« Modifier », « Annuler »), dans un panneau plutôt qu'un écran
+  // (décision 2026-11-26-formulaires-en-panneau).
+  const [form, setForm] = useState<string | null>(null);
+
+  function act(link: string) {
+    if (profileFormLink(link) !== null) {
+      setForm(link);
+    } else {
+      go(link);
     }
   }
 
@@ -159,16 +173,27 @@ export function NotificationDetailScreen({ id }: { id: string }) {
           {notification?.link && APP_LINK.test(notification.link) && (
             <FixedButtonBar
               label={notification.link_label ?? t('notifications.open')}
-              onPress={() => notification.link && go(notification.link)}
+              onPress={() => notification.link && act(notification.link)}
               // « Annuler », à gauche, tant que le membre peut annuler sa demande (décision 2026-11-21-annuler-depuis-le-detail).
               secondary={
                 notification.secondary_link && notification.secondary_link_label && APP_LINK.test(notification.secondary_link)
-                  ? { label: notification.secondary_link_label, onPress: () => notification.secondary_link && go(notification.secondary_link) }
+                  ? { label: notification.secondary_link_label, onPress: () => notification.secondary_link && act(notification.secondary_link) }
                   : null
               }
               testID="notification-detail-open"
             />
           )}
+          {/* Envoyé : le panneau se ferme, le message s'affiche, la demande est relue (ses dates, son statut). */}
+          <ProfileFormSheet
+            link={form}
+            onClose={() => setForm(null)}
+            onDone={(message) => {
+              setForm(null);
+              showToast(message);
+              void refetch();
+            }}
+            testID="notification-detail-form"
+          />
         </BackStackProvider>
       </SafeAreaView>
     </ThemedView>
