@@ -104,6 +104,8 @@ function RootNavigator() {
             <Stack.Screen name="profile/menu/[menu]" />
             {/* Une liste du profil, par-dessus les onglets, sans menu du bas (décision 2026-11-19-contrat-reservations-logements-profil). */}
             <Stack.Screen name="profile/lists/[list]" />
+            {/* Une liste de favoris ouverte (décision 2026-11-27-listes-de-favoris). */}
+            <Stack.Screen name="wishlists/[id]" />
             {/* Son avis sur une offre, ouvert depuis la fiche (décision 2026-11-19-contrat-avis-offres). */}
             <Stack.Screen name="offers/[id]/review" />
             {/* Réserver ou demander une visite, depuis la fiche (décision 2026-11-19-contrat-reservations). */}
