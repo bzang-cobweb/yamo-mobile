@@ -1,10 +1,13 @@
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import { APP_LINK } from './NotificationText';
 import type { SummaryLine } from '../types';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
+
+/** Un lien d'appel ou d'e-mail, ouvert par le système. */
+const CONTACT_LINK = /^(tel|mailto):/;
 
 /**
  * Une ligne : le libellé à gauche (« Arrivée : »), la valeur à droite, en lien vers sa page s'il y en a un ; la ligne
@@ -26,7 +29,18 @@ export function SummaryLineRow({ line, onOpen, testID: prefix }: { line: Summary
       </ThemedText>
       {/* Une valeur avec un lien : le nom de l'hôte ou du membre, vers sa page
           (décision 2026-11-21-detail-reservation-contact). */}
-      {line.link && APP_LINK.test(line.link) ? (
+      {/* Un téléphone ou un e-mail affiché masqué : le lien appelle ou écrit à la vraie valeur (décision
+          2026-11-27-email-telephone-masques). */}
+      {line.link && CONTACT_LINK.test(line.link) ? (
+        <ThemedText
+          type="linkPrimary"
+          accessibilityRole="link"
+          onPress={() => line.link && void Linking.openURL(line.link)}
+          style={styles.value}
+          testID={`${prefix}-line-${line.key}-value`}>
+          {line.value}
+        </ThemedText>
+      ) : line.link && APP_LINK.test(line.link) ? (
         <ThemedText
           type="linkPrimary"
           accessibilityRole="link"

@@ -211,6 +211,13 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-phone')).toHaveTextContent('+41 79 123 45 67');
   });
 
+  it('affiche l’e-mail et le numéro masqués servis par l’API (décision 2026-11-27-email-telephone-masques)', async () => {
+    await renderProfile({ ...jeanne, email_masked: 'j•••@example.com', phone: '+41791234567', phone_international: '+41 79 123 45 67', phone_masked: '+41 ••• 67', phone_country: 'CH' });
+
+    expect(screen.getByTestId('profile-email')).toHaveTextContent('j•••@example.com');
+    expect(screen.getByTestId('profile-phone')).toHaveTextContent('+41 ••• 67');
+  });
+
   describe("selon les canaux de l'application", () => {
     afterEach(() => {
       mockChannels = { email: true, phone: true };

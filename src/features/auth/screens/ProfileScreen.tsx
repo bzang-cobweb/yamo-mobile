@@ -54,12 +54,13 @@ export function ProfileScreen() {
             </ThemedText>
             {channels.email && user.email && (
               <ThemedText themeColor="textSecondary" testID="profile-email">
-                {user.email}
+                {/* Masqué (décision 2026-11-27-email-telephone-masques). */}
+                {user.email_masked ?? user.email}
               </ThemedText>
             )}
             {channels.phone && user.phone && (
               <ThemedText themeColor="textSecondary" testID="profile-phone">
-                {user.phone_international ?? user.phone}
+                {user.phone_masked ?? user.phone_international ?? user.phone}
               </ThemedText>
             )}
           </View>

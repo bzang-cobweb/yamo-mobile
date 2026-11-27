@@ -181,8 +181,10 @@ function MemberCard({ partnerId, member, onRemoved }: { partnerId: string; membe
           {member.name}
         </ThemedText>
       </View>
-      {member.phone && <ContactRow label={t('partners.phone')} value={member.phone} url={`tel:${member.phone.replace(/\s/g, '')}`} testID="partner-member-card-phone" />}
-      {member.email && <ContactRow label={t('partners.email')} value={member.email} url={`mailto:${member.email}`} testID="partner-member-card-email" />}
+      {/* Affichés masqués ; le lien appelle ou écrit au vrai numéro, à la vraie adresse (décision
+          2026-11-27-email-telephone-masques). */}
+      {member.phone && <ContactRow label={t('partners.phone')} value={member.phone_masked ?? member.phone} url={`tel:${member.phone.replace(/\s/g, '')}`} testID="partner-member-card-phone" />}
+      {member.email && <ContactRow label={t('partners.email')} value={member.email_masked ?? member.email} url={`mailto:${member.email}`} testID="partner-member-card-email" />}
       {/* Faire ou défaire un administrateur : pour un administrateur, sur un autre compte que le sien (décision
           2026-11-27-membre-administrateur). */}
       {member.can_change_admin && (

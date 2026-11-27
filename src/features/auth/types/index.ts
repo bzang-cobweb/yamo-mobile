@@ -25,6 +25,14 @@ export type User = {
   phone_international: string | null;
   /** Code ISO du pays de l'indicatif du téléphone. */
   phone_country: string | null;
+  /** L'e-mail en partie masqué (« j•••@example.com »), celui qu'on affiche (décision 2026-11-27-email-telephone-masques). */
+  email_masked?: string | null;
+  /** Le numéro en partie masqué (« +41 ••• 67 »), celui qu'on affiche. */
+  phone_masked?: string | null;
+  /** L'e-mail est vérifié (un code reçu). */
+  email_verified?: boolean;
+  /** Le numéro est vérifié (un code reçu). */
+  phone_verified?: boolean;
   last_seen_at: string | null;
   is_online: boolean;
   locale: Locale;

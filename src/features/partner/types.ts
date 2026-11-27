@@ -40,6 +40,9 @@ export type PartnerMember = {
   /** Ses coordonnées, entre comptes d'un même partenaire (décision 2026-11-27-partenaire-membre-panneau). */
   email: string | null;
   phone: string | null;
+  /** Les mêmes, en partie masqués : ceux qu'on affiche ; les vrais restent dans les liens (décision 2026-11-27-email-telephone-masques). */
+  email_masked?: string | null;
+  phone_masked?: string | null;
   is_admin: boolean;
   /** Le lecteur peut-il changer `is_admin` de ce compte ? Un administrateur, pour les autres que lui (décision 2026-11-27-membre-administrateur). */
   can_change_admin: boolean;
