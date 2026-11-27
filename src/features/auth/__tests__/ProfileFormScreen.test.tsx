@@ -131,6 +131,29 @@ describe('ProfileFormScreen (tout formulaire du profil, sans le connaître d’a
     expect(router.dismissTo).not.toHaveBeenCalled();
   });
 
+  it('supprimer son compte : la raison, le code, puis message et déconnexion (décision 2026-11-27-confidentialite)', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    mockDefinition = definition({ method: 'DELETE', endpoint: '/v1/auth/me', destructive: true, success: { action: 'sign-out', message: 'Votre compte a été supprimé.' } });
+    const challenge = { challenge: 'del', channel: 'email', destination: 'j•••@example.com' };
+    mockRequest.mockResolvedValue(challenge);
+    (verificationService.verify as jest.Mock).mockResolvedValue({ kind: 'user', user });
+    const auth = await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('submit-notifications.settings'));
+
+    // Rien n'est supprimé ni déconnecté avant le code.
+    expect(auth.signOut).not.toHaveBeenCalled();
+    expect(screen.getByTestId('code-sent')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('submit-auth.code'));
+
+    expect(verificationService.verify).toHaveBeenCalledWith(challenge, '123456', expect.any(String));
+    expect(alert).toHaveBeenCalledWith('Votre compte a été supprimé.');
+    expect(auth.signOut).toHaveBeenCalled();
+    // Le compte supprimé n'est pas remis dans l'app.
+    expect(auth.setUser).not.toHaveBeenCalled();
+    expect(router.dismissTo).not.toHaveBeenCalled();
+  });
+
   it('ouvert depuis un item d’une liste : formulaire lié à l’enregistrement, puis retour à la liste avec le message', async () => {
     mockDefinition = definition({ method: 'PATCH', endpoint: '/v1/auth/me/addresses/12', success: { action: 'back', message: 'Adresse enregistrée.' } });
     mockRequest.mockResolvedValue(undefined);

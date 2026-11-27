@@ -135,7 +135,11 @@ export function ProfileForm({ form, record, onDone }: { form: string; record?: s
       start={start}
       onVerified={async (result) => {
         if (result.kind === 'user' && submission !== null) {
-          setUser(result.user);
+          // Un compte supprimé (suite « sign-out ») n'est pas remis dans l'app : elle se déconnecte (décision
+          // 2026-11-27-confidentialite).
+          if (submission.success.action !== 'sign-out') {
+            setUser(result.user);
+          }
           await succeed(submission);
         }
       }}

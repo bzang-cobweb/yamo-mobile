@@ -77,6 +77,8 @@ export type OfferSectionAction = { label: string; link: string };
 export type OfferReview = {
   id: string;
   author: string;
+  /** Son pays, sa région et sa ville (« Littoral, Cameroun »), s'il l'autorise ; absent ou `null` sinon (décision 2026-11-27-confidentialite). */
+  author_location?: string | null;
   rating: number;
   comment: string;
   created_at: string | null;

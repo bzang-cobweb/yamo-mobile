@@ -189,6 +189,12 @@ export function ReviewRow({ review, bordered = true, lines }: { review: Review; 
       {/* Le prénom ; puis les étoiles et la date sur une ligne, séparées par un point ; puis le commentaire (décision
           2026-11-25-avis-note-et-date-sur-une-ligne). */}
       <ThemedText type="smallBold">{review.author}</ThemedText>
+      {/* Son lieu, s'il l'autorise (décision 2026-11-27-confidentialite). */}
+      {review.author_location ? (
+        <ThemedText type="small" themeColor="textSecondary" testID="offer-review-location">
+          {review.author_location}
+        </ThemedText>
+      ) : null}
       <View style={styles.meta}>
         <View accessible accessibilityLabel={t('form.ratingValue', { value: String(review.rating) })} testID="offer-review-stars">
           {/* L'étoile vide en gris du texte secondaire, à 40 % : visible sur le fond des cartes (décision
