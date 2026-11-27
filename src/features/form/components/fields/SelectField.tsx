@@ -15,7 +15,7 @@ export const SEARCHABLE_LIMIT = 10;
 /** Liste déroulante : la valeur choisie s'affiche ; un appui ouvre la liste des options. */
 export function SelectField({ field, value, onChange, error, disabled }: FieldProps<string>) {
   const { t } = useI18n();
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [open, setOpen] = useState(false);
   const selected = field.options.find((option) => option.value === value);
 

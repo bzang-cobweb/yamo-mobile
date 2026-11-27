@@ -16,7 +16,7 @@ import { useInputStyle } from './inputStyle';
 export function RangeField({ field, value, onChange, error, disabled }: FieldProps<string[]>) {
   const { t } = useI18n();
   const theme = useTheme();
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [min = '', max = ''] = value;
   const label = field.label ?? field.name;
 

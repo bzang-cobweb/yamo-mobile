@@ -25,7 +25,7 @@ import { useInputStyle } from './inputStyle';
 export function DateField({ field, value, onChange, error, disabled }: FieldProps<string>) {
   const { t, locale } = useI18n();
   const theme = useTheme();
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [open, setOpen] = useState(false);
   const date = parseIsoDate(value);
   const minimumDate = parseIsoDate(field.date_range?.min ?? '') ?? undefined;

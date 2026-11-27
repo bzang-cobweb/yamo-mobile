@@ -26,7 +26,7 @@ const MONDAY = new Date(2024, 0, 1);
  */
 export function CalendarDateField({ field, value, onChange, error, disabled, afterValue }: FieldProps<string>) {
   const { t, locale } = useI18n();
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [open, setOpen] = useState(false);
   const date = parseIsoDate(value);
   const min = field.date_range?.min ?? null;

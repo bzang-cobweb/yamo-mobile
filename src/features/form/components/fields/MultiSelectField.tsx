@@ -20,7 +20,7 @@ import { useInputStyle } from './inputStyle';
 export function MultiSelectField({ field, value, onChange, error, disabled }: FieldProps<string[]>) {
   const { t } = useI18n();
   const theme = useTheme();
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<string[]>(value);
   const labels = field.options.filter((option) => value.includes(option.value)).map((option) => option.label);

@@ -20,7 +20,7 @@ import { OptionsModal } from './OptionsModal';
 export function PhoneField({ field, value, onChange, error, disabled, country, onCountryChange, countryLocked = false }: FieldProps<string>) {
   const { t } = useI18n();
   const theme = useTheme();
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [open, setOpen] = useState(false);
   const selected = field.options.find((option) => option.value === country);
 

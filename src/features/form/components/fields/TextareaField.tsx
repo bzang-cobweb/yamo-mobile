@@ -11,7 +11,7 @@ import { useInputStyle } from './inputStyle';
  * envoyé par l'API), la saisie s'arrête à la limite et un compteur « n / N » suit.
  */
 export function TextareaField({ field, value, onChange, error, disabled }: FieldProps<string>) {
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const maxLength = field.max_length ?? undefined;
 
   return (

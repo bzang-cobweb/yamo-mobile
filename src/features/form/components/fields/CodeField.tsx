@@ -9,7 +9,7 @@ import { useInputStyle } from './inputStyle';
  * automatique du code reçu par SMS (`oneTimeCode`).
  */
 export function CodeField({ field, value, onChange, error, disabled, onSubmitEditing }: FieldProps<string>) {
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
 
   return (
     <FieldShell field={field} error={error}>

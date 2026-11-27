@@ -28,7 +28,7 @@ const TOGGLE_SIZE = 22;
  * `suggestions` propose, sous la saisie, les réponses de son point d'API.
  */
 export function TextField({ field, value, onChange, error, disabled, onSubmitEditing, onFill }: FieldProps<string>) {
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const { t } = useI18n();
   const theme = useTheme();
   const [revealed, setRevealed] = useState(false);

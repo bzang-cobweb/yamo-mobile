@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
@@ -31,6 +32,14 @@ describe('NumberField', () => {
     await show(field({ name: 'charges', label: 'Charges', help: 'En plus du loyer.', suffix: 'FCFA / mois' }));
 
     expect(screen.getByTestId('charges-help').props.children).toBe('En plus du loyer. En FCFA / mois');
+  });
+
+  it('en lecture seule, la zone de saisie n’a ni fond ni marges intérieures ; sinon, celui du thème (décision 2026-11-27-lecture-seule-sans-fond)', async () => {
+    await show(field({ readonly: true }));
+    expect(StyleSheet.flatten(screen.getByTestId('field-surface').props.style)).toMatchObject({ backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 0 });
+
+    await show(field());
+    expect(StyleSheet.flatten(screen.getByTestId('field-surface').props.style).backgroundColor).not.toBe('transparent');
   });
 
   it('sans unité ni aide, pas de ligne d’aide', async () => {

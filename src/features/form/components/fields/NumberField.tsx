@@ -10,7 +10,7 @@ import { useInputStyle } from './inputStyle';
  * est donnée avec le libellé à l'accessibilité.
  */
 export function NumberField({ field, value, onChange, error, disabled }: FieldProps<string>) {
-  const inputStyle = useInputStyle(Boolean(error));
+  const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
 
   return (
     <FieldShell field={field} error={error}>
