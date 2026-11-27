@@ -186,6 +186,9 @@ export function NotificationDetailScreen({ id }: { id: string }) {
           {/* Envoyé : le panneau se ferme, le message s'affiche, la demande est relue (ses dates, son statut). */}
           <ProfileFormSheet
             link={form}
+            // À la hauteur du formulaire (« Répondre » : un message), comme sur la fiche d'une offre ; un long formulaire
+            // (« Modifier ») va jusqu'à la taille maximale (décision 2026-11-27-repondre-en-panneau).
+            fitContent
             onClose={() => setForm(null)}
             onDone={(message) => {
               setForm(null);
