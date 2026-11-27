@@ -21,6 +21,22 @@ export type Partner = {
   status?: StatusTagValue | null;
   /** Sur sa page, pour ses comptes seulement : ses vues (décisions 2026-11-25-partenaire-vues-sur-sa-page et 2026-11-25-vues-oeil). */
   views?: Views | null;
+  /** Sur sa page, pour ses comptes seulement : leur nombre, rédigé (« 3 membres »), et chacun, les administrateurs d'abord (décision 2026-11-27-partenaire-membres). */
+  members_label?: string | null;
+  members?: PartnerMember[] | null;
+};
+
+/** Un compte d'un partenaire : sa photo, son nom, sa page, son e-mail et son téléphone ; la pastille « Administrateur » s'il l'est. */
+export type PartnerMember = {
+  id: string;
+  name: string;
+  initials: string;
+  photo: string | null;
+  link: string;
+  /** Ses coordonnées, entre comptes d'un même partenaire (décision 2026-11-27-partenaire-membre-panneau). */
+  email: string | null;
+  phone: string | null;
+  tag: StatusTagValue | null;
 };
 
 /**

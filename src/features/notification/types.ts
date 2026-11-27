@@ -53,11 +53,12 @@ export type AppNotification = {
    * modifications d'un partenaire) ; `null` (ou absent) : aucune (décision 2026-11-26-partenaire-dernieres-modifications).
    */
   lines?: SummaryLine[] | null;
-  /** Le titre des lignes dans le panneau « Info » (« Modifications », « Détails de la demande ») ; `null` : aucun (décision 2026-11-27-detail-sans-zone-fixe). */
+  /** Le titre des lignes dans le panneau « Info » (« Détail demande de séjour ») ; `null` : aucun (décision 2026-11-27-detail-sans-zone-fixe). */
   lines_title?: string | null;
   /**
    * Le menu ⋮ de la page, servi avec elle (décision 2026-11-27-menu-notification-serveur), dans l'ordre : `link` ouvre un
-   * écran de l'app (ou un formulaire du profil dans un panneau) ; sans `link`, le panneau que nomme `key` (`info`).
+   * écran de l'app (ou un formulaire du profil dans un panneau) ; sans `link`, le panneau que nomme `key` (`info`,
+   * `lines`, `partner`).
    */
   menu?: NotificationMenuEntry[];
   /**
@@ -134,4 +135,12 @@ export type SummaryLine = { key: string; label: string; value: string; link?: st
 export type BookingLine = SummaryLine;
 
 /** Une entrée du menu ⋮ de la page d'une notification. */
-export type NotificationMenuEntry = { key: string; label: string; link: string | null };
+export type NotificationMenuEntry = {
+  key: string;
+  label: string;
+  link: string | null;
+  /** L'enregistrement que désigne l'entrée (`partner` : l'identifiant du partenaire) ; `null` (ou absent) : aucun. */
+  record?: string | null;
+  /** Ce que dit son panneau quand il n'a rien à montrer (« Aucune modification enregistrée. ») ; `null` (ou absent) : rien (décision 2026-11-27-menu-entrees-vides). */
+  empty?: string | null;
+};

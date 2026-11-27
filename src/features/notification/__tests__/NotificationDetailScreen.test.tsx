@@ -7,6 +7,8 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { NotificationDetailScreen } from '../screens/NotificationDetailScreen';
+import { partnerService } from '@/features/partner/services/PartnerService';
+
 import { notificationService } from '../services/NotificationService';
 import type { AppNotification } from '../types';
 
@@ -261,27 +263,146 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-text')).toBeNull();
   });
 
-  it('un partenaire : ses dernières modifications en lignes sous l’en-tête (décision 2026-11-26-partenaire-dernieres-modifications)', async () => {
+  it('un partenaire : « Dernières modifications » du menu ouvre ses lignes dans un panneau titré de l’entrée, pas dans « Info » (décision 2026-11-27-menu-dernieres-modifications)', async () => {
     jest.spyOn(notificationService, 'get').mockResolvedValue({
       ...NOTIFICATION,
       heading: { title: 'Déménagement Express', subtitle: 'En une journée.', link: '/partners/18' },
       booking: undefined,
-      lines_title: 'Modifications',
       lines: [
+        { key: 'changed_by', label: 'Modifié par', value: 'Awa', link: '/members/7' },
         { key: 'slogan', label: 'Slogan', value: '« En une journée. » → « En une journée, sans casse. »' },
         { key: 'website', label: 'Lien', value: '(vide) → « https://demenagement.test »' },
-        { key: 'description', label: 'Description', value: '« Camions. » → « Camions et cartons. »' },
+      ],
+      menu: [
+        { key: 'info', label: 'Info', link: null },
+        { key: 'lines', label: 'Dernières modifications', link: null },
       ],
     });
     await show();
 
-    // Dans « Info », sous l'en-tête : les lignes, titrées « Modifications » par le serveur.
     await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-lines'));
+    expect(screen.getByTestId('notification-detail-lines-header')).toHaveTextContent('Dernières modifications');
+    expect(screen.getByTestId('notification-detail-lines-line-slogan-value')).toHaveTextContent('« En une journée. » → « En une journée, sans casse. »');
+    expect(screen.getByTestId('notification-detail-lines-line-website-label')).toHaveTextContent('Lien\u00a0:');
+    // Un lien ferme le panneau puis ouvre son écran.
+    await fireEvent.press(screen.getByTestId('notification-detail-lines-line-changed_by-value'));
+    expect(router.push).toHaveBeenLastCalledWith('/members/7');
+    expect(screen.queryByTestId('notification-detail-lines-line-slogan')).toBeNull();
+
+    // « Info » : l'en-tête, sans ces lignes.
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-toggle'));
     await fireEvent.press(screen.getByTestId('notification-detail-menu-info'));
-    expect(screen.getByTestId('notification-detail-info-lines-title')).toHaveTextContent('Modifications');
-    expect(screen.getByTestId('notification-detail-info-line-slogan-value')).toHaveTextContent('« En une journée. » → « En une journée, sans casse. »');
-    expect(screen.getByTestId('notification-detail-info-line-website-label')).toHaveTextContent('Lien\u00a0:');
-    expect(screen.getByTestId('notification-detail-info-line-description')).toBeTruthy();
+    expect(screen.getByTestId('notification-detail-info-title')).toHaveTextContent('Déménagement Express');
+    expect(screen.queryByTestId('notification-detail-info-line-slogan')).toBeNull();
+  });
+
+  it('un partenaire : « Info » ouvre sa fiche, la même que sa page, dans un panneau titré « Info » (décision 2026-11-27-info-partenaire-en-panneau)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({
+      ...NOTIFICATION,
+      heading: { title: 'Déménagement Express', subtitle: null, link: '/partners/18' },
+      booking: undefined,
+      menu: [{ key: 'partner', label: 'Info', link: null, record: '18' }],
+    });
+    const get = jest.spyOn(partnerService, 'get').mockResolvedValue({
+      id: '18', name: 'Déménagement Express', url: null, slogan: 'En une journée.', description: 'Camions et cartons.', website: null, cta_label: null, logo: null,
+      contact_email: 'lea@example.test', contact_phone: null, status: { label: 'En ligne', tone: 'success' },
+    });
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-partner'));
+    expect(screen.getByTestId('notification-detail-partner-header')).toHaveTextContent('Info');
+    expect(await screen.findByTestId('partner-name')).toHaveTextContent('Déménagement Express');
+    expect(get).toHaveBeenCalledWith('18');
+    expect(screen.getByTestId('partner-slogan')).toHaveTextContent('En une journée.');
+    expect(screen.getByTestId('partner-email')).toBeTruthy();
+    expect(screen.getByTestId('partner-description')).toHaveTextContent('Camions et cartons.');
+    expect(screen.getByTestId('partner-status')).toHaveTextContent('En ligne');
+    // Pas la fiche de la notification.
+    expect(screen.queryByTestId('notification-detail-info')).toBeNull();
+    await fireEvent.press(screen.getByTestId('notification-detail-partner-close'));
+    expect(screen.queryByTestId('partner-name')).toBeNull();
+  });
+
+  it('un partenaire : « Membres » ouvre le nombre de ses comptes et chacun, l’administrateur en vert ; un membre ouvre son panneau : photo, nom, téléphone, e-mail (décisions 2026-11-27-partenaire-membres et 2026-11-27-partenaire-membre-panneau)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({
+      ...NOTIFICATION,
+      heading: { title: 'Déménagement Express', subtitle: null, link: '/partners/18' },
+      booking: undefined,
+      menu: [
+        { key: 'partner', label: 'Info', link: null, record: '18' },
+        { key: 'members', label: 'Membres', link: null, record: '18' },
+      ],
+    });
+    jest.spyOn(partnerService, 'get').mockResolvedValue({
+      id: '18', name: 'Déménagement Express', url: null, slogan: 'En une journée.', description: null, website: null, cta_label: null, logo: null,
+      members_label: '2 membres',
+      members: [
+        { id: '7', name: 'Awa', initials: 'A', photo: null, link: '/members/7', email: null, phone: null, tag: { label: 'Administrateur', tone: 'success' } },
+        { id: '9', name: 'Bruno', initials: 'B', photo: null, link: '/members/9', email: 'lea@example.test', phone: '+237 6 99 00 11 22', tag: null },
+      ],
+    });
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-members'));
+    expect(screen.getByTestId('notification-detail-members-header')).toHaveTextContent('Membres');
+    expect(await screen.findByTestId('partner-members-count')).toHaveTextContent('2 membres');
+    // Ni le nom ni le slogan du partenaire.
+    expect(screen.queryByText('En une journée.')).toBeNull();
+    expect(screen.getByTestId('partner-member-7-name')).toHaveTextContent('Awa');
+    expect(screen.getByTestId('partner-member-7-tag')).toHaveTextContent('Administrateur');
+    expect(StyleSheet.flatten(screen.getByTestId('partner-member-7-tag').props.style)).toMatchObject({ backgroundColor: '#2E9D5B' });
+    expect(screen.queryByTestId('partner-member-9-tag')).toBeNull();
+
+    // Un membre : son panneau, à la hauteur de son contenu ; pas de page ouverte.
+    await fireEvent.press(screen.getByTestId('partner-member-9'));
+    expect(router.push).not.toHaveBeenCalled();
+    expect(screen.getByTestId('partner-member-sheet-header')).toHaveTextContent('Bruno');
+    expect(screen.getByTestId('partner-member-card-name')).toHaveTextContent('Bruno');
+    expect(screen.getByTestId('partner-member-card-phone')).toHaveTextContent('+237 6 99 00 11 22');
+    expect(screen.getByTestId('partner-member-card-email')).toHaveTextContent('lea@example.test');
+    // Pas administrateur : pas de pastille.
+    expect(screen.queryByTestId('partner-member-card-tag')).toBeNull();
+    await fireEvent.press(screen.getByTestId('partner-member-sheet-close'));
+    expect(screen.queryByTestId('partner-member-card')).toBeNull();
+    // Sans coordonnées : ni téléphone ni e-mail.
+    await fireEvent.press(screen.getByTestId('partner-member-7'));
+    expect(screen.queryByTestId('partner-member-card-phone')).toBeNull();
+    expect(screen.queryByTestId('partner-member-card-email')).toBeNull();
+    // Administrateur : la pastille verte sous son nom.
+    expect(screen.getByTestId('partner-member-card-tag')).toHaveTextContent('Administrateur');
+    expect(StyleSheet.flatten(screen.getByTestId('partner-member-card-tag').props.style)).toMatchObject({ alignSelf: 'center' });
+    const card = JSON.stringify(screen.toJSON());
+    expect(card.indexOf('"partner-member-card-name"')).toBeLessThan(card.indexOf('"partner-member-card-tag"'));
+  });
+
+  it('« Membres » sans compte : le panneau dit « Aucun membre » (décision 2026-11-27-menu-entrees-vides)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, menu: [{ key: 'members', label: 'Membres', link: null, record: '18' }] });
+    jest.spyOn(partnerService, 'get').mockResolvedValue({ id: '18', name: 'Déménagement Express', url: null, description: null, website: null, cta_label: null, logo: null, members_label: 'Aucun membre', members: [] });
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-members'));
+    expect(await screen.findByTestId('partner-members-count')).toHaveTextContent('Aucun membre');
+  });
+
+  it('« Dernières modifications » sans lignes : montrée quand même, son panneau dit le texte vide servi (décision 2026-11-27-menu-entrees-vides)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({
+      ...NOTIFICATION,
+      lines: null,
+      menu: [
+        { key: 'info', label: 'Info', link: null },
+        { key: 'lines', label: 'Dernières modifications', link: null, empty: 'Aucune modification enregistrée.' },
+      ],
+    });
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-lines'));
+    expect(screen.getByTestId('notification-detail-lines-header')).toHaveTextContent('Dernières modifications');
+    expect(screen.getByTestId('notification-detail-lines-empty')).toHaveTextContent('Aucune modification enregistrée.');
   });
 
   it('un en-tête sans lien ni sous-titre, sans demande : le titre seul, pas de texte ni de lignes (décision 2026-11-26-booking-summary)', async () => {

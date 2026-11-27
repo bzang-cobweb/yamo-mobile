@@ -4,6 +4,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileFormSheet, profileFormLink } from '@/features/auth/components/ProfileFormSheet';
+import { PartnerDetails } from '@/features/partner/components/PartnerDetails';
+import { PartnerMembers } from '@/features/partner/components/PartnerMembers';
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { NetworkError } from '@/shared/api/errors';
 import { BackHeader } from '@/shared/components/BackHeader';
@@ -83,11 +85,23 @@ export function NotificationDetailScreen({ id }: { id: string }) {
   // 2026-11-27-notification-menu-info).
   const [menuOpen, setMenuOpen] = useState(false);
   const [info, setInfo] = useState(false);
-  const infoLines = notification?.booking?.lines ?? notification?.lines ?? [];
+  // Dans « Info », les lignes d'une demande ; les autres lignes servies (les dernières modifications d'un partenaire) ont
+  // leur propre entrée, `lines` (décision 2026-11-27-menu-dernieres-modifications).
+  const infoLines = notification?.booking?.lines ?? [];
+  const [linesOpen, setLinesOpen] = useState(false);
+  const lines = notification?.lines ?? [];
   // Les entrées servies (décision 2026-11-27-menu-notification-serveur) : un lien ouvre son écran ou son formulaire ; sans
-  // lien, `info` ouvre son panneau, titré du libellé de l'entrée (décision 2026-11-27-info-titre-du-menu). Une entrée que
-  // l'app ne sait pas ouvrir n'est pas montrée.
+  // lien, `info` et `lines` ouvrent leur panneau, titré du libellé de l'entrée (décision 2026-11-27-info-titre-du-menu).
+  // Une entrée que l'app ne sait pas ouvrir n'est pas montrée.
   const infoEntry = notification?.menu?.find((entry) => entry.key === 'info' && !entry.link) ?? null;
+  // Montrée même sans lignes : son panneau dit alors `empty` (décision 2026-11-27-menu-entrees-vides).
+  const linesEntry = notification?.menu?.find((entry) => entry.key === 'lines' && !entry.link) ?? null;
+  // `partner` : la fiche du partenaire, la même que sa page (décision 2026-11-27-info-partenaire-en-panneau).
+  const [partnerOpen, setPartnerOpen] = useState(false);
+  const partnerEntry = notification?.menu?.find((entry) => entry.key === 'partner' && !entry.link && entry.record) ?? null;
+  // `members` : les comptes du partenaire (décision 2026-11-27-partenaire-membres).
+  const [membersOpen, setMembersOpen] = useState(false);
+  const membersEntry = notification?.menu?.find((entry) => entry.key === 'members' && !entry.link && entry.record) ?? null;
   const menuEntries = (notification?.menu ?? []).flatMap((entry) => {
     if (entry.link && APP_LINK.test(entry.link)) {
       const link = entry.link;
@@ -96,12 +110,22 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     if (entry === infoEntry) {
       return [{ key: entry.key, label: entry.label, onPress: () => setInfo(true) }];
     }
+    if (entry === linesEntry) {
+      return [{ key: entry.key, label: entry.label, onPress: () => setLinesOpen(true) }];
+    }
+    if (entry === partnerEntry) {
+      return [{ key: entry.key, label: entry.label, onPress: () => setPartnerOpen(true) }];
+    }
+    if (entry === membersEntry) {
+      return [{ key: entry.key, label: entry.label, onPress: () => setMembersOpen(true) }];
+    }
     return [];
   });
 
-  // Un lien suivi depuis « Info » ferme d'abord le panneau, qui couvrirait l'écran ouvert.
+  // Un lien suivi depuis un panneau du menu le ferme d'abord : il couvrirait l'écran ouvert.
   function openFromInfo(link: string) {
     setInfo(false);
+    setLinesOpen(false);
     go(link);
   }
 
@@ -239,7 +263,7 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     testID="notification-detail-text"
                   />
                 )}
-                {/* Le titre des lignes, servi par le module du fil (« Détails », « Modifications »). */}
+                {/* Le titre des lignes d’une demande, servi par le module du fil (« Détail demande de séjour »). */}
                 {infoLines.length > 0 && notification.lines_title && (
                   <ThemedText type="smallBold" testID="notification-detail-info-lines-title">
                     {notification.lines_title}
@@ -254,6 +278,34 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                   />
                 ))}
               </ScrollView>
+            </BottomSheet>
+          )}
+          {/* Les lignes servies (« Dernières modifications » d'un partenaire), à taille maximale, titrées du libellé de leur
+              entrée (décision 2026-11-27-menu-dernieres-modifications). */}
+          {linesEntry && (
+            <BottomSheet visible={linesOpen} title={linesEntry.label} onClose={() => setLinesOpen(false)} testID="notification-detail-lines">
+              <ScrollView style={styles.infoScroll} contentContainerStyle={styles.infoBody}>
+                {lines.map((line) => (
+                  <SummaryLineRow key={line.key} line={line} onOpen={openFromInfo} testID="notification-detail-lines" />
+                ))}
+                {lines.length === 0 && linesEntry.empty && (
+                  <ThemedText themeColor="textSecondary" style={styles.empty} testID="notification-detail-lines-empty">
+                    {linesEntry.empty}
+                  </ThemedText>
+                )}
+              </ScrollView>
+            </BottomSheet>
+          )}
+          {/* La fiche du partenaire, à taille maximale, titrée du libellé de son entrée (« Info »). */}
+          {partnerEntry?.record && (
+            <BottomSheet visible={partnerOpen} title={partnerEntry.label} onClose={() => setPartnerOpen(false)} testID="notification-detail-partner">
+              <PartnerDetails id={partnerEntry.record} />
+            </BottomSheet>
+          )}
+          {/* Les membres du partenaire, à taille maximale, titrés du libellé de leur entrée (« Membres »). */}
+          {membersEntry?.record && (
+            <BottomSheet visible={membersOpen} title={membersEntry.label} onClose={() => setMembersOpen(false)} testID="notification-detail-members">
+              <PartnerMembers id={membersEntry.record} />
             </BottomSheet>
           )}
           {/* Envoyé : le panneau se ferme, le message s'affiche, la demande est relue (ses dates, son statut). */}
@@ -288,7 +340,10 @@ const styles = StyleSheet.create({
   date: { textAlign: 'right' },
   // Le titre de l'en-tête, en gras.
   heading: { fontWeight: '700' },
-  // Le panneau « Info » : à sa taille maximale (décision 2026-11-27-info-taille-maximale), il défile s'il dépasse.
+  // Les panneaux du menu (« Info », les lignes) : à leur taille maximale (décision 2026-11-27-info-taille-maximale), ils
+  // défilent s'ils dépassent.
   infoScroll: { flex: 1 },
+  // Un panneau sans rien à montrer : son texte, centré.
+  empty: { textAlign: 'center' },
   infoBody: { gap: Spacing.three, padding: Spacing.four },
 });
