@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
@@ -342,6 +343,19 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
 
       {/* Sans barre fixe : le bouton sous les champs. */}
       {footer === null && <SubmitButton label={buttonLabel} busy={busy} submitting={submitting} destructive={destructive} onPress={() => void submit()} />}
+
+      {/* Les liens servis sous le formulaire, chacun vers un autre formulaire : « Vérifier mon adresse » sous le
+          changement d'e-mail (décision 2026-11-27-formulaire-liens). */}
+      {(definition.links ?? []).map((link) => (
+        <Pressable
+          key={link.form}
+          testID={`form-link-${link.form}`}
+          accessibilityRole="link"
+          disabled={submitting}
+          onPress={() => router.push({ pathname: '/profile/[form]', params: { form: link.form } })}>
+          <ThemedText type="linkPrimary">{link.label}</ThemedText>
+        </Pressable>
+      ))}
 
       {step > 0 && !hasBackHeader && (
         <Pressable testID="form-previous" accessibilityRole="button" disabled={submitting} onPress={previousStep}>

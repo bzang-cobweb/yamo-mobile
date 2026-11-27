@@ -164,8 +164,13 @@ export type FormDefinition = {
   fields: FormFieldDefinition[];
   /** Étapes, dans l'ordre ; vide (ou absent) pour un formulaire d'un seul tenant. */
   steps?: FormStep[];
+  /** Liens sous le formulaire, chacun ouvre un autre formulaire (« Vérifier mon adresse ») ; vide ou absent : aucun (décision 2026-11-27-formulaire-liens). */
+  links?: FormLink[];
   submit: FormSubmit;
 };
+
+/** Un lien sous un formulaire : son texte et le formulaire qu'il ouvre (`/profile/[form]`). */
+export type FormLink = { label: string; form: string };
 
 /**
  * Bouton d'envoi. Pour un formulaire que l'app envoie sans le connaître d'avance
