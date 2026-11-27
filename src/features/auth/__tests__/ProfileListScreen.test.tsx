@@ -37,6 +37,15 @@ jest.mock('@/features/list/components/FavoriteHeart', () => {
 
   return { FavoriteHeart: ({ testID }: { testID?: string }) => <View testID={testID} /> };
 });
+// Les panneaux d'action : leur contenu est testé à part ; ici, leur ouverture.
+jest.mock('@/features/list/components/ActionPanel', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return {
+    ActionPanel: ({ name, record }: { name: string; record: string }) => <Text testID="action-panel">{`${name}:${record}`}</Text>,
+    knowsPanel: (name: string) => name === 'partner.statistics',
+  };
+});
 jest.mock('expo-router', () => {
   const { useEffect } = jest.requireActual<typeof import('react')>('react');
 
@@ -187,9 +196,25 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByRole('link', { name: '1 notification non lue' })).toBeNull();
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-counter-7').props.style).backgroundColor).toBe('#E3F4EA');
     expect(StyleSheet.flatten(screen.getByTestId('profile-list-counters-7').props.style).justifyContent).toBe('flex-end');
+    // Détachés du contenu (décision 2026-11-27-pastilles-espace-contenu).
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-counters-7').props.style).marginTop).toBe(8);
     await fireEvent.press(screen.getByTestId('profile-list-counter-7-1'));
     expect(router.navigate).not.toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it('des pastilles, image à côté, sans « Modifier » ni « Retirer » : sous le contenu de droite (décision 2026-11-27-pastilles-sous-le-contenu)', async () => {
+    // Une carte de « Mes partenaires » lue par un compte qui n'en est pas administrateur.
+    const views = { label: '21 vues', list: 'partner.mine', filter: {} };
+    const members = { label: '3 membres', list: 'partner.members', filter: {}, link: '/partners/7/members' };
+    mockList = list([item('7', { image: 'https://example.test/logo.png', image_layout: 'side', edit: null, delete: null, counter: views, counters: [views, members] })]);
+    await renderScreen();
+
+    // Dans la colonne de droite, sous le texte, à gauche ; la carte reste sur une ligne, l'image à côté.
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-7').props.style).flexDirection).toBe('row');
+    expect(within(screen.getByTestId('profile-list-body-7')).getByTestId('profile-list-counters-7')).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-counters-7').props.style).justifyContent).toBe('flex-start');
+    expect(screen.getByTestId('profile-list-counter-7-1')).toHaveTextContent('3 membres');
   });
 
   it('sans photo : la pastille des demandes en attente sous le titre, pour information (décision 2026-11-21-pastille-sans-lien)', async () => {
@@ -223,6 +248,34 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByRole('link', { name: '2 demandes en attente' })).toBeNull();
     // Sans demande en attente : le statut.
     expect(screen.getByTestId('profile-list-item-8-status')).toHaveTextContent('Publiée');
+  });
+
+  it('une action qui ouvre un panneau : à taille maximale, titré de son libellé ; un panneau inconnu n’ouvre rien (décision 2026-11-27-action-panneau)', async () => {
+    mockList = {
+      ...list([
+        item('7', {
+          actions: [
+            { label: 'Statistiques', style: 'default', confirm: null, submission: null, form: null, link: null, panel: { name: 'partner.statistics', record: '7' } },
+            { label: 'Autre', style: 'default', confirm: null, submission: null, form: null, link: null, panel: { name: 'inconnu', record: '7' } },
+          ],
+        }),
+      ]),
+      menu: true,
+    };
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-action-0'));
+    expect(screen.getByTestId('profile-list-panel-header')).toHaveTextContent('Statistiques');
+    expect(screen.getByTestId('action-panel')).toHaveTextContent('partner.statistics:7');
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-panel').props.style).flex).toBe(1);
+    expect(router.push).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('profile-list-panel-close'));
+    expect(screen.queryByTestId('action-panel')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-toggle'));
+    await fireEvent.press(screen.getByTestId('profile-list-menu-7-action-1'));
+    expect(screen.queryByTestId('action-panel')).toBeNull();
   });
 
   it('« Mes logements » : toutes les actions dans un menu « Actions » (décision 2026-11-21-actions-en-menu)', async () => {
@@ -874,14 +927,19 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
       expect(screen.getByTestId('profile-list-item-2-photo').props.contentFit).toBe('cover');
     });
 
-    it('l’image en petit à gauche quand l’API le demande, le statut au-dessus du titre (décision 2026-11-24-mes-partenaires-comme-partenaires)', async () => {
+    it('l’image en petit à gauche quand l’API le demande ; le statut seul sur la première ligne, le menu à droite (décisions 2026-11-24-mes-partenaires-comme-partenaires et 2026-11-27-statut-premiere-ligne)', async () => {
       mockList = { ...list([item('1', { image: 'https://api.test/logo.png', image_fit: 'contain', image_layout: 'side', tag: { label: 'En validation', tone: 'warning' } })]), menu: true };
       await renderScreen();
 
       expect(screen.getByTestId('profile-list-item-1-side-photo').props.contentFit).toBe('contain');
       expect(screen.queryByTestId('profile-list-item-1-photo')).toBeNull();
-      expect(screen.getByTestId('profile-list-body-1')).toHaveTextContent(/^En validation.*Carte 1/);
-      expect(StyleSheet.flatten(screen.getByTestId('profile-list-tags-1').props.style).marginBottom).toBe(4);
+      // Le statut n'est plus dans la colonne de droite : sur sa ligne, au-dessus de l'image et du texte.
+      expect(screen.getByTestId('profile-list-body-1')).not.toHaveTextContent('En validation');
+      expect(within(screen.getByTestId('profile-list-item-1')).queryByTestId('profile-list-tags-1')).toBeNull();
+      expect(screen.getAllByTestId(/^profile-list-(tags|item)-1$/).map((node) => node.props.testID)).toEqual(['profile-list-tags-1', 'profile-list-item-1']);
+      expect(StyleSheet.flatten(screen.getByTestId('profile-list-row-1').props.style).flexDirection).toBe('column');
+      // À la hauteur du menu ⋮ (32), qui flotte à droite.
+      expect(StyleSheet.flatten(screen.getByTestId('profile-list-tags-1').props.style)).toMatchObject({ minHeight: 32, alignItems: 'center' });
       expect(StyleSheet.flatten(screen.getByTestId('profile-list-body-1').props.style).gap).toBe(8);
       expect(StyleSheet.flatten(screen.getByTestId('profile-list-menu-1').props.style)).toMatchObject({ top: 8, right: 8 });
     });

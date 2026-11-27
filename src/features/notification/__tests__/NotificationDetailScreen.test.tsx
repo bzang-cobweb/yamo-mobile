@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 
 import { currentToast } from '@/shared/components/Toast';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -8,6 +8,7 @@ import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { NotificationDetailScreen } from '../screens/NotificationDetailScreen';
 import { partnerService } from '@/features/partner/services/PartnerService';
+import { ApiError } from '@/shared/api/errors';
 
 import { notificationService } from '../services/NotificationService';
 import type { AppNotification } from '../types';
@@ -339,8 +340,8 @@ describe('NotificationDetailScreen', () => {
       id: '18', name: 'Déménagement Express', url: null, slogan: 'En une journée.', description: null, website: null, cta_label: null, logo: null,
       members_label: '2 membres',
       members: [
-        { id: '7', name: 'Awa', initials: 'A', photo: null, link: '/members/7', email: null, phone: null, tag: { label: 'Administrateur', tone: 'success' } },
-        { id: '9', name: 'Bruno', initials: 'B', photo: null, link: '/members/9', email: 'lea@example.test', phone: '+237 6 99 00 11 22', tag: null },
+        { id: '7', name: 'Awa', initials: 'A', photo: null, online: false, link: '/members/7', email: null, phone: null, is_admin: true, can_change_admin: false, can_remove: false, tag: { label: 'Administrateur', tone: 'success' } },
+        { id: '9', name: 'Bruno', initials: 'B', photo: null, online: false, link: '/members/9', email: 'lea@example.test', phone: '+237 6 99 00 11 22', is_admin: false, can_change_admin: false, can_remove: false, tag: null },
       ],
     });
     await show();
@@ -363,19 +364,91 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('partner-member-card-name')).toHaveTextContent('Bruno');
     expect(screen.getByTestId('partner-member-card-phone')).toHaveTextContent('+237 6 99 00 11 22');
     expect(screen.getByTestId('partner-member-card-email')).toHaveTextContent('lea@example.test');
-    // Pas administrateur : pas de pastille.
-    expect(screen.queryByTestId('partner-member-card-tag')).toBeNull();
     await fireEvent.press(screen.getByTestId('partner-member-sheet-close'));
     expect(screen.queryByTestId('partner-member-card')).toBeNull();
     // Sans coordonnées : ni téléphone ni e-mail.
     await fireEvent.press(screen.getByTestId('partner-member-7'));
     expect(screen.queryByTestId('partner-member-card-phone')).toBeNull();
     expect(screen.queryByTestId('partner-member-card-email')).toBeNull();
-    // Administrateur : la pastille verte sous son nom.
-    expect(screen.getByTestId('partner-member-card-tag')).toHaveTextContent('Administrateur');
-    expect(StyleSheet.flatten(screen.getByTestId('partner-member-card-tag').props.style)).toMatchObject({ alignSelf: 'center' });
-    const card = JSON.stringify(screen.toJSON());
-    expect(card.indexOf('"partner-member-card-name"')).toBeLessThan(card.indexOf('"partner-member-card-tag"'));
+    // Administrateur : pas de pastille dans son panneau, seulement dans la liste (décision 2026-11-27-membre-panneau-sans-pastille).
+    expect(screen.queryByTestId('partner-member-card-tag')).toBeNull();
+  });
+
+  it('un administrateur fait ou défait un autre administrateur depuis le panneau du membre ; pas d’interrupteur sur le sien ; un refus dit le message du serveur (décision 2026-11-27-membre-administrateur)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, menu: [{ key: 'members', label: 'Membres', link: null, record: '18' }] });
+    const partner = (bruno: boolean) => ({
+      id: '18', name: 'Déménagement Express', url: null, description: null, website: null, cta_label: null, logo: null,
+      members_label: '2 membres',
+      members: [
+        { id: '7', name: 'Awa', initials: 'A', photo: null, online: false, link: '/members/7', email: null, phone: null, is_admin: true, can_change_admin: false, can_remove: false, tag: { label: 'Administrateur', tone: 'success' } },
+        { id: '9', name: 'Bruno', initials: 'B', photo: null, online: false, link: '/members/9', email: null, phone: null, is_admin: bruno, can_change_admin: true, can_remove: true, tag: bruno ? { label: 'Administrateur', tone: 'success' } : null },
+      ],
+    });
+    const get = jest.spyOn(partnerService, 'get').mockResolvedValueOnce(partner(false)).mockResolvedValue(partner(true));
+    const setAdmin = jest.spyOn(partnerService, 'setAdmin').mockResolvedValue(undefined);
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-members'));
+    // Le sien (Awa, le lecteur) : pas d'interrupteur.
+    await fireEvent.press(await screen.findByTestId('partner-member-7'));
+    expect(screen.queryByTestId('partner-member-card-admin')).toBeNull();
+    await fireEvent.press(screen.getByTestId('partner-member-sheet-close'));
+
+    // Bruno : l'interrupteur, éteint ; l'allumer l'envoie et relit le partenaire.
+    await fireEvent.press(screen.getByTestId('partner-member-9'));
+    expect(screen.getByTestId('partner-member-card-admin').props.value).toBe(false);
+    await act(async () => fireEvent(screen.getByTestId('partner-member-card-admin'), 'valueChange', true));
+    expect(setAdmin).toHaveBeenCalledWith('18', '9', true);
+    expect(get).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(screen.getByTestId('partner-member-card-admin').props.value).toBe(true));
+    // Dans la liste, sous le panneau, la pastille arrive.
+    expect(screen.getByTestId('partner-member-9-tag')).toHaveTextContent('Administrateur');
+
+    // Refusé : le message du serveur.
+    setAdmin.mockRejectedValueOnce(new ApiError(422, 'Vous ne pouvez pas changer votre propre rôle d’administrateur.'));
+    await act(async () => fireEvent(screen.getByTestId('partner-member-card-admin'), 'valueChange', false));
+    expect(currentToast()?.message).toBe('Vous ne pouvez pas changer votre propre rôle d’administrateur.');
+  });
+
+  it('un administrateur retire un autre compte depuis son panneau, après confirmation ; pas sur le sien ; un refus dit le message du serveur (décision 2026-11-27-membre-retirer)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, menu: [{ key: 'members', label: 'Membres', link: null, record: '18' }] });
+    const awa = { id: '7', name: 'Awa', initials: 'A', photo: null, online: true, link: '/members/7', email: null, phone: null, is_admin: true, can_change_admin: false, can_remove: false, tag: { label: 'Administrateur', tone: 'success' } };
+    const bruno = { id: '9', name: 'Bruno', initials: 'B', photo: null, online: false, link: '/members/9', email: null, phone: null, is_admin: false, can_change_admin: true, can_remove: true, tag: null };
+    const base = { id: '18', name: 'Déménagement Express', url: null, description: null, website: null, cta_label: null, logo: null };
+    const get = jest.spyOn(partnerService, 'get')
+      .mockResolvedValueOnce({ ...base, members_label: '2 membres', members: [awa, bruno] })
+      .mockResolvedValue({ ...base, members_label: '1 membre', members: [awa] });
+    const removeMember = jest.spyOn(partnerService, 'removeMember').mockRejectedValueOnce(new ApiError(422, 'Vous ne pouvez pas vous retirer vous-même.')).mockResolvedValue(undefined);
+    // La confirmation : « Retirer du groupe » (le bouton rouge) est touché.
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => buttons?.find((button) => button.style === 'destructive')?.onPress?.());
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-members'));
+    // Le sien : pas de lien.
+    await fireEvent.press(await screen.findByTestId('partner-member-7'));
+    expect(screen.queryByTestId('partner-member-card-remove')).toBeNull();
+    // Sa photo, dans son panneau : bordée de vert, il est en ligne (décision 2026-11-27-membres-photo-en-ligne).
+    expect(StyleSheet.flatten(screen.getByTestId('partner-member-card-photo').props.style)).toMatchObject({ borderWidth: 2, borderColor: '#2E9D5B' });
+    await fireEvent.press(screen.getByTestId('partner-member-sheet-close'));
+
+    await fireEvent.press(screen.getByTestId('partner-member-9'));
+    expect(screen.getByTestId('partner-member-card-remove')).toHaveTextContent('Retirer du groupe');
+    // Refusé : le message du serveur, le panneau reste.
+    await act(async () => fireEvent.press(screen.getByTestId('partner-member-card-remove')));
+    expect(alert).toHaveBeenLastCalledWith('Retirer ce membre du groupe ?', undefined, expect.any(Array));
+    expect(currentToast()?.message).toBe('Vous ne pouvez pas vous retirer vous-même.');
+    expect(screen.getByTestId('partner-member-card')).toBeTruthy();
+    // Accepté : le panneau se ferme, « Membre retiré. », le partenaire est relu.
+    await act(async () => fireEvent.press(screen.getByTestId('partner-member-card-remove')));
+    expect(removeMember).toHaveBeenLastCalledWith('18', '9');
+    expect(screen.queryByTestId('partner-member-card')).toBeNull();
+    expect(currentToast()?.message).toBe('Membre retiré.');
+    expect(get).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(screen.queryByTestId('partner-member-9')).toBeNull());
+    expect(screen.getByTestId('partner-members-count')).toHaveTextContent('1 membre');
+    alert.mockRestore();
   });
 
   it('« Membres » sans compte : le panneau dit « Aucun membre » (décision 2026-11-27-menu-entrees-vides)', async () => {

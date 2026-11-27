@@ -16,18 +16,26 @@ const APP_SCREEN = /^\/[a-z][a-z0-9/_-]*$/;
 type Options = {
   /** Après un envoi, réussi ou non : recharger ce qui l'affiche. */
   onDone: () => Promise<unknown> | void;
+  /** Ouvrir le panneau d'une action (`panel`, décision 2026-11-27-action-panneau) ; absent : l'action ne fait rien. */
+  onPanel?: (action: ListItemAction) => void;
 };
 
 /**
  * Le geste d'un bouton de carte : demander confirmation s'il en a une, puis ouvrir
- * son formulaire, ouvrir son écran (`link`), ou envoyer sa requête. Le message de l'envoi,
+ * son panneau (`panel`), son formulaire, son écran (`link`), ou envoyer sa requête. Le message de l'envoi,
  * réussite ou erreur (celle de l'API, « Ces dates chevauchent… », sinon générique), va dans
  * le bandeau flottant (décision 2026-11-21-bandeau-messages).
  */
-export function useItemActions({ onDone }: Options) {
+export function useItemActions({ onDone, onPanel }: Options) {
   const { t } = useI18n();
 
   async function run(action: ListItemAction) {
+    // Un panneau de l'app, par-dessus la liste (« Statistiques » d'un partenaire).
+    if (action.panel) {
+      onPanel?.(action);
+
+      return;
+    }
     if (action.form) {
       router.push({ pathname: '/profile/[form]', params: { form: action.form.form, record: action.form.record } });
 

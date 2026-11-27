@@ -21,6 +21,8 @@ export type Partner = {
   status?: StatusTagValue | null;
   /** Sur sa page, pour ses comptes seulement : ses vues (décisions 2026-11-25-partenaire-vues-sur-sa-page et 2026-11-25-vues-oeil). */
   views?: Views | null;
+  /** Sur sa page, pour ses comptes seulement : ses clics (décision 2026-11-27-fiche-statistiques). */
+  clicks?: PartnerCount | null;
   /** Sur sa page, pour ses comptes seulement : leur nombre, rédigé (« 3 membres »), et chacun, les administrateurs d'abord (décision 2026-11-27-partenaire-membres). */
   members_label?: string | null;
   members?: PartnerMember[] | null;
@@ -32,10 +34,17 @@ export type PartnerMember = {
   name: string;
   initials: string;
   photo: string | null;
+  /** En ligne : la bordure de sa photo en vert (décision 2026-11-27-membres-photo-en-ligne). */
+  online: boolean;
   link: string;
   /** Ses coordonnées, entre comptes d'un même partenaire (décision 2026-11-27-partenaire-membre-panneau). */
   email: string | null;
   phone: string | null;
+  is_admin: boolean;
+  /** Le lecteur peut-il changer `is_admin` de ce compte ? Un administrateur, pour les autres que lui (décision 2026-11-27-membre-administrateur). */
+  can_change_admin: boolean;
+  /** Le lecteur peut-il retirer ce compte ? Les mêmes : un administrateur, pour les autres que lui (décision 2026-11-27-membre-retirer). */
+  can_remove: boolean;
   tag: StatusTagValue | null;
 };
 
@@ -47,3 +56,6 @@ export type PartnerBecome = { label: string; form: string | null; link: string |
 
 /** Les partenaires de l'accueil, et la carte « Devenir partenaire » au bout du carrousel (`null` : pas de carte). */
 export type HomePartners = { partners: Partner[]; become: PartnerBecome | null };
+
+/** Un nombre servi avec son libellé (« 3 clics »). */
+export type PartnerCount = { count: number; label: string };

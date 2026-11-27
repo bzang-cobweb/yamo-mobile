@@ -21,6 +21,19 @@ export class PartnerService {
     return (await this.client.get<{ data: Partner }>(`/v1/partners/${encodeURIComponent(id)}`)).data;
   }
 
+  /**
+   * `PATCH /api/v1/partners/{id}/members/{userId}` — fait ou défait un administrateur, par un autre administrateur
+   * (décision 2026-11-27-membre-administrateur).
+   */
+  async setAdmin(id: string, userId: string, isAdmin: boolean): Promise<void> {
+    await this.client.patch(`/v1/partners/${encodeURIComponent(id)}/members/${encodeURIComponent(userId)}`, { is_admin: isAdmin });
+  }
+
+  /** `DELETE /api/v1/partners/{id}/members/{userId}` — retire un autre compte, par un administrateur (décision 2026-11-27-membre-retirer). */
+  async removeMember(id: string, userId: string): Promise<void> {
+    await this.client.delete(`/v1/partners/${encodeURIComponent(id)}/members/${encodeURIComponent(userId)}`);
+  }
+
   /** `POST /api/v1/partners/{id}/click` — un toucher sur un partenaire compte un clic. */
   async click(id: string): Promise<void> {
     await this.client.post(`/v1/partners/${encodeURIComponent(id)}/click`);

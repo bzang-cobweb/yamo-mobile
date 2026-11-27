@@ -4,15 +4,17 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { BottomSheet } from '@/shared/components/BottomSheet';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
-import type { ListItem } from '@/features/list/types';
+import type { ListItem, ListItemAction } from '@/features/list/types';
 import { activeFilterCount, isFixedFilter, setFilterFields, useListFilters } from '@/features/list/utils/filters';
 import { openListFooter } from '@/features/list/utils/openListFooter';
 import { NetworkError } from '@/shared/api/errors';
 import { ListItemCard } from '@/features/list/components/ListItemCard';
 import { useItemActions } from '@/features/list/hooks/useItemActions';
+import { ActionPanel, knowsPanel } from '@/features/list/components/ActionPanel';
 import { FilterSheet } from '@/features/list/components/FilterSheet';
 import { List } from '@/shared/components/List';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
@@ -122,7 +124,10 @@ export function ProfileListScreen({
   }
 
   // Un bouton de carte : un formulaire, un écran, ou un envoi après confirmation.
-  const { press: pressAction } = useItemActions({ onDone: reload });
+  // Le panneau d'une action, ouvert par-dessus la liste (décision 2026-11-27-action-panneau).
+  const [panel, setPanel] = useState<ListItemAction | null>(null);
+  // Un panneau que cette version de l'app ne connaît pas : rien.
+  const { press: pressAction } = useItemActions({ onDone: reload, onPanel: (action) => action.panel && knowsPanel(action.panel.name) && setPanel(action) });
 
   // Un menu ⋮ ouvert se ferme au premier toucher ailleurs, qui ne fait rien d'autre (décision
   // 2026-11-21-menu-fermer-ailleurs) : vrai s'il y en avait un.
@@ -253,6 +258,10 @@ export function ProfileListScreen({
         <FixedButtonBar label={definition.footer.label} onPress={() => definition.footer && openListFooter(definition.footer)} testID="profile-list-footer" />
       )}
       <FilterSheet list={list} visible={filtersOpen} onClose={() => setFiltersOpen(false)} />
+      {/* Le panneau d'une action (« Statistiques »), à taille maximale, titré de son libellé. */}
+      <BottomSheet visible={panel !== null} title={panel?.label ?? ''} onClose={() => setPanel(null)} testID="profile-list-panel">
+        {panel?.panel && <ActionPanel name={panel.panel.name} record={panel.panel.record} />}
+      </BottomSheet>
     </ProfileScreenShell>
   );
 }

@@ -184,6 +184,23 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
     </View>
   );
   const plainCounters = counters.filter((counter) => !counter.tone);
+  // Ses autres compteurs (« 1 notification non lue », décision 2026-11-21-compteur-non-lues), pour information : sans lien,
+  // sur un vert doux (décision 2026-11-22-compteurs-non-lus-info). En bas de la carte, à droite ; à côté d'une image, sous le
+  // contenu de droite, à gauche comme lui (décision 2026-11-27-pastilles-sous-le-contenu).
+  const countersRow = plainCounters.length > 0 && (
+    <View style={[styles.counters, side && styles.sideCounters]} testID={`${prefix}-counters-${item.id}`}>
+      {plainCounters.map((counter, index) => (
+        <View
+          key={counter.label}
+          testID={index === 0 ? `${prefix}-counter-${item.id}` : `${prefix}-counter-${item.id}-${index}`}
+          style={[styles.counter, { backgroundColor: SOFT_GREEN }]}>
+          <ThemedText type="smallBold" style={{ color: SOFT_GREEN_TEXT }}>
+            {counter.label}
+          </ThemedText>
+        </View>
+      ))}
+    </View>
+  );
   // Un formulaire et un écran : « Voir » et « Éditer » (décision 2026-11-19-nuit-voir-editer-retirer).
   const both = Boolean(edit && link);
   // Toutes les actions dans un menu déroulant « Actions », quand la liste le demande (« Mes logements »,
@@ -192,10 +209,38 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   const menuOpen = menu && open;
   // Sans photo ni menu : « Retirer » en icône corbeille, à droite du texte (décision 2026-11-21-corbeille-a-droite).
   const removeIcon = removable && !item.image && !side && !menu;
-  // Avec une photo, « Voir » et « Éditer », ou « Retirer » en texte : en colonne, les actions sur leur ligne,
-  // à la fin, à droite (décisions 2026-11-19-nuit-retirer-sous-image et 2026-11-21-retirer-en-fin-de-carte).
-  // Des boutons pleine largeur (le calendrier) : sous la date, ligne par ligne (décision 2026-11-22-calendrier-boutons-sous-la-date).
-  const stacked = (Boolean(item.image) && !side) || both || (removable && !removeIcon) || (fullWidthActions && (item.actions?.length ?? 0) > 0);
+  const stacked = isStacked();
+
+  /**
+   * En colonne, ce qui suit le contenu sur sa propre ligne, à la fin, à droite :
+   * - avec une photo au-dessus, « Voir » et « Éditer », ou « Retirer » en texte (décisions 2026-11-19-nuit-retirer-sous-image
+   *   et 2026-11-21-retirer-en-fin-de-carte) ;
+   * - des boutons pleine largeur (le calendrier) : sous la date, ligne par ligne (décision 2026-11-22-calendrier-boutons-sous-la-date) ;
+   * - des pastilles pour information (« 12 vues », « 3 membres ») sans image à côté : sous le contenu, jamais à côté ; à
+   *   côté d'une image, elles sont dans la colonne de droite (décision 2026-11-27-pastilles-sous-le-contenu) ;
+   * - à côté d'une image, le statut : seul sur la première ligne, au-dessus de l'image et du texte (décision
+   *   2026-11-27-statut-premiere-ligne).
+   */
+  function isStacked(): boolean {
+    if (item.image && !side) {
+      return true;
+    }
+    if (both) {
+      return true;
+    }
+    if (removable && !removeIcon) {
+      return true;
+    }
+    if (fullWidthActions && (item.actions?.length ?? 0) > 0) {
+      return true;
+    }
+    // À côté d'une image, le statut sur la première ligne, au-dessus (décision 2026-11-27-statut-premiere-ligne).
+    if (side && tagsRow) {
+      return true;
+    }
+
+    return plainCounters.length > 0 && !side;
+  }
 
   function openEdit() {
     if (edit) {
@@ -282,6 +327,10 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
           {removeButton}
         </View>
       ) : (
+        <>
+        {/* À côté d'une image : le statut seul sur la première ligne, à gauche ; le menu flotte à droite (décision
+            2026-11-27-statut-premiere-ligne). */}
+        {side && tagsRow}
         <Pressable
           testID={`${prefix}-item-${item.id}`}
           accessibilityRole={edit || link ? 'link' : undefined}
@@ -309,7 +358,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
           {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo) ; à côté d'une image à gauche, le reste de la ligne. */}
           {reviewBody ?? (
           <View style={side ? styles.sideBody : item.image ? CARD_BODY : styles.body} testID={`${prefix}-body-${item.id}`}>
-            {tagsRow}
+            {!side && tagsRow}
             {titleRow}
             {itemSubtitle}
             {/* Sur sa ligne, sous le sous-titre, en gris comme lui : le type de demande et les dates (décision 2026-11-22-reservations-ligne-dates). */}
@@ -325,26 +374,15 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
             {dateRow}
             {/* La note et la phrase mise en avant, quand l'API les sert. */}
             <ItemReviews item={item} testID={`${prefix}-item-${item.id}`} />
+            {/* À côté d'une image : les pastilles sous le contenu de droite (décision 2026-11-27-pastilles-sous-le-contenu). */}
+            {side && countersRow}
           </View>
           )}
         </Pressable>
+        </>
       )}
-      {/* Ses autres compteurs (« 1 notification non lue », décision 2026-11-21-compteur-non-lues), pour information :
-          sans lien, à droite, sur un vert doux (décision 2026-11-22-compteurs-non-lus-info). */}
-      {plainCounters.length > 0 && (
-        <View style={styles.counters} testID={`${prefix}-counters-${item.id}`}>
-          {plainCounters.map((counter, index) => (
-            <View
-              key={counter.label}
-              testID={index === 0 ? `${prefix}-counter-${item.id}` : `${prefix}-counter-${item.id}-${index}`}
-              style={[styles.counter, { backgroundColor: SOFT_GREEN }]}>
-              <ThemedText type="smallBold" style={{ color: SOFT_GREEN_TEXT }}>
-                {counter.label}
-              </ThemedText>
-            </View>
-          ))}
-        </View>
-      )}
+      {/* Ses autres compteurs, en bas de la carte ; à côté d'une image, dans la colonne de droite. */}
+      {!side && countersRow}
       {menu ? (
         menuEntries.length > 0 && (
           // Un seul bouton, trois petits points verticaux, flottant en haut à droite de la photo sur une pastille
@@ -439,7 +477,10 @@ const styles = StyleSheet.create({
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },
-  counters: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: Spacing.two },
+  // Détachées du contenu au-dessus : l'écart de la carte, plus `Spacing.two` (décision 2026-11-27-pastilles-espace-contenu).
+  counters: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: Spacing.two, marginTop: Spacing.two },
+  // Dans la colonne de droite, sous le texte : à gauche comme lui.
+  sideCounters: { justifyContent: 'flex-start' },
   heading: { gap: Spacing.half },
   subtitleLink: { alignSelf: 'flex-start' },
   // Le titre et, à droite, la date.
@@ -451,7 +492,8 @@ const styles = StyleSheet.create({
   unreadPill: { minWidth: 24, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   // Plus d'air entre le statut et le titre, à côté d'une image à gauche (décision 2026-11-24-mes-partenaires-comme-partenaires).
-  sideTags: { marginBottom: Spacing.one },
+  // La première ligne d'une carte à image latérale : le statut à gauche, à la hauteur du menu ⋮ qui flotte à droite.
+  sideTags: { minHeight: 32, alignItems: 'center' },
   // Sans photo dessous à suivre : à la marge de la carte, près du coin (décision 2026-11-24-mes-partenaires-comme-partenaires).
   sideMenu: { top: CARD_PADDING, right: CARD_PADDING },
   counter: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one, borderRadius: 12 },

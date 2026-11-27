@@ -1,16 +1,16 @@
-import { StyleSheet } from 'react-native';
-
 import { Colors } from '@/shared/theme/theme';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { Linking } from 'react-native';
+import { Linking, StyleSheet } from 'react-native';
 
 import { ApiError } from '@/shared/api/errors';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { PartnerDetailScreen } from '../screens/PartnerDetailScreen';
+import { PartnerMembers } from '../components/PartnerMembers';
+import { PartnerStatisticsPanel } from '../components/PartnerStatistics';
 import { PartnersScreen } from '../screens/PartnersScreen';
 import type { Partner } from '../types';
 
@@ -31,7 +31,7 @@ jest.mock('expo-router', () => ({
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
-  return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
+  return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
 });
 const mockClick = jest.fn().mockResolvedValue(undefined);
 jest.mock('../services/PartnerService', () => ({ partnerService: { click: (...args: unknown[]) => mockClick(...args) } }));
@@ -137,7 +137,7 @@ describe('la page d’un partenaire', () => {
     expect(screen.queryByTestId('partner-slogan')).toBeNull();
     expect(screen.getByTestId('partner-description')).toHaveTextContent('Déménagement clés en main.');
     // Un visiteur ne voit pas ses vues (décision 2026-11-25-partenaire-vues-sur-sa-page).
-    expect(screen.queryByTestId('partner-views')).toBeNull();
+    expect(screen.queryByTestId('partner-views-row')).toBeNull();
     // En gris, comme un texte secondaire (décision 2026-11-24-partenaire-description-grise).
     expect(StyleSheet.flatten(screen.getByTestId('partner-description').props.style).color).toBe(Colors.light.textSecondary);
     expect(screen.getByTestId('partner-cta-button')).toHaveTextContent('Demander un devis');
@@ -149,12 +149,15 @@ describe('la page d’un partenaire', () => {
     expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith('https://wouri.test/fr');
   });
 
-  it('pour ses comptes, sa pastille en haut à droite, flottante ; sans, rien (décision 2026-11-24-partenaire-page-statut)', async () => {
-    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, status: { label: 'En validation', tone: 'warning' } } };
+  it('pour ses comptes, sa pastille centrée après le slogan, plus flottante ; sans, rien (décisions 2026-11-24-partenaire-page-statut et 2026-11-27-fiche-statut-apres-slogan)', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, slogan: 'On porte, vous respirez.', status: { label: 'En validation', tone: 'warning' } } };
     await show(<PartnerDetailScreen id="3" />);
 
     expect(screen.getByTestId('partner-status')).toHaveTextContent('En validation');
-    expect(StyleSheet.flatten(screen.getByTestId('partner-status').props.style)).toMatchObject({ position: 'absolute', right: expect.any(Number), top: expect.any(Number) });
+    expect(StyleSheet.flatten(screen.getByTestId('partner-status').props.style).position).toBeUndefined();
+    expect(StyleSheet.flatten(screen.getByTestId('partner-status').props.style).alignSelf).toBe('center');
+    // Après le nom et le slogan (décision 2026-11-27-fiche-statut-apres-slogan).
+    expect(screen.getAllByTestId(/^partner-(status|name|slogan)$/).map((node) => node.props.testID)).toEqual(['partner-name', 'partner-slogan', 'partner-status']);
   });
 
   it('un visiteur : pas de pastille', async () => {
@@ -224,21 +227,89 @@ describe('la page d’un partenaire', () => {
   });
 });
 
-describe('PartnerDetailScreen : les vues pour ses comptes', () => {
-  it('un œil et le nombre, après le slogan (décisions 2026-11-25-partenaire-vues-sur-sa-page et 2026-11-25-vues-oeil)', async () => {
-    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, slogan: 'On porte, vous respirez.', views: { count: 12, label: '12 vues' } } };
+describe('PartnerDetailScreen : ni vues ni membres (décision 2026-11-27-fiche-sans-vues-membres)', () => {
+  it('pour ses comptes, la fiche ne montre ni ses vues ni ses membres, même servis ; ni œil ni ligne', async () => {
+    const member = { id: '7', name: 'Awa', initials: 'A', photo: null, online: false, link: '/members/7', email: null, phone: null, is_admin: true, can_change_admin: false, can_remove: false, tag: null };
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, contact_email: 'contact@wouri.test', views: { count: 12, label: '12 vues' }, clicks: { count: 3, label: '3 clics' }, members_label: '1 membre', members: [member] } };
     await show(<PartnerDetailScreen id="3" />);
 
-    expect(screen.getByTestId('partner-views-count')).toHaveTextContent('12');
-    expect(screen.getByLabelText('12 vues')).toBeTruthy();
-    expect(screen.getAllByTestId(/^partner-(slogan|views|description)$/).map((element) => element.props.testID)).toEqual(['partner-slogan', 'partner-views', 'partner-description']);
+    expect(screen.getByTestId('partner-contact')).toBeTruthy();
+    expect(screen.queryByTestId('partner-views')).toBeNull();
+    expect(screen.queryByTestId('partner-views-row')).toBeNull();
+    expect(screen.queryByTestId('partner-members-row')).toBeNull();
+    expect(screen.queryByText('12')).toBeNull();
+  });
+});
+
+describe('les membres d’un partenaire, le contenu du panneau « Membres » (décisions 2026-11-27-mes-partenaires-membres et 2026-11-27-membres-en-panneau)', () => {
+  it('le nombre de ses comptes, puis chacun, l’administrateur marqué ; sans compter de clic', async () => {
+    mockClick.mockClear();
+    mockOne = {
+      isPending: false,
+      isError: false,
+      error: null,
+      data: {
+        ...wouri,
+        members_label: '2 membres',
+        members: [
+          { id: '7', name: 'Awa', initials: 'A', photo: null, online: true, link: '/members/7', email: null, phone: null, is_admin: true, can_change_admin: false, can_remove: false, tag: { label: 'Administrateur', tone: 'success' } },
+          { id: '9', name: 'Bruno', initials: 'B', photo: null, online: false, link: '/members/9', email: null, phone: null, is_admin: false, can_change_admin: false, can_remove: false, tag: null },
+        ],
+      },
+    };
+    await show(<PartnerMembers id="3" />);
+
+    expect(screen.getByTestId('partner-members-count')).toHaveTextContent('2 membres');
+    expect(screen.getByTestId('partner-member-7-tag')).toHaveTextContent('Administrateur');
+    expect(screen.getByTestId('partner-member-9-name')).toHaveTextContent('Bruno');
+    expect(mockClick).not.toHaveBeenCalled();
+    // La photo bordée : verte en ligne, discrète sinon (décision 2026-11-27-membres-photo-en-ligne).
+    expect(StyleSheet.flatten(screen.getByTestId('partner-member-7-photo').props.style)).toMatchObject({ borderWidth: 2, borderColor: '#2E9D5B' });
+    expect(StyleSheet.flatten(screen.getByTestId('partner-member-9-photo').props.style).borderColor).not.toBe('#2E9D5B');
   });
 
-  it('une réponse d’une autre forme (ancienne, gardée en cache) n’affiche rien et ne casse pas la page', async () => {
-    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, views: '21 vues' as unknown as Partner['views'] } };
-    await show(<PartnerDetailScreen id="3" />);
+  it('la recherche, sans accents ni majuscules, dans le nom, l’e-mail et le téléphone ; rien trouvé : « Aucun membre trouvé. » (décision 2026-11-27-membres-recherche)', async () => {
+    mockOne = {
+      isPending: false,
+      isError: false,
+      error: null,
+      data: {
+        ...wouri,
+        members_label: '3 membres',
+        members: [
+          { id: '7', name: 'Zoé', initials: 'Z', photo: null, online: false, link: '/members/7', email: null, phone: null, is_admin: false, can_change_admin: false, can_remove: false, tag: null },
+          { id: '8', name: 'Bruno', initials: 'B', photo: null, online: false, link: '/members/8', email: 'bruno@exemple.test', phone: null, is_admin: false, can_change_admin: false, can_remove: false, tag: null },
+          { id: '9', name: 'Chloé', initials: 'C', photo: null, online: false, link: '/members/9', email: null, phone: '+237 6 99 00 11 22', is_admin: false, can_change_admin: false, can_remove: false, tag: null },
+        ],
+      },
+    };
+    await show(<PartnerMembers id="3" />);
 
-    expect(screen.queryByTestId('partner-views')).toBeNull();
-    expect(screen.getByTestId('partner-description')).toBeTruthy();
+    const search = screen.getByTestId('partner-members-search');
+    expect(search.props.placeholder).toBe('Rechercher un membre');
+    await fireEvent.changeText(search, 'ZOE');
+    expect(screen.getByTestId('partner-member-7')).toBeTruthy();
+    expect(screen.queryByTestId('partner-member-8')).toBeNull();
+    await fireEvent.changeText(search, 'exemple.test');
+    expect(screen.getByTestId('partner-member-8')).toBeTruthy();
+    expect(screen.queryByTestId('partner-member-7')).toBeNull();
+    await fireEvent.changeText(search, '99 00');
+    expect(screen.getByTestId('partner-member-9')).toBeTruthy();
+    await fireEvent.changeText(search, 'personne');
+    expect(screen.getByTestId('partner-members-empty')).toHaveTextContent('Aucun membre trouvé.');
+    // Le nombre de comptes reste celui du partenaire.
+    expect(screen.getByTestId('partner-members-count')).toHaveTextContent('3 membres');
+    await fireEvent.changeText(search, '');
+    expect(screen.getAllByTestId(/^partner-member-\d+$/)).toHaveLength(3);
+  });
+});
+
+describe('le panneau « Statistiques » de « Mes partenaires » (décision 2026-11-27-mes-partenaires-statistiques)', () => {
+  it('lit le partenaire, puis le tableau des vues et des clics', async () => {
+    mockOne = { isPending: false, isError: false, error: null, data: { ...wouri, views: { count: 12, label: '12 vues' }, clicks: { count: 0, label: '0 clic' } } };
+    await show(<PartnerStatisticsPanel id="3" />);
+
+    expect(screen.getByTestId('partner-statistics-views')).toHaveTextContent('Vues12');
+    expect(screen.getByTestId('partner-statistics-clicks')).toHaveTextContent('Clics0');
   });
 });

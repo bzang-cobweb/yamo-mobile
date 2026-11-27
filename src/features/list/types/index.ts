@@ -25,6 +25,8 @@ export type ListItemAction = {
   /** Avec `filter` : les filtres déjà choisis de l'écran `link`, rangés sous `list` (décision 2026-11-21-lien-notifications). */
   list?: string | null;
   filter?: Record<string, string>;
+  /** Un panneau de l'app, par-dessus la liste, titré du libellé : son nom (`partner.statistics`) et l'enregistrement montré (décision 2026-11-27-action-panneau). */
+  panel?: { name: string; record: string } | null;
 };
 
 /** Un compteur sur la carte (« 2 demandes en attente ») qui ouvre `list` (ou l'écran `link`) avec ces filtres. */
