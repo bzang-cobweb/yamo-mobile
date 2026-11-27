@@ -1,6 +1,6 @@
 import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
-import type { HomeData, MemberProfile, OfferCalendarDayPanel, OfferCalendarMonth, OfferDetail, OfferDetailResponse } from '../types';
+import type { HomeData, HomeRecent, MemberProfile, OfferCalendarDayPanel, OfferCalendarMonth, OfferDetail, OfferDetailResponse } from '../types';
 
 /** Offres servies par l'API. Une méthode par appel. */
 export class OfferService {
@@ -14,6 +14,15 @@ export class OfferService {
     const { data } = await this.client.get<{ data: Partial<HomeData> }>('/v1/home');
 
     return { featured: data.featured ?? [], carousels: data.carousels ?? [] };
+  }
+
+  /**
+   * `GET /api/v1/wishlists/recent` — le bloc « Récemment consultés » de l'accueil, pour un membre connecté (décision
+   * 2026-11-27-listes-de-favoris) : son titre, l'écran de la liste entière et ses dernières offres ; `null` sans offre
+   * consultée.
+   */
+  async recent(): Promise<HomeRecent | null> {
+    return (await this.client.get<{ data: HomeRecent | null }>('/v1/wishlists/recent')).data;
   }
 
   /**

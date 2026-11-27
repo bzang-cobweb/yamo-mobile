@@ -1,8 +1,9 @@
-import { router } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
+import { ITEM_LINK } from '@/features/list/services/ListService';
 import { chooseFilter, setFilterValues } from '@/features/list/utils/filters';
 import { PartnersStrip } from '@/features/partner/components/PartnersStrip';
 import { usePartners } from '@/features/partner/hooks/usePartners';
@@ -15,6 +16,7 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { OfferCard } from '../components/OfferCard';
 import { useHomeCarousels, useHomeFeatured } from '../hooks/useHomeCarousels';
+import { useHomeRecent } from '../hooks/useHomeRecent';
 import { BROWSE_LIST } from './BrowseScreen';
 
 /** Deux cartes côte à côte à l'écran (décision 2026-11-23-accueil-deux-cartes). */
@@ -22,7 +24,8 @@ const VISIBLE_CARDS = 2;
 
 
 /**
- * L'accueil d'un membre connecté (décision 2026-11-23-accueil-carrousels-par-ville) : un carrousel par ville, le
+ * L'accueil d'un membre connecté (décision 2026-11-23-accueil-carrousels-par-ville) : en tête, ses « Récemment
+ * consultés » (décision 2026-11-27-listes-de-favoris), puis « À la une », puis un carrousel par ville, le
  * nom de la ville au-dessus, 10 offres tirées au hasard qui défilent de côté, deux à l'écran, en cartes comme la recherche.
  * Tirer vers le bas fait un nouveau tirage.
  */
@@ -34,6 +37,16 @@ export function HomeScreen() {
   const featured = useHomeFeatured().data ?? [];
   // L'espace des partenaires, en bas (décision 2026-11-23-module-partenaires) ; sans eux, l'accueil reste.
   const partners = usePartners();
+  // Avant « À la une », pour un membre connecté qui a ouvert des fiches (décision 2026-11-27-listes-de-favoris) ;
+  // rechargé à chaque retour sur l'accueil.
+  const recentQuery = useHomeRecent();
+  const recent = recentQuery.data ?? null;
+  const { reload: refetchRecent } = recentQuery;
+  useFocusEffect(
+    useCallback(() => {
+      void refetchRecent();
+    }, [refetchRecent]),
+  );
   const [refreshing, setRefreshing] = useState(false);
   const { width } = useWindowDimensions();
   // La largeur utile, moins les marges et l'espace entre les cartes, partagée en deux.
@@ -56,7 +69,7 @@ export function HomeScreen() {
   async function refresh() {
     setRefreshing(true);
     try {
-      await Promise.all([query.refetch(), partners.refetch()]);
+      await Promise.all([query.refetch(), partners.refetch(), refetchRecent()]);
     } finally {
       setRefreshing(false);
     }
@@ -86,6 +99,34 @@ export function HomeScreen() {
       testID="home-screen"
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}>
+      {recent && recent.items.length > 0 && (
+        // Les dernières fiches ouvertes, qui défilent de côté comme une région ; la flèche ouvre la liste entière.
+        <View style={styles.section} testID="home-recent">
+          <View style={styles.heading}>
+            <ThemedText type="smallBold">{recent.title}</ThemedText>
+            {ITEM_LINK.test(recent.link) && (
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={`${t('home.seeAll')} ${recent.title}`}
+                hitSlop={Spacing.two}
+                testID="home-recent-see-all"
+                onPress={() => router.push(recent.link as Href)}>
+                <SymbolView name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }} tintColor={theme.text} size={20} />
+              </Pressable>
+            )}
+          </View>
+          <FlatList
+            horizontal
+            data={recent.items}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.row}
+            snapToInterval={cardWidth + Spacing.two}
+            decelerationRate="fast"
+            renderItem={({ item }) => <OfferCard item={item} testIDPrefix="home-recent-item" style={{ width: cardWidth }} compact />}
+          />
+        </View>
+      )}
       {featured.length > 0 && (
         // Pas un carrousel : les cartes des villes, deux par ligne, toutes visibles (décision 2026-11-25-bloc-a-la-une).
         <View style={styles.section} testID="home-featured">

@@ -8,7 +8,7 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { HomeScreen } from '../screens/HomeScreen';
-import type { HomeCarousel } from '../types';
+import type { HomeCarousel, HomeRecent } from '../types';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
@@ -17,13 +17,20 @@ jest.mock('expo-image', () => {
 
   return { Image: View };
 });
-jest.mock('expo-router', () => ({ router: { push: jest.fn(), navigate: jest.fn() } }));
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), navigate: jest.fn() },
+  // L'écran est au premier plan : l'effet part une fois monté.
+  useFocusEffect: (effect: () => void) => jest.requireActual<typeof import('react')>('react').useEffect(effect, [effect]),
+}));
 const mockClick = jest.fn().mockResolvedValue(undefined);
 jest.mock('../services/OfferService', () => ({ offerService: { click: (...args: unknown[]) => mockClick(...args) } }));
 let mockState: { data?: HomeCarousel[]; isPending: boolean; isError: boolean; error: unknown } = { isPending: true, isError: false, error: null };
 const mockRefetch = jest.fn();
 jest.mock('@/features/partner/hooks/usePartners', () => ({ usePartners: () => ({ data: { partners: [], become: null }, refetch: jest.fn() }) }));
 let mockFeatured: ListItem[] = [];
+let mockRecent: HomeRecent | null = null;
+const mockReloadRecent = jest.fn().mockResolvedValue(undefined);
+jest.mock('../hooks/useHomeRecent', () => ({ useHomeRecent: () => ({ data: mockRecent, reload: mockReloadRecent }) }));
 jest.mock('../hooks/useHomeCarousels', () => ({
   useHomeCarousels: () => ({ ...mockState, refetch: mockRefetch }),
   useHomeFeatured: () => ({ data: mockFeatured }),
@@ -132,6 +139,33 @@ describe('HomeScreen', () => {
     // Le nouveau tirage remplace l'ancien (la rangée, clé du tirage, est montée de nouveau et part du début).
     expect(screen.queryByTestId('home-item-1')).toBeNull();
     expect(screen.getByTestId('home-item-4')).toBeTruthy();
+  });
+
+  it('« Récemment consultés » avant « À la une », en rangée qui défile ; la flèche ouvre la liste entière (décision 2026-11-27-listes-de-favoris)', async () => {
+    mockState = { isPending: false, isError: false, error: null, data: [{ title: 'Douala', filter: { region: '34' }, items: [item('1', 'Studio · Douala')] }] };
+    mockFeatured = [item('7', 'Villa · Bonapriso')];
+    mockRecent = { title: 'Récemment consultés', link: '/wishlists/5', items: [item('11', 'Studio · Akwa'), item('12', 'Duplex · Bali')] };
+    mockReloadRecent.mockClear();
+    await show();
+
+    expect(screen.getAllByTestId(/^home-(recent|featured|carousel-[^-]+)$/).map((element) => element.props.testID)).toEqual(['home-recent', 'home-featured', 'home-carousel-Douala']);
+    expect(screen.getByTestId('home-recent')).toHaveTextContent(/^Récemment consultés/);
+    expect(screen.getByTestId('home-recent-item-12')).toBeTruthy();
+    // Rechargé à chaque retour sur l'accueil : une fiche ouverte entre-temps.
+    expect(mockReloadRecent).toHaveBeenCalled();
+    expect(screen.getByLabelText('Voir tout Récemment consultés')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('home-recent-see-all'));
+    expect(router.push).toHaveBeenCalledWith('/wishlists/5');
+    await fireEvent.press(screen.getByTestId('home-recent-item-11'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/offers/[id]', params: { id: '11' } });
+  });
+
+  it('sans offre consultée (ou pour un visiteur) : pas de bloc « Récemment consultés »', async () => {
+    mockState = { isPending: false, isError: false, error: null, data: [{ title: 'Douala', filter: { region: '34' }, items: [item('1', 'Studio · Douala')] }] };
+    mockRecent = null;
+    await show();
+
+    expect(screen.queryByTestId('home-recent')).toBeNull();
   });
 
   it('une erreur propose de réessayer', async () => {

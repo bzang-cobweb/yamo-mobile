@@ -5,10 +5,31 @@ import type { Views } from '@/shared/components/ViewsCount';
  * Retrait d'un item : libellé du bouton, question de confirmation, et envoi
  * décrit comme celui d'un formulaire (méthode, point d'API, suite).
  */
-export type ListItemDelete = Omit<FormSubmit, 'label'> & { label: string; confirm: string };
+export type ListItemDelete = Omit<FormSubmit, 'label'> & {
+  label: string;
+  confirm: string;
+  /** Une croix sur la photo, qui retire aussitôt, sans confirmation (« Récemment consultés », décision 2026-11-27-listes-de-favoris). */
+  on_image?: boolean;
+};
 
 /** Cœur de favori : état, et point d'API relatif (`/v1/…`). */
 export type ListItemFavorite = { active: boolean; endpoint: string };
+
+/** Une liste de favoris du membre, dans le panneau du cœur (décision 2026-11-27-listes-de-favoris). */
+export type FavoriteList = { id: string; name: string; subtitle: string; image: string | null };
+
+/**
+ * `GET` sur le point d'API du cœur : le panneau du cœur vide (décision 2026-11-27-listes-de-favoris) : son titre, ses
+ * listes nommées (sans « Récemment consultés ») et les textes de la création d'une liste.
+ */
+export type FavoritePanel = {
+  title: string;
+  create: { label: string; placeholder: string; submit: string; max_length: number };
+  lists: FavoriteList[];
+};
+
+/** Où ranger l'offre : une liste choisie, ou une liste créée de ce nom. */
+export type FavoriteTarget = { wishlist: string } | { name: string };
 
 /**
  * Un bouton sur la carte (décision 2026-11-19-contrat-reservations-logements-profil) :
@@ -124,6 +145,10 @@ export type ListDefinition = {
   footer?: { label: string; form: string | null; link: string | null } | null;
   /** Les actions des cartes dans un menu déroulant « Actions » (décision 2026-11-21-actions-en-menu) ; absent : non. */
   menu?: boolean;
+  /** Le nombre de cartes par ligne (« Récemment consultés » : deux, décision 2026-11-27-listes-de-favoris) ; absent : une. */
+  columns?: number;
+  /** Le menu ⋮ de la barre du haut (« Renommer », « Supprimer » une liste de favoris, décision 2026-11-27-listes-de-favoris) ; absent : aucun. */
+  header_actions?: ListItemAction[];
   /** Texte d'aide du champ de recherche ; `null` : liste non cherchable (décision 2026-11-18-recherche-dans-la-liste). */
   search: string | null;
   /** Filtres proposés, en champs de formulaire (`?filter[nom]=valeur`) ; vide ou absent : aucun (décision 2026-11-19-contrat-filtres-vitrine). */

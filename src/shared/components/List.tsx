@@ -55,6 +55,8 @@ export type ListProps<T> = {
   /** Le doigt commence à faire défiler la liste (fermer un menu ouvert, décision 2026-11-21-menu-fermer-ailleurs). */
   onScrollBeginDrag?: () => void;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  /** Le nombre de cartes par ligne (« Récemment consultés » : deux, décision 2026-11-27-listes-de-favoris) ; une par défaut. */
+  columns?: number;
   testID?: string;
 };
 
@@ -88,6 +90,7 @@ export function List<T>({
   header,
   onScrollBeginDrag,
   contentContainerStyle,
+  columns = 1,
   testID,
 }: ListProps<T>) {
   const theme = useTheme();
@@ -112,9 +115,14 @@ export function List<T>({
   const list = (
     <FlatList
       testID={testID}
+      // Changer le nombre de colonnes demande une nouvelle liste (FlatList ne le permet pas en place).
+      key={`columns-${columns}`}
       data={items}
       keyExtractor={keyExtractor}
-      renderItem={({ item }) => renderItem(item)}
+      numColumns={columns}
+      // Plusieurs par ligne : chaque carte a sa part de la ligne, l'écart entre deux cartes étant celui des lignes.
+      columnWrapperStyle={columns > 1 ? styles.columns : undefined}
+      renderItem={({ item }) => (columns > 1 ? <View style={[styles.cell, { width: `${100 / columns}%` }]}>{renderItem(item)}</View> : renderItem(item))}
       onEndReached={loadMore}
       onEndReachedThreshold={0.5}
       refreshing={onRefresh ? (refreshing ?? false) : undefined}
@@ -226,4 +234,7 @@ const styles = StyleSheet.create({
   footer: { paddingVertical: Spacing.three },
   // L'écart entre deux cartes, dans toutes les listes (décision 2026-11-21-ecart-cartes).
   separator: { height: Spacing.three },
+  // En colonnes : la moitié de l'écart de chaque côté d'une carte, la ligne débordant d'autant pour rester alignée.
+  columns: { marginHorizontal: -Spacing.three / 2 },
+  cell: { paddingHorizontal: Spacing.three / 2 },
 });

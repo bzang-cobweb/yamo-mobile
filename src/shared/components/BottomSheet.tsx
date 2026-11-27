@@ -29,6 +29,11 @@ type Props = {
   fitContent?: boolean;
   /** Ce qui se pose par-dessus le panneau, dans la même fenêtre (le bandeau des messages). */
   overlay?: ReactNode;
+  /**
+   * Vrai : un toucher sur le panneau, hors de ses boutons, s'arrête à lui et ne remonte pas à ce qui l'a ouvert (le
+   * panneau du cœur, posé dans une carte qui ouvre la fiche : décision 2026-11-27-listes-de-favoris). Faux par défaut.
+   */
+  keepTouches?: boolean;
   testID?: string;
 };
 
@@ -49,7 +54,7 @@ export function BottomSheet(props: Props) {
   );
 }
 
-function Sheet({ title, onClose, children, fitContent = false, overlay = null, testID = 'bottom-sheet' }: Props) {
+function Sheet({ title, onClose, children, fitContent = false, overlay = null, keepTouches = false, testID = 'bottom-sheet' }: Props) {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
@@ -63,7 +68,10 @@ function Sheet({ title, onClose, children, fitContent = false, overlay = null, t
           calculée sur l'écran débordait quand la fenêtre est plus petite (le calendrier, décision 2026-11-26-bottom-sheet). */}
       <View style={[styles.root, { paddingTop: insets.top + Spacing.four }]}>
         <Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel={t('nav.close')} onPress={onClose} testID={`${testID}-backdrop`} />
-        <ThemedView style={[styles.sheet, column && styles.column, fitContent ? styles.sheetFit : styles.sheetFill, { paddingBottom: insets.bottom }]} testID={testID}>
+        <ThemedView
+          style={[styles.sheet, column && styles.column, fitContent ? styles.sheetFit : styles.sheetFill, { paddingBottom: insets.bottom }]}
+          onStartShouldSetResponder={keepTouches ? () => true : undefined}
+          testID={testID}>
           <View style={[styles.header, { borderBottomColor: theme.backgroundSelected }]} testID={`${testID}-header`}>
             <ThemedText type="smallBold" style={styles.title} accessibilityRole="header">
               {title}

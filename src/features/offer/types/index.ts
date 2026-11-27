@@ -163,6 +163,16 @@ export type HomeCarousel = {
   items: ListItem[];
 };
 
+/**
+ * Le bloc « Récemment consultés » de l'accueil (décision 2026-11-27-listes-de-favoris) : son titre, l'écran de la liste
+ * entière (`/wishlists/5`) et ses dernières offres, en cartes comme l'accueil.
+ */
+export type HomeRecent = {
+  title: string;
+  link: string;
+  items: ListItem[];
+};
+
 /** `GET /api/v1/home` : le bloc « À la une » (décision 2026-11-25-bloc-a-la-une), puis un carrousel par ville. */
 export type HomeData = {
   featured: ListItem[];

@@ -2,7 +2,7 @@ import { apiClient, type ApiClient } from '@/shared/api/ApiClient';
 
 import type { FormValues } from '@/features/form/types';
 
-import type { ListDefinition, ListResponse } from '../types';
+import type { FavoritePanel, FavoriteTarget, ListDefinition, ListResponse } from '../types';
 
 /** Point d'API d'un cœur de favori : `/v1/offers/12/favorite`. */
 const FAVORITE_ENDPOINT = /^\/v1\/[a-z-]+\/\d+\/favorite$/;
@@ -33,6 +33,13 @@ export function filterParams(filters: FormValues): string[] {
   );
 }
 
+/** Seul un point d'API de favori est accepté (`/v1/<entité>/<id>/favorite`), jamais une autre route. */
+function assertFavoriteEndpoint(endpoint: string) {
+  if (!FAVORITE_ENDPOINT.test(endpoint)) {
+    throw new Error(`Point d'API refusé : ${endpoint}`);
+  }
+}
+
 /** Listes servies par l'API. */
 export class ListService {
   constructor(private readonly client: ApiClient = apiClient) {}
@@ -58,12 +65,23 @@ export class ListService {
    * 2026-11-19-contrat-vedette-favoris). Seul un point d'API de favori est accepté
    * (`/v1/<entité>/<id>/favorite`), jamais une autre route.
    */
-  async setFavorite(endpoint: string, active: boolean): Promise<void> {
-    if (!FAVORITE_ENDPOINT.test(endpoint)) {
-      throw new Error(`Point d'API refusé : ${endpoint}`);
-    }
+  async setFavorite(endpoint: string, active: boolean, target?: FavoriteTarget): Promise<void> {
+    assertFavoriteEndpoint(endpoint);
 
-    await (active ? this.client.request<unknown>(endpoint, { method: 'PUT' }) : this.client.delete<unknown>(endpoint));
+    // Ranger dans une liste choisie ou créée (décision 2026-11-27-listes-de-favoris) ; sans `target`, sa première liste.
+    await (active
+      ? this.client.request<unknown>(endpoint, target ? { method: 'PUT', body: target } : { method: 'PUT' })
+      : this.client.delete<unknown>(endpoint));
+  }
+
+  /**
+   * `GET` sur le point d'API du cœur : ses listes de favoris, pour le panneau du cœur vide (décision
+   * 2026-11-27-listes-de-favoris). Même garde que `setFavorite`.
+   */
+  async favoritePanel(endpoint: string): Promise<FavoritePanel> {
+    assertFavoriteEndpoint(endpoint);
+
+    return (await this.client.get<{ data: FavoritePanel }>(endpoint)).data;
   }
 }
 

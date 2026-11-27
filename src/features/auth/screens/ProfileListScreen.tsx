@@ -1,10 +1,12 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from 'react';
+import { useCallback, useEffect, useRef, useState, type PropsWithChildren, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ERROR_COLOR } from '@/features/form/components/FieldShell';
+import { BackHeader } from '@/shared/components/BackHeader';
 import { BottomSheet } from '@/shared/components/BottomSheet';
+import { DropdownMenu } from '@/shared/components/DropdownMenu';
 import { FixedButtonBar } from '@/shared/components/FixedButtonBar';
 import { showToast } from '@/shared/components/Toast';
 import { useListDefinition } from '@/features/list/hooks/useListDefinition';
@@ -18,7 +20,9 @@ import { ActionPanel, knowsPanel } from '@/features/list/components/ActionPanel'
 import { FilterSheet } from '@/features/list/components/FilterSheet';
 import { List } from '@/shared/components/List';
 import { SEARCH_DELAY, useDebounced } from '@/shared/hooks/useDebounced';
+import { BackStackProvider } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
+import { ThemedView } from '@/shared/theme/components/themed-view';
 import { Spacing } from '@/shared/theme/theme';
 
 import { useAuth } from '../hooks/useAuth';
@@ -149,6 +153,12 @@ export function ProfileListScreen({
     if (!item.delete) {
       return;
     }
+    // La croix sur la photo retire aussitôt, sans confirmation (« Récemment consultés », décision 2026-11-27-listes-de-favoris).
+    if (item.delete.on_image) {
+      void remove(item);
+
+      return;
+    }
 
     Alert.alert(item.delete.confirm, undefined, [
       { text: t('list.cancel'), style: 'cancel' },
@@ -156,7 +166,66 @@ export function ProfileListScreen({
     ]);
   }
 
+  // Le menu ⋮ de la barre du haut (« Renommer », « Supprimer » une liste de favoris, décision 2026-11-27-listes-de-favoris).
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+
+  /** Une action du menu du haut : son formulaire, ou son envoi après confirmation ; « back » referme l'écran. */
+  function pressHeaderAction(action: ListItemAction) {
+    if (action.form) {
+      router.push({ pathname: '/profile/[form]', params: { form: action.form.form, record: action.form.record } });
+
+      return;
+    }
+    const submission = action.submission ? profileSubmission({ ...action.submission, label: action.label }) : null;
+    if (submission === null) {
+      return;
+    }
+
+    async function send() {
+      if (submission === null) {
+        return;
+      }
+      try {
+        await profileFormService.submit(submission, {});
+      } catch {
+        showToast(t('error.unknown'), 'danger');
+
+        return;
+      }
+      showToast(submission.success.message);
+      // La liste supprimée : retour à l'écran d'avant, qui se recharge.
+      if (submission.success.action === 'back') {
+        router.back();
+      } else {
+        await reload();
+      }
+    }
+
+    if (action.confirm) {
+      Alert.alert(action.confirm, undefined, [
+        { text: t('list.cancel'), style: 'cancel' },
+        { text: action.label, style: action.style === 'destructive' ? 'destructive' : 'default', onPress: () => void send() },
+      ]);
+    } else {
+      void send();
+    }
+  }
+
   const definition = query.data;
+  const headerActions = bare ? [] : (definition?.header_actions ?? []);
+  const headerMenu =
+    headerActions.length > 0 ? (
+      <DropdownMenu
+        entries={headerActions.map((action, index) => ({ key: `header-${index}`, label: action.label, danger: action.style === 'destructive', onPress: () => pressHeaderAction(action) }))}
+        open={headerMenuOpen}
+        onOpenChange={(next) => {
+          setOpenMenu(null);
+          setHeaderMenuOpen(next);
+        }}
+        accessibilityLabel={`${t('list.actions')} ${definition?.title ?? ''}`}
+        testID="profile-list-header-menu"
+      />
+    ) : null;
 
   function renderItem(item: ListItem) {
     return (
@@ -193,15 +262,18 @@ export function ProfileListScreen({
     );
   }
 
-  return (
-    <Shell title={definition.title} scrolls={false}>
+  const body = (
+    <>
       {/* Menu ouvert : un toucher ailleurs que sur un bouton ou une carte (entre les cartes, l'intitulé, le vide) le
           referme (décision 2026-11-24-menu-se-ferme-au-toucher). */}
       <View
         style={styles.fill}
         testID="profile-list-area"
-        onStartShouldSetResponder={() => openMenu !== null}
-        onResponderRelease={() => setOpenMenu(null)}>
+        onStartShouldSetResponder={() => openMenu !== null || headerMenuOpen}
+        onResponderRelease={() => {
+          setOpenMenu(null);
+          setHeaderMenuOpen(false);
+        }}>
       <List
         testID="profile-list"
         items={definition.items}
@@ -245,7 +317,12 @@ export function ProfileListScreen({
             </View>
           ) : null
         }
-        onScrollBeginDrag={() => setOpenMenu(null)}
+        onScrollBeginDrag={() => {
+          setOpenMenu(null);
+          setHeaderMenuOpen(false);
+        }}
+        // Deux cartes par ligne quand l'API le demande (« Récemment consultés », décision 2026-11-27-listes-de-favoris).
+        columns={definition.columns ?? 1}
         contentContainerStyle={[profileContentStyle, !definition.footer && { paddingBottom: Math.max(insets.bottom, Spacing.four) }]}
         create={
           definition.create
@@ -267,11 +344,39 @@ export function ProfileListScreen({
       <BottomSheet visible={panel !== null} title={panel?.label ?? ''} onClose={() => setPanel(null)} testID="profile-list-panel">
         {panel?.panel && <ActionPanel name={panel.panel.name} record={panel.panel.record} />}
       </BottomSheet>
+    </>
+  );
+
+  // Avec un menu du haut : le même cadre, le menu ⋮ à droite de la barre (le retour reste à gauche).
+  return headerMenu ? (
+    <MenuShell title={definition.title} right={headerMenu}>
+      {body}
+    </MenuShell>
+  ) : (
+    <Shell title={definition.title} scrolls={false}>
+      {body}
     </Shell>
   );
 }
 
 export { SEARCH_DELAY };
+
+/**
+ * Le cadre d'une liste dont la barre du haut porte un menu ⋮ à droite (une liste de favoris ouverte, décision
+ * 2026-11-27-listes-de-favoris) : celui de `ProfileScreenShell` (sans défilement), avec `right` dans la barre.
+ */
+function MenuShell({ title, right, children }: PropsWithChildren<{ title: string; right: ReactNode }>) {
+  return (
+    <ThemedView style={styles.fill}>
+      <SafeAreaView style={styles.fill} edges={['top', 'left', 'right']}>
+        <BackStackProvider>
+          <BackHeader title={title} right={right} />
+          <View style={styles.fill}>{children}</View>
+        </BackStackProvider>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
 
 /** La liste sans cadre de page : dans un panneau, qui a déjà son titre et sa croix. */
 function BareShell({ children }: PropsWithChildren<{ title: string; scrolls?: boolean }>) {

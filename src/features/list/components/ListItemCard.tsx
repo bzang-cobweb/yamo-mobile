@@ -59,6 +59,9 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   // L'écran de l'app que l'item désigne (« /offers/12 », décision 2026-11-19-contrat-vedette-favoris).
   const link = item.link && ITEM_LINK.test(item.link) ? item.link : null;
   const removable = item.delete !== null && profileSubmission(item.delete) !== null;
+  // Le retrait en croix sur la photo, sans bouton dessous (« Récemment consultés », décision 2026-11-27-listes-de-favoris).
+  const removeOnImage = removable && Boolean(item.delete?.on_image) && item.image_layout !== 'side';
+  const removeFromImage = removeOnImage ? () => close() || onRemove?.(item) : undefined;
   // Le statut sur la photo quand l'API le demande ; avec un cœur, en haut à gauche (décision 2026-11-21-reservations-statut-coeur).
   // L'image en petit à gauche du texte, comme la page « Partenaires » (décision 2026-11-24-mes-partenaires-comme-partenaires).
   // Sans image, sa place reste réservée, vide : les textes restent alignés (décision 2026-11-24-mes-partenaires-comme-partenaires).
@@ -226,7 +229,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
   // (menu : servi par la liste, `menu`.)
   const menuOpen = menu && open;
   // Sans photo ni menu : « Retirer » en icône corbeille, à droite du texte (décision 2026-11-21-corbeille-a-droite).
-  const removeIcon = removable && !item.image && !side && !menu;
+  const removeIcon = removable && !item.image && !side && !menu && !removeOnImage;
   const stacked = isStacked();
 
   /**
@@ -274,7 +277,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
     }
   }
 
-  const removeButton = removable && item.delete && (
+  const removeButton = removable && !removeOnImage && item.delete && (
     <Pressable
       testID={`${prefix}-delete-${item.id}`}
       accessibilityRole="button"
@@ -319,7 +322,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
             {/* La photo ; la pastille du statut dessus, à la place du cœur, quand l'API le demande et qu'il y a
                 une photo (décision 2026-11-21-statut-a-la-place-du-coeur), sinon sous la photo ; à sa place, la pastille
                 des demandes en attente, sans lien (décisions 2026-11-21-pastille-sur-la-photo et 2026-11-21-pastille-sans-lien). */}
-            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`${prefix}-item-${item.id}`} />
+            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} onRemove={removeFromImage} testID={`${prefix}-item-${item.id}`} />
             {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo). */}
             {reviewBody ?? (
             <View style={item.image ? CARD_BODY : styles.body} testID={`${prefix}-body-${item.id}`}>
@@ -371,7 +374,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
               testID={`${prefix}-item-${item.id}-side-photo`}
             />
           ) : (
-            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} testID={`${prefix}-item-${item.id}`} />
+            <ItemPicture item={item} tag={pictureTag} tagLeft={menu} onRemove={removeFromImage} testID={`${prefix}-item-${item.id}`} />
           )}
           {/* Sous la photo, une zone en retrait (décision 2026-11-22-cartes-espace-sous-photo) ; à côté d'une image à gauche, le reste de la ligne. */}
           {reviewBody ?? (
