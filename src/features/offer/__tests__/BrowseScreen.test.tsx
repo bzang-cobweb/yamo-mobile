@@ -10,7 +10,6 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
 import { BrowseScreen } from '../screens/BrowseScreen';
-import { GuestHomeScreen } from '../screens/GuestHomeScreen';
 
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 // L'icône rendue comme une vue, pour la trouver par son testID (l'épingle des régions).
@@ -240,19 +239,5 @@ describe('Accueil : offres du pays', () => {
     await show(<BrowseScreen />);
 
     expect(screen.getByTestId('browse-list-empty').props.children).toBe('Aucune offre publiée dans ce pays pour l’instant.');
-  });
-
-  it('visiteur : barre du haut, offres, et en bas se connecter ou créer un compte', async () => {
-    await show(<GuestHomeScreen />);
-
-    expect(screen.getByTestId('app-top-bar')).toBeTruthy();
-    // La langue, en bas, après les boutons.
-    expect(screen.getByTestId('locale-switcher')).toBeTruthy();
-    expect(screen.getByText('Studio à Akwa')).toBeTruthy();
-
-    await fireEvent.press(screen.getByTestId('welcome-sign-in'));
-    expect(router.push).toHaveBeenCalledWith('/sign-in');
-    await fireEvent.press(screen.getByTestId('welcome-sign-up'));
-    expect(router.push).toHaveBeenCalledWith('/sign-up');
   });
 });

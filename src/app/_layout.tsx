@@ -25,7 +25,7 @@ import { bindQueriesToNetwork, useIsOnline } from '@/shared/network/connectivity
  * Écran de départ de la pile racine pour un invité : l'accueil. Connecté, l'accueil
  * est protégé et la pile part du menu (`(tabs)`).
  */
-export const unstable_settings = { anchor: 'welcome' };
+export const unstable_settings = { anchor: '(tabs)' };
 
 SplashScreen.preventAutoHideAsync();
 bindQueriesToNetwork();
@@ -94,8 +94,10 @@ function RootNavigator() {
           <Stack.Screen name="partners/[id]" />
           {/* Les filtres d'une liste (décision 2026-11-19-contrat-filtres-vitrine). */}
           <Stack.Screen name="filters/[list]" />
+          {/* Les onglets, pour un visiteur comme pour un membre ; un visiteur voit la connexion dans Notifications et Profil
+              (décision 2026-11-27-visiteur-onglets). */}
+          <Stack.Screen name="(tabs)" />
           <Stack.Protected guard={user !== null}>
-            <Stack.Screen name="(tabs)" />
             {/* Un formulaire du profil, par-dessus les onglets (décision 2026-11-19-contrat-bouton-fixe-formulaires). */}
             <Stack.Screen name="profile/[form]" />
             {/* Une liste du profil, par-dessus les onglets, sans menu du bas (décision 2026-11-19-contrat-reservations-logements-profil). */}
@@ -113,9 +115,8 @@ function RootNavigator() {
             {/* Les notifications déjà filtrées, depuis une carte de « Mes logements », avec un retour (décision 2026-11-21-notifications-avec-retour). */}
             <Stack.Screen name="notifications/filtered" />
           </Stack.Protected>
-          {/* Invité : l'accueil d'abord (ancre de la pile), d'où partent la connexion et l'inscription. */}
+          {/* Invité : la connexion, l'inscription, le mot de passe oublié, par-dessus les onglets. */}
           <Stack.Protected guard={user === null}>
-            <Stack.Screen name="welcome" />
             <Stack.Screen name="sign-in" />
             <Stack.Screen name="sign-up" />
             <Stack.Screen name="forgot-password" />
