@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -11,6 +12,8 @@ import { Spacing } from '@/shared/theme/theme';
 type Props = {
   /** Titre de l'écran, affiché au centre (« Créer un compte »). */
   title: string;
+  /** Ce qui se pose à droite (le menu « ⋮ » d'une notification, décision 2026-11-27-notification-menu-info). */
+  right?: ReactNode;
 };
 
 /**
@@ -21,7 +24,7 @@ type Props = {
  * à l'étape précédente d'un formulaire à étapes, sinon à l'écran précédent
  * (`BackStackProvider`). Le placer hors du `ScrollView`.
  */
-export function BackHeader({ title }: Props) {
+export function BackHeader({ title, right }: Props) {
   const theme = useTheme();
   const { t } = useI18n();
   const back = useBack();
@@ -46,6 +49,7 @@ export function BackHeader({ title }: Props) {
         style={styles.back}>
         <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={20} tintColor={theme.text} />
       </Pressable>
+      {right && !closable && <View style={styles.right}>{right}</View>}
       {closable && (
         <Pressable
           accessibilityRole="button"
@@ -64,6 +68,8 @@ export function BackHeader({ title }: Props) {
 const styles = StyleSheet.create({
   bar: {
     height: 52,
+    // Au-dessus du contenu : le menu « ⋮ » ouvert déborde dessous.
+    zIndex: 3,
     justifyContent: 'center',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
@@ -71,4 +77,5 @@ const styles = StyleSheet.create({
   title: { position: 'absolute', left: 56, right: 56, textAlign: 'center' },
   back: { position: 'absolute', left: Spacing.three, padding: Spacing.one },
   close: { position: 'absolute', right: Spacing.three, padding: Spacing.one },
+  right: { position: 'absolute', right: Spacing.three, top: 10, zIndex: 3 },
 });

@@ -8,6 +8,7 @@ import { ERROR_COLOR } from '@/features/form/components/FieldShell';
 import { CARD_BODY, CARD_GAP, CARD_PADDING } from '@/shared/components/List';
 import { Stars } from '@/shared/components/Stars';
 import { StatusTag, TONE_COLORS } from '@/shared/components/StatusTag';
+import { DropdownMenu } from '@/shared/components/DropdownMenu';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { useTheme } from '@/shared/theme/hooks/use-theme';
@@ -349,39 +350,14 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
           // Un seul bouton, trois petits points verticaux, flottant en haut à droite de la photo sur une pastille
           // ronde ; ouvert, ses entrées flottent dessous, par-dessus la photo (décisions 2026-11-21-actions-en-menu
           // et 2026-11-21-menu-en-haut-a-droite).
-          <View style={[styles.menu, side && styles.sideMenu]} testID={`${prefix}-menu-${item.id}`}>
-            <Pressable
-              testID={`${prefix}-menu-${item.id}-toggle`}
-              accessibilityRole="button"
-              accessibilityState={{ expanded: menuOpen }}
-              accessibilityLabel={`${t('list.actions')} ${item.title}`}
-              hitSlop={Spacing.one}
-              onPress={() => onMenuChange?.(menuOpen ? null : item.id)}
-              style={({ pressed }) => [styles.menuToggle, { backgroundColor: theme.background, shadowColor: theme.text }, pressed && styles.pressed]}>
-              {/* Trois petits points verticaux, sans texte (décisions 2026-11-21-menu-trois-points et
-                  2026-11-21-menu-flottant). */}
-              <SymbolView name={{ ios: 'ellipsis', android: 'more_vert', web: 'more_vert' }} size={20} tintColor={theme.text} style={styles.vertical} />
-            </Pressable>
-            {menuOpen && (
-              <View style={[styles.menuList, { borderColor: theme.backgroundSelected, backgroundColor: theme.background, shadowColor: theme.text }]} testID={`${prefix}-menu-${item.id}-list`}>
-                {menuEntries.map((entry) => (
-                  <Pressable
-                    key={entry.key}
-                    testID={`${prefix}-menu-${item.id}-${entry.key}`}
-                    accessibilityRole="button"
-                    onPress={() => {
-                      onMenuChange?.(null);
-                      entry.onPress();
-                    }}
-                    style={({ pressed }) => [styles.menuEntry, pressed && { backgroundColor: theme.backgroundSelected }]}>
-                    <ThemedText type="small" style={entry.danger ? styles.error : undefined}>
-                      {entry.label}
-                    </ThemedText>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-          </View>
+          <DropdownMenu
+            entries={menuEntries.map((entry) => ({ key: entry.key, label: entry.label, danger: entry.danger, onPress: entry.onPress }))}
+            open={menuOpen}
+            onOpenChange={(next) => onMenuChange?.(next ? item.id : null)}
+            accessibilityLabel={`${t('list.actions')} ${item.title}`}
+            style={[styles.menu, side && styles.sideMenu]}
+            testID={`${prefix}-menu-${item.id}`}
+          />
         )
       ) : (
         <>
@@ -459,35 +435,7 @@ const styles = StyleSheet.create({
   head: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   // Le menu des actions, flottant en haut à droite de la photo (marge de la carte + du texte, puis un retrait) ;
   // ses entrées dessous, par-dessus la photo.
-  menu: { position: 'absolute', top: CARD_PADDING + Spacing.two, right: CARD_PADDING + Spacing.two, alignItems: 'flex-end', zIndex: 2 },
-  // Une pastille ronde, pour rester lisible sur n'importe quelle photo.
-  menuToggle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  // Trois points verticaux : l'icône « ellipsis » d'iOS, tournée d'un quart de tour.
-  vertical: { transform: [{ rotate: '90deg' }] },
-  menuList: {
-    position: 'absolute',
-    right: 0,
-    top: 40,
-    minWidth: 180,
-    borderWidth: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  menuEntry: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
+  menu: { position: 'absolute', top: CARD_PADDING + Spacing.two, right: CARD_PADDING + Spacing.two },
   // La ligne des actions, sous le contenu, à droite.
   actions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: Spacing.three },
   pressed: { opacity: 0.6 },

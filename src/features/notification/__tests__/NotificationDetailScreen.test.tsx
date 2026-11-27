@@ -73,6 +73,7 @@ const NOTIFICATION: AppNotification = {
       { key: 'total', label: 'Total', value: '255 000 FCFA' },
     ],
   },
+  menu: [{ key: 'info', label: 'Info', link: null }],
   read: false,
   created_at: '2026-11-19T20:00:00Z',
   date: 'hier à 20:00',
@@ -151,41 +152,21 @@ describe('NotificationDetailScreen', () => {
     expect(screen.queryByTestId('notification-detail-message')).toBeNull();
   });
 
-  it('la barre du haut : le type ; la zone fixe : la pastille, le texte et le total, sans photo ni coordonnées ; ouverte, elle est marquée lue', async () => {
+  it('la barre du haut : le titre de l’en-tête ; plus de zone fixe, la page n’est que le fil ; ouverte, elle est marquée lue', async () => {
     await show();
 
-    // Le type dans la barre du haut, à la place de « Notification ».
-    expect(await screen.findByText('Demande de logement')).toBeTruthy();
+    // Dans la barre du haut, le titre de l'en-tête (décision 2026-11-27-page-titre-entete), à la place de « Notification ».
+    await waitFor(() => expect(screen.getByTestId('back-header-title')).toHaveTextContent('Studio photos'));
     expect(screen.queryByText('Notification')).toBeNull();
-    expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
-    // Le statut seul, centré (décisions 2026-11-22-detail-sans-ligne-type et 2026-11-24-detail-statut-centre).
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'center' });
-    // Une demande : ni texte ni titre composé, ses lignes seulement (décision 2026-11-20-titre-demande).
-    expect(screen.queryByTestId('notification-detail-text')).toBeNull();
-    expect(screen.queryByTestId('notification-detail-offer')).toBeNull();
-    // Plus de ligne du type : il est dans la barre du haut (décision 2026-11-22-detail-sans-ligne-type).
-    expect(screen.queryByTestId('notification-detail-rental-type')).toBeNull();
-    // « Voir plus » ouvre toutes les lignes dans un panneau (décision 2026-11-26-lignes-en-panneau).
-    await fireEvent.press(screen.getByTestId('notification-detail-more'));
-    // Les lignes, dans l'ordre servi, le libellé à gauche et la valeur à droite (décision 2026-11-20-lignes-demande).
-    const keys = ['guests', 'arrival', 'departure', 'days', 'price', 'total'];
-    expect(screen.getByTestId('notification-detail-sheet')).toBeTruthy();
-    const json = JSON.stringify(screen.toJSON());
-    expect(keys.map((key) => json.indexOf(`"notification-detail-sheet-line-${key}"`))).toEqual([...keys.map((key) => json.indexOf(`"notification-detail-sheet-line-${key}"`))].sort((a, b) => a - b));
-    // « Arrivée : », une espace insécable avant les deux-points (décision 2026-11-22-detail-libelles-deux-points).
-    expect(screen.getByTestId('notification-detail-sheet-line-arrival-label').props.children).toBe('Arrivée\u00a0:');
-    // Le libellé en haut de sa ligne, même si la valeur en prend plusieurs (décision 2026-11-22-detail-libelle-en-haut).
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-sheet-line-arrival').props.style)).toMatchObject({ alignItems: 'flex-start' });
-    expect(screen.getByTestId('notification-detail-sheet-line-arrival-value')).toHaveTextContent('1 déc. 2026 à partir de 14:00');
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-sheet-line-price').props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'space-between' });
-    expect(screen.getByTestId('notification-detail-sheet-line-price-value')).toHaveTextContent('85 000 FCFA / jour');
-    // Le total en gras.
-    expect(screen.getByTestId('notification-detail-sheet-line-total-value')).toHaveTextContent('255 000 FCFA');
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-sheet-line-total-value').props.style)).toMatchObject({ fontWeight: '700' });
-    expect(screen.getByTestId('notification-detail-head')).toBeTruthy();
+    // Plus de zone fixe en haut : ni pastille, ni en-tête, ni lignes, ni « Voir plus » (décision 2026-11-27-detail-sans-zone-fixe).
+    expect(screen.queryByTestId('notification-detail-head')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-tag')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-heading-title')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-line-member')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-more')).toBeNull();
     expect(screen.queryByTestId('notification-detail-actor')).toBeNull();
     expect(screen.queryByTestId('notification-detail-avatar-online')).toBeNull();
-    // Sans demande : le message, entier, puis la date à droite.
+    // Sans suivi : le message, entier, puis la date à droite.
     expect(screen.getByText('Tournage d’un clip.').props.numberOfLines).toBeUndefined();
     expect(StyleSheet.flatten(screen.getByTestId('notification-detail-date').props.style)).toMatchObject({ textAlign: 'right' });
     expect(screen.queryByTestId('notification-history')).toBeNull();
@@ -193,17 +174,91 @@ describe('NotificationDetailScreen', () => {
     await waitFor(() => expect(notificationService.read).toHaveBeenCalledWith('n1'));
   });
 
-  it('sans en-tête ni demande : le texte, sans le nom de qui agit, et ses liens', async () => {
-    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, heading: null, booking: undefined });
+  it('le menu ⋮ de la barre du haut : « Info » ouvre un panneau titré « Info », l’en-tête et toutes les lignes (décision 2026-11-27-notification-menu-info)', async () => {
     await show();
 
-    expect(screen.queryByTestId('notification-detail-heading-title')).toBeNull();
-    expect(screen.queryByTestId('notification-detail-more')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-menu-list')).toBeNull();
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    expect(screen.getByTestId('notification-detail-menu-info')).toHaveTextContent('Info');
+    // Un toucher ailleurs ferme le menu.
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-backdrop', { includeHiddenElements: true }));
+    expect(screen.queryByTestId('notification-detail-menu-list')).toBeNull();
 
-    expect(await screen.findByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-info'));
+    expect(screen.queryByTestId('notification-detail-menu-list')).toBeNull();
+    // Titré du libellé de son entrée du menu (décision 2026-11-27-info-titre-du-menu).
+    expect(screen.getByTestId('notification-detail-info-header')).toHaveTextContent('Info');
+    expect(screen.getByTestId('notification-detail-info-title')).toHaveTextContent('Studio photos');
+    expect(screen.getByTestId('notification-detail-info-subtitle')).toHaveTextContent('Location meublée · Studio');
+    expect(screen.getByTestId('notification-detail-info-line-total-value')).toHaveTextContent('255 000 FCFA');
+    expect(screen.getAllByTestId(/^notification-detail-info-line-[a-z]+$/)).toHaveLength(8);
+    // La pastille du statut, en tête ; une demande : ni texte, ses lignes dans l'ordre servi.
+    expect(screen.getByTestId('notification-detail-tag')).toHaveTextContent('En attente');
+    expect(screen.queryByTestId('notification-detail-text')).toBeNull();
+    const keys = ['guests', 'arrival', 'departure', 'days', 'price', 'total'];
+    const json = JSON.stringify(screen.toJSON());
+    expect(keys.map((key) => json.indexOf(`"notification-detail-info-line-${key}"`))).toEqual([...keys.map((key) => json.indexOf(`"notification-detail-info-line-${key}"`))].sort((a, b) => a - b));
+    // « Arrivée : », une espace insécable avant les deux-points (décision 2026-11-22-detail-libelles-deux-points).
+    expect(screen.getByTestId('notification-detail-info-line-arrival-label').props.children).toBe('Arrivée\u00a0:');
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-info-line-arrival').props.style)).toMatchObject({ alignItems: 'flex-start' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-info-line-total-value').props.style)).toMatchObject({ fontWeight: '700' });
+    expect(screen.getByTestId('notification-detail-info-line-email-value')).toHaveTextContent('lea@example.test');
+    // Le nom du logement ouvre sa fiche, le panneau fermé.
+    expect(screen.getByTestId('notification-detail-info-title').props.accessibilityRole).toBe('link');
+    await fireEvent.press(screen.getByTestId('notification-detail-info-title'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
+    expect(screen.queryByTestId('notification-detail-info-line-total')).toBeNull();
+    // Le nom de l'autre partie ouvre sa page.
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-info'));
+    await fireEvent.press(screen.getByTestId('notification-detail-info-line-member-value'));
+    expect(router.push).toHaveBeenLastCalledWith('/members/5');
+  });
+
+  it('le menu ⋮ servi par le serveur : un lien ouvre son écran, une entrée inconnue est ignorée ; sans entrée, pas de menu (décision 2026-11-27-menu-notification-serveur)', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({
+      ...NOTIFICATION,
+      menu: [
+        { key: 'info', label: 'Détails', link: null },
+        { key: 'partner', label: 'Voir le partenaire', link: '/partners/18' },
+        { key: 'unknown', label: 'Inconnue', link: null },
+      ],
+    });
+    await show();
+
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    expect(screen.queryByTestId('notification-detail-menu-unknown')).toBeNull();
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-partner'));
+    expect(router.push).toHaveBeenLastCalledWith('/partners/18');
+    // « Info » : titré du libellé servi.
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-info'));
+    expect(screen.getByTestId('notification-detail-info-header')).toHaveTextContent('Détails');
+  });
+
+  it('sans menu servi : pas de bouton ⋮', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, menu: [] });
+    await show();
+
+    await screen.findByTestId('notification-detail-scroll');
+    expect(screen.queryByTestId('notification-detail-menu-toggle')).toBeNull();
+  });
+
+  it('sans en-tête ni demande : dans « Info », le texte, sans le nom de qui agit, et ses liens', async () => {
+    jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, heading: null, booking: undefined });
+    await show();
+    // Sans en-tête, le titre de la notification dans la barre du haut.
+    await waitFor(() => expect(screen.getByTestId('back-header-title')).toHaveTextContent('Demande de logement'));
+
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-info'));
+    expect(screen.queryByTestId('notification-detail-info-title')).toBeNull();
+    expect(screen.getByTestId('notification-detail-text')).toHaveTextContent('demande un séjour pour « Studio photos ».');
     expect(screen.getByTestId('notification-detail-text')).not.toHaveTextContent('Paul Etoa');
     await fireEvent.press(screen.getByText('Studio photos'));
     expect(router.push).toHaveBeenLastCalledWith('/offers/22');
+    expect(screen.queryByTestId('notification-detail-text')).toBeNull();
   });
 
   it('un partenaire : ses dernières modifications en lignes sous l’en-tête (décision 2026-11-26-partenaire-dernieres-modifications)', async () => {
@@ -220,77 +275,32 @@ describe('NotificationDetailScreen', () => {
     });
     await show();
 
-    expect(await screen.findByTestId('notification-detail-line-slogan-value')).toHaveTextContent('« En une journée. » → « En une journée, sans casse. »');
-    expect(screen.getByTestId('notification-detail-line-website-label')).toHaveTextContent('Lien\u00a0:');
-    // Deux lignes, puis « Voir plus », comme les lignes d'une demande.
-    expect(screen.queryByTestId('notification-detail-line-description')).toBeNull();
-    await fireEvent.press(screen.getByTestId('notification-detail-more'));
-    // Toutes les lignes dans le panneau, titré « Modifications » par le serveur (décision 2026-11-26-lignes-en-panneau).
-    expect(screen.getByTestId('notification-detail-sheet-line-description')).toBeTruthy();
-    expect(screen.getByText('Modifications')).toBeTruthy();
+    // Dans « Info », sous l'en-tête : les lignes, titrées « Modifications » par le serveur.
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-info'));
+    expect(screen.getByTestId('notification-detail-info-lines-title')).toHaveTextContent('Modifications');
+    expect(screen.getByTestId('notification-detail-info-line-slogan-value')).toHaveTextContent('« En une journée. » → « En une journée, sans casse. »');
+    expect(screen.getByTestId('notification-detail-info-line-website-label')).toHaveTextContent('Lien\u00a0:');
+    expect(screen.getByTestId('notification-detail-info-line-description')).toBeTruthy();
   });
 
   it('un en-tête sans lien ni sous-titre, sans demande : le titre seul, pas de texte ni de lignes (décision 2026-11-26-booking-summary)', async () => {
     jest.spyOn(notificationService, 'get').mockResolvedValue({ ...NOTIFICATION, heading: { title: 'Agence du port', subtitle: null, link: null }, booking: undefined });
     await show();
 
-    expect(await screen.findByTestId('notification-detail-heading-title')).toHaveTextContent('Agence du port');
-    expect(screen.getByTestId('notification-detail-heading-title').props.accessibilityRole).toBeUndefined();
-    expect(screen.queryByTestId('notification-detail-heading-subtitle')).toBeNull();
+    await fireEvent.press(await screen.findByTestId('notification-detail-menu-toggle'));
+    await fireEvent.press(screen.getByTestId('notification-detail-menu-info'));
+    expect(screen.getByTestId('notification-detail-info-title')).toHaveTextContent('Agence du port');
+    expect(screen.getByTestId('notification-detail-info-title').props.accessibilityRole).toBeUndefined();
+    expect(screen.queryByTestId('notification-detail-info-subtitle')).toBeNull();
     expect(screen.queryByTestId('notification-detail-text')).toBeNull();
-    expect(screen.queryByTestId('notification-detail-line-member')).toBeNull();
+    expect(screen.queryByTestId('notification-detail-info-line-member')).toBeNull();
   });
 
-  it('les lignes jusqu’au départ, puis « Voir plus » déplie la suite ; le bouton ouvre son écran', async () => {
+  it('le bouton du bas ouvre son écran', async () => {
     await show();
 
-    // Jusqu'au départ, toujours visibles ; la suite derrière « Voir plus » (décision 2026-11-21-detail-reservation-voir-plus).
-    await screen.findByTestId('notification-detail-more');
-    // Les deux premières lignes, toujours ; la suite derrière « Voir plus » (décision 2026-11-21-voir-plus-apres-deux-lignes).
-    expect(screen.getByTestId('notification-detail-line-member')).toBeTruthy();
-    expect(screen.getByTestId('notification-detail-line-email')).toBeTruthy();
-    expect(screen.queryByTestId('notification-detail-line-guests')).toBeNull();
-    expect(screen.queryByTestId('notification-detail-line-arrival')).toBeNull();
-    expect(screen.queryByTestId('notification-detail-line-days')).toBeNull();
-    expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
-    expect(screen.getByTestId('notification-detail-more')).toHaveTextContent('Voir plus');
-    // Sans icône (décision 2026-11-21-detail-reservation-voir-plus).
-    expect(screen.queryByTestId('notification-detail-more-icon')).toBeNull();
-    expect(screen.getByTestId('notification-detail-more').props.accessibilityState).toEqual({ expanded: false });
-    // Le nom de l'offre, en gras, ouvre la fiche du logement ; plus de « Voir le logement ».
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-heading-title').props.style)).toMatchObject({ color: '#000000', fontWeight: '700' });
-    expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
-    // Le titre composé sans la ville, sous le nom du logement (décisions 2026-11-22-detail-titre-compose-sous-titre et
-    // 2026-11-22-detail-titre-compose-sans-ville).
-    expect(screen.getByTestId('notification-detail-heading-subtitle')).toHaveTextContent('Location meublée · Studio');
-    // Le titre et le titre composé, centrés (décision 2026-11-22-detail-titres-centres).
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-heading-title').props.style)).toMatchObject({ textAlign: 'center', alignSelf: 'center' });
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-heading-subtitle').props.style)).toMatchObject({ textAlign: 'center' });
-    const tree = JSON.stringify(screen.toJSON());
-    expect(tree.indexOf('"notification-detail-heading-title"')).toBeLessThan(tree.indexOf('"notification-detail-heading-subtitle"'));
-    expect(screen.queryByTestId('notification-detail-period')).toBeNull();
-    await fireEvent.press(screen.getByTestId('notification-detail-heading-title'));
-    expect(router.push).toHaveBeenLastCalledWith('/offers/22');
-    // « Voir plus », aligné à droite, ouvre le panneau de toutes les lignes, titré par le serveur (décision
-    // 2026-11-26-lignes-en-panneau) ; la zone du haut ne s'agrandit pas.
-    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-more').props.style)).toMatchObject({ alignSelf: 'flex-end' });
-    await fireEvent.press(screen.getByTestId('notification-detail-more'));
-    expect(screen.getByTestId('notification-detail-sheet-line-total')).toBeTruthy();
-    expect(screen.queryByTestId('notification-detail-line-total')).toBeNull();
-    expect(screen.getByText('Détails')).toBeTruthy();
-    expect(screen.queryByTestId('notification-detail-offer-view')).toBeNull();
-    // L'autre partie : son nom ouvre sa page ; l'e-mail est un texte (décision 2026-11-21-detail-reservation-contact).
-    expect(screen.getByTestId('notification-detail-line-email-value')).toHaveTextContent('lea@example.test');
-    await fireEvent.press(screen.getByTestId('notification-detail-line-member-value'));
-    expect(router.push).toHaveBeenLastCalledWith('/members/5');
-    // Suivre un lien ferme le panneau, qui couvrirait l'écran ouvert.
-    expect(screen.queryByTestId('notification-detail-sheet-line-total')).toBeNull();
-    // La croix aussi.
-    await fireEvent.press(screen.getByTestId('notification-detail-more'));
-    await fireEvent.press(screen.getByTestId('notification-detail-sheet-close'));
-    expect(screen.queryByTestId('notification-detail-sheet-line-total')).toBeNull();
-
-    await fireEvent.press(screen.getByTestId('notification-detail-open-button'));
+    await fireEvent.press(await screen.findByTestId('notification-detail-open-button'));
     expect(screen.getByTestId('notification-detail-open-button')).toHaveTextContent('Traiter la demande');
     expect(screen.queryByTestId('notification-detail-open-secondary')).toBeNull();
     expect(router.push).toHaveBeenLastCalledWith('/profile/lists/offer.bookings.received');

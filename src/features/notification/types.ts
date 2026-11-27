@@ -30,6 +30,8 @@ export type AppNotification = {
   secondary_link?: string | null;
   secondary_link_label?: string | null;
   /** Lue ; pour la carte d'une demande, toutes ses étapes le sont. */
+  /** Du fil d'un groupe (un partenaire), lu par tous ses membres ; faux : d'un destinataire seul (décision 2026-11-27-notification-group). */
+  group?: boolean;
   read: boolean;
   created_at: string | null;
   /** Formatées par le serveur (décision 2026-11-25-dates-formatees-serveur) : relative pour la carte (« il y a 5 min »), complète pour le détail. */
@@ -51,8 +53,13 @@ export type AppNotification = {
    * modifications d'un partenaire) ; `null` (ou absent) : aucune (décision 2026-11-26-partenaire-dernieres-modifications).
    */
   lines?: SummaryLine[] | null;
-  /** Le titre du panneau de « Voir plus » (« Modifications », « Détails de la demande ») ; `null` : « Détails » (décision 2026-11-26-lignes-en-panneau). */
+  /** Le titre des lignes dans le panneau « Info » (« Modifications », « Détails de la demande ») ; `null` : aucun (décision 2026-11-27-detail-sans-zone-fixe). */
   lines_title?: string | null;
+  /**
+   * Le menu ⋮ de la page, servi avec elle (décision 2026-11-27-menu-notification-serveur), dans l'ordre : `link` ouvre un
+   * écran de l'app (ou un formulaire du profil dans un panneau) ; sans `link`, le panneau que nomme `key` (`info`).
+   */
+  menu?: NotificationMenuEntry[];
   /**
    * Sur la page d'une notification du fil d'une demande : la demande, ajoutée par le
    * module Offer (décision 2026-11-20-notification-generique) ; absent sinon.
@@ -125,3 +132,6 @@ export type SummaryLine = { key: string; label: string; value: string; link?: st
 
 /** Une ligne d'une demande. */
 export type BookingLine = SummaryLine;
+
+/** Une entrée du menu ⋮ de la page d'une notification. */
+export type NotificationMenuEntry = { key: string; label: string; link: string | null };
