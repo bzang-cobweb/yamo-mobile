@@ -130,7 +130,8 @@ describe('Accueil : offres du pays', () => {
     expect(highlight.props.numberOfLines).toBe(2);
     expect(StyleSheet.flatten(highlight.props.style).fontWeight).toBe(700);
     // Sous le prix, sur leur ligne, à droite (décision 2026-11-21-accueil-note-sous-le-prix).
-    expect(StyleSheet.flatten(rating.props.style).alignSelf).toBe('flex-end');
+    // À droite : la ligne des étoiles s'aligne à droite (décision 2026-11-27-reservations-oeil-voir).
+    expect(StyleSheet.flatten(screen.getByTestId('browse-item-9-stars-row').props.style).justifyContent).toBe('flex-end');
     expect(StyleSheet.flatten(screen.getByTestId('browse-item-9-reviews').props.style).flexDirection).toBeUndefined();
 
     expect(screen.queryByTestId('browse-item-7-rating')).toBeNull();

@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { OfferReviewsList } from '@/features/offer/components/OfferReviewsList';
 import { PartnerMembers } from '@/features/partner/components/PartnerMembers';
 import { PartnerStatisticsPanel } from '@/features/partner/components/PartnerStatistics';
 
@@ -8,6 +9,7 @@ import { PartnerStatisticsPanel } from '@/features/partner/components/PartnerSta
  * l'enregistrement montré. Un nom inconnu de cette version de l'app : rien.
  */
 const PANELS: Record<string, (record: string) => ReactElement> = {
+  'offer.reviews': (record) => <OfferReviewsList offer={record} bare />,
   'partner.members': (record) => <PartnerMembers id={record} />,
   'partner.statistics': (record) => <PartnerStatisticsPanel id={record} />,
 };

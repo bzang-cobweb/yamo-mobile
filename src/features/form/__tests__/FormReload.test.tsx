@@ -7,6 +7,13 @@ import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { DynamicForm } from '../components/DynamicForm';
 import type { FormDefinition, FormFieldDefinition } from '../types';
 
+// Les panneaux qui montent du bas (`BottomSheet`), dont la fenêtre de choix : leurs marges de fenêtre.
+jest.mock('react-native-safe-area-context', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
+});
+
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 
 function field(overrides: Partial<FormFieldDefinition> & Pick<FormFieldDefinition, 'name' | 'type'>): FormFieldDefinition {

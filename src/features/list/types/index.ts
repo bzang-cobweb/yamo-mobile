@@ -50,6 +50,10 @@ export type ListItem = {
   detail?: string | null;
   /** Les vues : un œil suivi du nombre (décision 2026-11-25-vues-oeil) ; absent : rien. */
   views?: Views | null;
+  /** Un œil « Voir » à droite des étoiles, qui ouvre cet écran (la fiche de l'offre, « Mes réservations », décision 2026-11-27-reservations-oeil-voir). */
+  view_link?: string | null;
+  /** Les étoiles ouvrent ce panneau, titré `label` (les avis de l'offre, décision 2026-11-27-reservations-oeil-voir). */
+  rating_panel?: { label: string; panel: { name: string; record: string } } | null;
   /** Une date ISO 8601 sous le message, à droite, dite en temps relatif (décision 2026-11-22-demandes-date-derniere-notification) ; absente : aucune. */
   date?: string | null;
   /** Cette date dite en temps relatif par le serveur (« il y a 5 min », « hier à 10:30 », décision 2026-11-25-dates-formatees-serveur). */

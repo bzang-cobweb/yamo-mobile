@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -60,10 +60,15 @@ import { profileContentStyle, ProfileScreenShell } from './ProfileFormScreen';
 export function ProfileListScreen({
   list,
   headingType = 'smallBold',
+  bare = false,
 }: {
   list: string;
   headingType?: 'smallBold' | 'subtitle';
+  /** Sans cadre de page (barre du haut, retour) : la liste dans un panneau (les avis d'une offre, décision
+   *  2026-11-27-reservations-oeil-voir). */
+  bare?: boolean;
 }) {
+  const Shell = bare ? BareShell : ProfileScreenShell;
   const { t } = useAuth();
   const [searchText, setSearchText] = useState('');
   const search = useDebounced(searchText.trim(), SEARCH_DELAY);
@@ -169,7 +174,7 @@ export function ProfileListScreen({
 
   if (query.isPending || query.isError || !definition) {
     return (
-      <ProfileScreenShell title={definition?.title ?? ''}>
+      <Shell title={definition?.title ?? ''}>
         {query.isPending ? (
           <View style={styles.center} accessibilityLabel={t('list.loading')}>
             <ActivityIndicator />
@@ -184,12 +189,12 @@ export function ProfileListScreen({
             </Pressable>
           </View>
         )}
-      </ProfileScreenShell>
+      </Shell>
     );
   }
 
   return (
-    <ProfileScreenShell title={definition.title} scrolls={false}>
+    <Shell title={definition.title} scrolls={false}>
       {/* Menu ouvert : un toucher ailleurs que sur un bouton ou une carte (entre les cartes, l'intitulé, le vide) le
           referme (décision 2026-11-24-menu-se-ferme-au-toucher). */}
       <View
@@ -262,11 +267,16 @@ export function ProfileListScreen({
       <BottomSheet visible={panel !== null} title={panel?.label ?? ''} onClose={() => setPanel(null)} testID="profile-list-panel">
         {panel?.panel && <ActionPanel name={panel.panel.name} record={panel.panel.record} />}
       </BottomSheet>
-    </ProfileScreenShell>
+    </Shell>
   );
 }
 
 export { SEARCH_DELAY };
+
+/** La liste sans cadre de page : dans un panneau, qui a déjà son titre et sa croix. */
+function BareShell({ children }: PropsWithChildren<{ title: string; scrolls?: boolean }>) {
+  return <View style={styles.fill}>{children}</View>;
+}
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },

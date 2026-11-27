@@ -184,6 +184,24 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
     </View>
   );
   const plainCounters = counters.filter((counter) => !counter.tone);
+  // À droite des étoiles, un œil « Voir » vers son écran (la fiche de l'offre) ; les étoiles ouvrent leur panneau (les avis)
+  // (décision 2026-11-27-reservations-oeil-voir).
+  const viewLink = item.view_link && ITEM_LINK.test(item.view_link) ? item.view_link : null;
+  const viewIcon = viewLink ? (
+    <Pressable
+      accessibilityRole="link"
+      accessibilityLabel={`${t('list.view')} ${item.title}`}
+      hitSlop={Spacing.two}
+      onPress={() => close() || router.push(viewLink as Href)}
+      style={({ pressed }) => pressed && styles.pressed}
+      testID={`${prefix}-view-icon-${item.id}`}>
+      <SymbolView name={{ ios: 'eye', android: 'visibility', web: 'visibility' }} tintColor={theme.text} size={20} />
+    </Pressable>
+  ) : null;
+  const ratingPanel = item.rating_panel;
+  const openRating = ratingPanel
+    ? () => close() || onAction({ label: ratingPanel.label, style: 'default', confirm: null, submission: null, form: null, link: null, panel: ratingPanel.panel })
+    : undefined;
   // Ses autres compteurs (« 1 notification non lue », décision 2026-11-21-compteur-non-lues), pour information : sans lien,
   // sur un vert doux (décision 2026-11-22-compteurs-non-lus-info). En bas de la carte, à droite ; à côté d'une image, sous le
   // contenu de droite, à gauche comme lui (décision 2026-11-27-pastilles-sous-le-contenu).
@@ -320,7 +338,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
               {messageRow}
               {dateRow}
               {/* La note et la phrase mise en avant, quand l'API les sert. */}
-              <ItemReviews item={item} testID={`${prefix}-item-${item.id}`} />
+              <ItemReviews item={item} testID={`${prefix}-item-${item.id}`} trailing={viewIcon} onRatingPress={openRating} />
             </View>
             )}
           </Pressable>
@@ -373,7 +391,7 @@ export function ListItemCard({ item, menu = false, open = false, onMenuChange, o
             {messageRow}
             {dateRow}
             {/* La note et la phrase mise en avant, quand l'API les sert. */}
-            <ItemReviews item={item} testID={`${prefix}-item-${item.id}`} />
+            <ItemReviews item={item} testID={`${prefix}-item-${item.id}`} trailing={viewIcon} onRatingPress={openRating} />
             {/* À côté d'une image : les pastilles sous le contenu de droite (décision 2026-11-27-pastilles-sous-le-contenu). */}
             {side && countersRow}
           </View>

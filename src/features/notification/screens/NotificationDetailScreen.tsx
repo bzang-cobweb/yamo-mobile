@@ -238,18 +238,21 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                     <StatusTag tag={notification.tag} testID="notification-detail-tag" />
                   </View>
                 )}
-                {/* Le titre en gras, en lien vers sa page s'il en a une (le nom du logement vers sa fiche). */}
+                {/* Le titre en gras, en lien vers sa page s'il en a une (le nom du logement vers sa fiche) ; la pastille, le titre
+                    et le sous-titre centrés (décision 2026-11-27-info-entete-centre). */}
                 {notification.heading && (
                   <ThemedText
+                    // La taille du nom sur la fiche d'un partenaire (décision 2026-11-27-info-titre-plus-grand).
+                    type="subtitle"
                     accessibilityRole={notification.heading.link ? 'link' : undefined}
                     onPress={notification.heading.link ? () => notification.heading?.link && openFromInfo(notification.heading.link) : undefined}
-                    style={[styles.heading, styles.linkOnly]}
+                    style={[styles.infoCentered, styles.linkOnly]}
                     testID="notification-detail-info-title">
                     {notification.heading.title}
                   </ThemedText>
                 )}
                 {notification.heading?.subtitle && (
-                  <ThemedText type="small" themeColor="textSecondary" testID="notification-detail-info-subtitle">
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.infoCentered} testID="notification-detail-info-subtitle">
                     {notification.heading.subtitle}
                   </ThemedText>
                 )}
@@ -333,13 +336,12 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two, padding: Spacing.four },
   error: { color: ERROR_COLOR },
   // Le lien sur le texte seul (décision 2026-11-22-liens-sur-le-texte).
-  linkOnly: { alignSelf: 'flex-start' },
-  // La pastille du statut, en tête du panneau « Info ».
-  tagRow: { flexDirection: 'row' },
+  linkOnly: { alignSelf: 'center' },
+  infoCentered: { textAlign: 'center' },
+  // La pastille du statut, en tête du panneau « Info », centrée.
+  tagRow: { flexDirection: 'row', justifyContent: 'center' },
   body: { width: '100%', alignSelf: 'center', padding: Spacing.four, gap: Spacing.three },
   date: { textAlign: 'right' },
-  // Le titre de l'en-tête, en gras.
-  heading: { fontWeight: '700' },
   // Les panneaux du menu (« Info », les lignes) : à leur taille maximale (décision 2026-11-27-info-taille-maximale), ils
   // défilent s'ils dépassent.
   infoScroll: { flex: 1 },

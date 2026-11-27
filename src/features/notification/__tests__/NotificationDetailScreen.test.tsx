@@ -194,6 +194,12 @@ describe('NotificationDetailScreen', () => {
     expect(screen.getByTestId('notification-detail-info-header')).toHaveTextContent('Info');
     expect(screen.getByTestId('notification-detail-info-title')).toHaveTextContent('Studio photos');
     expect(screen.getByTestId('notification-detail-info-subtitle')).toHaveTextContent('Location meublée · Studio');
+    // La pastille, le titre et le sous-titre centrés (décision 2026-11-27-info-entete-centre).
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-tag-row').props.style)).toMatchObject({ justifyContent: 'center' });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-info-title').props.style)).toMatchObject({ textAlign: 'center', alignSelf: 'center' });
+    // Plus grand : la taille du nom sur la fiche d'un partenaire (décision 2026-11-27-info-titre-plus-grand).
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-info-title').props.style)).toMatchObject({ fontSize: 24 });
+    expect(StyleSheet.flatten(screen.getByTestId('notification-detail-info-subtitle').props.style)).toMatchObject({ textAlign: 'center' });
     expect(screen.getByTestId('notification-detail-info-line-total-value')).toHaveTextContent('255 000 FCFA');
     expect(screen.getAllByTestId(/^notification-detail-info-line-[a-z]+$/)).toHaveLength(8);
     // La pastille du statut, en tête ; une demande : ni texte, ses lignes dans l'ordre servi.

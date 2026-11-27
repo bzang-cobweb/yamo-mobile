@@ -43,6 +43,8 @@ export type FieldOption = {
   hint?: string | null;
   /** Liste dépendante : valeur du champ parent à laquelle l'option appartient. */
   parent?: string | null;
+  /** Une image devant le libellé (la photo d'un logement, décision 2026-11-27-select-images) ; absente : aucune. */
+  image?: string | null;
 };
 
 export type FormFieldDefinition = {
@@ -87,6 +89,8 @@ export type FormFieldDefinition = {
   calendar?: { unavailable: string[]; after: string | null } | null;
   /** Liste déroulante : une recherche en tête des options, quel que soit leur nombre ; absent : au-delà de 12. */
   searchable?: boolean;
+  /** Au plus ce nombre d'options affichées, la recherche trouve les autres (décision 2026-11-27-select-limite) ; absent : `SEARCHABLE_LIMIT` pour une liste à rechercher, toutes sinon. */
+  search_limit?: number | null;
   /** Un filtre de liste sans l'option « Tous » (décision 2026-11-25-region-sans-tous) ; absent : avec. */
   all_option?: boolean;
   /** Un filtre propre au pays (région, ville…), remis à zéro quand on change de pays (décision 2026-11-25-region-en-tete-recherche). */

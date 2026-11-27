@@ -43,7 +43,7 @@ jest.mock('@/features/list/components/ActionPanel', () => {
 
   return {
     ActionPanel: ({ name, record }: { name: string; record: string }) => <Text testID="action-panel">{`${name}:${record}`}</Text>,
-    knowsPanel: (name: string) => name === 'partner.statistics',
+    knowsPanel: (name: string) => ['partner.statistics', 'offer.reviews'].includes(name),
   };
 });
 jest.mock('expo-router', () => {
@@ -248,6 +248,35 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     expect(screen.queryByRole('link', { name: '2 demandes en attente' })).toBeNull();
     // Sans demande en attente : le statut.
     expect(screen.getByTestId('profile-list-item-8-status')).toHaveTextContent('Publiée');
+  });
+
+  it('« Mes réservations » : à droite des étoiles, un œil vers la fiche de l’offre ; les étoiles ouvrent ses avis dans un panneau (décision 2026-11-27-reservations-oeil-voir)', async () => {
+    mockList = list([
+      item('7', {
+        link: '/notifications/0b6f2c1e-4d3a-4f5b-9c8d-7e6f5a4b3c2d',
+        rating: { average: 4.5, count: 3 },
+        view_link: '/offers/9',
+        rating_panel: { label: 'Avis', panel: { name: 'offer.reviews', record: '9' } },
+      }),
+      item('8', { link: '/notifications/1c7a3d2f-5e4b-4a6c-8d9e-8f7a6b5c4d3e', rating: { average: 4, count: 1 } }),
+    ]);
+    await renderScreen();
+
+    // Sur la ligne des étoiles, après elles.
+    expect(screen.getAllByTestId(/^profile-list-(item-7-rating|view-icon-7)$/).map((node) => node.props.testID)).toEqual(['profile-list-item-7-rating', 'profile-list-view-icon-7']);
+    expect(screen.getByTestId('profile-list-view-icon-7').props.accessibilityLabel).toBe('Voir Carte 7');
+    // L'œil : la fiche de l'offre, pas la page de la demande.
+    await fireEvent.press(screen.getByTestId('profile-list-view-icon-7'));
+    expect(router.push).toHaveBeenLastCalledWith('/offers/9');
+    // Les étoiles : les avis de l'offre, dans un panneau titré « Avis ».
+    await fireEvent.press(screen.getByTestId('profile-list-item-7-rating'));
+    expect(screen.getByTestId('profile-list-panel-header')).toHaveTextContent('Avis');
+    expect(screen.getByTestId('action-panel')).toHaveTextContent('offer.reviews:9');
+    await fireEvent.press(screen.getByTestId('profile-list-panel-close'));
+    // Sans œil ni panneau : rien ; ses étoiles ne s'ouvrent pas.
+    expect(screen.queryByTestId('profile-list-view-icon-8')).toBeNull();
+    await fireEvent.press(screen.getByTestId('profile-list-item-8-rating'));
+    expect(screen.queryByTestId('action-panel')).toBeNull();
   });
 
   it('une action qui ouvre un panneau : à taille maximale, titré de son libellé ; un panneau inconnu n’ouvre rien (décision 2026-11-27-action-panneau)', async () => {
@@ -460,7 +489,7 @@ describe('ProfileListScreen (toute liste du profil, sans la connaître d’avanc
     await renderScreen();
 
     expect(screen.getByTestId('profile-list-item-7-highlight')).toHaveTextContent('45 000 FCFA / jour');
-    expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7-rating').props.style).alignSelf).toBe('flex-end');
+    expect(StyleSheet.flatten(screen.getByTestId('profile-list-item-7-stars-row').props.style).justifyContent).toBe('flex-end');
   });
 
   it('les espacements de la carte de l’accueil : 8 de marge, 4 entre les lignes (décision 2026-11-22-cartes-espacements-accueil)', async () => {
