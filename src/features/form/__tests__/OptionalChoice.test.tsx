@@ -97,6 +97,8 @@ describe('la fenêtre de choix (décision 2026-11-27-select-images)', () => {
     await show(<SelectField field={{ ...definition, searchable: true }} value="no" onChange={jest.fn()} />);
 
     await fireEvent.press(screen.getByTestId('field-smoking'));
+    // Une loupe devant la recherche (décision 2026-11-27-select-loupe).
+    expect(screen.getByTestId('field-smoking-search-icon')).toBeTruthy();
     await fireEvent(screen.getByTestId('field-smoking-options-body'), 'layout', { nativeEvent: { layout: { width: 400, height: 320 } } });
     await fireEvent.changeText(screen.getByTestId('field-smoking-search'), 'Ou');
     // Moins d'options : une hauteur mesurée plus petite ne la change pas.

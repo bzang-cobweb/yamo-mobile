@@ -74,15 +74,24 @@ export function OptionsModal({ visible, title, options, selected, onSelect, onCl
         }}
         testID={`${testIDPrefix}-options-body`}>
         {(searchable || options.length > SEARCH_FROM) && (
-          <TextInput
-            testID={`${testIDPrefix}-search`}
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('form.search')}
-            placeholderTextColor={theme.textSecondary}
-            autoCorrect={false}
-            style={[styles.search, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-          />
+          // Une loupe devant, comme la recherche des listes (décision 2026-11-27-select-loupe).
+          <View style={[styles.searchField, { backgroundColor: theme.backgroundElement }]}>
+            <SymbolView
+              testID={`${testIDPrefix}-search-icon`}
+              name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+              size={18}
+              tintColor={theme.textSecondary}
+            />
+            <TextInput
+              testID={`${testIDPrefix}-search`}
+              value={query}
+              onChangeText={setQuery}
+              placeholder={t('form.search')}
+              placeholderTextColor={theme.textSecondary}
+              autoCorrect={false}
+              style={[styles.search, { color: theme.text }]}
+            />
+          </View>
         )}
         <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
           {clearable && (
@@ -148,7 +157,8 @@ export function OptionsModal({ visible, title, options, selected, onSelect, onCl
 const styles = StyleSheet.create({
   body: { flexShrink: 1, padding: Spacing.four, paddingTop: Spacing.three, gap: Spacing.two },
   list: { flexShrink: 1 },
-  search: { borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, fontSize: 16 },
+  searchField: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, borderRadius: 8, paddingHorizontal: Spacing.three },
+  search: { flex: 1, paddingVertical: Spacing.two, fontSize: 16 },
   option: { paddingVertical: Spacing.three },
   optionRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   image: { width: 40, height: 40, borderRadius: 8 },
