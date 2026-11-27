@@ -100,6 +100,8 @@ function RootNavigator() {
           <Stack.Protected guard={user !== null}>
             {/* Un formulaire du profil, par-dessus les onglets (décision 2026-11-19-contrat-bouton-fixe-formulaires). */}
             <Stack.Screen name="profile/[form]" />
+            {/* Un sous-menu du profil (décision 2026-11-27-menu-profil-icones-sous-menus). */}
+            <Stack.Screen name="profile/menu/[menu]" />
             {/* Une liste du profil, par-dessus les onglets, sans menu du bas (décision 2026-11-19-contrat-reservations-logements-profil). */}
             <Stack.Screen name="profile/lists/[list]" />
             {/* Son avis sur une offre, ouvert depuis la fiche (décision 2026-11-19-contrat-avis-offres). */}
@@ -115,11 +117,9 @@ function RootNavigator() {
             {/* Les notifications déjà filtrées, depuis une carte de « Mes logements », avec un retour (décision 2026-11-21-notifications-avec-retour). */}
             <Stack.Screen name="notifications/filtered" />
           </Stack.Protected>
-          {/* Invité : la connexion, l'inscription, le mot de passe oublié, par-dessus les onglets. */}
+          {/* Invité : la connexion, qui enchaîne l'inscription, par-dessus les onglets. */}
           <Stack.Protected guard={user === null}>
             <Stack.Screen name="sign-in" />
-            <Stack.Screen name="sign-up" />
-            <Stack.Screen name="forgot-password" />
           </Stack.Protected>
         </Stack>
       )}

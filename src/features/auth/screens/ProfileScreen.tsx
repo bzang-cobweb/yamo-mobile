@@ -1,4 +1,4 @@
-import { useFocusEffect, type Href } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,34 +9,15 @@ import { ThemedView } from '@/shared/theme/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 
 import { AvatarPicker } from '../components/AvatarPicker';
-import { DeleteAccountLink } from '../components/DeleteAccountLink';
-import { ProfileMenuLink } from '../components/ProfileMenuLink';
+import { ProfileMenuLinks } from '../components/ProfileMenuLinks';
 import { SignOutButton } from '../components/SignOutButton';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileMenu } from '../hooks/useProfileMenu';
-import type { ProfileMenuItem } from '../types';
-
-/**
- * Un lien sans nom de formulaire ni de liste (réponse d'un serveur plus ancien,
- * mise en cache, ou cible inconnue) est ignoré au lieu de faire planter l'écran.
- */
-function isName(name: unknown): name is string {
-  return typeof name === 'string' && name !== '';
-}
-
-/** Route ouverte par un lien du menu : son formulaire, sinon sa liste. */
-function menuHref({ form, list }: ProfileMenuItem): Href | null {
-  if (isName(form)) {
-    return { pathname: '/profile/[form]', params: { form } };
-  }
-
-  return isName(list) ? { pathname: '/profile/lists/[list]', params: { list } } : null;
-}
 
 /**
  * Profil (onglet), sans titre : photo modifiable, nom complet, e-mail et
  * téléphone (format international) selon les canaux de l'application, menu de
- * ses formulaires, déconnexion, suppression du compte. Le menu (liens, ordre,
+ * ses formulaires et sous-menus, déconnexion. Le menu (liens, ordre, icônes,
  * libellés, formulaires, listes) est servi par l'API, qui le définit ; chaque
  * lien ouvre `/profile/[form]` ou `/profile/lists/[list]`. Le menu se recharge à chaque retour sur le profil. Un
  * formulaire enregistré revient ici avec le message de confirmation de l'API.
@@ -82,17 +63,11 @@ export function ProfileScreen() {
               </ThemedText>
             )}
           </View>
-          <View style={styles.links}>
-            {/* Une seule liste, sans titre de groupe (décision 2026-11-21-menu-profil-sans-groupes) :
-                les liens dans l'ordre servi. */}
-            {(menu.data ?? []).map((item) => {
-              const href = menuHref(item);
-
-              return href === null ? null : <ProfileMenuLink key={item.key} href={href} label={item.label} testID={`profile-link-${item.key}`} />;
-            })}
-          </View>
+          {/* Une seule liste, sans titre de groupe (décision 2026-11-21-menu-profil-sans-groupes) : les liens dans
+              l'ordre servi. « Supprimer mon compte » est dans « Confidentialité » (décision
+              2026-11-27-confidentialite). */}
+          <ProfileMenuLinks items={menu.data ?? []} />
           <SignOutButton />
-          <DeleteAccountLink />
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -111,5 +86,4 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
   },
   identity: { alignItems: 'center', gap: Spacing.one },
-  links: { gap: Spacing.two },
 });

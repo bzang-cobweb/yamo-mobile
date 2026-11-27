@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 
 import { AuthContext } from '../context/AuthContext';
-import { DELETE_ACCOUNT_FORM } from '../components/DeleteAccountLink';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import type { AuthContextValue, User } from '../types';
 import { currentToast, hideToast } from '@/shared/components/Toast';
@@ -19,7 +18,7 @@ jest.mock('@/features/welcome/hooks/useApplication', () => ({
   useApplication: () => ({ data: { name: 'Ya Mo', description: null, channels: mockChannels } }),
 }));
 
-type MenuItem = { key: string; label: string; form?: string; list?: string; group?: { key: string; label: string } };
+type MenuItem = import('../types').ProfileMenuItem;
 
 const DEFAULT_MENU: MenuItem[] = [
   { key: 'personal', label: 'Informations personnelles', form: 'auth.profile.personal' },
@@ -94,7 +93,7 @@ describe('ProfileScreen', () => {
     mockMenu = DEFAULT_MENU;
   });
 
-  it('affiche la photo, le nom complet, l’e-mail, les trois liens et la déconnexion', async () => {
+  it('affiche la photo, le nom complet, l’e-mail, les liens et la déconnexion', async () => {
     await renderProfile();
 
     expect(screen.getByTestId('avatar-picker')).toBeTruthy();
@@ -104,7 +103,8 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-link-password')).toHaveTextContent('Changer le mot de passe');
     expect(screen.getByTestId('profile-link-preferences')).toHaveTextContent('Préférences');
     expect(screen.getByTestId('sign-out')).toHaveTextContent('Se déconnecter');
-    expect(screen.getByTestId('profile-delete-account')).toHaveTextContent('Supprimer mon compte');
+    // « Supprimer mon compte » est dans « Confidentialité » (décision 2026-11-27-confidentialite).
+    expect(screen.queryByTestId('profile-delete-account')).toBeNull();
     expect(screen.queryByText('Profil')).toBeNull();
     expect(screen.queryByTestId('profile-phone')).toBeNull();
   });
@@ -183,21 +183,26 @@ describe('ProfileScreen', () => {
     expect(screen.getByTestId('profile-link-password')).toBeTruthy();
   });
 
-  it('le lien rouge ouvre le formulaire de suppression du compte', async () => {
+  it('un lien `menu` ouvre son sous-menu ; l’icône servie précède le libellé (décision 2026-11-27-menu-profil-icones-sous-menus)', async () => {
+    mockMenu = [
+      { key: 'personal', label: 'Informations personnelles', menu: 'personal', icon: { ios: 'person', android: 'person' } },
+      { key: 'preferences', label: 'Préférences', form: 'auth.profile.preferences' },
+    ];
     await renderProfile();
 
-    await fireEvent.press(screen.getByTestId('profile-delete-account'));
+    expect(screen.getByTestId('profile-link-personal-icon')).toBeTruthy();
+    expect(screen.queryByTestId('profile-link-preferences-icon')).toBeNull();
+    await fireEvent.press(screen.getByTestId('profile-link-personal'));
 
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/[form]', params: { form: DELETE_ACCOUNT_FORM } });
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/profile/menu/[menu]', params: { menu: 'personal' } });
   });
 
-  it('sans menu (chargement, erreur) : aucun lien, mais déconnexion et suppression restent', async () => {
+  it('sans menu (chargement, erreur) : aucun lien, mais la déconnexion reste', async () => {
     mockMenu = undefined;
     await renderProfile();
 
     expect(screen.queryAllByTestId(/^profile-link-/)).toHaveLength(0);
     expect(screen.getByTestId('sign-out')).toBeTruthy();
-    expect(screen.getByTestId('profile-delete-account')).toBeTruthy();
   });
 
   it('affiche le numéro au format international', async () => {

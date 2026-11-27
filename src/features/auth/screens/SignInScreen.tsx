@@ -1,87 +1,93 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
 
-import { LocaleSwitcher } from '@/features/welcome/components/LocaleSwitcher';
+import type { FormValues } from '@/features/form/types';
+import { useBackStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
-import { Spacing } from '@/shared/theme/theme';
 
 import { ChallengeFlow } from '../components/ChallengeFlow';
 import { GuestScreen } from '../components/GuestScreen';
 import { RestoreAccountPrompt } from '../components/RestoreAccountPrompt';
 import { useAuth } from '../hooks/useAuth';
 import { loginService } from '../services/LoginService';
+import { registerService } from '../services/RegisterService';
+import type { VerifyResult } from '../types';
 
 /**
- * Connexion en deux étapes : e-mail ou téléphone et mot de passe (formulaire
- * `auth.login`), puis le code reçu (formulaire `auth.code`). L'app n'entre qu'une
- * fois le code validé. Un compte en attente de suppression propose d'abord d'être
- * récupéré. Liens vers le mot de passe oublié et la création de compte ; au retour
- * d'un mot de passe changé, une confirmation. L'en-tête ramène à l'accueil. Dans un onglet d'un visiteur (`embedded`,
- * décision 2026-11-27-visiteur-onglets) : sans en-tête, la langue en dessous.
+ * Se connecter ou s'inscrire, sans mot de passe (décision 2026-11-27-connexion-sans-mot-de-passe) : l'e-mail ou le
+ * téléphone (formulaire `auth.login`), puis le code reçu (`auth.code`). Pour un identifiant inconnu, l'inscription
+ * (`auth.register` : pseudonyme, prénom, nom, date de naissance) part avec cet identifiant, puis le code. L'app n'entre
+ * qu'une fois le code validé. Un compte en attente de suppression propose d'abord d'être récupéré.
  */
-export function SignInScreen({ embedded = false }: { embedded?: boolean } = {}) {
-  const { signIn, t } = useAuth();
-  const { notice } = useLocalSearchParams<{ notice?: string }>();
-  const [restore, setRestore] = useState<{ challenge: string; deletionDate: string } | null>(null);
-
-  if (restore !== null) {
-    return (
-      <GuestScreen title={embedded ? undefined : t('auth.signIn')} embedded={embedded}>
-        <RestoreAccountPrompt
-          challenge={restore.challenge}
-          deletionDate={restore.deletionDate}
-          onCancel={() => (embedded ? setRestore(null) : router.replace('/'))}
-        />
-      </GuestScreen>
-    );
-  }
+export function SignInScreen() {
+  const { t } = useAuth();
+  const [register, setRegister] = useState<Record<string, string> | null>(null);
 
   return (
-    <GuestScreen title={embedded ? undefined : t('auth.signIn')} embedded={embedded}>
-      {/* Dans un onglet, le titre de la page au-dessus du formulaire. */}
-      {embedded && (
-        <ThemedText type="subtitle" accessibilityRole="header" testID="sign-in-title">
-          {t('auth.signIn')}
-        </ThemedText>
-      )}
-      {notice === 'passwordReset' && (
-        <ThemedText themeColor="textSecondary" accessibilityRole="alert" testID="sign-in-notice">
-          {t('auth.passwordReset')}
-        </ThemedText>
-      )}
-      <ChallengeFlow
-        hideFormTitle
-        form="auth.login"
-        start={(values) => loginService.login(values)}
-        onVerified={async (result) => {
-          if (result.kind === 'session') {
-            await signIn(result.session);
-          } else if (result.kind === 'restore') {
-            setRestore({ challenge: result.challenge, deletionDate: result.deletionDate });
-          }
-        }}
-      />
-      <View style={styles.links}>
-        <Pressable accessibilityRole="link" testID="sign-in-forgot" onPress={() => router.push('/forgot-password')}>
-          <ThemedText type="linkPrimary">{t('auth.forgotPassword')}</ThemedText>
-        </Pressable>
-        {/* Depuis un onglet, l'inscription s'ouvre par-dessus : le retour y ramène. */}
-        <Pressable accessibilityRole="link" testID="sign-in-register" onPress={() => (embedded ? router.push('/sign-up') : router.replace('/sign-up'))}>
-          <ThemedText type="linkPrimary">{t('auth.createAccount')}</ThemedText>
-        </Pressable>
-      </View>
-      {/* La langue, pour un visiteur, comme en bas de son ancien accueil (décision 2026-11-19-titre-tirets-avis). */}
-      {embedded && (
-        <View style={styles.language}>
-          <LocaleSwitcher />
-        </View>
-      )}
+    <GuestScreen title={register === null ? t('auth.signIn') : t('auth.createAccount')}>
+      <SignInFlow register={register} onRegister={setRegister} />
     </GuestScreen>
   );
 }
 
-const styles = StyleSheet.create({
-  links: { gap: Spacing.two },
-  language: { alignItems: 'center', marginTop: Spacing.three },
-});
+type FlowProps = {
+  /** L'identifiant d'un compte à créer, ou `null` : la connexion. */
+  register: Record<string, string> | null;
+  onRegister: (values: Record<string, string> | null) => void;
+};
+
+function SignInFlow({ register, onRegister }: FlowProps) {
+  const { signIn, t } = useAuth();
+  const [restore, setRestore] = useState<{ challenge: string; deletionDate: string } | null>(null);
+  // Depuis l'inscription, la flèche de l'en-tête revient à la connexion.
+  useBackStep(register !== null, () => onRegister(null));
+
+  async function onVerified(result: Exclude<VerifyResult, { kind: 'pending' }>) {
+    if (result.kind === 'session') {
+      await signIn(result.session);
+    } else if (result.kind === 'restore') {
+      setRestore({ challenge: result.challenge, deletionDate: result.deletionDate });
+    }
+  }
+
+  if (restore !== null) {
+    return <RestoreAccountPrompt challenge={restore.challenge} deletionDate={restore.deletionDate} onCancel={() => router.replace('/')} />;
+  }
+
+  if (register !== null) {
+    return (
+      <>
+        <ThemedText themeColor="textSecondary" testID="sign-up-intro">
+          {t('auth.registerIntro')}
+        </ThemedText>
+        <ChallengeFlow
+          key="register"
+          hideFormTitle
+          form="auth.register"
+          start={(values: FormValues) => registerService.register({ ...values, ...register })}
+          onVerified={onVerified}
+        />
+      </>
+    );
+  }
+
+  return (
+    <ChallengeFlow
+      key="login"
+      hideFormTitle
+      form="auth.login"
+      start={async (values) => {
+        const response = await loginService.login(values);
+
+        if ('next' in response) {
+          onRegister(response.values);
+
+          return null;
+        }
+
+        return response;
+      }}
+      onVerified={onVerified}
+    />
+  );
+}

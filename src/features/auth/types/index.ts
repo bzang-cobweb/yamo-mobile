@@ -46,6 +46,12 @@ export type Challenge = {
   destination: string;
 };
 
+/**
+ * `POST /api/v1/auth/login`, réponse : le code envoyé, ou aucun compte pour cet identifiant (`next: register`) et
+ * l'identifiant saisi, à renvoyer avec l'inscription (décision 2026-11-27-connexion-sans-mot-de-passe).
+ */
+export type LoginResponse = Challenge | { next: 'register'; values: Record<string, string> };
+
 /** Session ouverte : l'utilisateur et le jeton de l'appareil. */
 export type Session = { user: User; token: string };
 
@@ -80,7 +86,22 @@ export type UserResponse = { data: User };
  * d'ajouter un lien sans nouvelle version de l'app.
  */
 /** Un lien du menu du profil, et son groupe (« Compte », « Voyageur », « Hôte » ; décision 2026-11-19-contrat-reservations-logements-profil). */
-export type ProfileMenuItem = { key: string; label: string; form?: string; list?: string; group?: { key: string; label: string } };
+/**
+ * Un lien du menu du profil : il ouvre un formulaire (`form`), une liste (`list`) ou un sous-menu (`menu`, décision
+ * 2026-11-27-menu-profil-icones-sous-menus) ; `icon` : le symbole devant le libellé, par plateforme.
+ */
+export type ProfileMenuItem = {
+  key: string;
+  label: string;
+  form?: string;
+  list?: string;
+  menu?: string;
+  icon?: { ios: string; android: string } | null;
+  group?: { key: string; label: string };
+};
+
+/** `GET /api/v1/auth/me/menu/{menu}` : un sous-menu, son titre et ses liens. */
+export type ProfileSubMenu = { title: string; data: ProfileMenuItem[] };
 
 export type AuthContextValue = {
   /** `true` tant que le jeton enregistré, l'utilisateur, les langues et les textes ne sont pas chargés. */

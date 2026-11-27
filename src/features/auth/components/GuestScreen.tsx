@@ -11,12 +11,10 @@ import { MaxContentWidth, Spacing } from '@/shared/theme/theme';
 type Props = PropsWithChildren<{
   /** Titre de l'en-tête fixe (flèche de retour, titre centré) ; sans titre, aucun en-tête. */
   title?: string;
-  /** Dans un onglet, sous sa barre du haut : ni en-tête ni marge du haut (décision 2026-11-27-visiteur-onglets). */
-  embedded?: boolean;
 }>;
 
-/** Mise en page des écrans d'invité (connexion, inscription, mot de passe oublié). */
-export function GuestScreen({ title, embedded = false, children }: Props) {
+/** Mise en page des écrans d'invité (connexion et inscription). */
+export function GuestScreen({ title, children }: Props) {
   // Le bouton du formulaire, fixé en bas, avec la marge du bas de l'écran
   // (décision 2026-11-19-contrat-bouton-fixe-formulaires).
   const content = (
@@ -24,10 +22,6 @@ export function GuestScreen({ title, embedded = false, children }: Props) {
       {children}
     </FixedFooterLayout>
   );
-
-  if (embedded) {
-    return <ThemedView style={styles.container}>{content}</ThemedView>;
-  }
 
   return (
     <ThemedView style={styles.container}>

@@ -6,22 +6,18 @@ import ProfileTab from '@/app/(tabs)/profile/index';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
-// Le menu du bas pour un visiteur (décision 2026-11-27-visiteur-onglets) : Notifications et Profil y montrent la connexion.
+// Le menu du bas pour un visiteur (décisions 2026-11-27-visiteur-onglets et 2026-11-27-onglets-visiteur-invitation) :
+// Notifications et Profil y montrent une invitation à se connecter.
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 let mockUser: { id: number } | null = null;
 jest.mock('@/features/auth/hooks/useAuth', () => ({
-  useAuth: () => ({ user: mockUser, signIn: jest.fn(), t: (key: string) => (key === 'auth.signIn' ? 'Se connecter' : key === 'auth.createAccount' ? 'Créer un compte' : key) }),
+  useAuth: () => ({ user: mockUser, signIn: jest.fn(), t: (key: string) => key }),
 }));
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true }, useLocalSearchParams: () => ({}) }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
 
   return { SafeAreaView: View, SafeAreaProvider: View, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) };
-});
-jest.mock('@/features/auth/components/ChallengeFlow', () => {
-  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-
-  return { ChallengeFlow: () => <View testID="challenge-flow" /> };
 });
 jest.mock('@/features/welcome/components/LocaleSwitcher', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -43,24 +39,25 @@ async function show(element: React.ReactElement) {
   await render(<I18nContext.Provider value={TEST_I18N}>{element}</I18nContext.Provider>);
 }
 
-describe('les onglets d’un visiteur (décision 2026-11-27-visiteur-onglets)', () => {
+describe('les onglets d’un visiteur (décision 2026-11-27-onglets-visiteur-invitation)', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('visiteur : Notifications et Profil montrent la connexion, sans en-tête, avec la langue', async () => {
+  it('visiteur : le titre de l’onglet, une invitation, « Se connecter ou s’inscrire » vers la connexion, la langue', async () => {
     mockUser = null;
-    for (const Tab of [NotificationsTab, ProfileTab]) {
+    for (const [Tab, id, title] of [
+      [NotificationsTab, 'guest-notifications', 'tabs.notifications'],
+      [ProfileTab, 'guest-profile', 'tabs.profile'],
+    ] as const) {
       await show(<Tab />);
-      expect(screen.getByTestId('sign-in-title')).toHaveTextContent('Se connecter');
-      expect(screen.getByTestId('challenge-flow')).toBeTruthy();
+      expect(screen.getByTestId(`${id}-title`)).toHaveTextContent(title);
+      expect(screen.getByTestId(`${id}-message`)).toHaveTextContent(`auth.guest.${title.split('.')[1]}`);
+      expect(screen.getByTestId(`${id}-sign-in`)).toHaveTextContent('auth.signInOrUp');
       expect(screen.getByTestId('locale-switcher')).toBeTruthy();
-      expect(screen.queryByTestId('back-header')).toBeNull();
       expect(screen.queryByTestId('notifications-screen')).toBeNull();
       expect(screen.queryByTestId('profile-screen')).toBeNull();
+      await fireEvent.press(screen.getByTestId(`${id}-sign-in`));
+      expect(router.push).toHaveBeenLastCalledWith('/sign-in');
     }
-    // Créer un compte s'ouvre par-dessus l'onglet : le retour y ramène.
-    await fireEvent.press(screen.getByTestId('sign-in-register'));
-    expect(router.push).toHaveBeenCalledWith('/sign-up');
-    expect(router.replace).not.toHaveBeenCalled();
   });
 
   it('membre : ses notifications et son profil', async () => {
@@ -69,6 +66,6 @@ describe('les onglets d’un visiteur (décision 2026-11-27-visiteur-onglets)', 
     expect(screen.getByTestId('notifications-screen')).toBeTruthy();
     await show(<ProfileTab />);
     expect(screen.getByTestId('profile-screen')).toBeTruthy();
-    expect(screen.queryByTestId('sign-in-title')).toBeNull();
+    expect(screen.queryByTestId('guest-profile')).toBeNull();
   });
 });
