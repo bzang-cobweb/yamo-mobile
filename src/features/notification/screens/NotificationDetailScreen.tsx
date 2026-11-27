@@ -1,5 +1,5 @@
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -55,6 +55,16 @@ export function NotificationDetailScreen({ id }: { id: string }) {
     }, [refetch]),
   );
   const notification = query.data;
+
+  // Le fil s'ouvre sur son dernier message (décision 2026-11-27-fil-dernier-message) : en bas, à l'ouverture et à chaque
+  // nouveau message ; tant que le lecteur n'a pas remonté le fil lui-même, la page suit le contenu qui grandit.
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const follow = useRef(true);
+  const steps = useRef(-1);
+  const stepCount = (notification?.history ?? []).length;
+  if (stepCount !== steps.current) {
+    follow.current = true;
+  }
 
   useEffect(() => {
     if (notification && !notification.read) {
@@ -152,7 +162,22 @@ export function NotificationDetailScreen({ id }: { id: string }) {
                 </View>
               </View>
               {/* Sans marge ajoutée par iOS en haut du contenu. */}
-              <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]} testID="notification-detail-scroll">
+              <ScrollView
+                ref={scroll}
+                contentInsetAdjustmentBehavior="never"
+                contentContainerStyle={[styles.body, { maxWidth: MaxContentWidth / 2 }]}
+                onScrollBeginDrag={() => {
+                  follow.current = false;
+                }}
+                onContentSizeChange={() => {
+                  if (!follow.current) {
+                    return;
+                  }
+                  // Sans animation à l'ouverture ; un nouveau message glisse en vue.
+                  scroll.current?.scrollToEnd({ animated: steps.current >= 0 && steps.current !== stepCount });
+                  steps.current = stepCount;
+                }}
+                testID="notification-detail-scroll">
                 {(notification.history ?? []).length > 0 ? (
                   <NotificationConversation steps={notification.history ?? []} onOpen={go} />
                 ) : (
