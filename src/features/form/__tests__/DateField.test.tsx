@@ -97,7 +97,7 @@ describe('DateField', () => {
   });
 
   it('le calendrier suit les bornes servies ; sans bornes, toute date (décision 2026-11-19-bornes-des-dates)', async () => {
-    await renderField('', jest.fn(), { ...birthDate, name: 'check_in', date_range: { min: '2030-01-10', max: '2031-01-10' } });
+    await renderField('', jest.fn(), { ...birthDate, name: 'check_in', range: { min: '2030-01-10', max: '2031-01-10' } });
     await fireEvent.press(screen.getByTestId('field-check_in'));
     expect(mockBounds.minimumDate).toEqual(new Date(2030, 0, 10));
     expect(mockBounds.maximumDate).toEqual(new Date(2031, 0, 10));

@@ -9,7 +9,7 @@ import { useTheme } from '@/shared/theme/hooks/use-theme';
 import { Spacing } from '@/shared/theme/theme';
 
 import type { FieldProps } from '../../types';
-import { dateFormats, formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
+import { dateBound, dateFormats, formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
 import { FieldShell } from '../FieldShell';
 import { useInputStyle } from './inputStyle';
 
@@ -18,7 +18,7 @@ import { useInputStyle } from './inputStyle';
  * sa taille sur iOS, qui ne pousse pas le formulaire (fermé dès qu'une date est choisie ;
  * décision 2026-11-26-calendrier-en-panneau), boîte de dialogue sur
  * Android. Le calendrier propose les dates entre les bornes servies par Laravel
- * (`date_range` : une naissance jusqu'à aujourd'hui, une réservation à partir
+ * (`range` : une naissance jusqu'à aujourd'hui, une réservation à partir
  * d'aujourd'hui ; décision 2026-11-19-bornes-des-dates), toutes sans bornes. Un champ
  * facultatif peut être vidé (« Effacer », sous le champ → valeur vide).
  */
@@ -28,8 +28,8 @@ export function DateField({ field, value, onChange, error, disabled }: FieldProp
   const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [open, setOpen] = useState(false);
   const date = parseIsoDate(value);
-  const minimumDate = parseIsoDate(field.date_range?.min ?? '') ?? undefined;
-  const maximumDate = parseIsoDate(field.date_range?.max ?? '') ?? undefined;
+  const minimumDate = parseIsoDate(dateBound(field.range?.min) ?? '') ?? undefined;
+  const maximumDate = parseIsoDate(dateBound(field.range?.max) ?? '') ?? undefined;
   // Le calendrier s'ouvre sur la date choisie, sinon aujourd'hui ramené dans les bornes.
   const today = new Date();
   const start = date ?? (minimumDate && today < minimumDate ? minimumDate : maximumDate && today > maximumDate ? maximumDate : today);

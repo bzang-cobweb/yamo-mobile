@@ -5,6 +5,11 @@
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
+/** Une borne de date de `range` (`AAAA-MM-JJ`), ou `null` : sans borne, ou une borne qui n'est pas une date. */
+export function dateBound(value: string | number | null | undefined): string | null {
+  return typeof value === 'string' && value !== '' ? value : null;
+}
+
 /** `AAAA-MM-JJ` → date à minuit heure locale, ou `null` si la valeur n'en est pas une. */
 export function parseIsoDate(value: string): Date | null {
   const match = ISO_DATE.exec(value);

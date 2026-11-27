@@ -8,7 +8,7 @@ import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
 
 import type { FieldProps } from '../../types';
-import { dateFormats, formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
+import { dateBound, dateFormats, formatDate, parseIsoDate, toIsoDate } from '../../utils/dates';
 import { FieldShell } from '../FieldShell';
 import { useInputStyle } from './inputStyle';
 
@@ -18,7 +18,7 @@ const MONDAY = new Date(2024, 0, 1);
 /**
  * Date choisie sur une grille de mois (décision 2026-11-19-contrat-calendrier-offre),
  * ouverte dans un panneau à la taille du calendrier, titré du libellé du champ, plutôt que dépliée sous le champ, qui
- * poussait le reste du formulaire (décision 2026-11-26-calendrier-en-panneau) : les jours hors bornes (`date_range`) et indisponibles
+ * poussait le reste du formulaire (décision 2026-11-26-calendrier-en-panneau) : les jours hors bornes (`range`) et indisponibles
  * (`calendar.unavailable`) sont grisés. Fin d'une période (`calendar.after`) : les
  * jours indisponibles sont des nuits prises ; la fin se choisit après le début et au
  * plus tard le premier jour pris qui le suit (on part le matin), la période choisie
@@ -29,8 +29,8 @@ export function CalendarDateField({ field, value, onChange, error, disabled, aft
   const inputStyle = useInputStyle(Boolean(error), Boolean(field.readonly));
   const [open, setOpen] = useState(false);
   const date = parseIsoDate(value);
-  const min = field.date_range?.min ?? null;
-  const max = field.date_range?.max ?? null;
+  const min = dateBound(field.range?.min);
+  const max = dateBound(field.range?.max);
   const unavailable = new Set(field.calendar?.unavailable ?? []);
   const isEnd = Boolean(field.calendar?.after);
   const start = isEnd ? (afterValue ?? '') : '';

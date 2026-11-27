@@ -25,7 +25,7 @@ function field(name: string, calendar: FormFieldDefinition['calendar']): FormFie
     required: true,
     default: null,
     options: [],
-    date_range: { min: '2026-12-01', max: '2026-12-31' },
+    range: { min: '2026-12-01', max: '2026-12-31' },
     calendar,
   };
 }

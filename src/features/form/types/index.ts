@@ -70,7 +70,13 @@ export type FormFieldDefinition = {
   /** Nombre maximal de caractères (textarea : 1 000 par défaut), ou `null`. */
   max_length?: number | null;
   /** Bornes du calendrier d'une date (`AAAA-MM-JJ` ou `null`) ; absentes : toute date (décision 2026-11-19-bornes-des-dates). */
-  date_range?: { min: string | null; max: string | null } | null;
+  /**
+   * Les bornes du champ et son incrément, une seule notion (décision 2026-11-27-cle-range) : une date (`AAAA-MM-JJ` ou
+   * `null`, sans incrément) ou une note (nombres) ; absent pour un autre champ.
+   */
+  range?: { min: string | number | null; max: string | number | null; step?: number | null } | null;
+  /** Une note : ses étoiles affichées ou non (décision 2026-11-27-note-bornes-etoiles). */
+  stars?: boolean | null;
   /** Les formats de ses dates (options d'`Intl.DateTimeFormat`), servis par l'API (décision 2026-11-25-dates-formatees-serveur). */
   date_formats?: Partial<import('../utils/dates').DateFormats> | null;
   /**

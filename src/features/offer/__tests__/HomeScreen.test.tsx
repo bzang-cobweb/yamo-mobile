@@ -63,7 +63,7 @@ describe('HomeScreen', () => {
     // Sans retrait : le texte a la largeur de la photo (décision 2026-11-23-accueil-texte-sans-retrait).
     expect(StyleSheet.flatten(screen.getByTestId('home-item-1-body').props.style)).toMatchObject({ paddingHorizontal: 0 });
     // Les étoiles de la note aussi.
-    expect(StyleSheet.flatten(within(screen.getByTestId('home-item-1-rating')).getAllByText(/★/)[0].parent?.props.style)).toMatchObject({ fontSize: 9 });
+    expect(StyleSheet.flatten(within(screen.getByTestId('home-item-1-rating')).getAllByText(/★/)[0].props.style)).toMatchObject({ fontSize: 9 });
     expect(screen.getByTestId('home-carousel-Yaoundé')).toHaveTextContent(/^Yaoundé/);
 
     await fireEvent.press(screen.getByTestId('home-item-3'));
