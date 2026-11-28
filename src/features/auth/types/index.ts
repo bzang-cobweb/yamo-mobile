@@ -54,11 +54,20 @@ export type Challenge = {
   destination: string;
 };
 
+/** Le canal d'un identifiant, tel que le formulaire `auth.login` le nomme (`channel`). */
+export type LoginChannel = 'email' | 'phone';
+
 /**
- * `POST /api/v1/auth/login`, réponse : le code envoyé, ou aucun compte pour cet identifiant (`next: register`) et
- * l'identifiant saisi, à renvoyer avec l'inscription (décision 2026-11-27-connexion-sans-mot-de-passe).
+ * L'étape du mot de passe, après le code (contrat 2026-11-28-connexion-panneau) : `sign-in`, un compte avec mot de
+ * passe ; `create`, un compte sans mot de passe ; `register`, pas de compte (le mot de passe précède l'inscription).
  */
-export type LoginResponse = Challenge | { next: 'register'; values: Record<string, string> };
+export type PasswordMode = 'sign-in' | 'create' | 'register';
+
+/** `POST /api/v1/auth/session`, réponse : connecté, ou l'inscription à remplir avec le même défi. */
+export type SessionResponse = { data: User; token: string } | { next: 'register'; challenge: string };
+
+/** Résultat de l'étape du mot de passe. */
+export type SessionResult = { kind: 'session'; session: Session } | { kind: 'register'; challenge: string };
 
 /** Session ouverte : l'utilisateur et le jeton de l'appareil. */
 export type Session = { user: User; token: string };
@@ -68,7 +77,7 @@ export type VerifyResponse =
   | Challenge
   | { data: User; token: string }
   | { data: User }
-  | { next: 'password'; challenge: string }
+  | { next: 'password'; challenge: string; mode?: PasswordMode }
   | { next: 'restore'; challenge: string; deletion_date: string; /** Formatée par le serveur (2026-11-25-dates-formatees-serveur). */ deletion_date_text?: string | null };
 
 /** Résultat d'un code validé. */
@@ -79,8 +88,8 @@ export type VerifyResult =
   | { kind: 'session'; session: Session }
   /** Changement d'e-mail ou de téléphone enregistré. */
   | { kind: 'user'; user: User }
-  /** Mot de passe oublié : code validé, le nouveau mot de passe peut être choisi. */
-  | { kind: 'password'; challenge: string }
+  /** Connexion ou inscription : code validé, l'étape du mot de passe suit (selon `mode`). */
+  | { kind: 'password'; challenge: string; mode: PasswordMode }
   /** Connexion à un compte en attente de suppression : il peut être récupéré jusqu'à `deletionDate`, déjà formatée par le serveur. */
   | { kind: 'restore'; challenge: string; deletionDate: string };
 

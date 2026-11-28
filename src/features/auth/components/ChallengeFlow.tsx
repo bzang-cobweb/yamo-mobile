@@ -3,8 +3,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { FormLoader } from '@/features/form/components/FormLoader';
 import type { FormValues } from '@/features/form/types';
-import { ApiError } from '@/shared/api/errors';
-import { showToast } from '@/shared/components/Toast';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { useBackStep } from '@/shared/navigation/BackStack';
 import { ThemedText } from '@/shared/theme/components/themed-text';
@@ -13,6 +11,7 @@ import { Spacing } from '@/shared/theme/theme';
 import { verificationService } from '../services/VerificationService';
 import type { Challenge, VerifyResult } from '../types';
 import { deviceName } from '../utils/device-name';
+import { resendCode } from '../utils/resend-code';
 
 type Props = {
   /** Formulaire de la première étape (`auth.login`, `auth.register`, un formulaire du profil…). */
@@ -78,15 +77,7 @@ function CodeStep({ challenge, onBack, onSubmit }: CodeStepProps) {
   const hasBackHeader = useBackStep(true, onBack);
 
   // Le message du renvoi dans le bandeau flottant (décision 2026-11-21-bandeau-messages).
-  async function resend() {
-    try {
-      await verificationService.resend(challenge);
-      showToast(t('auth.resent'));
-    } catch (error) {
-      // Trop tôt, défi expiré… : le message de l'API, sinon le message général.
-      showToast(error instanceof ApiError ? (Object.values(error.errors)[0]?.[0] ?? error.message) : t('error.unknown'), 'danger');
-    }
-  }
+  const resend = () => resendCode(challenge, t);
 
   return (
     <View style={styles.step}>
