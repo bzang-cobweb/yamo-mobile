@@ -1,13 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { router } from 'expo-router';
 
 import NotificationsTab from '@/app/(tabs)/notifications';
 import ProfileTab from '@/app/(tabs)/profile/index';
+import { closeAuthSheet, isAuthSheetOpen } from '@/features/auth/components/AuthSheet';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
 // Le menu du bas pour un visiteur (décisions 2026-11-27-visiteur-onglets et 2026-11-27-onglets-visiteur-invitation) :
-// Notifications et Profil y montrent une invitation à se connecter.
+// Notifications et Profil y montrent une invitation à se connecter, le même composant (décision
+// 2026-11-28-app-connexion-panneau) : titre, sous-titre, message, bouton qui ouvre le panneau de connexion.
 jest.mock('@/shared/config', () => ({ API_URL: 'http://api.test' }));
 let mockUser: { id: number } | null = null;
 jest.mock('@/features/auth/hooks/useAuth', () => ({
@@ -42,7 +43,7 @@ async function show(element: React.ReactElement) {
 describe('les onglets d’un visiteur (décision 2026-11-27-onglets-visiteur-invitation)', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('visiteur : le titre de l’onglet, une invitation, « Se connecter ou s’inscrire » vers la connexion, la langue', async () => {
+  it('visiteur : le titre de l’onglet, son sous-titre, une invitation, « Se connecter ou s’inscrire » qui ouvre le panneau, la langue', async () => {
     mockUser = null;
     for (const [Tab, id, title] of [
       [NotificationsTab, 'guest-notifications', 'tabs.notifications'],
@@ -50,13 +51,16 @@ describe('les onglets d’un visiteur (décision 2026-11-27-onglets-visiteur-inv
     ] as const) {
       await show(<Tab />);
       expect(screen.getByTestId(`${id}-title`)).toHaveTextContent(title);
+      expect(screen.getByTestId(`${id}-subtitle`)).toHaveTextContent(`auth.guest.${title.split('.')[1]}Subtitle`);
       expect(screen.getByTestId(`${id}-message`)).toHaveTextContent(`auth.guest.${title.split('.')[1]}`);
       expect(screen.getByTestId(`${id}-sign-in`)).toHaveTextContent('auth.signInOrUp');
       expect(screen.getByTestId('locale-switcher')).toBeTruthy();
       expect(screen.queryByTestId('notifications-screen')).toBeNull();
       expect(screen.queryByTestId('profile-screen')).toBeNull();
+      expect(isAuthSheetOpen()).toBe(false);
       await fireEvent.press(screen.getByTestId(`${id}-sign-in`));
-      expect(router.push).toHaveBeenLastCalledWith('/sign-in');
+      expect(isAuthSheetOpen()).toBe(true);
+      closeAuthSheet();
     }
   });
 

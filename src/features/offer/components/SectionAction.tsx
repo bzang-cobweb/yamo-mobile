@@ -2,6 +2,7 @@ import { router, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
+import { openAuthSheet } from '@/features/auth/components/AuthSheet';
 import { ProfileFormSheet, profileFormLink } from '@/features/auth/components/ProfileFormSheet';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { showToast } from '@/shared/components/Toast';
@@ -30,7 +31,7 @@ export function SectionAction({ action, testID }: { action: OfferSectionAction; 
 
   function open() {
     if (user === null) {
-      router.push('/sign-in');
+      openAuthSheet();
     } else if (profileFormLink(action.link) !== null) {
       setForm(action.link);
     } else {

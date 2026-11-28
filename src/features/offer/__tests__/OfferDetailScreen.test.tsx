@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react-n
 import { router } from 'expo-router';
 import { Alert, StyleSheet } from 'react-native';
 
+import { closeAuthSheet, isAuthSheetOpen } from '@/features/auth/components/AuthSheet';
 import { ApiError } from '@/shared/api/errors';
 import type { ApiClient } from '@/shared/api/ApiClient';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -290,7 +291,9 @@ describe('OfferDetailScreen (fiche décrite par l’API)', () => {
     const button = screen.getByTestId('offer-publisher-action');
     expect(button).toHaveTextContent('Envoyer un message');
     await fireEvent.press(button);
-    expect(router.push).toHaveBeenLastCalledWith('/sign-in');
+    // La connexion s'ouvre dans son panneau (décision 2026-11-28-app-connexion-panneau).
+    expect(isAuthSheetOpen()).toBe(true);
+    closeAuthSheet();
 
     // Un membre connecté : le formulaire de message, dans un panneau à sa hauteur, pas un écran (décision
     // 2026-11-26-message-editeur-en-panneau).
@@ -623,7 +626,9 @@ describe('OfferDetailScreen : barre de réservation (décision 2026-11-19-contra
     const bar = screen.getByTestId('offer-booking-bar');
     expect(within(bar).getByText('250 000 FCFA')).toBeTruthy();
     await fireEvent.press(within(bar).getByText('Réserver'));
-    expect(router.push).toHaveBeenCalledWith('/sign-in');
+    // La connexion s'ouvre dans son panneau (décision 2026-11-28-app-connexion-panneau).
+    expect(isAuthSheetOpen()).toBe(true);
+    closeAuthSheet();
 
     mockUser = { id: 3 };
     await show();

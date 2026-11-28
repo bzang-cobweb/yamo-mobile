@@ -8,7 +8,7 @@ export default function ProfileTab() {
   const { user, t } = useAuth();
 
   if (user === null) {
-    return <GuestTab title={t('tabs.profile')} message={t('auth.guest.profile')} testID="guest-profile" />;
+    return <GuestTab title={t('tabs.profile')} subtitle={t('auth.guest.profileSubtitle')} message={t('auth.guest.profile')} testID="guest-profile" />;
   }
 
   return <ProfileScreen />;

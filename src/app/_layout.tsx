@@ -16,6 +16,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useCountry } from '@/features/country/context/CountryContext';
 import { CountryProvider } from '@/features/country/providers/CountryProvider';
 import { EntryScreen } from '@/features/country/screens/EntryScreen';
+import { AuthSheetHost } from '@/features/auth/components/AuthSheet';
 import { AuthProvider } from '@/features/auth/providers/AuthProvider';
 import { ConnectivityGate } from '@/shared/components/ConnectivityGate';
 import { ToastHost } from '@/shared/components/Toast';
@@ -119,12 +120,10 @@ function RootNavigator() {
             {/* Les notifications déjà filtrées, depuis une carte de « Mes logements », avec un retour (décision 2026-11-21-notifications-avec-retour). */}
             <Stack.Screen name="notifications/filtered" />
           </Stack.Protected>
-          {/* Invité : la connexion, qui enchaîne l'inscription, par-dessus les onglets. */}
-          <Stack.Protected guard={user === null}>
-            <Stack.Screen name="sign-in" />
-          </Stack.Protected>
         </Stack>
       )}
+      {/* Se connecter ou s'inscrire, dans un panneau ouvert depuis n'importe quel écran (décision 2026-11-28-app-connexion-panneau). */}
+      {!isLoading && country.country !== null && <AuthSheetHost />}
       {/* Le bandeau des messages qui suivent une action, par-dessus tous les écrans (décision 2026-11-21-bandeau-messages). */}
       <ToastHost />
     </ConnectivityGate>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { openAuthSheet } from '@/features/auth/components/AuthSheet';
 import { ProfileFormSheet } from '@/features/auth/components/ProfileFormSheet';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { profileFormService, profileSubmission } from '@/features/auth/services/ProfileFormService';
@@ -233,7 +234,7 @@ export function OfferDetailScreen({ id }: { id: string }) {
 /** « Réserver » : le formulaire de réservation, ou la connexion pour un visiteur. */
 function openBooking(id: string, signedIn: boolean) {
   if (!signedIn) {
-    router.push('/sign-in');
+    openAuthSheet();
 
     return;
   }

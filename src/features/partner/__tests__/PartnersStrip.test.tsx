@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
+import { closeAuthSheet, isAuthSheetOpen } from '@/features/auth/components/AuthSheet';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 
@@ -73,7 +74,9 @@ describe('PartnersStrip', () => {
 
     await fireEvent.press(screen.getByTestId('home-partners-become'));
     expect(screen.getByTestId('home-partners-become')).toHaveTextContent('Devenir partenaire');
-    expect(router.push).toHaveBeenLastCalledWith('/sign-in');
+    // La connexion s'ouvre dans son panneau (décision 2026-11-28-app-connexion-panneau).
+    expect(isAuthSheetOpen()).toBe(true);
+    closeAuthSheet();
 
     await show([wouri], { label: 'Devenir partenaire', form: 'partner.form', link: null });
     await fireEvent.press(screen.getByTestId('home-partners-become'));

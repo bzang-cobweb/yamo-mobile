@@ -1,3 +1,4 @@
+import { closeAuthSheet, isAuthSheetOpen } from '@/features/auth/components/AuthSheet';
 import { Colors } from '@/shared/theme/theme';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
@@ -98,7 +99,9 @@ describe('la page « Partenaires »', () => {
     await show(<PartnersScreen />);
     expect(screen.getByTestId('partners-footer')).toHaveTextContent('Devenir partenaire');
     await fireEvent.press(screen.getByText('Devenir partenaire'));
-    expect(router.push).toHaveBeenLastCalledWith('/sign-in');
+    // La connexion s'ouvre dans son panneau (décision 2026-11-28-app-connexion-panneau).
+    expect(isAuthSheetOpen()).toBe(true);
+    closeAuthSheet();
 
     mockList = { name: 'partner.all', title: 'Partenaires', search: null, empty: null, filters: [], items: [], footer: { label: 'Devenir partenaire', form: 'partner.partner', link: null } };
     await show(<PartnersScreen />);

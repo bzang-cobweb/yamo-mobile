@@ -9,7 +9,14 @@ export default function NotificationsTab() {
   const { user, t } = useAuth();
 
   if (user === null) {
-    return <GuestTab title={t('tabs.notifications')} message={t('auth.guest.notifications')} testID="guest-notifications" />;
+    return (
+      <GuestTab
+        title={t('tabs.notifications')}
+        subtitle={t('auth.guest.notificationsSubtitle')}
+        message={t('auth.guest.notifications')}
+        testID="guest-notifications"
+      />
+    );
   }
 
   return <NotificationsScreen />;
