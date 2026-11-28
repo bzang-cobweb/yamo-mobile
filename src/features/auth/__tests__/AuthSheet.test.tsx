@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import type { FormDefinition, FormFieldDefinition } from '@/features/form/types';
+import { ApiError } from '@/shared/api/errors';
 import { currentToast, hideToast } from '@/shared/components/Toast';
 import { I18nContext } from '@/shared/i18n/I18nContext';
 import { TEST_I18N } from '@/shared/i18n/test-messages';
@@ -179,6 +180,25 @@ describe('le panneau « Se connecter ou s’inscrire »', () => {
     expect(mockSignIn).toHaveBeenCalledWith({ user, token: 't' });
     expect(isAuthSheetOpen()).toBe(false);
     await expect(readLastSignIn()).resolves.toMatchObject({ channel: 'email', email: 'awa@example.test', first_name: 'Awa', last_name: 'Diallo' });
+  });
+
+  it('défi expiré ou déjà servi (erreur sur `code`) : le message dans le bandeau, retour au formulaire', async () => {
+    jest.mocked(loginService.login).mockResolvedValue(byEmail);
+    jest.mocked(verificationService.verify).mockResolvedValue({ kind: 'password', challenge: 'c-email', mode: 'sign-in' });
+    jest.mocked(sessionService.open).mockRejectedValue(new ApiError(422, 'Code expiré.', { code: ['Ce code a expiré, demandez-en un nouveau.'] }));
+    await show();
+
+    await fireEvent.changeText(await screen.findByTestId('field-email'), 'a@b.ch');
+    await fireEvent.press(screen.getByTestId('form-submit'));
+    await settle();
+    await typeCode();
+    await fireEvent.changeText(await screen.findByTestId('field-password'), 'secret');
+    await fireEvent.press(screen.getByTestId('form-submit'));
+    await settle();
+
+    expect(currentToast()?.message).toBe('Ce code a expiré, demandez-en un nouveau.');
+    expect(await screen.findByTestId('field-email')).toBeTruthy();
+    expect(mockSignIn).not.toHaveBeenCalled();
   });
 
   it('« Mot de passe oublié ? » : un nouveau mot de passe confirmé, envoyé avec reset', async () => {

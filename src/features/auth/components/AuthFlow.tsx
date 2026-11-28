@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { FormLoader } from '@/features/form/components/FormLoader';
 import type { FormValues } from '@/features/form/types';
+import { ApiError } from '@/shared/api/errors';
 import { showToast } from '@/shared/components/Toast';
 import { ThemedText } from '@/shared/theme/components/themed-text';
 import { Spacing } from '@/shared/theme/theme';
@@ -84,6 +85,25 @@ export function AuthFlow({ onDone }: Props) {
   async function login(values: FormValues, fromMemory: boolean, back: StartStep) {
     const challenge = await loginService.login(values);
     setStep({ kind: 'code', challenge, fromMemory, back });
+  }
+
+  /**
+   * Le défi n'est plus valable (expiré, déjà servi, trop d'essais : erreur sur `code`, décision
+   * 2026-11-28-connexion-panneau) : le message dans le bandeau, puis le début du parcours. Sinon l'erreur repart
+   * vers le formulaire (erreurs de ses champs).
+   */
+  async function guard(action: () => Promise<void>) {
+    try {
+      await action();
+    } catch (error) {
+      if (error instanceof ApiError && error.errors.code !== undefined) {
+        showToast(error.errors.code[0] ?? error.message, 'danger');
+        setStep(memory === null ? { kind: 'form' } : { kind: 'welcome' });
+
+        return;
+      }
+      throw error;
+    }
   }
 
   async function finish(session: Session, channel: LoginChannel) {
@@ -175,14 +195,16 @@ export function AuthFlow({ onDone }: Props) {
         <FormLoader
           key={form}
           name={form}
-          onSubmit={async (values) => {
-            const result = await sessionService.open(challenge, values, reset, deviceName());
-            if (result.kind === 'session') {
-              await finish(result.session, channel);
-            } else {
-              setStep({ kind: 'register', challenge: result.challenge, channel });
-            }
-          }}
+          onSubmit={(values) =>
+            guard(async () => {
+              const result = await sessionService.open(challenge, values, reset, deviceName());
+              if (result.kind === 'session') {
+                await finish(result.session, channel);
+              } else {
+                setStep({ kind: 'register', challenge: result.challenge, channel });
+              }
+            })
+          }
         />
         {form === 'auth.session.password' && (
           <Pressable accessibilityRole="button" style={styles.link} testID="auth-forgot-password" onPress={() => setStep({ ...step, reset: true })}>
@@ -200,7 +222,7 @@ export function AuthFlow({ onDone }: Props) {
       <FormLoader
         name="auth.register"
         params={{ channel }}
-        onSubmit={async (values) => finish(await registerService.register(challenge, values, deviceName()), channel)}
+        onSubmit={(values) => guard(async () => finish(await registerService.register(challenge, values, deviceName()), channel))}
       />
     );
   }
