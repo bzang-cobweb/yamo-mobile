@@ -20,6 +20,10 @@ type FormLoaderProps = {
   onSubmit: (values: FormValues) => Promise<void>;
   /** Le titre est affiché par l'en-tête de l'écran : le formulaire ne le répète pas. */
   hideTitle?: boolean;
+  /** Des paramètres de la demande du formulaire (`?channel=email`), dès le premier chargement. */
+  params?: Record<string, string>;
+  /** Des valeurs de départ choisies par l'app, à la place des valeurs par défaut servies (voir `DynamicForm`). */
+  defaults?: FormValues;
 };
 
 /**
@@ -28,9 +32,9 @@ type FormLoaderProps = {
  * recharge le formulaire (`reloads`, ex. la langue de saisie) le redemande avec
  * sa valeur (décision 2026-11-19-contrat-langue-saisie-allemand).
  */
-export function FormLoader({ name, record, onSubmit, hideTitle = false }: FormLoaderProps) {
+export function FormLoader({ name, record, onSubmit, hideTitle = false, params: initialParams, defaults }: FormLoaderProps) {
   const { t, locale } = useI18n();
-  const [params, setParams] = useState<Record<string, string>>({});
+  const [params, setParams] = useState<Record<string, string>>(initialParams ?? {});
   const query = useFormDefinition(name, record, params);
   const footer = useFixedFooter();
   const placeholderId = useId();
@@ -79,6 +83,7 @@ export function FormLoader({ name, record, onSubmit, hideTitle = false }: FormLo
       onSubmit={onSubmit}
       hideTitle={hideTitle}
       record={record}
+      defaults={defaults}
       onReload={(field, value) => setParams((current) => ({ ...current, [field]: value }))}
     />
   );

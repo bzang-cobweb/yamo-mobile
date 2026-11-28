@@ -16,6 +16,7 @@ import type { FieldValue, FormDefinition, FormErrors, FormFieldDefinition, FormV
 import { countryKey, dependentOptions, fieldError, hasPendingUploads, initialValues, isVisible, submittedValues } from '../utils/values';
 import { ERROR_COLOR } from './FieldShell';
 import { FormField } from './FormField';
+import { CODE_LENGTH } from './fields/CodeField';
 
 type DynamicFormProps = {
   definition: FormDefinition;
@@ -27,6 +28,11 @@ type DynamicFormProps = {
   onReload?: (field: string, value: string) => void;
   /** L'enregistrement auquel le formulaire est lié : envoyé avec la validation d'une étape. */
   record?: string;
+  /**
+   * Des valeurs de départ choisies par l'app, à la place des valeurs par défaut servies (le canal présélectionné,
+   * l'indicatif mémorisé : décision 2026-11-28-app-connexion-panneau). Seuls les champs du formulaire sont repris.
+   */
+  defaults?: FormValues;
 };
 
 /**
@@ -49,12 +55,21 @@ type DynamicFormProps = {
  * Pour repartir des valeurs par défaut (autre formulaire, autre langue), le
  * monter avec une `key` différente.
  */
-export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload, record }: DynamicFormProps) {
+export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload, record, defaults }: DynamicFormProps) {
   const destructive = definition.submit.destructive === true;
   // L'alignement des titres vient de la définition du formulaire (décision 2026-11-19-alignement-titre-formulaire).
   const titleAlign = { textAlign: definition.title_align === 'center' ? 'center' : 'left' } as const;
   const { t } = useI18n();
-  const [values, setValues] = useState<FormValues>(() => initialValues(definition));
+  const [values, setValues] = useState<FormValues>(() => {
+    const served = initialValues(definition);
+    // Une valeur de l'app ne s'applique qu'à un champ du formulaire : rien d'autre n'est envoyé.
+    const chosen = Object.entries(defaults ?? {}).filter(([name, value]) => name in served && value !== '' && value !== null && value !== undefined);
+
+    return { ...served, ...Object.fromEntries(chosen) };
+  });
+  // Un code complet envoie le formulaire, sans toucher le bouton (décision 2026-11-28-app-connexion-panneau) : compteur
+  // des envois demandés, lu après le rendu qui porte la valeur saisie.
+  const [autoSubmit, setAutoSubmit] = useState(0);
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -113,6 +128,11 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
 
     setValues((current) => ({ ...current, [name]: value, ...Object.fromEntries(children.map((child) => [child, ''])) }));
     setErrors(({ [name]: _cleared, ...rest }) => rest);
+
+    const changed = definition.fields.find((field) => field.name === name);
+    if (changed?.type === 'code' && isLastStep && typeof value === 'string' && value.length === CODE_LENGTH && value !== values[name]) {
+      setAutoSubmit((count) => count + 1);
+    }
   }
 
   /**
@@ -160,6 +180,13 @@ export function DynamicForm({ definition, onSubmit, hideTitle = false, onReload,
   useEffect(() => {
     submitRef.current = submit;
   });
+
+  // Le code complet : l'envoi part avec la valeur saisie (`submitRef` vient d'être mis à jour, dans ce même rendu).
+  useEffect(() => {
+    if (autoSubmit > 0) {
+      void submitRef.current();
+    }
+  }, [autoSubmit]);
 
   // Avant que l'écran soit peint : la barre apparaît avec le formulaire, sans délai.
   useLayoutEffect(() => {
