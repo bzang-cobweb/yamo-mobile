@@ -281,6 +281,32 @@ describe('le panneau « Se connecter ou s’inscrire »', () => {
     await expect(readLastSignIn()).resolves.toMatchObject({ channel: 'phone', phone: '+41790000067' });
   });
 
+  it('inscription par e-mail : le téléphone facultatif prend l’indicatif mémorisé, pas celui servi', async () => {
+    await saveLastSignIn(user, 'email');
+    jest.mocked(loginService.login).mockResolvedValue(byEmail);
+    jest.mocked(verificationService.verify).mockResolvedValue({ kind: 'password', challenge: 'c-email', mode: 'register' });
+    jest.mocked(sessionService.open).mockResolvedValue({ kind: 'register', challenge: 'c-email' });
+    jest.mocked(registerService.register).mockResolvedValue({ user, token: 'u' });
+    await show();
+    await settle();
+
+    await fireEvent.press(screen.getByTestId('auth-welcome-sign-in'));
+    await settle();
+    await typeCode();
+    await fireEvent.changeText(await screen.findByTestId('field-password'), 'secret');
+    await fireEvent.changeText(screen.getByTestId('field-password_confirmation'), 'secret');
+    await fireEvent.press(screen.getByTestId('form-submit'));
+    await settle();
+
+    expect(mockGetForm).toHaveBeenLastCalledWith('auth.register', undefined, { channel: 'email' });
+    await fireEvent.changeText(await screen.findByTestId('field-first_name'), 'Awa');
+    await fireEvent.changeText(screen.getByTestId('field-last_name'), 'Diallo');
+    await fireEvent.press(screen.getByTestId('form-submit'));
+    await settle();
+
+    expect(registerService.register).toHaveBeenCalledWith('c-email', expect.objectContaining({ phone_country: 'CH' }), 'iPhone');
+  });
+
   it('compte en attente de suppression : la proposition de le récupérer', async () => {
     jest.mocked(loginService.login).mockResolvedValue(byEmail);
     jest.mocked(verificationService.verify).mockResolvedValue({ kind: 'restore', challenge: 'c-email', deletionDate: '20 décembre 2026' });

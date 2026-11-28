@@ -222,6 +222,8 @@ export function AuthFlow({ onDone }: Props) {
       <FormLoader
         name="auth.register"
         params={{ channel }}
+        // L'indicatif mémorisé pour l'autre contact, comme à la connexion.
+        defaults={phoneCountry ? { phone_country: phoneCountry } : undefined}
         onSubmit={(values) => guard(async () => finish(await registerService.register(challenge, values, deviceName()), channel))}
       />
     );
